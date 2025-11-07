@@ -18,11 +18,17 @@ Unity (C#) を使用した実装を前提とし、要件定義書に基づいた
 2. [データフロー図](#データフロー図)
 3. [Unityシーン構成](#unityシーン構成)
 4. [C# クラス設計](#c-クラス設計)
-5. [データスキーマ (JSON)](#データスキーマ-json)
-6. [状態管理・イベントシステム](#状態管理イベントシステム)
-7. [セーブデータ構造](#セーブデータ構造)
-8. [パフォーマンス設計](#パフォーマンス設計)
-9. [セキュリティ設計](#セキュリティ設計)
+5. [入力システム](#入力システム)
+6. [UIアンドゥ機能](#uiアンドゥ機能)
+7. [報酬・商人システム](#報酬商人システム)
+8. [実験・魔物ノードシステム](#実験魔物ノードシステム)
+9. [オーディオシステム](#オーディオシステム)
+10. [カードエフェクト実装例](#カードエフェクト実装例)
+11. [データスキーマ (JSON)](#データスキーマ-json)
+12. [状態管理・イベントシステム](#状態管理イベントシステム)
+13. [セーブデータ構造](#セーブデータ構造)
+14. [パフォーマンス設計](#パフォーマンス設計)
+15. [セキュリティ設計](#セキュリティ設計)
 
 ---
 
@@ -580,18 +586,16 @@ namespace Atelier.Domain
         public QuestRequirements Requirements { get; set; }
         public QuestProgress Progress { get; set; }
 
-        private int currentStability;
-
         public void ApplyCard(ICard card)
         {
             // 属性値の加算
             Progress.CurrentAttributes += card.Attributes;
 
-            // 安定値の計算
-            currentStability += card.Stability;
+            // 安定値の計算（Progress.CurrentStabilityに統一）
+            Progress.CurrentStability += card.Stability;
 
             // 暴発チェック
-            if (currentStability < 0)
+            if (Progress.CurrentStability < 0)
             {
                 TriggerExplosion();
             }
@@ -791,13 +795,16 @@ namespace Atelier.Domain
         private EventBus eventBus;
         private System.Random rng;
 
-        public DeckManager(EventBus eventBus)
+        public DeckManager(EventBus eventBus, int? seed = null)
         {
             this.eventBus = eventBus;
             DrawPile = new List<ICard>();
             Hand = new List<ICard>();
             DiscardPile = new List<ICard>();
             HandSize = DefaultHandSize;
+
+            // rngを初期化（シード値が指定されていれば使用）
+            rng = seed.HasValue ? new System.Random(seed.Value) : new System.Random();
         }
 
         public void InitializeDeck(List<string> initialCardIds)
@@ -881,11 +888,6 @@ namespace Atelier.Domain
 
         public void Shuffle()
         {
-            if (rng == null)
-            {
-                rng = new System.Random();
-            }
-
             // Fisher-Yates shuffle
             for (int i = DrawPile.Count - 1; i > 0; i--)
             {
@@ -1063,8 +1065,11 @@ namespace Atelier.Domain
 
         private void ConnectNodes()
         {
+            // 最大レベルを事前に計算（最適化）
+            int maxLevel = nodes.Max(n => n.Level);
+
             // 各ノードを次のレベルのノードと接続
-            for (int level = 0; level < nodes.Max(n => n.Level); level++)
+            for (int level = 0; level < maxLevel; level++)
             {
                 var currentLevelNodes = nodes.Where(n => n.Level == level).ToList();
                 var nextLevelNodes = nodes.Where(n => n.Level == level + 1).ToList();
@@ -1307,6 +1312,1150 @@ namespace Atelier.Application
         public QuestCompletedEvent(IQuest quest)
         {
             Quest = quest;
+        }
+    }
+}
+```
+
+---
+
+## 入力システム
+
+### InputManager (Application Layer)
+
+```csharp
+namespace Atelier.Application
+{
+    using UnityEngine;
+    using System;
+    using System.Collections.Generic;
+
+    /// <summary>
+    /// 入力管理システム - マウス・キーボード対応 (REQ-005)
+    /// </summary>
+    public class InputManager : MonoBehaviour
+    {
+        public static InputManager Instance { get; private set; }
+
+        // キーバインド設定
+        private Dictionary<string, KeyCode> keyBindings;
+
+        // イベント
+        public event Action<Vector2> OnMouseClick;
+        public event Action<KeyCode> OnKeyPress;
+        public event Action OnEscapePress;
+        public event Action OnUndoRequest; // Ctrl+Z
+
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+
+            InitializeKeyBindings();
+        }
+
+        private void InitializeKeyBindings()
+        {
+            keyBindings = new Dictionary<string, KeyCode>
+            {
+                { "Confirm", KeyCode.Return },
+                { "Cancel", KeyCode.Escape },
+                { "Undo", KeyCode.Z }, // Ctrl+Z で検出
+                { "CardSlot1", KeyCode.Alpha1 },
+                { "CardSlot2", KeyCode.Alpha2 },
+                { "CardSlot3", KeyCode.Alpha3 },
+                { "CardSlot4", KeyCode.Alpha4 },
+                { "CardSlot5", KeyCode.Alpha5 },
+                { "NextQuest", KeyCode.Tab },
+                { "EndTurn", KeyCode.Space }
+            };
+        }
+
+        private void Update()
+        {
+            HandleMouseInput();
+            HandleKeyboardInput();
+        }
+
+        private void HandleMouseInput()
+        {
+            if (Input.GetMouseButtonDown(0)) // 左クリック
+            {
+                Vector2 mousePos = Input.mousePosition;
+                OnMouseClick?.Invoke(mousePos);
+            }
+        }
+
+        private void HandleKeyboardInput()
+        {
+            // Escapeキー
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                OnEscapePress?.Invoke();
+            }
+
+            // Undo (Ctrl+Z)
+            if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) &&
+                Input.GetKeyDown(KeyCode.Z))
+            {
+                OnUndoRequest?.Invoke();
+            }
+
+            // その他のキーバインド
+            foreach (var binding in keyBindings)
+            {
+                if (Input.GetKeyDown(binding.Value))
+                {
+                    OnKeyPress?.Invoke(binding.Value);
+                }
+            }
+        }
+
+        public bool IsKeyDown(string actionName)
+        {
+            if (keyBindings.TryGetValue(actionName, out KeyCode key))
+            {
+                return Input.GetKeyDown(key);
+            }
+            return false;
+        }
+
+        public void RebindKey(string actionName, KeyCode newKey)
+        {
+            if (keyBindings.ContainsKey(actionName))
+            {
+                keyBindings[actionName] = newKey;
+            }
+        }
+    }
+}
+```
+
+---
+
+## UIアンドゥ機能
+
+### CommandManager (Application Layer) - REQ-047-1
+
+```csharp
+namespace Atelier.Application
+{
+    using System.Collections.Generic;
+    using Atelier.Core;
+
+    /// <summary>
+    /// Commandパターンによるアンドゥ機能実装
+    /// </summary>
+    public class CommandManager
+    {
+        private Stack<ICommand> undoStack;
+        private Stack<ICommand> redoStack;
+        private const int MaxHistorySize = 50;
+
+        public bool CanUndo => undoStack.Count > 0;
+        public bool CanRedo => redoStack.Count > 0;
+
+        public CommandManager()
+        {
+            undoStack = new Stack<ICommand>();
+            redoStack = new Stack<ICommand>();
+        }
+
+        public void ExecuteCommand(ICommand command)
+        {
+            command.Execute();
+            undoStack.Push(command);
+            redoStack.Clear(); // 新しいコマンド実行でredoスタックをクリア
+
+            // 履歴サイズ制限
+            if (undoStack.Count > MaxHistorySize)
+            {
+                var stack = new Stack<ICommand>(MaxHistorySize);
+                for (int i = 0; i < MaxHistorySize; i++)
+                {
+                    stack.Push(undoStack.Pop());
+                }
+                undoStack = new Stack<ICommand>(stack);
+            }
+        }
+
+        public void Undo()
+        {
+            if (CanUndo)
+            {
+                var command = undoStack.Pop();
+                command.Undo();
+                redoStack.Push(command);
+            }
+        }
+
+        public void Redo()
+        {
+            if (CanRedo)
+            {
+                var command = redoStack.Pop();
+                command.Execute();
+                undoStack.Push(command);
+            }
+        }
+
+        public void Clear()
+        {
+            undoStack.Clear();
+            redoStack.Clear();
+        }
+    }
+
+    /// <summary>
+    /// コマンドインターフェース
+    /// </summary>
+    public interface ICommand
+    {
+        void Execute();
+        void Undo();
+    }
+
+    /// <summary>
+    /// カードプレイコマンド
+    /// </summary>
+    public class PlayCardCommand : ICommand
+    {
+        private readonly ICard card;
+        private readonly IQuest targetQuest;
+        private readonly DeckManager deckManager;
+
+        // 状態保存用
+        private CardAttributes previousAttributes;
+        private int previousStability;
+
+        public PlayCardCommand(ICard card, IQuest targetQuest, DeckManager deckManager)
+        {
+            this.card = card;
+            this.targetQuest = targetQuest;
+            this.deckManager = deckManager;
+        }
+
+        public void Execute()
+        {
+            // 現在の状態を保存
+            previousAttributes = new CardAttributes
+            {
+                Fire = targetQuest.Progress.CurrentAttributes.Fire,
+                Water = targetQuest.Progress.CurrentAttributes.Water,
+                Earth = targetQuest.Progress.CurrentAttributes.Earth,
+                Wind = targetQuest.Progress.CurrentAttributes.Wind,
+                Poison = targetQuest.Progress.CurrentAttributes.Poison,
+                Quality = targetQuest.Progress.CurrentAttributes.Quality
+            };
+            previousStability = targetQuest.Progress.CurrentStability;
+
+            // カードをプレイ
+            deckManager.PlayCard(card);
+            card.Play(targetQuest);
+        }
+
+        public void Undo()
+        {
+            // 状態を復元
+            targetQuest.Progress.CurrentAttributes = previousAttributes;
+            targetQuest.Progress.CurrentStability = previousStability;
+
+            // カードを手札に戻す（捨て札から手札へ）
+            deckManager.DiscardPile.Remove(card);
+            deckManager.Hand.Add(card);
+        }
+    }
+}
+```
+
+---
+
+## 報酬・商人システム
+
+### RewardSystem (Domain Layer) - REQ-036
+
+```csharp
+namespace Atelier.Domain
+{
+    using System.Collections.Generic;
+    using System.Linq;
+    using Atelier.Core;
+
+    /// <summary>
+    /// 報酬選択システム
+    /// </summary>
+    public class RewardSystem
+    {
+        private EventBus eventBus;
+        private CardSystem cardSystem;
+        private System.Random rng;
+
+        public RewardSystem(EventBus eventBus, CardSystem cardSystem, System.Random rng)
+        {
+            this.eventBus = eventBus;
+            this.cardSystem = cardSystem;
+            this.rng = rng;
+        }
+
+        /// <summary>
+        /// 依頼達成時のカード報酬を生成（3枚から1枚選択）
+        /// </summary>
+        public List<Card> GenerateCardRewards(Quest quest, int count = 3)
+        {
+            var rewards = new List<Card>();
+            var difficulty = (int)quest.Difficulty;
+
+            // 難易度に応じたレアリティ調整
+            for (int i = 0; i < count; i++)
+            {
+                var rarity = DetermineRarity(difficulty);
+                var card = GetRandomCardByRarity(rarity);
+                rewards.Add(card);
+            }
+
+            return rewards;
+        }
+
+        private CardRarity DetermineRarity(int difficulty)
+        {
+            int roll = rng.Next(100);
+
+            // 難易度が高いほど高レアリティが出やすい
+            int uncommonThreshold = 50 + (difficulty * 5);
+            int rareThreshold = 80 + (difficulty * 3);
+
+            if (roll < uncommonThreshold)
+                return CardRarity.Common;
+            else if (roll < rareThreshold)
+                return CardRarity.Uncommon;
+            else
+                return CardRarity.Rare;
+        }
+
+        private Card GetRandomCardByRarity(CardRarity rarity)
+        {
+            // カードデータベースから該当レアリティのカードを取得
+            // （実装の詳細は省略）
+            return new Card(); // プレースホルダー
+        }
+
+        public void GiveRewardToPlayer(Card selectedCard, DeckManager deckManager)
+        {
+            deckManager.AddCardToDeck(selectedCard);
+            eventBus.Publish(new RewardReceivedEvent(selectedCard));
+        }
+    }
+
+    public enum CardRarity
+    {
+        Common,
+        Uncommon,
+        Rare,
+        Epic,
+        Legendary
+    }
+
+    public class RewardReceivedEvent : GameEvent
+    {
+        public Card RewardCard { get; }
+
+        public RewardReceivedEvent(Card card)
+        {
+            RewardCard = card;
+        }
+    }
+}
+```
+
+### MerchantSystem (Domain Layer) - REQ-037
+
+```csharp
+namespace Atelier.Domain
+{
+    using System.Collections.Generic;
+    using Atelier.Core;
+
+    /// <summary>
+    /// 商人システム - カード購入・強化・削除
+    /// </summary>
+    public class MerchantSystem
+    {
+        private EventBus eventBus;
+        private CardSystem cardSystem;
+        private System.Random rng;
+
+        // 価格設定
+        private const int BasePurchasePrice = 50;
+        private const int BaseUpgradePrice = 75;
+        private const int BaseRemovePrice = 30;
+
+        public int CurrentGold { get; private set; }
+
+        public MerchantSystem(EventBus eventBus, CardSystem cardSystem, System.Random rng)
+        {
+            this.eventBus = eventBus;
+            this.cardSystem = cardSystem;
+            this.rng = rng;
+        }
+
+        /// <summary>
+        /// 商人の在庫を生成（5〜7枚）
+        /// </summary>
+        public List<MerchantItem> GenerateShopInventory(int mapLevel)
+        {
+            var inventory = new List<MerchantItem>();
+            int itemCount = rng.Next(5, 8);
+
+            for (int i = 0; i < itemCount; i++)
+            {
+                var card = GenerateRandomCard(mapLevel);
+                int price = CalculatePrice(card, mapLevel);
+
+                inventory.Add(new MerchantItem
+                {
+                    Card = card,
+                    Price = price,
+                    Type = MerchantItemType.Purchase
+                });
+            }
+
+            return inventory;
+        }
+
+        private Card GenerateRandomCard(int level)
+        {
+            // レベルに応じたカードを生成
+            // （実装の詳細は省略）
+            return new Card();
+        }
+
+        private int CalculatePrice(Card card, int level)
+        {
+            return BasePurchasePrice + (level * 10);
+        }
+
+        /// <summary>
+        /// カードを購入
+        /// </summary>
+        public bool PurchaseCard(Card card, int price, DeckManager deckManager)
+        {
+            if (CurrentGold >= price)
+            {
+                CurrentGold -= price;
+                deckManager.AddCardToDeck(card);
+                eventBus.Publish(new CardPurchasedEvent(card, price));
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// カードを強化（レベルアップ）
+        /// </summary>
+        public bool UpgradeCard(Card card, int price)
+        {
+            if (CurrentGold >= price)
+            {
+                CurrentGold -= price;
+                cardSystem.EvolveCard(card);
+                eventBus.Publish(new CardUpgradedEvent(card, price));
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// カードをデッキから削除
+        /// </summary>
+        public bool RemoveCard(Card card, int price, DeckManager deckManager)
+        {
+            if (CurrentGold >= price)
+            {
+                CurrentGold -= price;
+                deckManager.RemoveCardFromDeck(card.Id);
+                eventBus.Publish(new CardRemovedEvent(card, price));
+                return true;
+            }
+            return false;
+        }
+
+        public void AddGold(int amount)
+        {
+            CurrentGold += amount;
+        }
+    }
+
+    public class MerchantItem
+    {
+        public Card Card { get; set; }
+        public int Price { get; set; }
+        public MerchantItemType Type { get; set; }
+    }
+
+    public enum MerchantItemType
+    {
+        Purchase,
+        Upgrade,
+        Remove
+    }
+
+    public class CardPurchasedEvent : GameEvent
+    {
+        public Card Card { get; }
+        public int Price { get; }
+
+        public CardPurchasedEvent(Card card, int price)
+        {
+            Card = card;
+            Price = price;
+        }
+    }
+
+    public class CardUpgradedEvent : GameEvent
+    {
+        public Card Card { get; }
+        public int Price { get; }
+
+        public CardUpgradedEvent(Card card, int price)
+        {
+            Card = card;
+            Price = price;
+        }
+    }
+
+    public class CardRemovedEvent : GameEvent
+    {
+        public Card Card { get; }
+        public int Price { get; }
+
+        public CardRemovedEvent(Card card, int price)
+        {
+            Card = card;
+            Price = price;
+        }
+    }
+}
+```
+
+---
+
+## 実験・魔物ノードシステム
+
+### ExperimentSystem (Domain Layer) - REQ-016-1
+
+```csharp
+namespace Atelier.Domain
+{
+    using Atelier.Core;
+
+    /// <summary>
+    /// 実験ノードシステム - ランダムイベント
+    /// </summary>
+    public class ExperimentSystem
+    {
+        private EventBus eventBus;
+        private System.Random rng;
+
+        public ExperimentSystem(EventBus eventBus, System.Random rng)
+        {
+            this.eventBus = eventBus;
+            this.rng = rng;
+        }
+
+        /// <summary>
+        /// 実験イベントを実行
+        /// </summary>
+        public ExperimentResult RunExperiment(int level, DeckManager deckManager)
+        {
+            // 成功率は50〜70% (レベルによって変動)
+            int successChance = 50 + (level * 2);
+            int roll = rng.Next(100);
+
+            if (roll < successChance)
+            {
+                return HandleSuccess(level, deckManager);
+            }
+            else
+            {
+                return HandleFailure(deckManager);
+            }
+        }
+
+        private ExperimentResult HandleSuccess(int level, DeckManager deckManager)
+        {
+            // 成功時: 強力なカードまたはアーティファクトを獲得
+            var result = new ExperimentResult
+            {
+                Success = true,
+                Message = "実験は成功した！強力なカードを獲得した。",
+                RewardType = ExperimentRewardType.RareCard
+            };
+
+            eventBus.Publish(new ExperimentSuccessEvent(result));
+            return result;
+        }
+
+        private ExperimentResult HandleFailure(DeckManager deckManager)
+        {
+            // 失敗時: 暴発（ランダムでカードを1枚ロスト）
+            if (deckManager.DrawPile.Count > 0)
+            {
+                int randomIndex = rng.Next(deckManager.DrawPile.Count);
+                var lostCard = deckManager.DrawPile[randomIndex];
+                deckManager.DrawPile.RemoveAt(randomIndex);
+
+                var result = new ExperimentResult
+                {
+                    Success = false,
+                    Message = $"実験は失敗し、暴発した！{lostCard.Name}を失った。",
+                    LostCard = lostCard
+                };
+
+                eventBus.Publish(new ExperimentFailureEvent(result));
+                return result;
+            }
+
+            return new ExperimentResult
+            {
+                Success = false,
+                Message = "実験は失敗したが、幸いカードは失わなかった。"
+            };
+        }
+    }
+
+    public class ExperimentResult
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; }
+        public ExperimentRewardType RewardType { get; set; }
+        public ICard LostCard { get; set; }
+    }
+
+    public enum ExperimentRewardType
+    {
+        None,
+        RareCard,
+        Artifact,
+        Gold
+    }
+
+    public class ExperimentSuccessEvent : GameEvent
+    {
+        public ExperimentResult Result { get; }
+
+        public ExperimentSuccessEvent(ExperimentResult result)
+        {
+            Result = result;
+        }
+    }
+
+    public class ExperimentFailureEvent : GameEvent
+    {
+        public ExperimentResult Result { get; }
+
+        public ExperimentFailureEvent(ExperimentResult result)
+        {
+            Result = result;
+        }
+    }
+}
+```
+
+### MonsterSystem (Domain Layer) - REQ-016-2
+
+```csharp
+namespace Atelier.Domain
+{
+    using System.Collections.Generic;
+    using Atelier.Core;
+
+    /// <summary>
+    /// 魔物ノードシステム - 素材入手のための戦闘
+    /// </summary>
+    public class MonsterSystem
+    {
+        private EventBus eventBus;
+        private System.Random rng;
+
+        public MonsterSystem(EventBus eventBus, System.Random rng)
+        {
+            this.eventBus = eventBus;
+            this.rng = rng;
+        }
+
+        /// <summary>
+        /// 魔物戦闘を生成
+        /// </summary>
+        public MonsterEncounter GenerateEncounter(int level)
+        {
+            var monsterType = GetRandomMonsterType();
+            var hp = 20 + (level * 5);
+
+            return new MonsterEncounter
+            {
+                MonsterName = GetMonsterName(monsterType),
+                MonsterType = monsterType,
+                CurrentHP = hp,
+                MaxHP = hp,
+                Level = level,
+                Drops = GenerateDrops(monsterType, level)
+            };
+        }
+
+        private MonsterType GetRandomMonsterType()
+        {
+            var types = System.Enum.GetValues(typeof(MonsterType));
+            return (MonsterType)types.GetValue(rng.Next(types.Length));
+        }
+
+        private string GetMonsterName(MonsterType type)
+        {
+            switch (type)
+            {
+                case MonsterType.Slime: return "スライム";
+                case MonsterType.Golem: return "ゴーレム";
+                case MonsterType.Dragon: return "ドラゴン";
+                case MonsterType.Spirit: return "精霊";
+                default: return "魔物";
+            }
+        }
+
+        private List<Card> GenerateDrops(MonsterType type, int level)
+        {
+            var drops = new List<Card>();
+
+            // 魔物タイプに応じた素材カードをドロップ
+            switch (type)
+            {
+                case MonsterType.Slime:
+                    // 水属性素材
+                    drops.Add(CreateMaterialCard("スライムの核", 0, 5, 0, 0));
+                    break;
+                case MonsterType.Golem:
+                    // 地属性素材
+                    drops.Add(CreateMaterialCard("ゴーレムの欠片", 0, 0, 5, 0));
+                    break;
+                case MonsterType.Dragon:
+                    // 火属性素材
+                    drops.Add(CreateMaterialCard("ドラゴンの鱗", 5, 0, 0, 0));
+                    break;
+                case MonsterType.Spirit:
+                    // 風属性素材
+                    drops.Add(CreateMaterialCard("精霊の涙", 0, 0, 0, 5));
+                    break;
+            }
+
+            return drops;
+        }
+
+        private Card CreateMaterialCard(string name, int fire, int water, int earth, int wind)
+        {
+            return new Card
+            {
+                Id = System.Guid.NewGuid().ToString(),
+                Name = name,
+                Type = CardType.Material,
+                Cost = 1,
+                Attributes = new CardAttributes
+                {
+                    Fire = fire,
+                    Water = water,
+                    Earth = earth,
+                    Wind = wind,
+                    Quality = 3
+                },
+                Stability = 1,
+                Description = $"{name}を手に入れた",
+                Level = 1
+            };
+        }
+
+        /// <summary>
+        /// 魔物にダメージを与える
+        /// </summary>
+        public bool DealDamage(MonsterEncounter monster, int damage)
+        {
+            monster.CurrentHP -= damage;
+
+            if (monster.CurrentHP <= 0)
+            {
+                eventBus.Publish(new MonsterDefeatedEvent(monster));
+                return true; // 撃破
+            }
+
+            return false;
+        }
+    }
+
+    public class MonsterEncounter
+    {
+        public string MonsterName { get; set; }
+        public MonsterType MonsterType { get; set; }
+        public int CurrentHP { get; set; }
+        public int MaxHP { get; set; }
+        public int Level { get; set; }
+        public List<Card> Drops { get; set; }
+    }
+
+    public enum MonsterType
+    {
+        Slime,
+        Golem,
+        Dragon,
+        Spirit
+    }
+
+    public class MonsterDefeatedEvent : GameEvent
+    {
+        public MonsterEncounter Monster { get; }
+
+        public MonsterDefeatedEvent(MonsterEncounter monster)
+        {
+            Monster = monster;
+        }
+    }
+}
+```
+
+---
+
+## オーディオシステム
+
+### AudioManager (Infrastructure Layer) - REQ-049, REQ-050
+
+```csharp
+namespace Atelier.Infrastructure
+{
+    using UnityEngine;
+    using System.Collections.Generic;
+
+    /// <summary>
+    /// オーディオ管理システム - BGM・SE管理
+    /// </summary>
+    public class AudioManager : MonoBehaviour
+    {
+        public static AudioManager Instance { get; private set; }
+
+        [Header("Audio Sources")]
+        private AudioSource bgmSource;
+        private List<AudioSource> seSourcePool;
+        private const int SEPoolSize = 10;
+
+        [Header("Audio Clips")]
+        private Dictionary<string, AudioClip> bgmClips;
+        private Dictionary<string, AudioClip> seClips;
+
+        [Header("Volume Settings")]
+        private float bgmVolume = 0.7f;
+        private float seVolume = 0.8f;
+
+        private string currentBGMId;
+
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+
+            InitializeAudioSources();
+            LoadAudioClips();
+        }
+
+        private void InitializeAudioSources()
+        {
+            // BGM用AudioSource
+            bgmSource = gameObject.AddComponent<AudioSource>();
+            bgmSource.loop = true;
+            bgmSource.playOnAwake = false;
+            bgmSource.volume = bgmVolume;
+
+            // SE用AudioSourceプール
+            seSourcePool = new List<AudioSource>();
+            for (int i = 0; i < SEPoolSize; i++)
+            {
+                var seSource = gameObject.AddComponent<AudioSource>();
+                seSource.playOnAwake = false;
+                seSource.volume = seVolume;
+                seSourcePool.Add(seSource);
+            }
+        }
+
+        private void LoadAudioClips()
+        {
+            bgmClips = new Dictionary<string, AudioClip>();
+            seClips = new Dictionary<string, AudioClip>();
+
+            // Resources フォルダから読み込み
+            LoadClipsFromResources("Audio/BGM", bgmClips);
+            LoadClipsFromResources("Audio/SE", seClips);
+        }
+
+        private void LoadClipsFromResources(string path, Dictionary<string, AudioClip> dictionary)
+        {
+            var clips = Resources.LoadAll<AudioClip>(path);
+            foreach (var clip in clips)
+            {
+                dictionary[clip.name] = clip;
+            }
+        }
+
+        /// <summary>
+        /// BGMを再生
+        /// </summary>
+        public void PlayBGM(string bgmId, bool fade = true)
+        {
+            if (currentBGMId == bgmId && bgmSource.isPlaying)
+                return;
+
+            if (bgmClips.TryGetValue(bgmId, out AudioClip clip))
+            {
+                if (fade && bgmSource.isPlaying)
+                {
+                    StartCoroutine(FadeOutAndPlayBGM(clip, bgmId));
+                }
+                else
+                {
+                    bgmSource.clip = clip;
+                    bgmSource.Play();
+                    currentBGMId = bgmId;
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"BGM not found: {bgmId}");
+            }
+        }
+
+        /// <summary>
+        /// SEを再生
+        /// </summary>
+        public void PlaySE(string seId)
+        {
+            if (seClips.TryGetValue(seId, out AudioClip clip))
+            {
+                var availableSource = GetAvailableSESource();
+                if (availableSource != null)
+                {
+                    availableSource.PlayOneShot(clip);
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"SE not found: {seId}");
+            }
+        }
+
+        private AudioSource GetAvailableSESource()
+        {
+            foreach (var source in seSourcePool)
+            {
+                if (!source.isPlaying)
+                    return source;
+            }
+            return seSourcePool[0]; // フォールバック
+        }
+
+        /// <summary>
+        /// BGM音量を設定
+        /// </summary>
+        public void SetBGMVolume(float volume)
+        {
+            bgmVolume = Mathf.Clamp01(volume);
+            bgmSource.volume = bgmVolume;
+        }
+
+        /// <summary>
+        /// SE音量を設定
+        /// </summary>
+        public void SetSEVolume(float volume)
+        {
+            seVolume = Mathf.Clamp01(volume);
+            foreach (var source in seSourcePool)
+            {
+                source.volume = seVolume;
+            }
+        }
+
+        /// <summary>
+        /// BGMを停止
+        /// </summary>
+        public void StopBGM(bool fade = true)
+        {
+            if (fade)
+            {
+                StartCoroutine(FadeOutBGM());
+            }
+            else
+            {
+                bgmSource.Stop();
+                currentBGMId = null;
+            }
+        }
+
+        private System.Collections.IEnumerator FadeOutAndPlayBGM(AudioClip newClip, string newBgmId)
+        {
+            float fadeTime = 1.0f;
+            float elapsedTime = 0f;
+            float startVolume = bgmSource.volume;
+
+            while (elapsedTime < fadeTime)
+            {
+                elapsedTime += Time.deltaTime;
+                bgmSource.volume = Mathf.Lerp(startVolume, 0f, elapsedTime / fadeTime);
+                yield return null;
+            }
+
+            bgmSource.Stop();
+            bgmSource.clip = newClip;
+            bgmSource.volume = bgmVolume;
+            bgmSource.Play();
+            currentBGMId = newBgmId;
+        }
+
+        private System.Collections.IEnumerator FadeOutBGM()
+        {
+            float fadeTime = 1.0f;
+            float elapsedTime = 0f;
+            float startVolume = bgmSource.volume;
+
+            while (elapsedTime < fadeTime)
+            {
+                elapsedTime += Time.deltaTime;
+                bgmSource.volume = Mathf.Lerp(startVolume, 0f, elapsedTime / fadeTime);
+                yield return null;
+            }
+
+            bgmSource.Stop();
+            bgmSource.volume = bgmVolume;
+            currentBGMId = null;
+        }
+
+        public float GetBGMVolume() => bgmVolume;
+        public float GetSEVolume() => seVolume;
+    }
+}
+```
+
+---
+
+## カードエフェクト実装例
+
+### 具体的なCardEffect実装
+
+```csharp
+namespace Atelier.Domain
+{
+    using Atelier.Core;
+
+    /// <summary>
+    /// 属性値を倍化するエフェクト
+    /// </summary>
+    public class MultiplyAttributeEffect : CardEffect
+    {
+        public string TargetAttribute { get; set; } // "fire", "water", etc.
+        public float Multiplier { get; set; }
+
+        public override void Apply(IQuest quest)
+        {
+            switch (TargetAttribute.ToLower())
+            {
+                case "fire":
+                    quest.Progress.CurrentAttributes.Fire =
+                        (int)(quest.Progress.CurrentAttributes.Fire * Multiplier);
+                    break;
+                case "water":
+                    quest.Progress.CurrentAttributes.Water =
+                        (int)(quest.Progress.CurrentAttributes.Water * Multiplier);
+                    break;
+                case "earth":
+                    quest.Progress.CurrentAttributes.Earth =
+                        (int)(quest.Progress.CurrentAttributes.Earth * Multiplier);
+                    break;
+                case "wind":
+                    quest.Progress.CurrentAttributes.Wind =
+                        (int)(quest.Progress.CurrentAttributes.Wind * Multiplier);
+                    break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// カードをドローするエフェクト
+    /// </summary>
+    public class DrawCardEffect : CardEffect
+    {
+        public int DrawCount { get; set; }
+
+        public override void Apply(IQuest quest)
+        {
+            var deckManager = GameManager.Instance.DeckManager;
+            deckManager.DrawCards(DrawCount);
+        }
+    }
+
+    /// <summary>
+    /// 安定値を増加させるエフェクト
+    /// </summary>
+    public class StabilizeEffect : CardEffect
+    {
+        public int StabilityBonus { get; set; }
+
+        public override void Apply(IQuest quest)
+        {
+            quest.Progress.CurrentStability += StabilityBonus;
+        }
+    }
+
+    /// <summary>
+    /// 全属性値を増加させるエフェクト
+    /// </summary>
+    public class BoostAllAttributesEffect : CardEffect
+    {
+        public int BoostAmount { get; set; }
+
+        public override void Apply(IQuest quest)
+        {
+            quest.Progress.CurrentAttributes.Fire += BoostAmount;
+            quest.Progress.CurrentAttributes.Water += BoostAmount;
+            quest.Progress.CurrentAttributes.Earth += BoostAmount;
+            quest.Progress.CurrentAttributes.Wind += BoostAmount;
+        }
+    }
+
+    /// <summary>
+    /// エネルギーを回復するエフェクト
+    /// </summary>
+    public class RestoreEnergyEffect : CardEffect
+    {
+        public int EnergyAmount { get; set; }
+
+        public override void Apply(IQuest quest)
+        {
+            // DeckManagerのcurrentEnergyに直接アクセスできないため、
+            // イベントを発行してUI側で処理
+            var eventBus = GameManager.Instance.EventBus;
+            eventBus.Publish(new EnergyRestoredEvent(EnergyAmount));
+        }
+    }
+
+    public class EnergyRestoredEvent : GameEvent
+    {
+        public int Amount { get; }
+
+        public EnergyRestoredEvent(int amount)
+        {
+            Amount = amount;
         }
     }
 }
@@ -2008,6 +3157,7 @@ namespace Atelier.Infrastructure
 | 日付 | バージョン | 変更内容 |
 |------|----------|---------|
 | 2025-11-08 | 1.0 | 初版作成 |
+| 2025-11-08 | 1.1 | レビュー指摘事項の反映: <br>- 入力システム(InputManager)を追加 (REQ-005対応)<br>- UIアンドゥ機能(CommandManager + ICommand)を追加 (REQ-047-1対応)<br>- 報酬選択システム(RewardSystem)を追加 (REQ-036詳細化)<br>- 商人システム(MerchantSystem)を追加 (REQ-037詳細化)<br>- オーディオシステム(AudioManager)を追加 (REQ-049, REQ-050対応)<br>- 実験ノードシステム(ExperimentSystem)を追加 (REQ-016-1対応)<br>- 魔物ノードシステム(MonsterSystem)を追加 (REQ-016-2対応)<br>- カードエフェクト実装例を5種追加<br>- Quest.currentStabilityの二重管理を修正 (Progress.CurrentStabilityに統一)<br>- DeckManager.rngの初期化を改善 (コンストラクタで初期化)<br>- MapSystem.ConnectNodes()のLINQ最適化 (maxLevelを事前計算) |
 
 ---
 
