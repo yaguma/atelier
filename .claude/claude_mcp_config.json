@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "unity-compile-server": {
+      "command": "http",
+      "args": ["http://localhost:56780/mcp"],
+      "transport": "http",
+      "description": "Unity MCP Server"
+    }
+  }
+}
+
+
