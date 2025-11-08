@@ -1,0 +1,8 @@
+{
+  "defaultMapSize": 10,
+  "minRoomSize": 3,
+  "maxRoomSize": 7,
+  "maxRooms": 15,
+  "corridorWidth": 1,
+  "randomSeed": null
+}

@@ -82,12 +82,32 @@
 
 詳細は `/home/syagu/work/atelier/docs/implements/atelier/TASK-0001/` を参照してください。
 
+### TASK-0002: フォルダ構造作成
+
+- **実装日**: 2025-11-08
+- **概要**: Unityプロジェクトのフォルダ構造とアセット配置
+- **作成内容**:
+  - 27個のディレクトリを作成
+  - レイヤー構造準拠のScriptsフォルダ構成 (Core/Domain/Application/Infrastructure/Presentation/Tests)
+  - 7つの基本シーンファイル (Boot/Title/StyleSelect/Map/Quest/Merchant/Result)
+  - 4つの設定ファイル (card_config.json, quest_config.json, alchemy_style_config.json, map_generation_config.json)
+- **フォルダ構造**:
+  - `Assets/Scenes/`: ゲームシーン格納
+  - `Assets/Scripts/`: レイヤー構造でスクリプト管理
+  - `Assets/Prefabs/`: UI/Cardsのプレハブ格納
+  - `Assets/Sprites/`: 画像アセット格納
+  - `Assets/Resources/Config/`: 設定ファイル格納
+  - `Assets/Resources/Audio/`: BGM/SE格納
+- **動作確認**: フォルダ構造、シーンファイル、設定ファイルの配置を検証完了
+
+詳細は `/home/syagu/work/atelier/docs/implements/atelier/TASK-0002/` を参照してください。
+
 ## 開発状況
 
 現在Phase 1（インフラ基盤構築）を進行中
 
 - [x] TASK-0001: Unityプロジェクトセットアップ (ファイルベース完了、Unity Editorでの確認待ち)
-- [ ] TASK-0002: フォルダ構造作成
+- [x] TASK-0002: フォルダ構造作成 (完了)
 - [ ] TASK-0003: SaveDataRepository実装
 - [ ] TASK-0004: ConfigDataLoader実装
 - [ ] TASK-0005: RandomGenerator実装
