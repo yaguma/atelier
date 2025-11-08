@@ -10,6 +10,7 @@
 ## TASK-0029: AudioManager実装
 
 **タスクID**: TASK-0029
+**GitHub Issue**: [#31](https://github.com/yaguma/atelier/issues/31)
 **タスク名**: AudioManager実装
 **推定工数**: 16h
 **タスクタイプ**: DIRECT

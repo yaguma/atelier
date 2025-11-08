@@ -10,6 +10,7 @@
 ## TASK-0015: DeckManager実装
 
 **タスクID**: TASK-0015
+**GitHub Issue**: [#17](https://github.com/yaguma/atelier/issues/17)
 **タスク名**: DeckManager実装
 **推定工数**: 20h
 **タスクタイプ**: TDD
@@ -235,6 +236,7 @@ public void RemoveCardFromDeck_RemovesSpecifiedCard()
 ## TASK-0016: MapSystem / MapNode実装
 
 **タスクID**: TASK-0016
+**GitHub Issue**: [#18](https://github.com/yaguma/atelier/issues/18)
 **タスク名**: MapSystem / MapNode実装
 **推定工数**: 20h
 **タスクタイプ**: TDD
@@ -427,6 +429,7 @@ public void GenerateMap_CreatesBossNodeAtEnd()
 ## TASK-0017: MetaProgressionSystem実装
 
 **タスクID**: TASK-0017
+**GitHub Issue**: [#19](https://github.com/yaguma/atelier/issues/19)
 **タスク名**: MetaProgressionSystem実装
 **推定工数**: 16h
 **タスクタイプ**: TDD
@@ -567,6 +570,7 @@ public void UnlockCard_DeductsKnowledgePoints()
 ## TASK-0018: マップ生成アルゴリズム実装
 
 **タスクID**: TASK-0018
+**GitHub Issue**: [#20](https://github.com/yaguma/atelier/issues/20)
 **タスク名**: マップ生成アルゴリズム実装
 **推定工数**: 16h
 **タスクタイプ**: TDD
@@ -656,6 +660,7 @@ public void ConnectNodes_AllNodesAreReachable()
 ## TASK-0019: シード値管理とRNG統合
 
 **タスクID**: TASK-0019
+**GitHub Issue**: [#21](https://github.com/yaguma/atelier/issues/21)
 **タスク名**: シード値管理とRNG統合
 **推定工数**: 8h
 **タスクタイプ**: TDD

@@ -10,6 +10,7 @@
 ## TASK-0008: コアインターフェース定義
 
 **タスクID**: TASK-0008
+**GitHub Issue**: [#10](https://github.com/yaguma/atelier/issues/10)
 **タスク名**: コアインターフェース定義
 **推定工数**: 8h
 **タスクタイプ**: TDD
@@ -105,6 +106,7 @@ namespace Atelier.Core
 ## TASK-0009: CardAttributes / CardType実装
 
 **タスクID**: TASK-0009
+**GitHub Issue**: [#11](https://github.com/yaguma/atelier/issues/11)
 **タスク名**: CardAttributes / CardType実装
 **推定工数**: 8h
 **タスクタイプ**: TDD
@@ -190,6 +192,7 @@ namespace Atelier.Domain
 ## TASK-0010: Card クラス実装
 
 **タスクID**: TASK-0010
+**GitHub Issue**: [#12](https://github.com/yaguma/atelier/issues/12)
 **タスク名**: Card クラス実装
 **推定工数**: 12h
 **タスクタイプ**: TDD
@@ -290,6 +293,7 @@ public void Play_AppliesCardToQuest()
 ## TASK-0011: CardEffect 基底クラスと具体実装
 
 **タスクID**: TASK-0011
+**GitHub Issue**: [#13](https://github.com/yaguma/atelier/issues/13)
 **タスク名**: CardEffect 基底クラスと具体実装
 **推定工数**: 12h
 **タスクタイプ**: TDD
@@ -374,6 +378,7 @@ public class BoostAllAttributesEffect : CardEffect
 ## TASK-0012: Quest / QuestRequirements実装
 
 **タスクID**: TASK-0012
+**GitHub Issue**: [#14](https://github.com/yaguma/atelier/issues/14)
 **タスク名**: Quest / QuestRequirements実装
 **推定工数**: 12h
 **タスクタイプ**: TDD
@@ -505,6 +510,7 @@ public void ApplyCard_TriggersExplosion_WhenStabilityBelowZero()
 ## TASK-0013: CardSystem実装
 
 **タスクID**: TASK-0013
+**GitHub Issue**: [#15](https://github.com/yaguma/atelier/issues/15)
 **タスク名**: CardSystem実装
 **推定工数**: 12h
 **タスクタイプ**: TDD
@@ -596,6 +602,7 @@ namespace Atelier.Domain
 ## TASK-0014: QuestSystem実装
 
 **タスクID**: TASK-0014
+**GitHub Issue**: [#16](https://github.com/yaguma/atelier/issues/16)
 **タスク名**: QuestSystem実装
 **推定工数**: 8h
 **タスクタイプ**: TDD

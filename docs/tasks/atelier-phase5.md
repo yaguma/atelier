@@ -10,6 +10,7 @@
 ## TASK-0024: EventBus実装
 
 **タスクID**: TASK-0024
+**GitHub Issue**: [#26](https://github.com/yaguma/atelier/issues/26)
 **タスク名**: EventBus実装
 **推定工数**: 12h
 **タスクタイプ**: TDD
@@ -183,6 +184,7 @@ public void Unsubscribe_RemovesHandler()
 ## TASK-0025: GameStateManager実装
 
 **タスクID**: TASK-0025
+**GitHub Issue**: [#27](https://github.com/yaguma/atelier/issues/27)
 **タスク名**: GameStateManager実装
 **推定工数**: 16h
 **タスクタイプ**: TDD
@@ -332,6 +334,7 @@ public void TransitionBack_RestoresPreviousState()
 ## TASK-0026: GameManager実装
 
 **タスクID**: TASK-0026
+**GitHub Issue**: [#28](https://github.com/yaguma/atelier/issues/28)
 **タスク名**: GameManager実装
 **推定工数**: 20h
 **タスクタイプ**: TDD
@@ -500,6 +503,7 @@ public void StartNewGame_InitializesSystems()
 ## TASK-0027: InputManager実装
 
 **タスクID**: TASK-0027
+**GitHub Issue**: [#29](https://github.com/yaguma/atelier/issues/29)
 **タスク名**: InputManager実装
 **推定工数**: 12h
 **タスクタイプ**: TDD
@@ -657,6 +661,7 @@ public void OnMouseClick_FiresEvent_WhenMouseClicked()
 ## TASK-0028: CommandManager (アンドゥ機能)実装
 
 **タスクID**: TASK-0028
+**GitHub Issue**: [#30](https://github.com/yaguma/atelier/issues/30)
 **タスク名**: CommandManager (アンドゥ機能)実装
 **推定工数**: 12h
 **タスクタイプ**: TDD

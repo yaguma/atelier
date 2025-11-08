@@ -10,6 +10,7 @@
 ## TASK-0030: BootScene実装
 
 **タスクID**: TASK-0030
+**GitHub Issue**: [#32](https://github.com/yaguma/atelier/issues/32)
 **タスク名**: BootScene実装
 **推定工数**: 16h
 **タスクタイプ**: TDD
@@ -180,6 +181,7 @@ public void LoadConfigData_LoadsAllConfigs()
 ## TASK-0031: TitleScene実装
 
 **タスクID**: TASK-0031
+**GitHub Issue**: [#33](https://github.com/yaguma/atelier/issues/33)
 **タスク名**: TitleScene実装
 **推定工数**: 20h
 **タスクタイプ**: TDD
@@ -378,6 +380,7 @@ public void OnNewGameClicked_LoadsStyleSelectScene()
 ## TASK-0032: StyleSelectScene実装
 
 **タスクID**: TASK-0032
+**GitHub Issue**: [#34](https://github.com/yaguma/atelier/issues/34)
 **タスク名**: StyleSelectScene実装
 **推定工数**: 20h
 **タスクタイプ**: TDD
@@ -562,6 +565,7 @@ public void SelectStyle_DisplaysStyleInfo()
 ## TASK-0033: シーン遷移統合テスト
 
 **タスクID**: TASK-0033
+**GitHub Issue**: [#35](https://github.com/yaguma/atelier/issues/35)
 **タスク名**: シーン遷移統合テスト
 **推定工数**: 16h
 **タスクタイプ**: TDD

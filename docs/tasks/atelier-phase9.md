@@ -10,6 +10,7 @@
 ## TASK-0037: MerchantScene実装
 
 **タスクID**: TASK-0037
+**GitHub Issue**: [#39](https://github.com/yaguma/atelier/issues/39)
 **タスク名**: MerchantScene実装
 **推定工数**: 24h
 **タスクタイプ**: TDD
@@ -361,6 +362,7 @@ public void ShowPurchaseTab_DisplaysShopInventory()
 ## TASK-0038: ResultScene実装
 
 **タスクID**: TASK-0038
+**GitHub Issue**: [#40](https://github.com/yaguma/atelier/issues/40)
 **タスク名**: ResultScene実装
 **推定工数**: 24h
 **タスクタイプ**: TDD
@@ -618,6 +620,7 @@ public void DisplayMetaCurrency_IncreasesMetaData()
 ## TASK-0039: ExperimentNode / MonsterNode UI実装
 
 **タスクID**: TASK-0039
+**GitHub Issue**: [#41](https://github.com/yaguma/atelier/issues/41)
 **タスク名**: ExperimentNode / MonsterNode UI実装
 **推定工数**: 16h
 **タスクタイプ**: TDD

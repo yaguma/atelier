@@ -10,6 +10,7 @@
 ## TASK-0001: Unityプロジェクトセットアップ
 
 **タスクID**: TASK-0001
+**GitHub Issue**: [#3](https://github.com/yaguma/atelier/issues/3)
 **タスク名**: Unityプロジェクトセットアップ
 **推定工数**: 8h
 **タスクタイプ**: DIRECT
@@ -77,6 +78,7 @@ Player Settings:
 ## TASK-0002: フォルダ構造作成
 
 **タスクID**: TASK-0002
+**GitHub Issue**: [#4](https://github.com/yaguma/atelier/issues/4)
 **タスク名**: フォルダ構造作成
 **推定工数**: 4h
 **タスクタイプ**: DIRECT
@@ -150,6 +152,7 @@ Assets/
 
 ## TASK-0003: SaveDataRepository実装
 
+**GitHub Issue**: [#5](https://github.com/yaguma/atelier/issues/5)
 **タスクID**: TASK-0003
 **タスク名**: SaveDataRepository実装
 **推定工数**: 8h
@@ -222,6 +225,7 @@ namespace Atelier.Infrastructure
 
 ---
 
+**GitHub Issue**: [#6](https://github.com/yaguma/atelier/issues/6)
 ## TASK-0004: ConfigDataLoader実装
 
 **タスクID**: TASK-0004
@@ -291,6 +295,7 @@ namespace Atelier.Infrastructure
 - ファイル欠損時の挙動を確認
 - 不正なJSON形式での挙動を確認
 
+**GitHub Issue**: [#7](https://github.com/yaguma/atelier/issues/7)
 ---
 
 ## TASK-0005: RandomGenerator実装
@@ -355,6 +360,7 @@ namespace Atelier.Infrastructure
 - シード値なしで異なる結果になることを確認
 
 ---
+**GitHub Issue**: [#8](https://github.com/yaguma/atelier/issues/8)
 
 ## TASK-0006: ErrorHandler実装
 
@@ -415,6 +421,7 @@ namespace Atelier.Infrastructure
 ### テスト要件（DIRECTタスク）
 - 各エラーハンドラーを呼び出してログが出力されることを確認
 - エラーダイアログの表示を目視確認
+**GitHub Issue**: [#9](https://github.com/yaguma/atelier/issues/9)
 
 ---
 

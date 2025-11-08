@@ -10,6 +10,7 @@
 ## TASK-0040: フルゲームプレイ統合テスト
 
 **タスクID**: TASK-0040
+**GitHub Issue**: [#42](https://github.com/yaguma/atelier/issues/42)
 **タスク名**: フルゲームプレイ統合テスト
 **推定工数**: 16h
 **タスクタイプ**: TDD
@@ -264,6 +265,7 @@ namespace Atelier.Tests.Integration
 ## TASK-0041: パフォーマンス最適化
 
 **タスクID**: TASK-0041
+**GitHub Issue**: [#43](https://github.com/yaguma/atelier/issues/43)
 **タスク名**: パフォーマンス最適化
 **推定工数**: 16h
 **タスクタイプ**: DIRECT
@@ -411,6 +413,7 @@ public class PerformanceMonitor
 ## TASK-0042: 最終バグ修正とポリッシュ
 
 **タスクID**: TASK-0042
+**GitHub Issue**: [#44](https://github.com/yaguma/atelier/issues/44)
 **タスク名**: 最終バグ修正とポリッシュ
 **推定工数**: 8h
 **タスクタイプ**: DIRECT

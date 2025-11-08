@@ -10,6 +10,7 @@
 ## TASK-0034: MapScene実装
 
 **タスクID**: TASK-0034
+**GitHub Issue**: [#36](https://github.com/yaguma/atelier/issues/36)
 **タスク名**: MapScene実装
 **推定工数**: 32h
 **タスクタイプ**: TDD
@@ -340,6 +341,7 @@ public void OnNodeClicked_TransitionsToQuestScene()
 ## TASK-0035: QuestScene実装
 
 **タスクID**: TASK-0035
+**GitHub Issue**: [#37](https://github.com/yaguma/atelier/issues/37)
 **タスク名**: QuestScene実装
 **推定工数**: 48h
 **タスクタイプ**: TDD
@@ -678,6 +680,7 @@ public void SetupQuestBoard_Creates3Quests()
 ## TASK-0036: カードUI/アニメーション実装
 
 **タスクID**: TASK-0036
+**GitHub Issue**: [#38](https://github.com/yaguma/atelier/issues/38)
 **タスク名**: カードUI/アニメーション実装
 **推定工数**: 16h
 **タスクタイプ**: TDD

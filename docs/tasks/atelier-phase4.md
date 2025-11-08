@@ -10,6 +10,7 @@
 ## TASK-0020: RewardSystem実装
 
 **タスクID**: TASK-0020
+**GitHub Issue**: [#22](https://github.com/yaguma/atelier/issues/22)
 **タスク名**: RewardSystem実装
 **推定工数**: 16h
 **タスクタイプ**: TDD
@@ -149,6 +150,7 @@ public void DetermineRarity_HigherDifficultyIncreaseRareChance()
 ## TASK-0021: MerchantSystem実装
 
 **タスクID**: TASK-0021
+**GitHub Issue**: [#23](https://github.com/yaguma/atelier/issues/23)
 **タスク名**: MerchantSystem実装
 **推定工数**: 16h
 **タスクタイプ**: TDD
@@ -354,6 +356,7 @@ public void RemoveCard_DeductsGold_AndRemovesCardFromDeck()
 ## TASK-0022: ExperimentSystem実装
 
 **タスクID**: TASK-0022
+**GitHub Issue**: [#24](https://github.com/yaguma/atelier/issues/24)
 **タスク名**: ExperimentSystem実装
 **推定工数**: 16h
 **タスクタイプ**: TDD
@@ -508,6 +511,7 @@ public void RunExperiment_Failure_LosesCard()
 ## TASK-0023: MonsterSystem実装
 
 **タスクID**: TASK-0023
+**GitHub Issue**: [#25](https://github.com/yaguma/atelier/issues/25)
 **タスク名**: MonsterSystem実装
 **推定工数**: 16h
 **タスクタイプ**: TDD
