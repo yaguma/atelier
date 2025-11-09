@@ -1,8 +1,17 @@
 {
-  "defaultMapSize": 10,
-  "minRoomSize": 3,
-  "maxRoomSize": 7,
-  "maxRooms": 15,
-  "corridorWidth": 1,
-  "randomSeed": null
+  "mapGeneration": {
+    "MinNodes": 30,
+    "MaxNodes": 50,
+    "NodesPerLevel": 5,
+    "NodeTypeWeights": {
+      "Quest": 50,
+      "Merchant": 20,
+      "Experiment": 15,
+      "Monster": 15
+    },
+    "LevelScaling": {
+      "BaseDifficulty": 1,
+      "DifficultyIncrease": 0.2
+    }
+  }
 }
