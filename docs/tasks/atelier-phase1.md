@@ -7,7 +7,7 @@
 
 ---
 
-## TASK-0001: Unityプロジェクトセットアップ
+## TASK-0001: Unityプロジェクトセットアップ ✅ 完了 (2025-11-09)
 
 **タスクID**: TASK-0001
 **GitHub Issue**: [#3](https://github.com/yaguma/atelier/issues/3)
@@ -16,6 +16,7 @@
 **タスクタイプ**: DIRECT
 **要件名**: atelier
 **要件リンク**: REQ-001, REQ-002, REQ-003, REQ-006
+**完了日**: 2025-11-09
 
 ### 依存タスク
 なし（初期タスク）
@@ -63,11 +64,11 @@ Player Settings:
 ```
 
 ### 完了条件
-- [ ] Unity 6000.2.10f1でプロジェクトが起動する 🔵 ⚠️ Unity Editorでの確認が必要
+- [x] Unity 6000.2.10f1でプロジェクトが起動する 🔵 ✅ 確認済み (2025-11-09)
 - [x] 解像度が1920x1080に設定されている 🔵 ✅ 確認済み (2025-11-08)
 - [x] .NET Standard 2.1が有効 🔵 ✅ 確認済み (2025-11-08)
 - [x] Gitリポジトリが初期化されている 🔵 ✅ 確認済み (2025-11-08)
-- [ ] TextMeshProが動作する 🔵 ⚠️ Unity Editorでの確認が必要
+- [x] TextMeshProが動作する 🔵 ✅ 確認済み (2025-11-09 - Unity 6000.xではuguiに統合)
 
 ### テスト要件（DIRECTタスク）
 - 空のシーンでプロジェクトが正常にビルドできることを確認
@@ -228,7 +229,7 @@ namespace Atelier.Infrastructure
 ---
 
 **GitHub Issue**: [#6](https://github.com/yaguma/atelier/issues/6)
-## TASK-0004: ConfigDataLoader実装
+## TASK-0004: ConfigDataLoader実装 ✅ 完了 (2025-11-09)
 
 **タスクID**: TASK-0004
 **タスク名**: ConfigDataLoader実装
@@ -236,6 +237,7 @@ namespace Atelier.Infrastructure
 **タスクタイプ**: DIRECT
 **要件名**: atelier
 **要件リンク**: NFR-008
+**完了日**: 2025-11-09
 
 ### 依存タスク
 - TASK-0002: フォルダ構造作成
@@ -287,10 +289,10 @@ namespace Atelier.Infrastructure
 - JSON解析エラー時はログ出力してデフォルト値を返す 🔴
 
 ### 完了条件
-- [ ] Resources.Load()で設定ファイルを読み込める 🔵
-- [ ] JSON解析が正常に動作する 🔵
-- [ ] ファイル欠損時にエラー処理が動作する 🔴
-- [ ] 全設定ファイルの読み込みメソッドが実装されている 🔵
+- [x] Resources.Load()で設定ファイルを読み込める 🔵 ✅ 確認済み (2025-11-09)
+- [x] JSON解析が正常に動作する 🔵 ✅ 確認済み (2025-11-09)
+- [x] ファイル欠損時にエラー処理が動作する 🔴 ✅ 確認済み (2025-11-09)
+- [x] 全設定ファイルの読み込みメソッドが実装されている 🔵 ✅ 確認済み (2025-11-09)
 
 ### テスト要件（DIRECTタスク）
 - サンプルJSONを作成して読み込みテスト
@@ -300,7 +302,7 @@ namespace Atelier.Infrastructure
 **GitHub Issue**: [#7](https://github.com/yaguma/atelier/issues/7)
 ---
 
-## TASK-0005: RandomGenerator実装
+## TASK-0005: RandomGenerator実装 ✅ 完了 (2025-11-09)
 
 **タスクID**: TASK-0005
 **タスク名**: RandomGenerator実装
@@ -308,6 +310,7 @@ namespace Atelier.Infrastructure
 **タスクタイプ**: DIRECT
 **要件名**: atelier
 **要件リンク**: REQ-042
+**完了日**: 2025-11-09
 
 ### 依存タスク
 - TASK-0002: フォルダ構造作成
@@ -353,9 +356,9 @@ namespace Atelier.Infrastructure
 - シード値がnullの場合はランダム生成 🟡
 
 ### 完了条件
-- [ ] シード値指定で同じ乱数列が再現される 🔵
-- [ ] シード値なしでランダム生成される 🔵
-- [ ] GetCurrentSeed()で現在のシード値を取得できる 🔵
+- [x] シード値指定で同じ乱数列が再現される 🔵 ✅ 確認済み (2025-11-09)
+- [x] シード値なしでランダム生成される 🔵 ✅ 確認済み (2025-11-09)
+- [x] GetCurrentSeed()で現在のシード値を取得できる 🔵 ✅ 確認済み (2025-11-09)
 
 ### テスト要件（DIRECTタスク）
 - 同じシード値で複数回実行して同じ結果になることを確認

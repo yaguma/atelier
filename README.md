@@ -15,40 +15,37 @@
 
 ## 技術スタック
 
-- **Unity**: 2021.3 LTS以降
+- **Unity**: 6000.2.10f1 (Unity 6)
 - **Platform**: Windows Standalone
 - **Resolution**: 1920x1080
 - **.NET**: Standard 2.1
+- **Scripting Backend**: Mono
 
 ## 必要なパッケージ
 
-- TextMeshPro: 3.0.6
-- Unity Test Framework: 1.1.31
-- Newtonsoft Json: 3.0.2
+- Unity Test Framework: 1.6.0
+- Newtonsoft Json: 3.2.1
+- Unity UI (uGUI): 2.0.0 (TextMeshPro統合)
 
 ## セットアップ手順
 
 ### 前提条件
 
-- Unity 2021.3 LTS以降のインストール
+- Unity 6000.2.10f1 のインストール
 - Unity Hub のインストール
 
 ### プロジェクトを開く
 
 1. Unity Hub を起動
 2. 「Add」ボタンをクリック
-3. このプロジェクトのルートディレクトリ (`/home/syagu/work/atelier`) を選択
-4. Unity 2021.3 LTS 以降のバージョンを選択してプロジェクトを開く
+3. このプロジェクトのルートディレクトリを選択
+4. Unity 6000.2.10f1 を選択してプロジェクトを開く
 
 ### 初回起動時の設定
 
 プロジェクトを初めて開いた後、以下の手順を実行してください:
 
-1. **TextMeshPro のセットアップ**
-   - Unity Editor で `Window > TextMeshPro > Import TMP Essential Resources` を実行
-   - TMP Essential Resources が自動的にインポートされます
-
-2. **プロジェクト設定の確認**
+1. **プロジェクト設定の確認**
    - `Edit > Project Settings` を開く
    - 以下の設定を確認:
      - Player > Resolution: 1920x1080
@@ -65,22 +62,23 @@
 
 ## 完了した機能
 
-### TASK-0001: Unityプロジェクトセットアップ
+### TASK-0001: Unityプロジェクトセットアップ ✅
 
-- **実装日**: 2025-11-08
-- **概要**: Unity 2021.3 LTS プロジェクトの初期設定
+- **実装日**: 2025-11-09
+- **概要**: Unity 6000.2.10f1 プロジェクトの初期設定
 - **設定内容**:
   - 解像度: 1920x1080 (Fullscreen Window)
   - .NET API Compatibility Level: .NET Standard 2.1
+  - Scripting Backend: Mono
   - VSync: Every V Blank
   - Anti Aliasing: 2x Multi Sampling
 - **インストール済みパッケージ**:
-  - TextMeshPro 3.0.6
-  - Unity Test Framework 1.1.31
-  - Newtonsoft Json 3.0.2
-- **動作確認**: ファイルベースでの設定完了 (Unity Editorでの動作確認が必要)
+  - Unity Test Framework 1.6.0
+  - Newtonsoft Json 3.2.1
+  - Unity UI (uGUI) 2.0.0 (TextMeshPro統合)
+- **動作確認**: Unity Editorでの動作確認完了 ✅
 
-詳細は `/home/syagu/work/atelier/docs/implements/atelier/TASK-0001/` を参照してください。
+詳細は `docs/implements/atelier/TASK-0001/` を参照してください。
 
 ### TASK-0002: フォルダ構造作成
 
@@ -102,15 +100,61 @@
 
 詳細は `/home/syagu/work/atelier/docs/implements/atelier/TASK-0002/` を参照してください。
 
+### TASK-0004: ConfigDataLoader実装
+
+- **実装日**: 2025-11-09
+- **概要**: Resources.Load()を使用した設定データローダーの実装
+- **実装内容**:
+  - ConfigDataLoaderクラスの実装 (Infrastructure層)
+  - Domain層クラスの追加 (Card.cs, Quest.cs, AlchemyStyle.cs)
+  - JSON設定ファイルの更新 (サンプルデータ追加)
+  - 合計13ファイル (新規9ファイル、更新4ファイル)
+- **主な機能**:
+  - `LoadCardConfig()`: カード設定の読み込み
+  - `LoadQuestConfig()`: クエスト設定の読み込み
+  - `LoadAlchemyStyleConfig()`: 錬金スタイル設定の読み込み
+  - `LoadMapGenerationConfig()`: マップ生成設定の読み込み
+- **エラーハンドリング**:
+  - ファイルが存在しない場合は空の設定オブジェクトを返す
+  - JSON解析エラー時はログ出力してデフォルト値を返す
+- **動作確認**: C#コンパイル、JSON構文チェック完了 ✅
+
+詳細は `docs/implements/atelier/TASK-0004/` を参照してください。
+
+### TASK-0005: RandomGenerator実装
+
+- **実装日**: 2025-11-09
+- **概要**: シード値管理とランダム生成クラスの実装
+- **実装内容**:
+  - RandomGeneratorクラスの実装 (Infrastructure層)
+  - System.Randomを使用した乱数生成
+  - シード値による再現可能な乱数列
+  - 合計1ファイル (新規1ファイル)
+- **主な機能**:
+  - コンストラクタ: シード値をnullable引数で受け取る
+  - `Next()`: 0以上int.MaxValue未満のランダム整数
+  - `Next(int maxValue)`: 0以上maxValue未満のランダム整数
+  - `Next(int minValue, int maxValue)`: minValue以上maxValue未満のランダム整数
+  - `NextDouble()`: 0.0以上1.0未満のランダム浮動小数点数
+  - `GetCurrentSeed()`: 現在のシード値を取得
+  - `ResetWithSeed(int seed)`: 新しいシード値でリセット
+- **特徴**:
+  - シード値指定で同じ乱数列が再現される
+  - シード値nullでランダムシードを使用
+  - マップ生成などで同じシード値を使用することで再現可能なゲームプレイを実現
+- **動作確認**: C#コンパイル、コード品質チェック完了 ✅
+
+詳細は `docs/implements/atelier/TASK-0005/` を参照してください。
+
 ## 開発状況
 
 現在Phase 1（インフラ基盤構築）を進行中
 
-- [x] TASK-0001: Unityプロジェクトセットアップ (ファイルベース完了、Unity Editorでの確認待ち)
-- [x] TASK-0002: フォルダ構造作成 (完了)
-- [ ] TASK-0003: SaveDataRepository実装
-- [ ] TASK-0004: ConfigDataLoader実装
-- [ ] TASK-0005: RandomGenerator実装
+- [x] TASK-0001: Unityプロジェクトセットアップ ✅ 完了 (2025-11-09)
+- [x] TASK-0002: フォルダ構造作成 ✅ 完了 (2025-11-08)
+- [x] TASK-0003: SaveDataRepository実装 ✅ 完了 (2025-11-08)
+- [x] TASK-0004: ConfigDataLoader実装 ✅ 完了 (2025-11-09)
+- [x] TASK-0005: RandomGenerator実装 ✅ 完了 (2025-11-09)
 - [ ] TASK-0006: ErrorHandler実装
 - [ ] TASK-0007: ObjectPool実装
 
