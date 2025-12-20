@@ -146,6 +146,33 @@
 
 詳細は `docs/implements/atelier/TASK-0005/` を参照してください。
 
+### TASK-0006: ErrorHandler実装 ✅
+
+- **実装日**: 2025-11-10
+- **概要**: エラーハンドリングシステムの実装
+- **実装内容**:
+  - ErrorHandlerクラスの実装 (Infrastructure層)
+  - エラーハンドリングメソッド (静的クラス)
+  - EditModeテストコードの作成
+  - 合計2ファイル (新規2ファイル)
+- **主な機能**:
+  - `HandleSaveError(Exception ex)`: セーブエラーハンドリング (EDGE-002: ディスク容量不足)
+  - `HandleLoadError(Exception ex)`: ロードエラーハンドリング (EDGE-001: セーブデータ破損)
+  - `HandleConfigLoadError(string configName, Exception ex)`: 設定ファイル読み込みエラー
+  - `HandleGeneralError(string message, Exception ex)`: 一般的なエラーハンドリング
+  - `ShowErrorDialog(string message)`: エラーダイアログ表示 (Unity Editor対応)
+- **エラー対応**:
+  - EDGE-001: セーブデータ破損時 - "セーブデータが破損しています。新規ゲームとして開始します。"
+  - EDGE-002: ディスク容量不足時 - "セーブデータの保存に失敗しました。ディスク容量を確認してください。"
+- **特徴**:
+  - 日本語エラーメッセージ (NFR-005)
+  - Debug.LogError/LogWarning によるログ出力
+  - Unity Editor でのダイアログ表示 (#if UNITY_EDITOR)
+  - Phase 2 でのUI統合準備完了
+- **動作確認**: C#コンパイル、テストコード実装完了 ✅
+
+詳細は `docs/implements/atelier/TASK-0006/` を参照してください。
+
 ## 開発状況
 
 現在Phase 1（インフラ基盤構築）を進行中
@@ -155,7 +182,7 @@
 - [x] TASK-0003: SaveDataRepository実装 ✅ 完了 (2025-11-08)
 - [x] TASK-0004: ConfigDataLoader実装 ✅ 完了 (2025-11-09)
 - [x] TASK-0005: RandomGenerator実装 ✅ 完了 (2025-11-09)
-- [ ] TASK-0006: ErrorHandler実装
+- [x] TASK-0006: ErrorHandler実装 ✅ 完了 (2025-11-10)
 - [ ] TASK-0007: ObjectPool実装
 
 ## トラブルシューティング
