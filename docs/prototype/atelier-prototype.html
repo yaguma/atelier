@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アトリエ錬金術 - プロトタイプ</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', 'Meiryo', sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #e94560;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        /* 状態表示エリア */
+        .status-area {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-label {
+            font-weight: bold;
+            color: #aaa;
+        }
+
+        .progress-bar {
+            width: 150px;
+            height: 20px;
+            background: #333;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 0.3s, background 0.3s;
+        }
+
+        .progress-fill.deck { background: #00ff88; }
+        .progress-fill.deck.warning { background: #ff4444; }
+        .progress-fill.energy { background: #ffc107; }
+        .progress-fill.stability { background: #00ff88; }
+        .progress-fill.stability.caution { background: #ffc107; }
+        .progress-fill.stability.danger { background: #ff4444; }
+
+        /* 依頼エリア */
+        .quests-area {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .quest-card {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #333;
+            transition: border-color 0.3s;
+        }
+
+        .quest-card.completed {
+            border-color: #00ff88;
+            background: #0a2a1a;
+        }
+
+        .quest-card.active {
+            border-color: #e94560;
+        }
+
+        .quest-name {
+            font-weight: bold;
+            color: #e94560;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .quest-req {
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+
+        .quest-progress {
+            margin-top: 10px;
+        }
+
+        .quest-progress-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .quest-progress-bar {
+            flex: 1;
+            height: 12px;
+            background: #333;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .quest-progress-fill {
+            height: 100%;
+            background: #e94560;
+            transition: width 0.3s;
+        }
+
+        .quest-progress-fill.water { background: #0f3460; }
+        .quest-progress-fill.quality { background: #9b59b6; }
+        .quest-progress-fill.complete { background: #00ff88; }
+
+        /* 安定度エリア */
+        .stability-area {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stability-status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .stability-status.safe { background: #00ff88; color: #000; }
+        .stability-status.caution { background: #ffc107; color: #000; }
+        .stability-status.danger { background: #ff4444; color: #fff; }
+
+        /* 手札エリア */
+        .hand-area {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #333;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .card:hover:not(.disabled) {
+            border-color: #e94560;
+            transform: translateY(-5px);
+        }
+
+        .card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .card-name {
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .card-cost {
+            font-size: 12px;
+            color: #ffc107;
+            margin-bottom: 8px;
+        }
+
+        .card-effect {
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+
+        .card-effect.negative {
+            color: #ff4444;
+        }
+
+        .card-category {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        .card-category.safe { background: #00ff88; color: #000; }
+        .card-category.risky { background: #ff4444; color: #fff; }
+        .card-category.prepare { background: #0f3460; color: #fff; }
+        .card-category.consume { background: #9b59b6; color: #fff; }
+        .card-category.condition { background: #ffc107; color: #000; }
+
+        /* アクションエリア */
+        .action-area {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #e94560;
+            color: #fff;
+        }
+
+        .btn-primary:hover { background: #ff6b6b; }
+
+        .btn-secondary {
+            background: #333;
+            color: #fff;
+        }
+
+        .btn-secondary:hover { background: #444; }
+
+        /* ログエリア */
+        .log-area {
+            background: #0a0a0a;
+            padding: 15px;
+            border-radius: 8px;
+            height: 150px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .log-area p {
+            margin: 3px 0;
+            color: #0f0;
+        }
+
+        .log-area p.warning { color: #ffc107; }
+        .log-area p.error { color: #ff4444; }
+        .log-area p.success { color: #00ff88; }
+
+        /* オーバーレイ */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .overlay.active { display: flex; }
+
+        .overlay-content {
+            background: #16213e;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .overlay-title {
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .overlay-title.victory { color: #00ff88; }
+        .overlay-title.defeat { color: #ff4444; }
+
+        .overlay-stats {
+            margin: 20px 0;
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .overlay-stats p { margin: 8px 0; }
+
+        /* 触媒エフェクト */
+        .catalyst-active {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #9b59b6;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+    </style>
+</head>
+<body>
+    <h1>アトリエ錬金術 - プロトタイプ</h1>
+
+    <!-- 触媒エフェクト表示 -->
+    <div id="catalyst-indicator" class="catalyst-active" style="display: none;">
+        触媒効果: 次のカード2倍!
+    </div>
+
+    <!-- 状態表示エリア -->
+    <div class="status-area">
+        <div class="status-item">
+            <span class="status-label">デッキ:</span>
+            <div class="progress-bar">
+                <div id="deck-bar" class="progress-fill deck" style="width: 100%;"></div>
+            </div>
+            <span id="deck-count">15/15</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">エネルギー:</span>
+            <div class="progress-bar">
+                <div id="energy-bar" class="progress-fill energy" style="width: 30%;"></div>
+            </div>
+            <span id="energy-count">3/10</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">ターン:</span>
+            <span id="turn-count">1</span>
+        </div>
+    </div>
+
+    <!-- 依頼エリア -->
+    <div class="quests-area" id="quests-area"></div>
+
+    <!-- 安定度エリア -->
+    <div class="stability-area">
+        <span class="status-label">安定度:</span>
+        <div class="progress-bar" style="flex: 1; max-width: 300px;">
+            <div id="stability-bar" class="progress-fill stability" style="width: 100%;"></div>
+        </div>
+        <span id="stability-count">10/10</span>
+        <span id="stability-status" class="stability-status safe">安全</span>
+    </div>
+
+    <!-- 手札エリア -->
+    <div class="hand-area" id="hand-area"></div>
+
+    <!-- アクションエリア -->
+    <div class="action-area">
+        <button class="btn btn-primary" onclick="endTurn()">ターン終了</button>
+        <button class="btn btn-secondary" onclick="resetGame()">リセット</button>
+    </div>
+
+    <!-- ログエリア -->
+    <div class="log-area" id="log-area"></div>
+
+    <!-- 結果オーバーレイ -->
+    <div class="overlay" id="result-overlay">
+        <div class="overlay-content">
+            <div id="result-title" class="overlay-title"></div>
+            <div id="result-message"></div>
+            <div class="overlay-stats" id="result-stats"></div>
+            <button class="btn btn-primary" onclick="resetGame()">もう一度プレイ</button>
+        </div>
+    </div>
+
+    <script>
+        // === カード定義 ===
+        const CARD_TEMPLATES = [
+            {
+                id: 'fire_ore',
+                name: '火の鉱石',
+                cost: 1,
+                effects: { fire: 3 },
+                category: 'safe',
+                description: '火 +3'
+            },
+            {
+                id: 'unstable_crystal',
+                name: '不安定な結晶',
+                cost: 2,
+                effects: { fire: 8, stability: -3 },
+                category: 'risky',
+                description: '火 +8, 安定 -3'
+            },
+            {
+                id: 'stabilizer',
+                name: '安定剤',
+                cost: 1,
+                effects: { stability: 5 },
+                category: 'prepare',
+                description: '安定 +5'
+            },
+            {
+                id: 'catalyst',
+                name: '触媒の粉',
+                cost: 0,
+                effects: { catalyst: true },
+                category: 'consume',
+                description: '次のカード効果2倍'
+            },
+            {
+                id: 'water_grass',
+                name: '水の草',
+                cost: 1,
+                effects: { water: 3, bonusWater: 2, bonusCondition: 'fire >= 5' },
+                category: 'condition',
+                description: '水 +3 (火5以上なら+2)'
+            }
+        ];
+
+        // === 依頼定義 ===
+        const QUEST_TEMPLATES = [
+            {
+                id: 'quest1',
+                name: '回復薬',
+                requirements: { fire: 10 },
+                reward: 2
+            },
+            {
+                id: 'quest2',
+                name: '解毒剤',
+                requirements: { water: 8, fire: 5 },
+                reward: 2
+            },
+            {
+                id: 'quest3',
+                name: '魔力薬',
+                requirements: { fire: 15, quality: 3 },
+                reward: 3
+            }
+        ];
+
+        // === 初期デッキ構成 ===
+        const INITIAL_DECK = [
+            'fire_ore', 'fire_ore', 'fire_ore', 'fire_ore', 'fire_ore',
+            'unstable_crystal', 'unstable_crystal', 'unstable_crystal',
+            'stabilizer', 'stabilizer', 'stabilizer',
+            'catalyst', 'catalyst',
+            'water_grass', 'water_grass'
+        ];
+
+        // === ゲーム状態 ===
+        let state = {
+            deck: [],
+            hand: [],
+            energy: 3,
+            maxEnergy: 10,
+            stability: 10,
+            maxStability: 10,
+            turn: 1,
+            catalystActive: false,
+            attributes: { fire: 0, water: 0, quality: 0 },
+            quests: [],
+            completedQuests: 0,
+            cardsUsed: 0,
+            gameOver: false
+        };
+
+        // === ユーティリティ ===
+        function shuffle(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function getCardTemplate(id) {
+            return CARD_TEMPLATES.find(c => c.id === id);
+        }
+
+        // === ゲーム初期化 ===
+        function startGame() {
+            state = {
+                deck: shuffle([...INITIAL_DECK]),
+                hand: [],
+                energy: 3,
+                maxEnergy: 10,
+                stability: 10,
+                maxStability: 10,
+                turn: 1,
+                catalystActive: false,
+                attributes: { fire: 0, water: 0, quality: 0 },
+                quests: QUEST_TEMPLATES.map(q => ({
+                    ...q,
+                    completed: false,
+                    progress: { fire: 0, water: 0, quality: 0 }
+                })),
+                completedQuests: 0,
+                cardsUsed: 0,
+                gameOver: false
+            };
+
+            drawCards(3);
+            updateUI();
+            log('=== ゲーム開始 ===');
+            log(`デッキ: ${state.deck.length}枚`);
+        }
+
+        // === カードを引く ===
+        function drawCards(count) {
+            for (let i = 0; i < count && state.deck.length > 0 && state.hand.length < 3; i++) {
+                const cardId = state.deck.pop();
+                state.hand.push(cardId);
+            }
+        }
+
+        // === カードをプレイ ===
+        function playCard(handIndex) {
+            if (state.gameOver) return;
+
+            const cardId = state.hand[handIndex];
+            const card = getCardTemplate(cardId);
+
+            // エネルギーチェック
+            if (state.energy < card.cost) {
+                log('エネルギーが足りません！', 'warning');
+                return;
+            }
+
+            // 暴発チェック（安定度が0以下でプレイしようとした場合）
+            if (state.stability <= 0) {
+                gameOver('explosion');
+                return;
+            }
+
+            // カードを手札から削除
+            state.hand.splice(handIndex, 1);
+            state.energy -= card.cost;
+            state.cardsUsed++;
+
+            // 効果適用
+            let multiplier = state.catalystActive ? 2 : 1;
+            let effectLog = `${card.name}を使用: `;
+            let effects = [];
+
+            if (card.effects.fire) {
+                const value = card.effects.fire * multiplier;
+                state.attributes.fire += value;
+                effects.push(`火 +${value}`);
+            }
+
+            if (card.effects.water) {
+                let value = card.effects.water * multiplier;
+                // 条件付きボーナス
+                if (card.effects.bonusWater && state.attributes.fire >= 5) {
+                    value += card.effects.bonusWater * multiplier;
+                    effects.push(`水 +${value} (ボーナス込)`);
+                } else {
+                    effects.push(`水 +${value}`);
+                }
+                state.attributes.water += value;
+            }
+
+            if (card.effects.stability) {
+                const value = card.effects.stability;
+                state.stability = Math.min(state.maxStability, state.stability + value);
+                if (value > 0) {
+                    effects.push(`安定 +${value}`);
+                } else {
+                    effects.push(`安定 ${value}`);
+                }
+            }
+
+            if (card.effects.catalyst) {
+                state.catalystActive = true;
+                effects.push('触媒効果発動');
+            } else {
+                state.catalystActive = false;
+            }
+
+            // 品質加算（火と水が両方あれば）
+            if (state.attributes.fire >= 5 && state.attributes.water >= 3) {
+                state.attributes.quality = Math.floor((state.attributes.fire + state.attributes.water) / 10);
+            }
+
+            log(effectLog + effects.join(', '));
+
+            // 暴発判定
+            if (state.stability <= 0) {
+                gameOver('explosion');
+                return;
+            }
+
+            // 依頼達成チェック
+            checkQuestCompletion();
+
+            // ゲームオーバーチェック（デッキ＋手札が0）
+            if (state.deck.length === 0 && state.hand.length === 0) {
+                gameOver('empty');
+                return;
+            }
+
+            updateUI();
+        }
+
+        // === 依頼達成チェック ===
+        function checkQuestCompletion() {
+            state.quests.forEach((quest, index) => {
+                if (quest.completed) return;
+
+                let allMet = true;
+                for (const [attr, required] of Object.entries(quest.requirements)) {
+                    if (state.attributes[attr] < required) {
+                        allMet = false;
+                        break;
+                    }
+                }
+
+                if (allMet) {
+                    quest.completed = true;
+                    state.completedQuests++;
+
+                    // 報酬: カード追加
+                    for (let i = 0; i < quest.reward; i++) {
+                        const randomCard = INITIAL_DECK[Math.floor(Math.random() * INITIAL_DECK.length)];
+                        state.deck.unshift(randomCard);
+                    }
+
+                    log(`依頼「${quest.name}」達成！ カード +${quest.reward}枚`, 'success');
+
+                    // 属性リセット（次の依頼用）
+                    state.attributes = { fire: 0, water: 0, quality: 0 };
+
+                    // 全依頼達成チェック
+                    if (state.completedQuests >= 3) {
+                        gameOver('victory');
+                    }
+                }
+            });
+        }
+
+        // === ターン終了 ===
+        function endTurn() {
+            if (state.gameOver) return;
+
+            state.turn++;
+            state.energy = Math.min(state.maxEnergy, state.energy + 3);
+            state.catalystActive = false;
+
+            // 手札補充
+            const needCards = 3 - state.hand.length;
+            if (needCards > 0 && state.deck.length > 0) {
+                drawCards(needCards);
+            }
+
+            log(`ターン${state.turn}開始: エネルギー ${state.energy}/${state.maxEnergy}`);
+
+            // デッキ警告
+            if (state.deck.length <= 10 && state.deck.length > 0) {
+                log(`⚠ デッキ残り ${state.deck.length}枚！`, 'warning');
+            }
+
+            // ゲームオーバーチェック
+            if (state.deck.length === 0 && state.hand.length === 0) {
+                gameOver('empty');
+                return;
+            }
+
+            updateUI();
+        }
+
+        // === ゲームオーバー ===
+        function gameOver(reason) {
+            state.gameOver = true;
+
+            const overlay = document.getElementById('result-overlay');
+            const title = document.getElementById('result-title');
+            const message = document.getElementById('result-message');
+            const stats = document.getElementById('result-stats');
+
+            if (reason === 'victory') {
+                title.textContent = '全依頼達成！';
+                title.className = 'overlay-title victory';
+                message.textContent = 'おめでとうございます！';
+            } else if (reason === 'explosion') {
+                title.textContent = '暴発！';
+                title.className = 'overlay-title defeat';
+                message.textContent = '安定度が限界を超えました...';
+            } else {
+                title.textContent = '在庫切れ';
+                title.className = 'overlay-title defeat';
+                message.textContent = 'デッキが空になりました...';
+            }
+
+            stats.innerHTML = `
+                <p>達成依頼: ${state.completedQuests}/3</p>
+                <p>使用カード: ${state.cardsUsed}枚</p>
+                <p>残りデッキ: ${state.deck.length}枚</p>
+                <p>ターン数: ${state.turn}</p>
+            `;
+
+            overlay.classList.add('active');
+            log(reason === 'victory' ? '=== 勝利！ ===' : '=== ゲームオーバー ===', reason === 'victory' ? 'success' : 'error');
+        }
+
+        // === リセット ===
+        function resetGame() {
+            document.getElementById('result-overlay').classList.remove('active');
+            document.getElementById('log-area').innerHTML = '';
+            startGame();
+        }
+
+        // === UI更新 ===
+        function updateUI() {
+            // デッキ
+            const deckPercent = (state.deck.length / 15) * 100;
+            const deckBar = document.getElementById('deck-bar');
+            deckBar.style.width = deckPercent + '%';
+            deckBar.className = 'progress-fill deck' + (state.deck.length <= 10 ? ' warning' : '');
+            document.getElementById('deck-count').textContent = `${state.deck.length}/15`;
+
+            // エネルギー
+            const energyPercent = (state.energy / state.maxEnergy) * 100;
+            document.getElementById('energy-bar').style.width = energyPercent + '%';
+            document.getElementById('energy-count').textContent = `${state.energy}/${state.maxEnergy}`;
+
+            // ターン
+            document.getElementById('turn-count').textContent = state.turn;
+
+            // 安定度
+            const stabPercent = (state.stability / state.maxStability) * 100;
+            const stabBar = document.getElementById('stability-bar');
+            stabBar.style.width = stabPercent + '%';
+
+            const stabStatus = document.getElementById('stability-status');
+            if (state.stability >= 7) {
+                stabBar.className = 'progress-fill stability';
+                stabStatus.textContent = '安全';
+                stabStatus.className = 'stability-status safe';
+            } else if (state.stability >= 4) {
+                stabBar.className = 'progress-fill stability caution';
+                stabStatus.textContent = '注意';
+                stabStatus.className = 'stability-status caution';
+            } else {
+                stabBar.className = 'progress-fill stability danger';
+                stabStatus.textContent = '危険';
+                stabStatus.className = 'stability-status danger';
+            }
+            document.getElementById('stability-count').textContent = `${state.stability}/${state.maxStability}`;
+
+            // 触媒インジケータ
+            document.getElementById('catalyst-indicator').style.display = state.catalystActive ? 'block' : 'none';
+
+            // 依頼
+            const questsArea = document.getElementById('quests-area');
+            questsArea.innerHTML = state.quests.map((quest, i) => {
+                const reqHtml = Object.entries(quest.requirements).map(([attr, val]) => {
+                    const current = state.attributes[attr];
+                    const percent = Math.min(100, (current / val) * 100);
+                    const isComplete = current >= val;
+                    const attrName = { fire: '火', water: '水', quality: '品質' }[attr] || attr;
+                    return `
+                        <div class="quest-progress-item">
+                            <span>${attrName}</span>
+                            <div class="quest-progress-bar">
+                                <div class="quest-progress-fill ${attr}${isComplete ? ' complete' : ''}" style="width: ${percent}%"></div>
+                            </div>
+                            <span>${current}/${val}${isComplete ? ' ✓' : ''}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="quest-card ${quest.completed ? 'completed' : ''}">
+                        <div class="quest-name">${quest.name} ${quest.completed ? '✓' : ''}</div>
+                        <div class="quest-progress">${reqHtml}</div>
+                    </div>
+                `;
+            }).join('');
+
+            // 手札
+            const handArea = document.getElementById('hand-area');
+            handArea.innerHTML = state.hand.map((cardId, i) => {
+                const card = getCardTemplate(cardId);
+                const canPlay = state.energy >= card.cost && !state.gameOver;
+                const categoryLabels = {
+                    safe: '安全',
+                    risky: '危険',
+                    prepare: '準備',
+                    consume: '消費',
+                    condition: '条件'
+                };
+
+                return `
+                    <div class="card ${canPlay ? '' : 'disabled'}" onclick="${canPlay ? `playCard(${i})` : ''}">
+                        <div class="card-name">${card.name}</div>
+                        <div class="card-cost">コスト: ${card.cost}</div>
+                        <div class="card-effect">${card.description}</div>
+                        ${card.effects.stability && card.effects.stability < 0 ? '<div class="card-effect negative">⚠ 暴発注意</div>' : ''}
+                        <span class="card-category ${card.category}">${categoryLabels[card.category]}</span>
+                    </div>
+                `;
+            }).join('');
+
+            // 手札が空の場合
+            if (state.hand.length === 0 && !state.gameOver) {
+                handArea.innerHTML = '<div style="grid-column: span 3; text-align: center; color: #666;">手札がありません</div>';
+            }
+        }
+
+        // === ログ ===
+        function log(msg, type = '') {
+            const logArea = document.getElementById('log-area');
+            const p = document.createElement('p');
+            p.textContent = '> ' + msg;
+            if (type) p.className = type;
+            logArea.appendChild(p);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        // === 初期化 ===
+        startGame();
+    </script>
+</body>
+</html>
