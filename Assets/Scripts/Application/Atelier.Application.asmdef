@@ -1,0 +1,16 @@
+{
+    "name": "Atelier.Application",
+    "rootNamespace": "Atelier.Application",
+    "references": [
+        "Atelier.Domain"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

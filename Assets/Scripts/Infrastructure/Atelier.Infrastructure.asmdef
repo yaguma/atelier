@@ -1,0 +1,17 @@
+{
+    "name": "Atelier.Infrastructure",
+    "rootNamespace": "Atelier.Infrastructure",
+    "references": [
+        "Atelier.Domain",
+        "Atelier.Application"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

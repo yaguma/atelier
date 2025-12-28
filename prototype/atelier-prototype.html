@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アトリエ錬金術ゲーム - プロトタイプ v3.1</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', 'Yu Gothic UI', sans-serif;
+            padding: 20px;
+            max-width: 850px;
+            margin: 0 auto;
+            background: #1a1a2e;
+            color: #e0e0e0;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #ffd700;
+            font-size: 22px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+
+        /* 状態表示 */
+        .state {
+            background: #16213e;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border: 1px solid #0f3460;
+        }
+        .state-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        .state-row:last-child { margin-bottom: 0; }
+        .state-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            background: #0f1a30;
+            border-radius: 4px;
+        }
+        .state-label {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        .state-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* 指標バー */
+        .bar-container {
+            background: #0a0a15;
+            border-radius: 4px;
+            height: 18px;
+            margin-top: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+        .bar {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        .bar-pioneer { background: linear-gradient(90deg, #2ecc71, #27ae60); }
+        .bar-fatigue { background: linear-gradient(90deg, #e74c3c, #c0392b); }
+        .bar-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 10px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        /* 依頼パネル */
+        .quest-panel {
+            background: #16213e;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border: 1px solid #0f3460;
+        }
+        .quest-panel h3 {
+            font-size: 12px;
+            color: #ffd700;
+            margin-bottom: 8px;
+        }
+        .quest {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            background: #0f1a30;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            border-left: 3px solid #3498db;
+        }
+        .quest.weapon { border-left-color: #e74c3c; }
+        .quest.medicine { border-left-color: #2ecc71; }
+        .quest.urgent { background: #2a1a1a; animation: pulse 1s infinite; }
+        @keyframes pulse { 50% { opacity: 0.8; } }
+        .quest-info { flex: 1; }
+        .quest-name { font-weight: bold; font-size: 13px; }
+        .quest-desc { font-size: 11px; color: #888; margin-top: 2px; }
+        .quest-deadline {
+            font-size: 12px;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: #1a2a3a;
+        }
+        .quest-deadline.urgent { color: #e74c3c; background: #2a1a1a; }
+        .no-quest { color: #666; font-style: italic; font-size: 12px; }
+
+        /* インベントリ */
+        .inventory {
+            background: #16213e;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border: 1px solid #0f3460;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .inventory h3 {
+            font-size: 12px;
+            color: #888;
+            white-space: nowrap;
+        }
+        .inventory-items {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .inv-item {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .inv-item.weapon { background: #3a2020; color: #ff8888; border: 1px solid #e74c3c; }
+        .inv-item.medicine { background: #203a20; color: #88ff88; border: 1px solid #2ecc71; }
+        .inv-empty { color: #555; font-size: 12px; }
+
+        /* ヒント */
+        .hint {
+            background: #1a2a3a;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #88ccff;
+            margin-bottom: 12px;
+            text-align: center;
+            border-left: 3px solid #3498db;
+        }
+
+        /* アクションボタン */
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .actions button {
+            padding: 12px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            border: 2px solid #0f3460;
+            background: #16213e;
+            color: #e0e0e0;
+            border-radius: 8px;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .actions button:hover:not(:disabled) {
+            background: #1f2d4a;
+            border-color: #ffd700;
+            transform: translateY(-2px);
+        }
+        .actions button:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+        .actions button .btn-title {
+            font-weight: bold;
+            font-size: 13px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .actions button .btn-desc {
+            font-size: 10px;
+            color: #888;
+            display: block;
+        }
+        .actions button .btn-effect {
+            font-size: 10px;
+            color: #2ecc71;
+            display: block;
+            margin-top: 2px;
+        }
+        .actions button.no-turn .btn-effect { color: #888; }
+
+        /* ログ */
+        .log {
+            background: #0a0a15;
+            color: #88ff88;
+            padding: 12px;
+            height: 160px;
+            overflow-y: auto;
+            font-size: 11px;
+            border-radius: 8px;
+            border: 1px solid #0f3460;
+            font-family: monospace;
+        }
+        .log p { margin: 2px 0; }
+        .log .turn-marker { color: #ffd700; font-weight: bold; }
+        .log .success { color: #2ecc71; }
+        .log .warning { color: #f39c12; }
+        .log .danger { color: #e74c3c; }
+        .log .info { color: #3498db; }
+        .log .event { color: #9b59b6; }
+
+        /* リセット */
+        .reset {
+            margin-top: 12px;
+            text-align: center;
+        }
+        .reset button {
+            padding: 10px 35px;
+            font-size: 14px;
+            cursor: pointer;
+            background: #e74c3c;
+            border: none;
+            color: white;
+            border-radius: 8px;
+        }
+        .reset button:hover { background: #c0392b; }
+
+        /* 終了メッセージ */
+        .game-over {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 22px;
+            text-align: center;
+            margin: 12px 0;
+            padding: 18px;
+            background: rgba(231, 76, 60, 0.15);
+            border-radius: 8px;
+            border: 2px solid #e74c3c;
+        }
+        .victory {
+            color: #2ecc71;
+            font-weight: bold;
+            font-size: 22px;
+            text-align: center;
+            margin: 12px 0;
+            padding: 18px;
+            background: rgba(46, 204, 113, 0.15);
+            border-radius: 8px;
+            border: 2px solid #2ecc71;
+        }
+        .game-over small, .victory small {
+            display: block;
+            font-size: 12px;
+            margin-top: 5px;
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+    <h1>アトリエ錬金術ゲーム</h1>
+    <div class="subtitle">「受けて、採って、混ぜて、届けろ。」</div>
+
+    <div class="hint" id="hint">
+        まずは依頼を受注しよう！
+    </div>
+
+    <div class="state">
+        <div class="state-row">
+            <div class="state-item">
+                <div class="state-label">開拓度（100%でクリア）</div>
+                <div class="bar-container">
+                    <div class="bar bar-pioneer" id="pioneer-bar" style="width: 0%"></div>
+                    <div class="bar-text" id="pioneer-text">0%</div>
+                </div>
+            </div>
+            <div class="state-item">
+                <div class="state-label">消耗度（100%でゲームオーバー）</div>
+                <div class="bar-container">
+                    <div class="bar bar-fatigue" id="fatigue-bar" style="width: 0%"></div>
+                    <div class="bar-text" id="fatigue-text">0%</div>
+                </div>
+            </div>
+        </div>
+        <div class="state-row">
+            <div class="state-item">
+                <div class="state-label">素材</div>
+                <div class="state-value" id="materials">5枚</div>
+            </div>
+            <div class="state-item">
+                <div class="state-label">お金</div>
+                <div class="state-value" id="money">50G</div>
+            </div>
+            <div class="state-item">
+                <div class="state-label">ターン</div>
+                <div class="state-value" id="turn">1 / 25</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="quest-panel">
+        <h3>受注中の依頼（最大2件）</h3>
+        <div id="quests"><span class="no-quest">依頼がありません - 「依頼受注」で取得しよう</span></div>
+    </div>
+
+    <div class="inventory">
+        <h3>所持品:</h3>
+        <div class="inventory-items" id="inventory">
+            <span class="inv-empty">なし</span>
+        </div>
+    </div>
+
+    <div id="message"></div>
+
+    <div class="actions">
+        <button onclick="doAction('quest')" class="no-turn">
+            <span class="btn-title">依頼受注</span>
+            <span class="btn-desc">期限付き依頼を受ける</span>
+            <span class="btn-effect">ターン消費なし</span>
+        </button>
+        <button onclick="doAction('gather')">
+            <span class="btn-title">採取</span>
+            <span class="btn-desc">素材を集める</span>
+            <span class="btn-effect">素材+2〜3</span>
+        </button>
+        <button onclick="doAction('craft_weapon')">
+            <span class="btn-title">調合：武器</span>
+            <span class="btn-desc">素材3枚消費</span>
+            <span class="btn-effect">武器1個</span>
+        </button>
+        <button onclick="doAction('craft_medicine')">
+            <span class="btn-title">調合：薬</span>
+            <span class="btn-desc">素材2枚消費</span>
+            <span class="btn-effect">薬1個</span>
+        </button>
+        <button onclick="doAction('deliver')" class="no-turn">
+            <span class="btn-title">依頼納品</span>
+            <span class="btn-desc">アイテムで依頼達成</span>
+            <span class="btn-effect">ターン消費なし</span>
+        </button>
+        <button onclick="doAction('shop')">
+            <span class="btn-title">買い物</span>
+            <span class="btn-desc">20G消費</span>
+            <span class="btn-effect">素材+1</span>
+        </button>
+    </div>
+
+    <div class="log" id="log"></div>
+
+    <div class="reset">
+        <button onclick="reset()">リセット</button>
+    </div>
+
+    <script>
+        // === 設定 ===
+        const CONFIG = {
+            maxTurn: 25,
+            fatiguePerTurn: 4,  // 毎ターン消耗度上昇
+            gatherMin: 2,
+            gatherMax: 3,
+            weaponCost: 3,
+            medicineCost: 2,
+            shopCost: 20,
+            maxQuests: 2
+        };
+
+        // === 依頼テンプレート ===
+        const QUEST_TEMPLATES = [
+            { type: 'weapon', name: '鉄の剣の依頼', reward: 30, effect: 18, deadline: 5 },
+            { type: 'weapon', name: '鋼の武器の依頼', reward: 45, effect: 22, deadline: 4 },
+            { type: 'weapon', name: '伝説の武具', reward: 60, effect: 28, deadline: 3 },
+            { type: 'medicine', name: '回復薬の依頼', reward: 25, effect: 15, deadline: 4 },
+            { type: 'medicine', name: '高級薬の依頼', reward: 35, effect: 20, deadline: 3 },
+            { type: 'medicine', name: '霊薬の依頼', reward: 50, effect: 25, deadline: 3 }
+        ];
+
+        // === ゲーム状態 ===
+        let state = {
+            pioneer: 0,
+            fatigue: 0,
+            materials: 5,
+            money: 50,
+            turn: 1,
+            weapons: 0,
+            medicines: 0,
+            quests: [],
+            gameOver: false
+        };
+
+        const INITIAL_STATE = JSON.parse(JSON.stringify(state));
+
+        // === アクション ===
+        function doAction(type) {
+            if (state.gameOver) return;
+
+            let turnUsed = true;
+
+            switch(type) {
+                case 'quest':
+                    turnUsed = false;
+                    if (state.quests.length >= CONFIG.maxQuests) {
+                        log('依頼は2件まで！まず納品しよう', 'warning');
+                        return;
+                    }
+                    const template = QUEST_TEMPLATES[Math.floor(Math.random() * QUEST_TEMPLATES.length)];
+                    const quest = {
+                        ...template,
+                        deadline: template.deadline + Math.floor(Math.random() * 2),
+                        id: Date.now()
+                    };
+                    state.quests.push(quest);
+                    const effectDesc = quest.type === 'weapon' ? `開拓度+${quest.effect}%` : `消耗度-${quest.effect}%`;
+                    log(`依頼受注: ${quest.name}（期限${quest.deadline}ターン, ${effectDesc}, ${quest.reward}G）`, 'success');
+                    break;
+
+                case 'gather':
+                    const gathered = CONFIG.gatherMin + Math.floor(Math.random() * (CONFIG.gatherMax - CONFIG.gatherMin + 1));
+                    state.materials += gathered;
+                    let gatherMsg = `採取: 素材+${gathered}`;
+                    if (Math.random() < 0.15) {
+                        state.materials += 1;
+                        gatherMsg += '（レア発見！+1）';
+                    }
+                    log(gatherMsg, 'success');
+                    break;
+
+                case 'craft_weapon':
+                    if (state.materials < CONFIG.weaponCost) {
+                        log(`素材が足りない！（必要: ${CONFIG.weaponCost}）`, 'warning');
+                        return;
+                    }
+                    state.materials -= CONFIG.weaponCost;
+                    state.weapons += 1;
+                    log(`調合: 武器を作成（素材-${CONFIG.weaponCost}）`, 'info');
+                    break;
+
+                case 'craft_medicine':
+                    if (state.materials < CONFIG.medicineCost) {
+                        log(`素材が足りない！（必要: ${CONFIG.medicineCost}）`, 'warning');
+                        return;
+                    }
+                    state.materials -= CONFIG.medicineCost;
+                    state.medicines += 1;
+                    log(`調合: 薬を作成（素材-${CONFIG.medicineCost}）`, 'info');
+                    break;
+
+                case 'deliver':
+                    turnUsed = false;
+                    if (state.quests.length === 0) {
+                        log('受注中の依頼がない！', 'warning');
+                        return;
+                    }
+                    let delivered = false;
+                    for (let i = 0; i < state.quests.length; i++) {
+                        const q = state.quests[i];
+                        if (q.type === 'weapon' && state.weapons > 0) {
+                            state.weapons--;
+                            state.money += q.reward;
+                            state.pioneer = Math.min(100, state.pioneer + q.effect);
+                            log(`納品成功: ${q.name} → 開拓度+${q.effect}%, お金+${q.reward}G`, 'success');
+                            state.quests.splice(i, 1);
+                            delivered = true;
+                            break;
+                        } else if (q.type === 'medicine' && state.medicines > 0) {
+                            state.medicines--;
+                            state.money += q.reward;
+                            state.fatigue = Math.max(0, state.fatigue - q.effect);
+                            log(`納品成功: ${q.name} → 消耗度-${q.effect}%, お金+${q.reward}G`, 'success');
+                            state.quests.splice(i, 1);
+                            delivered = true;
+                            break;
+                        }
+                    }
+                    if (!delivered) {
+                        const needed = state.quests.map(q => q.type === 'weapon' ? '武器' : '薬').join('か');
+                        log(`納品できない！${needed}が必要`, 'warning');
+                        return;
+                    }
+                    break;
+
+                case 'shop':
+                    if (state.money < CONFIG.shopCost) {
+                        log(`お金が足りない！（必要: ${CONFIG.shopCost}G）`, 'warning');
+                        return;
+                    }
+                    state.money -= CONFIG.shopCost;
+                    state.materials += 1;
+                    log(`買い物: 素材+1（${CONFIG.shopCost}G消費）`, 'info');
+                    break;
+            }
+
+            // ターン経過
+            if (turnUsed) {
+                state.turn++;
+                state.fatigue = Math.min(100, state.fatigue + CONFIG.fatiguePerTurn);
+
+                // 依頼期限処理
+                state.quests.forEach(q => q.deadline--);
+                const expired = state.quests.filter(q => q.deadline <= 0);
+                expired.forEach(q => {
+                    log(`期限切れ: ${q.name}（消耗度+8%）`, 'danger');
+                    state.fatigue = Math.min(100, state.fatigue + 8);
+                });
+                state.quests = state.quests.filter(q => q.deadline > 0);
+
+                // イベント（10%）
+                if (Math.random() < 0.1) {
+                    triggerEvent();
+                }
+
+                log(`--- ターン${state.turn} (消耗度+${CONFIG.fatiguePerTurn}%) ---`, 'turn-marker');
+            }
+
+            updateUI();
+            checkEnd();
+        }
+
+        // === ランダムイベント ===
+        function triggerEvent() {
+            const events = [
+                { msg: '素材発見！+1', effect: () => state.materials++ },
+                { msg: '商人から10G獲得！', effect: () => state.money += 10 },
+                { msg: '開拓が順調！+5%', effect: () => state.pioneer = Math.min(100, state.pioneer + 5) },
+                { msg: '休憩！消耗度-5%', effect: () => state.fatigue = Math.max(0, state.fatigue - 5) }
+            ];
+            const e = events[Math.floor(Math.random() * events.length)];
+            e.effect();
+            log(`【イベント】${e.msg}`, 'event');
+        }
+
+        // === UI更新 ===
+        function updateUI() {
+            // 開拓度
+            document.getElementById('pioneer-bar').style.width = state.pioneer + '%';
+            document.getElementById('pioneer-text').textContent = state.pioneer + '%';
+
+            // 消耗度
+            document.getElementById('fatigue-bar').style.width = state.fatigue + '%';
+            document.getElementById('fatigue-text').textContent = state.fatigue + '%';
+
+            // リソース
+            document.getElementById('materials').textContent = state.materials + '枚';
+            document.getElementById('money').textContent = state.money + 'G';
+            document.getElementById('turn').textContent = `${state.turn} / ${CONFIG.maxTurn}`;
+
+            // 依頼
+            const questsEl = document.getElementById('quests');
+            if (state.quests.length === 0) {
+                questsEl.innerHTML = '<span class="no-quest">依頼がありません - 「依頼受注」で取得しよう</span>';
+            } else {
+                questsEl.innerHTML = state.quests.map(q => {
+                    const urgent = q.deadline <= 2 ? 'urgent' : '';
+                    const deadlineClass = q.deadline <= 2 ? 'urgent' : '';
+                    const effectDesc = q.type === 'weapon'
+                        ? `開拓度+${q.effect}%`
+                        : `消耗度-${q.effect}%`;
+                    return `<div class="quest ${q.type} ${urgent}">
+                        <div class="quest-info">
+                            <div class="quest-name">${q.name}</div>
+                            <div class="quest-desc">${effectDesc} + ${q.reward}G</div>
+                        </div>
+                        <span class="quest-deadline ${deadlineClass}">残り${q.deadline}</span>
+                    </div>`;
+                }).join('');
+            }
+
+            // インベントリ
+            const invEl = document.getElementById('inventory');
+            let invHtml = '';
+            if (state.weapons > 0) invHtml += `<span class="inv-item weapon">武器 x${state.weapons}</span>`;
+            if (state.medicines > 0) invHtml += `<span class="inv-item medicine">薬 x${state.medicines}</span>`;
+            invEl.innerHTML = invHtml || '<span class="inv-empty">なし</span>';
+
+            // ヒント
+            updateHint();
+
+            // ボタン状態
+            updateButtons();
+        }
+
+        function updateHint() {
+            const hint = document.getElementById('hint');
+            if (state.quests.length === 0) {
+                hint.textContent = 'まずは依頼を受注しよう！期限内に納品すると報酬と効果が得られる';
+            } else if (state.fatigue >= 60) {
+                hint.textContent = '消耗度が高い！薬の依頼を受けて納品しよう';
+            } else if (state.materials < 2 && state.money < CONFIG.shopCost) {
+                hint.textContent = '素材がない！採取に行こう';
+            } else if (state.weapons === 0 && state.medicines === 0 && state.materials >= 2) {
+                hint.textContent = '素材がある！依頼に合わせて武器か薬を調合しよう';
+            } else if ((state.weapons > 0 || state.medicines > 0) && state.quests.length > 0) {
+                hint.textContent = 'アイテムがある！依頼を納品しよう';
+            } else {
+                hint.textContent = '期限と状況を見て、今何をすべきか判断しよう！';
+            }
+        }
+
+        function updateButtons() {
+            const buttons = document.querySelectorAll('.actions button');
+            buttons.forEach(btn => btn.disabled = state.gameOver);
+        }
+
+        // === ログ ===
+        function log(msg, className = '') {
+            const logEl = document.getElementById('log');
+            const p = document.createElement('p');
+            p.textContent = `> ${msg}`;
+            if (className) p.className = className;
+            logEl.appendChild(p);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        // === 終了判定 ===
+        function checkEnd() {
+            const msgEl = document.getElementById('message');
+
+            if (state.fatigue >= 100) {
+                state.gameOver = true;
+                msgEl.innerHTML = '<div class="game-over">GAME OVER<small>消耗度が100%に達した...</small></div>';
+                updateButtons();
+            } else if (state.pioneer >= 100) {
+                state.gameOver = true;
+                msgEl.innerHTML = `<div class="victory">開拓完了！<small>${state.turn}ターンでクリア！残り消耗度: ${100 - state.fatigue}%</small></div>`;
+                updateButtons();
+            } else if (state.turn > CONFIG.maxTurn) {
+                state.gameOver = true;
+                msgEl.innerHTML = `<div class="game-over">時間切れ<small>開拓度: ${state.pioneer}%</small></div>`;
+                updateButtons();
+            }
+        }
+
+        // === リセット ===
+        function reset() {
+            state = {
+                pioneer: 0,
+                fatigue: 0,
+                materials: 5,
+                money: 50,
+                turn: 1,
+                weapons: 0,
+                medicines: 0,
+                quests: [],
+                gameOver: false
+            };
+            document.getElementById('log').innerHTML = '';
+            document.getElementById('message').innerHTML = '';
+            updateUI();
+            log('=== ゲーム開始 ===', 'turn-marker');
+            log('目標: 開拓度100%を達成せよ！', 'info');
+            log('注意: 消耗度100%でゲームオーバー！', 'warning');
+            log('--- ターン1 ---', 'turn-marker');
+        }
+
+        // === 初期化 ===
+        reset();
+    </script>
+</body>
+</html>

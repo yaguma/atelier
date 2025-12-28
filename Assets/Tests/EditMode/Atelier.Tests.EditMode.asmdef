@@ -1,0 +1,25 @@
+{
+    "name": "Atelier.Tests.EditMode",
+    "rootNamespace": "Atelier.Tests.EditMode",
+    "references": [
+        "Atelier.Domain",
+        "Atelier.Application",
+        "Atelier.Infrastructure",
+        "Atelier.Presentation"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

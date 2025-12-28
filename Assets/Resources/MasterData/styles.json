@@ -1,0 +1,81 @@
+{
+  "styles": [
+    {
+      "styleId": "STYLE_001",
+      "name": "炎の錬金術師",
+      "description": "火属性に特化したスタイル。火属性の効果が1.2倍になる。",
+      "startingDeck": [
+        "CARD_001",
+        "CARD_001",
+        "CARD_005",
+        "CARD_005",
+        "CARD_006",
+        "CARD_007"
+      ],
+      "passiveBonus": {
+        "fireMultiplier": 1.2,
+        "waterMultiplier": 1.0,
+        "earthMultiplier": 1.0,
+        "windMultiplier": 1.0,
+        "poisonMultiplier": 1.0
+      }
+    },
+    {
+      "styleId": "STYLE_002",
+      "name": "水の錬金術師",
+      "description": "水属性に特化したスタイル。水属性の効果が1.2倍になる。",
+      "startingDeck": [
+        "CARD_002",
+        "CARD_002",
+        "CARD_009",
+        "CARD_006",
+        "CARD_006"
+      ],
+      "passiveBonus": {
+        "fireMultiplier": 1.0,
+        "waterMultiplier": 1.2,
+        "earthMultiplier": 1.0,
+        "windMultiplier": 1.0,
+        "poisonMultiplier": 1.0
+      }
+    },
+    {
+      "styleId": "STYLE_003",
+      "name": "土の錬金術師",
+      "description": "土属性に特化したスタイル。安定性が高く、暴発しにくい。",
+      "startingDeck": [
+        "CARD_003",
+        "CARD_003",
+        "CARD_008",
+        "CARD_006",
+        "CARD_005"
+      ],
+      "passiveBonus": {
+        "fireMultiplier": 1.0,
+        "waterMultiplier": 1.0,
+        "earthMultiplier": 1.2,
+        "windMultiplier": 1.0,
+        "poisonMultiplier": 1.0
+      }
+    },
+    {
+      "styleId": "STYLE_004",
+      "name": "風の錬金術師",
+      "description": "風属性に特化したスタイル。手札回転が速い。",
+      "startingDeck": [
+        "CARD_004",
+        "CARD_004",
+        "CARD_004",
+        "CARD_006",
+        "CARD_006"
+      ],
+      "passiveBonus": {
+        "fireMultiplier": 1.0,
+        "waterMultiplier": 1.0,
+        "earthMultiplier": 1.0,
+        "windMultiplier": 1.2,
+        "poisonMultiplier": 1.0
+      }
+    }
+  ]
+}
