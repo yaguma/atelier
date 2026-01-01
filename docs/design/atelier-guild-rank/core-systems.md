@@ -1,6 +1,6 @@
 # コアシステム設計書
 
-**バージョン**: 1.0.0
+**バージョン**: 1.2.0
 **作成日**: 2026-01-01
 **対象**: アトリエ錬金術ゲーム（ギルドランク制）HTML版
 
@@ -129,7 +129,7 @@ sequenceDiagram
 
 ### 3.1 責務
 
-採取地カードを使用して素材を獲得する処理を担当する。
+採取地カードを使用してドラフト採取を行い、素材を獲得する処理を担当する。
 
 ### 3.2 クラス図
 
@@ -137,9 +137,12 @@ sequenceDiagram
 classDiagram
     class IGatheringService {
         <<interface>>
-        +gather(cardId: string, enhancementIds?: string[]): IMaterialInstance[]
+        +startDraftGathering(cardId: string, enhancementIds?: string[]): IDraftSession
+        +selectMaterial(sessionId: string, materialIndex: number): IMaterialInstance
+        +skipSelection(sessionId: string): void
+        +endGathering(sessionId: string): IGatheringResult
         +canGather(cardId: string): boolean
-        +getGatheringCost(cardId: string): number
+        +calculateGatheringCost(baseCost: number, selectedCount: number): IGatheringCostResult
     }
 
     class GatheringService {
@@ -149,12 +152,33 @@ classDiagram
         -masterDataLoader: IMasterDataLoader
         -randomGenerator: IRandomGenerator
         -artifactService: IArtifactService
-        +gather(cardId: string, enhancementIds?: string[]): IMaterialInstance[]
+        -activeSessions: Map~string, IDraftSession~
+        +startDraftGathering(cardId: string, enhancementIds?: string[]): IDraftSession
+        +selectMaterial(sessionId: string, materialIndex: number): IMaterialInstance
+        +skipSelection(sessionId: string): void
+        +endGathering(sessionId: string): IGatheringResult
         +canGather(cardId: string): boolean
-        +getGatheringCost(cardId: string): number
-        -calculateMaterials(card: IGatheringCard, enhancements: IEnhancementCard[]): IMaterialInstance[]
-        -applyEnhancements(baseMaterials: IMaterialInstance[], enhancements: IEnhancementCard[]): IMaterialInstance[]
-        -applyArtifactBonuses(materials: IMaterialInstance[]): IMaterialInstance[]
+        +calculateGatheringCost(baseCost: number, selectedCount: number): IGatheringCostResult
+        -generateMaterialOptions(card: IGatheringCard, enhancements: IEnhancementCard[]): IMaterialOption[]
+        -applyEnhancements(session: IDraftSession, enhancements: IEnhancementCard[]): void
+        -applyArtifactBonuses(session: IDraftSession): void
+    }
+
+    class IDraftSession {
+        <<interface>>
+        +sessionId: string
+        +cardId: string
+        +currentRound: number
+        +maxRounds: number
+        +selectedMaterials: IMaterialInstance[]
+        +currentOptions: IMaterialOption[]
+        +isComplete: boolean
+    }
+
+    class IGatheringCostResult {
+        <<interface>>
+        +actionPointCost: number
+        +extraDays: number
     }
 
     IGatheringService <|.. GatheringService
@@ -164,43 +188,128 @@ classDiagram
 
 | メソッド | 引数 | 戻り値 | 説明 |
 |---------|------|--------|------|
-| gather | cardId, enhancementIds? | IMaterialInstance[] | 採取を実行し素材を獲得 |
+| startDraftGathering | cardId, enhancementIds? | IDraftSession | ドラフト採取セッションを開始 |
+| selectMaterial | sessionId, materialIndex | IMaterialInstance | 提示された3つから1つを選択して獲得 |
+| skipSelection | sessionId | void | 今回の提示をスキップ（何も選ばない） |
+| endGathering | sessionId | IGatheringResult | 採取を終了しコストを計算 |
 | canGather | cardId | boolean | 採取可能か判定 |
-| getGatheringCost | cardId | number | 採取コストを取得 |
+| calculateGatheringCost | baseCost, selectedCount | IGatheringCostResult | 採取コスト（行動ポイント＋追加日数）を計算 |
 
-### 3.4 素材獲得ロジック 🔵
+### 3.4 ドラフト採取の流れ 🔵
+
+```mermaid
+sequenceDiagram
+    participant Player
+    participant UI
+    participant GatheringService
+    participant MaterialService
+    participant RandomGenerator
+
+    Player->>UI: 採取地カードを選択
+    UI->>GatheringService: startDraftGathering(cardId)
+    GatheringService->>RandomGenerator: 3つの素材をランダム選択
+    GatheringService-->>UI: IDraftSession（3つの素材オプション）
+    UI-->>Player: 素材オプションを表示
+
+    loop 提示回数まで繰り返し
+        alt 素材を選択
+            Player->>UI: 素材を選択
+            UI->>GatheringService: selectMaterial(sessionId, index)
+            GatheringService->>MaterialService: determineMaterialQuality()
+            GatheringService-->>UI: 選択した素材
+        else スキップ
+            Player->>UI: スキップ
+            UI->>GatheringService: skipSelection(sessionId)
+        end
+        GatheringService->>RandomGenerator: 次の3つの素材を生成
+        GatheringService-->>UI: 次の素材オプション
+    end
+
+    Player->>UI: 採取を終了
+    UI->>GatheringService: endGathering(sessionId)
+    GatheringService->>GatheringService: calculateGatheringCost()
+    GatheringService-->>UI: IGatheringResult（素材＋コスト）
+```
+
+### 3.5 素材提示生成ロジック 🔵
 
 ```typescript
-calculateMaterials(card: IGatheringCard, enhancements: IEnhancementCard[]): IMaterialInstance[] {
-  const materials: IMaterialInstance[] = [];
+generateMaterialOptions(card: IGatheringCard, enhancements: IEnhancementCard[]): IMaterialOption[] {
+  const options: IMaterialOption[] = [];
+  const materialPool = card.materials;
 
-  for (const materialDef of card.materials) {
-    // 確率判定
-    if (this.randomGenerator.chance(materialDef.probability)) {
-      // 基本獲得量
-      let quantity = materialDef.quantity;
+  // 強化カード「幸運のお守り」の効果
+  const rareChanceBonus = this.getEnhancementValue(enhancements, 'RARE_CHANCE_UP');
+  const adjustedRareRate = card.rareRate + rareChanceBonus;
 
-      // 強化カード「精霊の導き」の効果
-      const gatheringBonus = this.getEnhancementValue(enhancements, 'GATHERING_BONUS');
-      quantity += gatheringBonus;
+  // 3つの素材オプションを生成
+  for (let i = 0; i < 3; i++) {
+    // レア素材の判定
+    const isRare = this.randomGenerator.chance(adjustedRareRate / 100);
 
-      // アーティファクト効果（古代の地図など）
-      quantity += this.artifactService.getGatheringBonus();
+    // 素材をランダム選択
+    const selectedMaterial = isRare
+      ? this.selectRareMaterial(materialPool)
+      : this.selectNormalMaterial(materialPool);
 
-      // レア確率アップ（幸運のお守りなど）
-      const rareChanceBonus = this.getEnhancementValue(enhancements, 'RARE_CHANCE_UP');
-      // レア素材の場合、確率補正を適用
+    // MaterialServiceを使用して品質を決定
+    const quality = this.materialService.determineMaterialQuality(
+      selectedMaterial.materialId,
+      isRare ? 1 : 0 // レアなら品質ボーナス
+    );
 
-      // MaterialServiceを使用して品質を決定
-      materials.push({
-        materialId: materialDef.materialId,
-        quality: this.materialService.determineMaterialQuality(materialDef.materialId, rareChanceBonus),
-        quantity: quantity
-      });
-    }
+    options.push({
+      materialId: selectedMaterial.materialId,
+      quality: quality,
+      quantity: 1
+    });
   }
 
-  return materials;
+  return options;
+}
+```
+
+### 3.6 採取コスト計算ロジック 🔵
+
+```typescript
+calculateGatheringCost(baseCost: number, selectedCount: number): IGatheringCostResult {
+  // 追加コスト計算
+  let additionalCost: number;
+  let extraDays = 0;
+
+  if (selectedCount === 0) {
+    additionalCost = 0; // 偵察のみ
+  } else if (selectedCount <= 2) {
+    additionalCost = 1; // 軽い採取
+  } else if (selectedCount <= 4) {
+    additionalCost = 2; // 普通の採取
+  } else if (selectedCount <= 6) {
+    additionalCost = 3; // 重い採取
+  } else {
+    additionalCost = 3; // 大量採取
+    extraDays = 1; // 翌日持越し
+  }
+
+  return {
+    actionPointCost: baseCost + additionalCost,
+    extraDays: extraDays
+  };
+}
+```
+
+### 3.7 提示回数ボーナスの適用 🔵
+
+```typescript
+applyEnhancements(session: IDraftSession, enhancements: IEnhancementCard[]): void {
+  // 強化カード「精霊の導き」の効果（提示回数+1）
+  const presentationBonus = this.getEnhancementValue(enhancements, 'PRESENTATION_BONUS');
+  session.maxRounds += presentationBonus;
+}
+
+applyArtifactBonuses(session: IDraftSession): void {
+  // アーティファクト「古代の地図」の効果（提示回数+1）
+  const artifactBonus = this.artifactService.getPresentationBonus();
+  session.maxRounds += artifactBonus;
 }
 ```
 
@@ -1025,3 +1134,4 @@ graph TB
 |------|----------|---------|
 | 2026-01-01 | 1.0.0 | 初版作成 |
 | 2026-01-01 | 1.1.0 | MaterialServiceを追加、GatheringService・AlchemyServiceの依存を更新 |
+| 2026-01-01 | 1.2.0 | GatheringServiceをドラフト採取方式に対応。IDraftSession、IGatheringCostResultインターフェースを追加。採取コスト計算を二段階制（基本コスト+追加コスト）に変更。提示回数ボーナスのロジックを追加。 |

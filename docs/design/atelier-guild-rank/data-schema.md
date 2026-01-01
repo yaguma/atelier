@@ -1,6 +1,6 @@
 # データスキーマ設計書
 
-**バージョン**: 1.0.0
+**バージョン**: 1.1.0
 **作成日**: 2026-01-01
 **対象**: アトリエ錬金術ゲーム（ギルドランク制）HTML版
 
@@ -209,11 +209,10 @@ data/
     "id": "gathering_backyard",
     "name": "裏庭",
     "type": "GATHERING",
-    "cost": 0,
-    "materials": [
-      { "materialId": "weed", "quantity": 1, "probability": 1.0 },
-      { "materialId": "water", "quantity": 1, "probability": 1.0 }
-    ],
+    "baseCost": 0,
+    "presentationCount": 2,
+    "rareRate": 0,
+    "materialPool": ["weed", "water"],
     "rarity": "COMMON",
     "unlockRank": "G",
     "description": "いつでも使える、低品質"
@@ -222,11 +221,10 @@ data/
     "id": "gathering_nearby_forest",
     "name": "近くの森",
     "type": "GATHERING",
-    "cost": 1,
-    "materials": [
-      { "materialId": "herb", "quantity": 2, "probability": 1.0 },
-      { "materialId": "mushroom", "quantity": 1, "probability": 0.5 }
-    ],
+    "baseCost": 0,
+    "presentationCount": 3,
+    "rareRate": 10,
+    "materialPool": ["herb", "mushroom", "wood", "pure_water"],
     "rarity": "COMMON",
     "unlockRank": "G",
     "description": "基本素材、安定"
@@ -235,12 +233,10 @@ data/
     "id": "gathering_riverside",
     "name": "川辺",
     "type": "GATHERING",
-    "cost": 1,
-    "materials": [
-      { "materialId": "fish", "quantity": 1, "probability": 1.0 },
-      { "materialId": "water_grass", "quantity": 2, "probability": 1.0 },
-      { "materialId": "sand", "quantity": 1, "probability": 1.0 }
-    ],
+    "baseCost": 0,
+    "presentationCount": 3,
+    "rareRate": 10,
+    "materialPool": ["fish", "water_grass", "sand", "pure_water"],
     "rarity": "COMMON",
     "unlockRank": "F",
     "description": "水属性特化"
@@ -249,12 +245,10 @@ data/
     "id": "gathering_mountain_rocks",
     "name": "山麓の岩場",
     "type": "GATHERING",
-    "cost": 2,
-    "materials": [
-      { "materialId": "ore", "quantity": 2, "probability": 1.0 },
-      { "materialId": "stone", "quantity": 1, "probability": 1.0 },
-      { "materialId": "rare_ore", "quantity": 1, "probability": 0.2 }
-    ],
+    "baseCost": 1,
+    "presentationCount": 4,
+    "rareRate": 15,
+    "materialPool": ["ore", "stone", "rare_ore"],
     "rarity": "UNCOMMON",
     "unlockRank": "E",
     "description": "火・土属性"
@@ -263,11 +257,10 @@ data/
     "id": "gathering_deep_cave",
     "name": "奥地の洞窟",
     "type": "GATHERING",
-    "cost": 2,
-    "materials": [
-      { "materialId": "rare_moss", "quantity": 2, "probability": 1.0 },
-      { "materialId": "ore", "quantity": 1, "probability": 1.0 }
-    ],
+    "baseCost": 1,
+    "presentationCount": 4,
+    "rareRate": 20,
+    "materialPool": ["rare_moss", "ore", "magic_material"],
     "rarity": "UNCOMMON",
     "unlockRank": "D",
     "description": "レア素材多め"
@@ -276,12 +269,10 @@ data/
     "id": "gathering_volcano",
     "name": "火山地帯",
     "type": "GATHERING",
-    "cost": 3,
-    "materials": [
-      { "materialId": "volcanic_stone", "quantity": 2, "probability": 1.0 },
-      { "materialId": "ash", "quantity": 1, "probability": 1.0 },
-      { "materialId": "lava_crystal", "quantity": 1, "probability": 0.3 }
-    ],
+    "baseCost": 2,
+    "presentationCount": 5,
+    "rareRate": 25,
+    "materialPool": ["volcanic_stone", "ash", "lava_crystal"],
     "rarity": "RARE",
     "unlockRank": "C",
     "description": "火属性特化、高品質"
@@ -290,17 +281,31 @@ data/
     "id": "gathering_ancient_ruins",
     "name": "古代遺跡",
     "type": "GATHERING",
-    "cost": 3,
-    "materials": [
-      { "materialId": "magic_material", "quantity": 2, "probability": 1.0 },
-      { "materialId": "ancient_fragment", "quantity": 1, "probability": 1.0 }
-    ],
+    "baseCost": 2,
+    "presentationCount": 5,
+    "rareRate": 30,
+    "materialPool": ["magic_material", "ancient_fragment"],
     "rarity": "RARE",
     "unlockRank": "B",
     "description": "特殊素材、最高品質"
   }
 ]
 ```
+
+#### 採取地カードフィールド説明
+
+| フィールド | 型 | 説明 | 必須 |
+|-----------|-----|------|------|
+| id | string | カードID | ○ |
+| name | string | 表示名 | ○ |
+| type | string | カード種別（"GATHERING"固定） | ○ |
+| baseCost | number | 基本コスト（採取地の距離） | ○ |
+| presentationCount | number | 提示回数（ドラフト採取で何回素材が提示されるか） | ○ |
+| rareRate | number | レア素材出現率（%） | ○ |
+| materialPool | string[] | この採取地で獲得可能な素材ID一覧 | ○ |
+| rarity | string | カードのレアリティ | ○ |
+| unlockRank | string | 解放されるギルドランク | ○ |
+| description | string | カードの説明 | ○ |
 
 ### 2.3 レシピカード（recipe_cards.json）🔵
 
@@ -448,11 +453,11 @@ data/
     "name": "精霊の導き",
     "type": "ENHANCEMENT",
     "cost": 0,
-    "effect": { "type": "GATHERING_BONUS", "value": 1 },
+    "effect": { "type": "PRESENTATION_BONUS", "value": 1 },
     "targetAction": "GATHERING",
     "rarity": "COMMON",
     "unlockRank": "G",
-    "description": "獲得素材+1個"
+    "description": "提示回数+1回"
   },
   {
     "id": "enhance_lucky_charm",
@@ -1019,9 +1024,9 @@ data/
   {
     "id": "artifact_ancient_map",
     "name": "古代の地図",
-    "effect": { "type": "GATHERING_BONUS", "value": 1 },
+    "effect": { "type": "PRESENTATION_BONUS", "value": 1 },
     "rarity": "EPIC",
-    "description": "採取で素材+1"
+    "description": "採取の提示回数+1"
   },
   {
     "id": "artifact_alchemy_crown",
@@ -1153,3 +1158,4 @@ data/
 | 日付 | バージョン | 変更内容 |
 |------|----------|---------|
 | 2026-01-01 | 1.0.0 | 初版作成 |
+| 2026-01-01 | 1.1.0 | 採取地カード構造をドラフト採取方式に対応。baseCost/presentationCount/rareRate/materialPoolフィールドを追加。強化カード「精霊の導き」の効果をPRESENTATION_BONUS（提示回数+1）に変更。アーティファクト「古代の地図」の効果をPRESENTATION_BONUS（提示回数+1）に変更。 |
