@@ -1,7 +1,8 @@
 # データスキーマ設計書
 
-**バージョン**: 1.1.0
+**バージョン**: 1.2.0
 **作成日**: 2026-01-01
+**更新日**: 2026-01-02
 **対象**: アトリエ錬金術ゲーム（ギルドランク制）HTML版
 
 ---
@@ -56,7 +57,8 @@
 ```json
 {
   "currentRank": "G",
-  "rankHp": 85,
+  "promotionGauge": 35,
+  "requiredContribution": 100,
   "remainingDays": 28,
   "currentDay": 3,
   "currentPhase": "GATHERING",
@@ -71,7 +73,8 @@
 | フィールド | 型 | 説明 | デフォルト値 |
 |-----------|-----|------|-------------|
 | currentRank | GuildRank | 現在のギルドランク | "G" |
-| rankHp | number | 現在のランクHP | 100（ランクによる） |
+| promotionGauge | number | 現在の昇格ゲージ（累計貢献度） | 0 |
+| requiredContribution | number | 昇格に必要な貢献度 | 100（ランクによる） |
 | remainingDays | number | ランクの残り日数 | 30（ランクによる） |
 | currentDay | number | 現在の日数（1始まり） | 1 |
 | currentPhase | GamePhase | 現在のフェーズ | "QUEST_ACCEPT" |
@@ -747,7 +750,7 @@ data/
   {
     "id": "G",
     "name": "見習い",
-    "hp": 100,
+    "requiredContribution": 100,
     "dayLimit": 30,
     "specialRules": [],
     "promotionTest": {
@@ -760,7 +763,7 @@ data/
   {
     "id": "F",
     "name": "新人",
-    "hp": 200,
+    "requiredContribution": 200,
     "dayLimit": 30,
     "specialRules": [
       { "type": "QUEST_LIMIT", "value": 2, "description": "同時受注2件まで" }
@@ -778,7 +781,7 @@ data/
   {
     "id": "E",
     "name": "一人前",
-    "hp": 350,
+    "requiredContribution": 350,
     "dayLimit": 35,
     "specialRules": [
       { "type": "QUALITY_PENALTY", "condition": "D", "description": "品質D以下は貢献度半減" }
@@ -796,7 +799,7 @@ data/
   {
     "id": "D",
     "name": "中堅",
-    "hp": 500,
+    "requiredContribution": 500,
     "dayLimit": 35,
     "specialRules": [
       { "type": "DEADLINE_REDUCTION", "value": 1, "description": "全依頼の期限-1日" }
@@ -815,7 +818,7 @@ data/
   {
     "id": "C",
     "name": "熟練",
-    "hp": 700,
+    "requiredContribution": 700,
     "dayLimit": 35,
     "specialRules": [
       { "type": "QUALITY_REQUIRED", "condition": "C", "description": "品質C以上でないと受理されない" }
@@ -832,7 +835,7 @@ data/
   {
     "id": "B",
     "name": "上級",
-    "hp": 1000,
+    "requiredContribution": 1000,
     "dayLimit": 35,
     "specialRules": [
       { "type": "QUALITY_REQUIRED", "condition": "B", "description": "品質B以上必須" },
@@ -852,7 +855,7 @@ data/
   {
     "id": "A",
     "name": "最上級",
-    "hp": 1500,
+    "requiredContribution": 1500,
     "dayLimit": 35,
     "specialRules": [
       { "type": "QUALITY_REQUIRED", "condition": "A", "description": "品質A以上必須" },
@@ -870,7 +873,7 @@ data/
   {
     "id": "S",
     "name": "伝説",
-    "hp": 0,
+    "requiredContribution": 0,
     "dayLimit": 0,
     "specialRules": [],
     "promotionTest": null,
@@ -1159,3 +1162,4 @@ data/
 |------|----------|---------|
 | 2026-01-01 | 1.0.0 | 初版作成 |
 | 2026-01-01 | 1.1.0 | 採取地カード構造をドラフト採取方式に対応。baseCost/presentationCount/rareRate/materialPoolフィールドを追加。強化カード「精霊の導き」の効果をPRESENTATION_BONUS（提示回数+1）に変更。アーティファクト「古代の地図」の効果をPRESENTATION_BONUS（提示回数+1）に変更。 |
+| 2026-01-02 | 1.2.0 | 「ランクHP」から「昇格ゲージ」への用語変更に対応。GameStateのrankHpフィールドをpromotionGaugeに変更し、requiredContributionフィールドを追加。guild_ranks.jsonのhpフィールドをrequiredContributionに変更。 |

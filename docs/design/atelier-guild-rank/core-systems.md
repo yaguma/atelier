@@ -1,7 +1,8 @@
 # コアシステム設計書
 
-**バージョン**: 1.2.0
+**バージョン**: 1.3.0
 **作成日**: 2026-01-01
+**更新日**: 2026-01-02
 **対象**: アトリエ錬金術ゲーム（ギルドランク制）HTML版
 
 ---
@@ -654,10 +655,11 @@ classDiagram
     class IRankService {
         <<interface>>
         +getCurrentRank(): GuildRank
-        +getRankHp(): number
+        +getPromotionGauge(): number
+        +getRequiredContribution(): number
         +getRemainingDays(): number
-        +damageRankHp(damage: number): void
-        +isRankHpZero(): boolean
+        +addContribution(contribution: number): void
+        +isPromotionReady(): boolean
         +isGameOver(): boolean
         +startPromotionTest(): IPromotionTest
         +checkPromotionTest(): boolean
@@ -668,16 +670,18 @@ classDiagram
 
     class RankService {
         -currentRank: GuildRank
-        -rankHp: number
+        -promotionGauge: number
+        -requiredContribution: number
         -remainingDays: number
         -isPromotionTest: boolean
         -promotionTestRemainingDays: number
         -masterDataLoader: IMasterDataLoader
         +getCurrentRank(): GuildRank
-        +getRankHp(): number
+        +getPromotionGauge(): number
+        +getRequiredContribution(): number
         +getRemainingDays(): number
-        +damageRankHp(damage: number): void
-        +isRankHpZero(): boolean
+        +addContribution(contribution: number): void
+        +isPromotionReady(): boolean
         +isGameOver(): boolean
         +startPromotionTest(): IPromotionTest
         +checkPromotionTest(): boolean
@@ -696,9 +700,10 @@ classDiagram
 | メソッド | 引数 | 戻り値 | 説明 |
 |---------|------|--------|------|
 | getCurrentRank | - | GuildRank | 現在のランクを取得 |
-| getRankHp | - | number | 現在のランクHPを取得 |
-| damageRankHp | damage | void | ランクHPにダメージを与える |
-| isRankHpZero | - | boolean | ランクHPが0か判定 |
+| getPromotionGauge | - | number | 現在の昇格ゲージを取得 |
+| getRequiredContribution | - | number | 昇格に必要な貢献度を取得 |
+| addContribution | contribution | void | 昇格ゲージに貢献度を加算する |
+| isPromotionReady | - | boolean | 昇格ゲージが満タンか判定 |
 | isGameOver | - | boolean | 日数切れか判定 |
 | startPromotionTest | - | IPromotionTest | 昇格試験を開始 |
 | checkPromotionTest | - | boolean | 昇格試験をクリアしたか判定 |
@@ -1135,3 +1140,4 @@ graph TB
 | 2026-01-01 | 1.0.0 | 初版作成 |
 | 2026-01-01 | 1.1.0 | MaterialServiceを追加、GatheringService・AlchemyServiceの依存を更新 |
 | 2026-01-01 | 1.2.0 | GatheringServiceをドラフト採取方式に対応。IDraftSession、IGatheringCostResultインターフェースを追加。採取コスト計算を二段階制（基本コスト+追加コスト）に変更。提示回数ボーナスのロジックを追加。 |
+| 2026-01-02 | 1.3.0 | 「ランクHP」を「昇格ゲージ」に表現変更。RankServiceのメソッド名・プロパティ名を変更（getRankHp→getPromotionGauge、damageRankHp→addContribution、isRankHpZero→isPromotionReady、rankHp→promotionGauge）。 |
