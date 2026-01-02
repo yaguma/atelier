@@ -101,10 +101,28 @@ description: 分割されたタスクを順番に、またはユーザが指定�
    実行方式: 個別Task実行
    ```
 
-   f. **品質確認** - `@task general-purpose /tsumiki:tdd-verify-complete`
+   f. **コードレビュー** - `@task general-purpose /tsumiki:tdd-code-review`
+   ```
+   Task実行: TDDコードレビューフェーズ
+   目的: セキュリティ、パフォーマンス、SOLID原則、日本語コメント品質などを多角的に評価する
+   コマンド: /tsumiki:tdd-code-review
+   実行方式: 個別Task実行
+   レビュー結果: docs/code-reviews/{要件名}/{{task_id}}/ に保存
+   ```
+
+   g. **コードレビュー修正** - `@task general-purpose /tsumiki:tdd-code-review-fix` （Critical/Warning問題がある場合のみ）
+   ```
+   Task実行: TDDコードレビュー修正フェーズ
+   目的: レビューで検出された問題を優先度順に修正する
+   コマンド: /tsumiki:tdd-code-review-fix
+   実行方式: 個別Task実行（条件付き）
+   実行条件: Critical問題が1件以上、またはWarning問題が5件以上ある場合
+   ```
+
+   h. **品質確認** - `@task general-purpose /tsumiki:tdd-verify-complete`
    ```
    Task実行: TDD品質確認フェーズ
-   目的: 実装の完成度を確認し、不足があればc-fを繰り返す
+   目的: 実装の完成度を確認し、不足があればc-hを繰り返す
    コマンド: /tsumiki:tdd-verify-complete
    実行方式: 個別Task実行
    ```
@@ -155,10 +173,14 @@ flowchart TD
     F2 --> F3[tdd-red]
     F3 --> F4[tdd-green]
     F4 --> F5[tdd-refactor]
-    F5 --> F6[tdd-verify-complete]
-    F6 --> F7{品質OK?}
-    F7 -->|No| F3
-    F7 -->|Yes| H[タスク完了]
+    F5 --> F6[tdd-code-review]
+    F6 --> F7{Critical/Warning問題?}
+    F7 -->|Yes| F8[tdd-code-review-fix]
+    F8 --> F6
+    F7 -->|No| F9[tdd-verify-complete]
+    F9 --> F10{品質OK?}
+    F10 -->|No| F3
+    F10 -->|Yes| H[タスク完了]
 
     G --> G1[準備作業実行]
     G1 --> G2[作業結果確認]
@@ -230,6 +252,8 @@ $ claude code kairo-implement --status
 @task general-purpose /tsumiki:tdd-red
 @task general-purpose /tsumiki:tdd-green
 @task general-purpose /tsumiki:tdd-refactor
+@task general-purpose /tsumiki:tdd-code-review
+@task general-purpose /tsumiki:tdd-code-review-fix  # Critical/Warning問題がある場合のみ
 @task general-purpose /tsumiki:tdd-verify-complete
 
 # 直接作業プロセスの場合
@@ -252,6 +276,12 @@ $ claude code kairo-implement --status
 3. **継続的な品質確認**
    - 各ステップで品質を確認
    - 技術的負債を作らない
+
+4. **コードレビューの実施**
+   - リファクタリング後に必ずコードレビューを実施
+   - セキュリティ、パフォーマンス、SOLID原則を評価
+   - Critical/Warning問題は修正してから次のステップへ
+   - レビュー結果は `docs/code-reviews/` に保存
 
 ### 直接作業プロセス用
 
@@ -300,12 +330,29 @@ $ claude code kairo-implement --status
 ### 各ステップ完了時（TDD）
 
 ```
-✅ Task 1/6: @task /tsumiki:tdd-requirements 完了
+✅ Task 1/8: @task /tsumiki:tdd-requirements 完了
    ファイル: docs/implements/{要件名}/{{task_id}}/{要件名}-requirements.md
    Task実行結果: 要件定義書作成完了
 
-🏃 Task 2/6: @task /tsumiki:tdd-testcases 実行中...
+🏃 Task 2/8: @task /tsumiki:tdd-testcases 実行中...
    Task実行: TDDテストケース作成フェーズを開始
+```
+
+### コードレビュー完了時
+
+```
+✅ Task 6/8: @task /tsumiki:tdd-code-review 完了
+   レビュー結果: docs/code-reviews/{要件名}/{{task_id}}/{feature_name}-review-{日時}.md
+
+📊 レビューサマリー:
+   - Critical: 0件
+   - Warning: 2件
+   - Info: 5件
+
+⚠️ Warning問題が検出されました。修正フェーズを実行します。
+
+🏃 Task 7/8: @task /tsumiki:tdd-code-review-fix 実行中...
+   Task実行: TDDコードレビュー修正フェーズを開始
 ```
 
 ### 各ステップ完了時（直接作業）
@@ -329,10 +376,12 @@ $ claude code kairo-implement --status
 
 📊 実装サマリー:
 - 実装タイプ: TDDプロセス (個別Task実行)
-- 実行Taskステップ: 6個 (全て成功)
+- 実行Taskステップ: 8個 (全て成功)
 - 作成ファイル: 12個
 - テストケース: 25個 (全て成功)
 - カバレッジ: 95%
+- コードレビュー: Critical 0件, Warning 0件, Info 3件
+- レビュー結果: docs/code-reviews/{要件名}/{{task_id}}/
 - 所要時間: 3時間45分
 
 📝 次の推奨タスク:
