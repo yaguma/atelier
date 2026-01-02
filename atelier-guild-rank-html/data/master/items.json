@@ -1,0 +1,163 @@
+[
+  {
+    "id": "item_healing_potion",
+    "name": "回復薬",
+    "category": "MEDICINE",
+    "effects": [
+      { "type": "HP_RECOVERY", "baseValue": 30 }
+    ],
+    "basePrice": 50,
+    "description": "HPを少し回復する基本的な薬。"
+  },
+  {
+    "id": "item_antidote",
+    "name": "解毒剤",
+    "category": "MEDICINE",
+    "effects": [
+      { "type": "CURE_POISON", "baseValue": 1 }
+    ],
+    "basePrice": 40,
+    "description": "毒状態を治療する薬。"
+  },
+  {
+    "id": "item_bomb",
+    "name": "フラムボム",
+    "category": "ADVENTURE",
+    "effects": [
+      { "type": "EXPLOSION", "baseValue": 50 }
+    ],
+    "basePrice": 80,
+    "description": "投げると爆発する爆弾。"
+  },
+  {
+    "id": "item_iron_sword",
+    "name": "鉄の剣",
+    "category": "WEAPON",
+    "effects": [
+      { "type": "ATTACK_UP", "baseValue": 10 }
+    ],
+    "basePrice": 120,
+    "description": "基本的な鉄製の剣。冒険者に人気。"
+  },
+  {
+    "id": "item_magic_potion",
+    "name": "魔力の薬",
+    "category": "MEDICINE",
+    "effects": [
+      { "type": "HP_RECOVERY", "baseValue": 20 }
+    ],
+    "basePrice": 60,
+    "description": "魔力を回復する薬。"
+  },
+  {
+    "id": "item_high_healing_potion",
+    "name": "高級回復薬",
+    "category": "MEDICINE",
+    "effects": [
+      { "type": "HP_RECOVERY", "baseValue": 80 }
+    ],
+    "basePrice": 150,
+    "description": "HPを大きく回復する上質な薬。"
+  },
+  {
+    "id": "item_silver_sword",
+    "name": "銀の剣",
+    "category": "WEAPON",
+    "effects": [
+      { "type": "ATTACK_UP", "baseValue": 20 }
+    ],
+    "basePrice": 250,
+    "description": "魔物に効果的な銀の剣。"
+  },
+  {
+    "id": "item_mega_bomb",
+    "name": "メガフラムボム",
+    "category": "ADVENTURE",
+    "effects": [
+      { "type": "EXPLOSION", "baseValue": 120 }
+    ],
+    "basePrice": 200,
+    "description": "大爆発を起こす強力な爆弾。"
+  },
+  {
+    "id": "item_elixir",
+    "name": "エリクシル",
+    "category": "MEDICINE",
+    "effects": [
+      { "type": "HP_RECOVERY", "baseValue": 150 },
+      { "type": "CURE_POISON", "baseValue": 1 }
+    ],
+    "basePrice": 500,
+    "description": "あらゆる状態を回復する万能薬。"
+  },
+  {
+    "id": "item_magic_staff",
+    "name": "魔法の杖",
+    "category": "MAGIC",
+    "effects": [
+      { "type": "ATTACK_UP", "baseValue": 15 }
+    ],
+    "basePrice": 300,
+    "description": "魔力を増幅する杖。"
+  },
+  {
+    "id": "item_crystal_sword",
+    "name": "水晶の剣",
+    "category": "WEAPON",
+    "effects": [
+      { "type": "ATTACK_UP", "baseValue": 35 }
+    ],
+    "basePrice": 800,
+    "description": "美しく強力な水晶の剣。"
+  },
+  {
+    "id": "item_philosophers_stone",
+    "name": "賢者の石",
+    "category": "LUXURY",
+    "effects": [
+      { "type": "HP_RECOVERY", "baseValue": 999 }
+    ],
+    "basePrice": 5000,
+    "description": "錬金術の究極到達点。"
+  },
+  {
+    "id": "item_mushroom_soup",
+    "name": "キノコスープ",
+    "category": "MEDICINE",
+    "effects": [
+      { "type": "HP_RECOVERY", "baseValue": 15 }
+    ],
+    "basePrice": 30,
+    "description": "美味しいキノコスープ。"
+  },
+  {
+    "id": "item_fish_dish",
+    "name": "魚料理",
+    "category": "MEDICINE",
+    "effects": [
+      { "type": "HP_RECOVERY", "baseValue": 20 }
+    ],
+    "basePrice": 35,
+    "description": "シンプルな焼き魚。"
+  },
+  {
+    "id": "item_dragon_blade",
+    "name": "竜鱗の剣",
+    "category": "WEAPON",
+    "effects": [
+      { "type": "ATTACK_UP", "baseValue": 50 }
+    ],
+    "basePrice": 3000,
+    "description": "竜の鱗から鍛えた最強の剣。"
+  },
+  {
+    "id": "item_shell_accessory",
+    "name": "貝殻のアクセサリー",
+    "category": "LUXURY",
+    "effects": [
+      { "type": "DEFENSE_UP", "baseValue": 5 }
+    ],
+    "basePrice": 25,
+    "description": "可愛らしい貝殻で作ったアクセサリー。"
+  }
+]
