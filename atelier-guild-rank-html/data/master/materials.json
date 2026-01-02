@@ -1,0 +1,178 @@
+[
+  {
+    "id": "mat_herb",
+    "name": "薬草",
+    "baseQuality": "C",
+    "attributes": ["GRASS"],
+    "isRare": false,
+    "description": "どこにでも生えている基本的な薬草。"
+  },
+  {
+    "id": "mat_water",
+    "name": "清水",
+    "baseQuality": "C",
+    "attributes": ["WATER"],
+    "isRare": false,
+    "description": "澄んだ綺麗な水。"
+  },
+  {
+    "id": "mat_stone",
+    "name": "石ころ",
+    "baseQuality": "D",
+    "attributes": ["EARTH"],
+    "isRare": false,
+    "description": "どこにでもある普通の石。"
+  },
+  {
+    "id": "mat_flower",
+    "name": "花",
+    "baseQuality": "C",
+    "attributes": ["GRASS", "WATER"],
+    "isRare": false,
+    "description": "美しい野花。"
+  },
+  {
+    "id": "mat_wood",
+    "name": "木材",
+    "baseQuality": "C",
+    "attributes": ["EARTH", "GRASS"],
+    "isRare": false,
+    "description": "加工しやすい木材。"
+  },
+  {
+    "id": "mat_mushroom",
+    "name": "キノコ",
+    "baseQuality": "C",
+    "attributes": ["GRASS", "EARTH"],
+    "isRare": false,
+    "description": "森で採れるキノコ。"
+  },
+  {
+    "id": "mat_fish",
+    "name": "魚",
+    "baseQuality": "C",
+    "attributes": ["WATER"],
+    "isRare": false,
+    "description": "川で釣れる新鮮な魚。"
+  },
+  {
+    "id": "mat_iron_ore",
+    "name": "鉄鉱石",
+    "baseQuality": "C",
+    "attributes": ["EARTH", "FIRE"],
+    "isRare": false,
+    "description": "鍛冶に使える鉄の原石。"
+  },
+  {
+    "id": "mat_poison_herb",
+    "name": "毒草",
+    "baseQuality": "C",
+    "attributes": ["GRASS"],
+    "isRare": false,
+    "description": "毒性を持つ植物。解毒剤の材料。"
+  },
+  {
+    "id": "mat_slime",
+    "name": "スライム",
+    "baseQuality": "D",
+    "attributes": ["WATER"],
+    "isRare": false,
+    "description": "ぬるぬるした粘液。"
+  },
+  {
+    "id": "mat_silver_ore",
+    "name": "銀鉱石",
+    "baseQuality": "B",
+    "attributes": ["EARTH"],
+    "isRare": false,
+    "description": "美しく輝く銀の原石。"
+  },
+  {
+    "id": "mat_fire_stone",
+    "name": "火山石",
+    "baseQuality": "B",
+    "attributes": ["FIRE", "EARTH"],
+    "isRare": true,
+    "description": "火山から採れる熱を帯びた石。"
+  },
+  {
+    "id": "mat_sulfur",
+    "name": "硫黄",
+    "baseQuality": "C",
+    "attributes": ["FIRE"],
+    "isRare": false,
+    "description": "火山地帯で採れる鉱物。爆弾の材料。"
+  },
+  {
+    "id": "mat_ancient_wood",
+    "name": "古代樹の枝",
+    "baseQuality": "A",
+    "attributes": ["GRASS", "EARTH"],
+    "isRare": true,
+    "description": "何百年も生きた大樹の枝。魔力を宿す。"
+  },
+  {
+    "id": "mat_rare_mushroom",
+    "name": "光るキノコ",
+    "baseQuality": "B",
+    "attributes": ["GRASS", "WATER"],
+    "isRare": true,
+    "description": "暗闘で発光する珍しいキノコ。"
+  },
+  {
+    "id": "mat_crystal",
+    "name": "水晶",
+    "baseQuality": "A",
+    "attributes": ["EARTH", "WATER"],
+    "isRare": true,
+    "description": "透明に輝く美しい結晶。"
+  },
+  {
+    "id": "mat_magic_stone",
+    "name": "魔法石",
+    "baseQuality": "A",
+    "attributes": ["FIRE", "WATER", "EARTH", "WIND"],
+    "isRare": true,
+    "description": "魔力を秘めた神秘の石。"
+  },
+  {
+    "id": "mat_dragon_scale",
+    "name": "竜の鱗",
+    "baseQuality": "S",
+    "attributes": ["FIRE"],
+    "isRare": true,
+    "description": "伝説の竜から得られる最高級素材。"
+  },
+  {
+    "id": "mat_shell",
+    "name": "貝殻",
+    "baseQuality": "D",
+    "attributes": ["WATER"],
+    "isRare": false,
+    "description": "海岸で拾える綺麗な貝殻。"
+  },
+  {
+    "id": "mat_salt",
+    "name": "塩",
+    "baseQuality": "D",
+    "attributes": ["WATER", "EARTH"],
+    "isRare": false,
+    "description": "料理に欠かせない塩。"
+  },
+  {
+    "id": "mat_wind_feather",
+    "name": "風切り羽",
+    "baseQuality": "B",
+    "attributes": ["WIND"],
+    "isRare": false,
+    "description": "風属性を持つ鳥の羽根。"
+  },
+  {
+    "id": "mat_wind_flower",
+    "name": "風花",
+    "baseQuality": "C",
+    "attributes": ["WIND", "GRASS"],
+    "isRare": false,
+    "description": "風に揺れる可憐な花。"
+  }
+]
