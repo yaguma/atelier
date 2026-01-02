@@ -1,0 +1,259 @@
+[
+  {
+    "id": "G",
+    "name": "見習い錬金術師",
+    "maxPromotionGauge": 50,
+    "dayLimit": 30,
+    "specialRules": [],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "item_healing_potion", "quantity": 3 }
+      ],
+      "dayLimit": 5
+    },
+    "unlockedGatheringCards": [
+      "gather_grassland",
+      "gather_forest",
+      "gather_river",
+      "gather_herb_garden",
+      "gather_beach"
+    ],
+    "unlockedRecipeCards": [
+      "recipe_healing_potion",
+      "recipe_antidote",
+      "recipe_mushroom_soup",
+      "recipe_fish_dish",
+      "recipe_shell_accessory"
+    ]
+  },
+  {
+    "id": "F",
+    "name": "駆け出し錬金術師",
+    "maxPromotionGauge": 80,
+    "dayLimit": 30,
+    "specialRules": [
+      {
+        "type": "QUEST_LIMIT",
+        "value": 2,
+        "description": "同時受注上限: 2件"
+      }
+    ],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "item_bomb", "quantity": 2 },
+        { "itemId": "item_iron_sword", "quantity": 1 }
+      ],
+      "dayLimit": 7
+    },
+    "unlockedGatheringCards": [
+      "gather_cave",
+      "gather_swamp"
+    ],
+    "unlockedRecipeCards": [
+      "recipe_bomb",
+      "recipe_iron_sword"
+    ]
+  },
+  {
+    "id": "E",
+    "name": "一人前錬金術師",
+    "maxPromotionGauge": 120,
+    "dayLimit": 30,
+    "specialRules": [
+      {
+        "type": "QUEST_LIMIT",
+        "value": 3,
+        "description": "同時受注上限: 3件"
+      },
+      {
+        "type": "QUALITY_PENALTY",
+        "condition": "D",
+        "description": "品質D以下の納品は貢献度半減"
+      }
+    ],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "item_high_healing_potion", "quantity": 2, "minQuality": "C" }
+      ],
+      "dayLimit": 7
+    },
+    "unlockedGatheringCards": [
+      "gather_mountain"
+    ],
+    "unlockedRecipeCards": [
+      "recipe_magic_potion",
+      "recipe_high_healing_potion"
+    ]
+  },
+  {
+    "id": "D",
+    "name": "熟練錬金術師",
+    "maxPromotionGauge": 180,
+    "dayLimit": 30,
+    "specialRules": [
+      {
+        "type": "QUEST_LIMIT",
+        "value": 3,
+        "description": "同時受注上限: 3件"
+      },
+      {
+        "type": "QUALITY_PENALTY",
+        "condition": "D",
+        "description": "品質D以下の納品は貢献度半減"
+      },
+      {
+        "type": "DEADLINE_REDUCTION",
+        "value": 1,
+        "description": "期限が1日短縮"
+      }
+    ],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "item_silver_sword", "quantity": 1, "minQuality": "B" },
+        { "itemId": "item_mega_bomb", "quantity": 1 }
+      ],
+      "dayLimit": 10
+    },
+    "unlockedGatheringCards": [
+      "gather_volcano"
+    ],
+    "unlockedRecipeCards": [
+      "recipe_silver_sword",
+      "recipe_mega_bomb"
+    ]
+  },
+  {
+    "id": "C",
+    "name": "上級錬金術師",
+    "maxPromotionGauge": 250,
+    "dayLimit": 30,
+    "specialRules": [
+      {
+        "type": "QUEST_LIMIT",
+        "value": 4,
+        "description": "同時受注上限: 4件"
+      },
+      {
+        "type": "QUALITY_PENALTY",
+        "condition": "C",
+        "description": "品質C以下の納品は貢献度半減"
+      },
+      {
+        "type": "DEADLINE_REDUCTION",
+        "value": 1,
+        "description": "期限が1日短縮"
+      }
+    ],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "item_elixir", "quantity": 1, "minQuality": "B" }
+      ],
+      "dayLimit": 10
+    },
+    "unlockedGatheringCards": [
+      "gather_ancient_forest"
+    ],
+    "unlockedRecipeCards": [
+      "recipe_elixir",
+      "recipe_magic_staff"
+    ]
+  },
+  {
+    "id": "B",
+    "name": "准マイスター",
+    "maxPromotionGauge": 350,
+    "dayLimit": 30,
+    "specialRules": [
+      {
+        "type": "QUEST_LIMIT",
+        "value": 4,
+        "description": "同時受注上限: 4件"
+      },
+      {
+        "type": "QUALITY_REQUIRED",
+        "condition": "C",
+        "description": "品質C以上が納品条件"
+      },
+      {
+        "type": "DEADLINE_REDUCTION",
+        "value": 2,
+        "description": "期限が2日短縮"
+      }
+    ],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "item_crystal_sword", "quantity": 1, "minQuality": "A" }
+      ],
+      "dayLimit": 14
+    },
+    "unlockedGatheringCards": [
+      "gather_crystal_cave"
+    ],
+    "unlockedRecipeCards": [
+      "recipe_crystal_sword"
+    ]
+  },
+  {
+    "id": "A",
+    "name": "マイスター",
+    "maxPromotionGauge": 500,
+    "dayLimit": 30,
+    "specialRules": [
+      {
+        "type": "QUEST_LIMIT",
+        "value": 5,
+        "description": "同時受注上限: 5件"
+      },
+      {
+        "type": "QUALITY_REQUIRED",
+        "condition": "B",
+        "description": "品質B以上が納品条件"
+      },
+      {
+        "type": "DEADLINE_REDUCTION",
+        "value": 2,
+        "description": "期限が2日短縮"
+      }
+    ],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "item_philosophers_stone", "quantity": 1, "minQuality": "A" }
+      ],
+      "dayLimit": 14
+    },
+    "unlockedGatheringCards": [
+      "gather_dragon_peak"
+    ],
+    "unlockedRecipeCards": [
+      "recipe_philosophers_stone"
+    ]
+  },
+  {
+    "id": "S",
+    "name": "伝説の錬金術師",
+    "maxPromotionGauge": 999,
+    "dayLimit": 30,
+    "specialRules": [
+      {
+        "type": "QUEST_LIMIT",
+        "value": 5,
+        "description": "同時受注上限: 5件"
+      },
+      {
+        "type": "QUALITY_REQUIRED",
+        "condition": "A",
+        "description": "品質A以上が納品条件"
+      },
+      {
+        "type": "DEADLINE_REDUCTION",
+        "value": 3,
+        "description": "期限が3日短縮"
+      }
+    ],
+    "promotionTest": null,
+    "unlockedGatheringCards": [],
+    "unlockedRecipeCards": [
+      "recipe_dragon_blade"
+    ]
+  }
+]
