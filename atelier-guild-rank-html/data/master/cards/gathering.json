@@ -1,0 +1,157 @@
+[
+  {
+    "id": "gather_grassland",
+    "name": "草原",
+    "type": "GATHERING",
+    "rarity": "COMMON",
+    "unlockRank": "G",
+    "cost": 1,
+    "description": "穏やかな草原。薬草や花が採れる。",
+    "materials": [
+      { "materialId": "mat_herb", "quantity": 2, "probability": 1.0 },
+      { "materialId": "mat_flower", "quantity": 1, "probability": 0.5 }
+    ]
+  },
+  {
+    "id": "gather_forest",
+    "name": "森林",
+    "type": "GATHERING",
+    "rarity": "COMMON",
+    "unlockRank": "G",
+    "cost": 1,
+    "description": "深い森。木材やキノコが手に入る。",
+    "materials": [
+      { "materialId": "mat_wood", "quantity": 2, "probability": 1.0 },
+      { "materialId": "mat_mushroom", "quantity": 1, "probability": 0.6 }
+    ]
+  },
+  {
+    "id": "gather_river",
+    "name": "清流",
+    "type": "GATHERING",
+    "rarity": "COMMON",
+    "unlockRank": "G",
+    "cost": 1,
+    "description": "澄んだ川。水と魚が採れる。",
+    "materials": [
+      { "materialId": "mat_water", "quantity": 3, "probability": 1.0 },
+      { "materialId": "mat_fish", "quantity": 1, "probability": 0.4 }
+    ]
+  },
+  {
+    "id": "gather_cave",
+    "name": "洞窟",
+    "type": "GATHERING",
+    "rarity": "UNCOMMON",
+    "unlockRank": "F",
+    "cost": 2,
+    "description": "暗い洞窟。鉱石が眠っている。",
+    "materials": [
+      { "materialId": "mat_stone", "quantity": 2, "probability": 1.0 },
+      { "materialId": "mat_iron_ore", "quantity": 1, "probability": 0.5 }
+    ]
+  },
+  {
+    "id": "gather_swamp",
+    "name": "沼地",
+    "type": "GATHERING",
+    "rarity": "UNCOMMON",
+    "unlockRank": "F",
+    "cost": 2,
+    "description": "じめじめした沼地。毒草や粘液が採れる。",
+    "materials": [
+      { "materialId": "mat_poison_herb", "quantity": 1, "probability": 0.8 },
+      { "materialId": "mat_slime", "quantity": 2, "probability": 0.6 }
+    ]
+  },
+  {
+    "id": "gather_mountain",
+    "name": "山岳",
+    "type": "GATHERING",
+    "rarity": "UNCOMMON",
+    "unlockRank": "E",
+    "cost": 2,
+    "description": "険しい山道。良質な鉱石がある。",
+    "materials": [
+      { "materialId": "mat_iron_ore", "quantity": 2, "probability": 1.0 },
+      { "materialId": "mat_silver_ore", "quantity": 1, "probability": 0.3 }
+    ]
+  },
+  {
+    "id": "gather_volcano",
+    "name": "火山地帯",
+    "type": "GATHERING",
+    "rarity": "RARE",
+    "unlockRank": "D",
+    "cost": 3,
+    "description": "灼熱の火山。火属性の素材が手に入る。",
+    "materials": [
+      { "materialId": "mat_fire_stone", "quantity": 1, "probability": 0.8 },
+      { "materialId": "mat_sulfur", "quantity": 2, "probability": 1.0 }
+    ]
+  },
+  {
+    "id": "gather_ancient_forest",
+    "name": "古代樹海",
+    "type": "GATHERING",
+    "rarity": "RARE",
+    "unlockRank": "C",
+    "cost": 2,
+    "description": "太古の森。レアなキノコや樹液がある。",
+    "materials": [
+      { "materialId": "mat_ancient_wood", "quantity": 1, "probability": 0.7 },
+      { "materialId": "mat_rare_mushroom", "quantity": 1, "probability": 0.4, "quality": "B" }
+    ]
+  },
+  {
+    "id": "gather_crystal_cave",
+    "name": "水晶洞窟",
+    "type": "GATHERING",
+    "rarity": "EPIC",
+    "unlockRank": "B",
+    "cost": 3,
+    "description": "輝く水晶の洞窟。魔法素材がある。",
+    "materials": [
+      { "materialId": "mat_crystal", "quantity": 1, "probability": 0.6, "quality": "A" },
+      { "materialId": "mat_magic_stone", "quantity": 1, "probability": 0.5 }
+    ]
+  },
+  {
+    "id": "gather_dragon_peak",
+    "name": "竜の峰",
+    "type": "GATHERING",
+    "rarity": "LEGENDARY",
+    "unlockRank": "A",
+    "cost": 3,
+    "description": "伝説の竜が住まう山。最高の素材が眠る。",
+    "materials": [
+      { "materialId": "mat_dragon_scale", "quantity": 1, "probability": 0.3, "quality": "S" },
+      { "materialId": "mat_fire_stone", "quantity": 2, "probability": 1.0, "quality": "A" }
+    ]
+  },
+  {
+    "id": "gather_herb_garden",
+    "name": "薬草園",
+    "type": "GATHERING",
+    "rarity": "COMMON",
+    "unlockRank": "G",
+    "cost": 0,
+    "description": "手入れされた薬草園。安全に採取できる。",
+    "materials": [
+      { "materialId": "mat_herb", "quantity": 1, "probability": 1.0 }
+    ]
+  },
+  {
+    "id": "gather_beach",
+    "name": "砂浜",
+    "type": "GATHERING",
+    "rarity": "COMMON",
+    "unlockRank": "G",
+    "cost": 1,
+    "description": "美しい砂浜。貝殻や塩が手に入る。",
+    "materials": [
+      { "materialId": "mat_shell", "quantity": 2, "probability": 0.8 },
+      { "materialId": "mat_salt", "quantity": 1, "probability": 1.0 }
+    ]
+  }
+]

@@ -1,0 +1,114 @@
+[
+  {
+    "id": "enhance_quality_up",
+    "name": "品質向上",
+    "type": "ENHANCEMENT",
+    "rarity": "COMMON",
+    "unlockRank": "G",
+    "cost": 0,
+    "description": "次の調合の品質を上げる。",
+    "effect": {
+      "type": "QUALITY_UP",
+      "value": 1
+    },
+    "targetAction": "ALCHEMY"
+  },
+  {
+    "id": "enhance_material_save",
+    "name": "素材節約",
+    "type": "ENHANCEMENT",
+    "rarity": "UNCOMMON",
+    "unlockRank": "F",
+    "cost": 0,
+    "description": "次の調合で素材を1つ節約する。",
+    "effect": {
+      "type": "MATERIAL_SAVE",
+      "value": 1
+    },
+    "targetAction": "ALCHEMY"
+  },
+  {
+    "id": "enhance_gathering_bonus",
+    "name": "採取ボーナス",
+    "type": "ENHANCEMENT",
+    "rarity": "COMMON",
+    "unlockRank": "G",
+    "cost": 0,
+    "description": "次の採取で獲得素材+1。",
+    "effect": {
+      "type": "GATHERING_BONUS",
+      "value": 1
+    },
+    "targetAction": "GATHERING"
+  },
+  {
+    "id": "enhance_rare_chance",
+    "name": "幸運のお守り",
+    "type": "ENHANCEMENT",
+    "rarity": "RARE",
+    "unlockRank": "E",
+    "cost": 0,
+    "description": "次の採取でレア素材確率UP。",
+    "effect": {
+      "type": "RARE_CHANCE_UP",
+      "value": 20
+    },
+    "targetAction": "GATHERING"
+  },
+  {
+    "id": "enhance_gold_bonus",
+    "name": "商売上手",
+    "type": "ENHANCEMENT",
+    "rarity": "UNCOMMON",
+    "unlockRank": "F",
+    "cost": 0,
+    "description": "次の納品で報酬金+20%。",
+    "effect": {
+      "type": "GOLD_BONUS",
+      "value": 20
+    },
+    "targetAction": "DELIVERY"
+  },
+  {
+    "id": "enhance_contribution_bonus",
+    "name": "信頼の証",
+    "type": "ENHANCEMENT",
+    "rarity": "RARE",
+    "unlockRank": "D",
+    "cost": 0,
+    "description": "次の納品で貢献度+20%。",
+    "effect": {
+      "type": "CONTRIBUTION_BONUS",
+      "value": 20
+    },
+    "targetAction": "DELIVERY"
+  },
+  {
+    "id": "enhance_all_bonus",
+    "name": "錬金術師の奥義",
+    "type": "ENHANCEMENT",
+    "rarity": "EPIC",
+    "unlockRank": "B",
+    "cost": 0,
+    "description": "次の行動の全効果+10%。",
+    "effect": {
+      "type": "ALL_BONUS",
+      "value": 10
+    },
+    "targetAction": "ALL"
+  },
+  {
+    "id": "enhance_quality_up_high",
+    "name": "高品質調合",
+    "type": "ENHANCEMENT",
+    "rarity": "RARE",
+    "unlockRank": "C",
+    "cost": 0,
+    "description": "次の調合の品質を大きく上げる。",
+    "effect": {
+      "type": "QUALITY_UP",
+      "value": 2
+    },
+    "targetAction": "ALCHEMY"
+  }
+]
