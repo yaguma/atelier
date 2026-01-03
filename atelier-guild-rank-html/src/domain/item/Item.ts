@@ -64,6 +64,8 @@ export interface IUsedMaterial {
  * 調合済みアイテム（インベントリ内）
  */
 export interface ICraftedItem {
+  /** インスタンスID（一意識別子） */
+  id: string;
   /** アイテムID（IItem.idを参照） */
   itemId: string;
   /** 品質 */
