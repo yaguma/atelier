@@ -90,7 +90,7 @@ QUEST_ACCEPT → GATHERING → ALCHEMY → DELIVERY → (日数経過) → QUEST
 
 ### TASK-0103: ステートマネージャー 🔵
 
-- [ ] タスク完了
+- [x] タスク完了
 
 **種別**: TDD
 **推定時間**: 8時間
