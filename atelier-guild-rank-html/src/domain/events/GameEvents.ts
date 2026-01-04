@@ -15,6 +15,8 @@ import { GamePhase, GuildRank, Quality, ItemCategory } from '@domain/common/type
  * ゲームイベントタイプ
  */
 export enum GameEventType {
+  /** ゲーム開始 */
+  GAME_STARTED = 'GAME_STARTED',
   /** フェーズ変更 */
   PHASE_CHANGED = 'PHASE_CHANGED',
   /** 日数進行 */
@@ -38,6 +40,14 @@ export enum GameEventType {
 // ============================================================================
 // イベントペイロード型定義
 // ============================================================================
+
+/**
+ * ゲーム開始イベント
+ */
+export interface GameStartedEvent {
+  type: GameEventType.GAME_STARTED;
+  payload: Record<string, never>;
+}
 
 /**
  * フェーズ変更イベント
@@ -151,6 +161,7 @@ export interface GameOverEvent {
  * ゲームイベント（Discriminated Union）
  */
 export type GameEvent =
+  | GameStartedEvent
   | PhaseChangedEvent
   | DayAdvancedEvent
   | QuestAcceptedEvent
