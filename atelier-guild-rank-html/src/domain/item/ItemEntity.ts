@@ -94,6 +94,7 @@ export class Item implements IItem {
  * インベントリ内の実際のアイテムを表す不変オブジェクト
  */
 export class CraftedItem implements ICraftedItem {
+  public readonly id: string;
   public readonly itemId: string;
   public readonly quality: Quality;
   private readonly _attributeValues: readonly IAttributeValue[];
@@ -114,6 +115,7 @@ export class CraftedItem implements ICraftedItem {
   }
 
   constructor(data: ICraftedItem) {
+    this.id = data.id;
     this.itemId = data.itemId;
     this.quality = data.quality;
     // 不変性を保証するため、深いコピーを作成
