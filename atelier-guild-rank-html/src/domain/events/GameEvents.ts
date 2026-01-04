@@ -37,6 +37,8 @@ export enum GameEventType {
   GAME_CLEAR = 'GAME_CLEAR',
   /** ゲームオーバー */
   GAME_OVER = 'GAME_OVER',
+  /** アイテム購入 */
+  ITEM_PURCHASED = 'ITEM_PURCHASED',
 }
 
 // ============================================================================
@@ -168,6 +170,19 @@ export interface GameOverEvent {
 }
 
 /**
+ * アイテム購入イベント
+ */
+export interface ItemPurchasedEvent {
+  type: GameEventType.ITEM_PURCHASED;
+  payload: {
+    shopItemId: string;
+    itemType: string;
+    itemId: string;
+    price: number;
+  };
+}
+
+/**
  * ゲームイベント（Discriminated Union）
  */
 export type GameEvent =
@@ -181,7 +196,8 @@ export type GameEvent =
   | RankUpTestStartedEvent
   | RankUpEvent
   | GameClearEvent
-  | GameOverEvent;
+  | GameOverEvent
+  | ItemPurchasedEvent;
 
 // ============================================================================
 // イベントバス
