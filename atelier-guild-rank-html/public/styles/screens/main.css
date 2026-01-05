@@ -1,0 +1,228 @@
+/**
+ * メイン画面スタイル
+ */
+
+.screen-main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-main);
+}
+
+/* ========================================
+ * ヘッダー
+ * ======================================== */
+
+.main-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background-color: var(--color-bg-dark);
+  color: var(--color-text-light);
+  gap: var(--spacing-md);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.header-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+/* ランク表示 */
+.header-rank {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* 昇格ゲージ */
+.header-rank-progress {
+  width: 120px;
+}
+
+/* ========================================
+ * フェーズインジケーター
+ * ======================================== */
+
+.main-phase-bar {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background-color: rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: center;
+}
+
+/* ========================================
+ * メインコンテンツエリア
+ * ======================================== */
+
+.main-content-wrapper {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* サイドバー */
+.main-sidebar {
+  width: 280px;
+  background-color: var(--color-bg-card);
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  padding: var(--spacing-md);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.sidebar-section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.sidebar-section-title {
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  margin-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-xs);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* メインコンテンツ */
+.main-content {
+  flex: 1;
+  padding: var(--spacing-lg);
+  overflow-y: auto;
+}
+
+.main-content-inner {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* ========================================
+ * フッター（手札・アクション）
+ * ======================================== */
+
+.main-footer {
+  background-color: var(--color-bg-card);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding: var(--spacing-md) var(--spacing-lg);
+}
+
+.footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-lg);
+}
+
+/* 手札エリア */
+.hand-area {
+  display: flex;
+  gap: var(--spacing-sm);
+  overflow-x: auto;
+  padding: var(--spacing-xs) 0;
+  flex: 1;
+}
+
+/* アクションボタンエリア */
+.action-area {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+/* ========================================
+ * フェーズ別コンテンツスタイル
+ * ======================================== */
+
+/* 依頼受注フェーズ */
+.phase-quest-accept {
+  /* スタイルはTASK-0125で実装 */
+}
+
+/* 採取フェーズ */
+.phase-gathering {
+  /* スタイルはTASK-0126で実装 */
+}
+
+/* 調合フェーズ */
+.phase-alchemy {
+  /* スタイルはTASK-0127で実装 */
+}
+
+/* 納品フェーズ */
+.phase-delivery {
+  /* スタイルはTASK-0128で実装 */
+}
+
+/* ========================================
+ * レスポンシブ対応
+ * ======================================== */
+
+/* タブレット */
+@media (max-width: 1023px) {
+  .main-sidebar {
+    width: 220px;
+  }
+}
+
+/* モバイル */
+@media (max-width: 599px) {
+  .main-header {
+    flex-wrap: wrap;
+    padding: var(--spacing-sm);
+  }
+
+  .header-center {
+    order: 3;
+    width: 100%;
+    margin-top: var(--spacing-sm);
+  }
+
+  .main-content-wrapper {
+    flex-direction: column;
+  }
+
+  .main-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    max-height: 200px;
+    display: none;
+  }
+
+  .main-sidebar.open {
+    display: block;
+  }
+
+  .main-content {
+    padding: var(--spacing-md);
+  }
+
+  .footer-content {
+    flex-direction: column;
+  }
+
+  .hand-area {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .action-area {
+    width: 100%;
+    justify-content: center;
+  }
+}

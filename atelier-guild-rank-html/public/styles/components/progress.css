@@ -1,0 +1,86 @@
+/**
+ * プログレスバーコンポーネントスタイル
+ */
+
+.progress-bar {
+  height: 12px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width var(--transition-normal);
+}
+
+/* 昇格ゲージバー */
+.rank-progress {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+.rank-progress .progress-bar-fill {
+  background: linear-gradient(90deg, var(--color-secondary), var(--color-secondary-light));
+}
+
+/* 日数バー */
+.day-progress {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.day-progress .progress-bar-fill {
+  background-color: var(--color-success);
+}
+
+/* 日数警告状態 */
+.day-progress.warning .progress-bar-fill {
+  background-color: var(--color-warning);
+}
+
+.day-progress.danger .progress-bar-fill {
+  background-color: var(--color-error);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* プログレス数値表示 */
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xs);
+  font-size: var(--font-size-caption);
+}
+
+.progress-label-title {
+  color: var(--color-text-secondary);
+}
+
+.progress-label-value {
+  font-family: var(--font-family-mono);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+/* プログレスバー with ラベル */
+.progress-container {
+  width: 100%;
+}
+
+/* 大きいプログレスバー */
+.progress-bar.progress-lg {
+  height: 20px;
+  border-radius: 10px;
+}
+
+/* 小さいプログレスバー */
+.progress-bar.progress-sm {
+  height: 6px;
+  border-radius: 3px;
+}

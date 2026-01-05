@@ -1,0 +1,183 @@
+/**
+ * インジケーターコンポーネントスタイル
+ */
+
+/* フェーズインジケーター */
+.phase-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.phase-step {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.phase-step-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--color-text-muted);
+  transition: all var(--transition-fast);
+}
+
+.phase-step.active .phase-step-dot {
+  background-color: var(--color-primary);
+  transform: scale(1.2);
+}
+
+.phase-step.completed .phase-step-dot {
+  background-color: var(--color-success);
+}
+
+.phase-step-label {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+}
+
+.phase-step.active .phase-step-label {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+.phase-step.completed .phase-step-label {
+  color: var(--color-success);
+}
+
+.phase-step-connector {
+  width: 20px;
+  height: 2px;
+  background-color: var(--color-text-muted);
+}
+
+.phase-step.completed + .phase-step-connector,
+.phase-step-connector.completed {
+  background-color: var(--color-success);
+}
+
+/* 行動ポイント表示 */
+.action-points {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.action-point {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--color-text-muted);
+  transition: all var(--transition-fast);
+}
+
+.action-point.active {
+  background-color: var(--color-secondary);
+  box-shadow: 0 0 6px rgba(218, 165, 32, 0.5);
+}
+
+.action-point.warning {
+  background-color: var(--color-warning);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+/* コンボカウンター */
+.combo-counter {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--color-secondary);
+  border-radius: var(--radius-button);
+  color: var(--color-bg-dark);
+}
+
+.combo-counter-label {
+  font-size: var(--font-size-caption);
+}
+
+.combo-counter-value {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-bold);
+}
+
+.combo-counter.highlight {
+  animation: comboFlash 0.5s ease;
+}
+
+@keyframes comboFlash {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* 日数カウンター */
+.day-counter {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.day-counter-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.day-counter-value {
+  font-family: var(--font-family-mono);
+  font-weight: var(--font-weight-bold);
+}
+
+.day-counter.warning {
+  color: var(--color-warning);
+}
+
+.day-counter.danger {
+  color: var(--color-error);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+/* ゴールド表示 */
+.gold-display {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.gold-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--color-secondary);
+}
+
+.gold-value {
+  font-family: var(--font-family-mono);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-secondary-dark);
+}
+
+/* ランク表示 */
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: var(--color-text-light);
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-bold);
+}
+
+.rank-badge.rank-g { background-color: #808080; }
+.rank-badge.rank-f { background-color: #8B4513; }
+.rank-badge.rank-e { background-color: #228B22; }
+.rank-badge.rank-d { background-color: #32CD32; }
+.rank-badge.rank-c { background-color: #4169E1; }
+.rank-badge.rank-b { background-color: #9932CC; }
+.rank-badge.rank-a { background-color: #B22222; }
+.rank-badge.rank-s {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}

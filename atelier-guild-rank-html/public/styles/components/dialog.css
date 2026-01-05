@@ -1,0 +1,186 @@
+/**
+ * ダイアログコンポーネントスタイル
+ */
+
+/* オーバーレイ */
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-normal), visibility var(--transition-normal);
+}
+
+.dialog-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ダイアログ本体 */
+.dialog {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-dialog);
+  box-shadow: var(--shadow-dialog);
+  max-width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.9);
+  opacity: 0;
+  transition: transform var(--transition-normal), opacity var(--transition-normal);
+}
+
+.dialog-overlay.active .dialog {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* デスクトップでは固定幅 */
+@media (min-width: 1024px) {
+  .dialog {
+    width: 500px;
+  }
+}
+
+/* タブレット */
+@media (min-width: 600px) and (max-width: 1023px) {
+  .dialog {
+    width: 70%;
+  }
+}
+
+/* ダイアログヘッダー */
+.dialog-header {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dialog-title {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.dialog-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  color: var(--color-text-secondary);
+  transition: background-color var(--transition-fast);
+}
+
+.dialog-close:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* ダイアログボディ */
+.dialog-body {
+  padding: var(--spacing-lg);
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* ダイアログフッター */
+.dialog-footer {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+}
+
+/* ダイアログバリエーション */
+
+/* 確認ダイアログ */
+.dialog.dialog-confirm .dialog-header {
+  background-color: var(--color-primary);
+  color: var(--color-text-light);
+}
+
+.dialog.dialog-confirm .dialog-title {
+  color: var(--color-text-light);
+}
+
+.dialog.dialog-confirm .dialog-close {
+  color: var(--color-text-light);
+}
+
+/* 情報ダイアログ */
+.dialog.dialog-info .dialog-header {
+  background-color: var(--color-info);
+  color: var(--color-text-light);
+}
+
+.dialog.dialog-info .dialog-title {
+  color: var(--color-text-light);
+}
+
+/* エラーダイアログ */
+.dialog.dialog-error .dialog-header {
+  background-color: var(--color-error);
+  color: var(--color-text-light);
+}
+
+.dialog.dialog-error .dialog-title {
+  color: var(--color-text-light);
+}
+
+/* 成功ダイアログ */
+.dialog.dialog-success .dialog-header {
+  background-color: var(--color-success);
+  color: var(--color-text-light);
+}
+
+/* 選択ダイアログ */
+.dialog-choices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.dialog-choice {
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-main);
+  border: 2px solid transparent;
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.dialog-choice:hover {
+  border-color: var(--color-primary);
+  background-color: rgba(139, 69, 19, 0.05);
+}
+
+.dialog-choice.selected {
+  border-color: var(--color-secondary);
+  background-color: rgba(218, 165, 32, 0.1);
+}
+
+/* 報酬カード選択ダイアログ */
+.dialog-reward-cards {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
