@@ -11,7 +11,7 @@ import {
  * TASK-0143: セーブ・ロードE2E
  * セーブ・ロードフローのE2Eテスト
  */
-describe('Save and Load Flow', () => {
+test.describe('Save and Load Flow', () => {
   test.beforeEach(async ({ page }) => {
     // テスト前にセーブデータをクリア
     await page.goto('/');

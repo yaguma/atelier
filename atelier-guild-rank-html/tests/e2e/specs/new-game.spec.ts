@@ -5,7 +5,7 @@ import { clearSaveData, setupSaveData, createDefaultSaveData } from '../support/
  * TASK-0137: タイトル→ゲーム開始E2E
  * 新規ゲーム開始フローのE2Eテスト
  */
-describe('New Game Flow', () => {
+test.describe('New Game Flow', () => {
   test.beforeEach(async ({ page }) => {
     // テスト前にセーブデータをクリア
     await page.goto('/');

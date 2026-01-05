@@ -10,7 +10,7 @@ import {
  * TASK-0142: ゲームオーバーE2E
  * ゲームオーバーフローのE2Eテスト
  */
-describe('Game Over Flow', () => {
+test.describe('Game Over Flow', () => {
   test.beforeEach(async ({ page }) => {
     // テスト前にセーブデータをクリア
     await page.goto('/');

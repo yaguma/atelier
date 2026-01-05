@@ -12,7 +12,7 @@ import {
  * TASK-0139: ショップ購入E2E
  * ショップでのカード購入フローのE2Eテスト
  */
-describe('Shop Purchase Flow', () => {
+test.describe('Shop Purchase Flow', () => {
   test.beforeEach(async ({ page }) => {
     // テスト前にセーブデータをクリア
     await page.goto('/');

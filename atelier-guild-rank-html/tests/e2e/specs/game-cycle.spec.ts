@@ -5,7 +5,7 @@ import { clearSaveData, startNewGame } from '../support/test-utils';
  * TASK-0138: 1ターンサイクルE2E
  * 1ターンのゲームサイクル（依頼受注→採取→調合→納品）のE2Eテスト
  */
-describe('One Turn Cycle', () => {
+test.describe('One Turn Cycle', () => {
   test.beforeEach(async ({ page }) => {
     // テスト前にセーブデータをクリアして新規ゲーム開始
     await page.goto('/');

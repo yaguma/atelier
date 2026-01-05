@@ -4,7 +4,7 @@ import { test, expect } from '../fixtures/test-fixtures';
  * サンプルE2Eテスト
  * E2Eテスト環境が正しくセットアップされているか確認
  */
-describe('E2E環境確認テスト', () => {
+test.describe('E2E環境確認テスト', () => {
   test('ページが読み込まれることを確認', async ({ page }) => {
     // Given: ルートURLに移動
     await page.goto('/');

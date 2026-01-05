@@ -11,7 +11,7 @@ import {
  * TASK-0140: 昇格試験E2E
  * 昇格試験フローのE2Eテスト
  */
-describe('Promotion Test Flow', () => {
+test.describe('Promotion Test Flow', () => {
   test.beforeEach(async ({ page }) => {
     // テスト前にセーブデータをクリア
     await page.goto('/');

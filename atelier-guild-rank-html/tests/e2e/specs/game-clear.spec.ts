@@ -10,7 +10,7 @@ import {
  * TASK-0141: ゲームクリアE2E
  * ゲームクリアフローのE2Eテスト
  */
-describe('Game Clear Flow', () => {
+test.describe('Game Clear Flow', () => {
   test.beforeEach(async ({ page }) => {
     // テスト前にセーブデータをクリア
     await page.goto('/');
