@@ -39,6 +39,8 @@ export enum GameEventType {
   GAME_OVER = 'GAME_OVER',
   /** アイテム購入 */
   ITEM_PURCHASED = 'ITEM_PURCHASED',
+  /** セーブエラー */
+  SAVE_ERROR = 'SAVE_ERROR',
 }
 
 // ============================================================================
@@ -183,6 +185,16 @@ export interface ItemPurchasedEvent {
 }
 
 /**
+ * セーブエラーイベント
+ */
+export interface SaveErrorEvent {
+  type: GameEventType.SAVE_ERROR;
+  payload: {
+    message: string;
+  };
+}
+
+/**
  * ゲームイベント（Discriminated Union）
  */
 export type GameEvent =
@@ -197,7 +209,8 @@ export type GameEvent =
   | RankUpEvent
   | GameClearEvent
   | GameOverEvent
-  | ItemPurchasedEvent;
+  | ItemPurchasedEvent
+  | SaveErrorEvent;
 
 // ============================================================================
 // イベントバス
