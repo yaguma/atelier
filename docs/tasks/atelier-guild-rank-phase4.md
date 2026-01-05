@@ -514,7 +514,7 @@ describe('GatheringPhaseUI', () => {
 
 ### TASK-0127: 調合フェーズUI 🔵
 
-- [ ] タスク完了
+- [x] タスク完了
 
 **種別**: TDD
 **推定時間**: 8時間
