@@ -56,9 +56,9 @@ export const testData = {
   // デフォルト日数
   defaultTotalDays: 30,
 
-  // フェーズ名
+  // フェーズ名（UIに表示されるテキスト）
   phases: {
-    QUEST_ACCEPT: '依頼受注',
+    QUEST_ACCEPT: '依頼',
     GATHERING: '採取',
     ALCHEMY: '調合',
     DELIVERY: '納品',

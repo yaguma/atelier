@@ -46,9 +46,9 @@ export class MainPage extends BasePage {
     this.goldDisplay = page.locator('.gold-display, [data-testid="gold-display"]');
     this.phaseIndicator = page.locator('.phase-indicator, [data-testid="phase-indicator"]');
 
-    // フェーズ関連
-    this.nextPhaseButton = page.locator('button:has-text("次のフェーズへ"), [data-testid="next-phase-button"]');
-    this.endDayButton = page.locator('button:has-text("1日を終える"), [data-testid="end-day-button"]');
+    // フェーズ関連（visibleなボタンを優先）
+    this.nextPhaseButton = page.locator('button.next-phase-btn:visible').first();
+    this.endDayButton = page.locator('button:has-text("1日を終える"), button.end-day-btn, [data-testid="end-day-button"]').first();
 
     // 依頼関連
     this.questCards = page.locator('.quest-card, [data-testid="quest-card"]');
