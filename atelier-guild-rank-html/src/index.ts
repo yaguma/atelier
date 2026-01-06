@@ -115,7 +115,7 @@ function updateHeaderUI(): void {
     remainingDays: playerState.rankDaysRemaining,
     gold: playerState.gold,
     actionPoints: playerState.actionPoints,
-    maxActionPoints: playerState.maxActionPoints,
+    maxActionPoints: playerState.actionPointsMax,
   });
 }
 

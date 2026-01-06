@@ -11,6 +11,7 @@ import { EventBus } from '@domain/events/GameEvents';
 import { GatheringCard } from '@domain/card/CardEntity';
 import { CardType, Quality } from '@domain/common/types';
 import { ICard } from '@domain/card/Card';
+import { createMaterialInstance } from '@domain/material/MaterialEntity';
 
 /**
  * 最大ラウンド数
@@ -148,15 +149,13 @@ export function createDraftGatheringUseCase(
     const obtained: ObtainedMaterial[] = [];
 
     for (const material of materials) {
-      // ランダムな数量を決定
-      const quantity =
-        material.minQuantity +
-        Math.floor(Math.random() * (material.maxQuantity - material.minQuantity + 1));
+      // 数量を取得（固定値）
+      const quantity = material.quantity;
 
       // ランダムな品質を決定（簡易実装）
-      const qualities: Quality[] = ['S', 'A', 'B', 'C'];
+      const qualities: Quality[] = [Quality.S, Quality.A, Quality.B, Quality.C];
       const qualityIndex = Math.floor(Math.random() * 3) + 1; // B, C が多め
-      const quality = qualities[qualityIndex] || 'C';
+      const quality = material.quality ?? qualities[qualityIndex] ?? Quality.C;
 
       obtained.push({
         materialId: material.materialId,
@@ -182,18 +181,17 @@ export function createDraftGatheringUseCase(
       );
 
       if (existingIndex >= 0) {
-        // 既存アイテムの数量を増加
-        newMaterials[existingIndex] = {
-          ...newMaterials[existingIndex],
-          quantity: newMaterials[existingIndex].quantity + material.quantity,
-        };
+        // 既存アイテムの数量を増加（addQuantityを使用）
+        newMaterials[existingIndex] = newMaterials[existingIndex].addQuantity(material.quantity);
       } else {
         // 新規アイテムを追加
-        newMaterials.push({
-          materialId: material.materialId,
-          quality: material.quality,
-          quantity: material.quantity,
-        });
+        newMaterials.push(
+          createMaterialInstance({
+            materialId: material.materialId,
+            quality: material.quality,
+            quantity: material.quantity,
+          })
+        );
       }
     }
 

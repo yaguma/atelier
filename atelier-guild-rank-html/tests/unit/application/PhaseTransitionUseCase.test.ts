@@ -32,7 +32,7 @@ describe('PhaseTransitionUseCase', () => {
       ...playerState,
       actionPoints: 0, // 行動ポイント消費済み
       gold: 100,
-      contribution: 50,
+      promotionGauge: 50,
     });
 
     // ゲーム状態を設定
@@ -119,7 +119,7 @@ describe('PhaseTransitionUseCase', () => {
       stateManager.updatePlayerState({
         ...playerState,
         actionPoints: 0,
-        maxActionPoints: 3,
+        actionPointsMax: 3,
       });
 
       await phaseTransitionUseCase.execute();

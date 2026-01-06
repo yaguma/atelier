@@ -15,7 +15,7 @@ import {
   createShopState,
 } from '@domain/services/ShopService';
 import { createMaterialInstance } from '@domain/material/MaterialEntity';
-import { Quality, GuildRank, CardType, Rarity } from '@domain/common/types';
+import { Quality, GuildRank, CardType, Rarity, ItemCategory } from '@domain/common/types';
 import {
   createGatheringCard,
   createRecipeCard,
@@ -213,11 +213,9 @@ function addCardToDeck(stateManager: StateManager, shopItem: ShopItem): void {
     unlockRank: shopItem.unlockRank,
     description: shopItem.description,
     cost: 1,
-    resultItemId: 'dummy_item',
-    resultItemName: shopItem.name,
+    outputItemId: 'dummy_item',
     requiredMaterials: [],
-    baseQuality: Quality.C,
-    categoryBonus: {},
+    category: ItemCategory.MEDICINE,
   });
 
   stateManager.updateDeckState({

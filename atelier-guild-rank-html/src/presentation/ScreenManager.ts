@@ -9,7 +9,7 @@ import { UIComponent } from './UIComponent';
 /**
  * 画面ID
  */
-export type ScreenId = 'title' | 'main' | 'shop' | 'rankUp' | 'result';
+export type ScreenId = 'title' | 'main' | 'shop' | 'rankUp' | 'result' | 'gameClear' | 'gameOver';
 
 /**
  * 画面遷移アニメーションの種類

@@ -48,21 +48,21 @@ describe('MaterialMaster', () => {
 
   describe('素材カテゴリ', () => {
     it('基本素材（薬草、水、石など）が存在する', () => {
-      const basicMaterials = ['mat_herb', 'mat_water', 'mat_stone'];
+      const basicMaterials = ['herb', 'water', 'stone'];
       basicMaterials.forEach((id) => {
         expect(mats.some((m) => m.id === id)).toBe(true);
       });
     });
 
     it('中級素材（鉱石、キノコなど）が存在する', () => {
-      const mediumMaterials = ['mat_iron_ore', 'mat_mushroom'];
+      const mediumMaterials = ['ore', 'mushroom'];
       mediumMaterials.forEach((id) => {
         expect(mats.some((m) => m.id === id)).toBe(true);
       });
     });
 
     it('レア素材（火山石、魔法素材など）が存在する', () => {
-      const rareMaterials = ['mat_fire_stone', 'mat_magic_stone'];
+      const rareMaterials = ['volcanic_stone', 'magic_stone'];
       rareMaterials.forEach((id) => {
         expect(mats.some((m) => m.id === id)).toBe(true);
       });

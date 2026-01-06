@@ -19,6 +19,7 @@ import {
   Rarity,
   ItemCategory,
   Quality,
+  QuestType,
 } from '@domain/common/types';
 import { IQuest, IActiveQuest, createActiveQuest } from '@domain/quest/QuestEntity';
 import { CraftedItem, createCraftedItem } from '@domain/item/ItemEntity';
@@ -34,8 +35,8 @@ describe('DeliverItemUseCase', () => {
     id,
     clientId: 'client1',
     condition: {
-      type: 'specific_item',
-      targetItemId: 'item_1',
+      type: QuestType.SPECIFIC,
+      itemId: 'item_1',
       quantity: 1,
     },
     contribution: 10,
@@ -79,7 +80,7 @@ describe('DeliverItemUseCase', () => {
       ...playerState,
       actionPoints: 3,
       gold: 0,
-      contribution: 0,
+      promotionGauge: 0,
     });
 
     // ゲーム状態を設定
@@ -131,7 +132,7 @@ describe('DeliverItemUseCase', () => {
       });
 
       const playerState = stateManager.getPlayerState();
-      expect(playerState.contribution).toBeGreaterThan(0);
+      expect(playerState.promotionGauge).toBeGreaterThan(0);
     });
 
     it('品質ボーナスが適用される', async () => {

@@ -43,6 +43,7 @@ describe('InventoryService', () => {
 
   // テスト用アイテムデータ
   const sampleCraftedItemData: ICraftedItem = {
+    id: 'crafted_1',
     itemId: 'healing_potion',
     quality: Quality.B,
     attributeValues: [{ attribute: Attribute.GRASS, value: 10 }],
@@ -51,6 +52,7 @@ describe('InventoryService', () => {
   };
 
   const sampleCraftedItemData2: ICraftedItem = {
+    id: 'crafted_2',
     itemId: 'bomb',
     quality: Quality.A,
     attributeValues: [{ attribute: Attribute.FIRE, value: 20 }],

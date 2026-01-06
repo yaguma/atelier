@@ -63,6 +63,7 @@ export interface CraftItemUseCase {
  * 品質の数値変換マップ
  */
 const QualityValue: Record<Quality, number> = {
+  [Quality.E]: 0,
   [Quality.D]: 1,
   [Quality.C]: 2,
   [Quality.B]: 3,

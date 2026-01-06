@@ -61,7 +61,7 @@ export function createPhaseTransitionUseCase(
     const playerState = stateManager.getPlayerState();
     stateManager.updatePlayerState({
       ...playerState,
-      actionPoints: playerState.maxActionPoints,
+      actionPoints: playerState.actionPointsMax,
     });
   };
 

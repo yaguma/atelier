@@ -103,11 +103,12 @@ describe('ItemMaster', () => {
   it('レシピカードで参照されるアイテムIDが存在する', () => {
     // レシピカードで使用されているアイテムIDが実際に存在することを確認
     const itemIds = new Set(itemList.map((i) => i.id));
+    // recipe.jsonで参照されている主要なoutputItemId
     const expectedIds = [
-      'item_healing_potion',
-      'item_antidote',
-      'item_bomb',
-      'item_iron_sword',
+      'healing_potion',
+      'antidote',
+      'bomb',
+      'steel_sword',
     ];
     expectedIds.forEach((id) => {
       expect(itemIds.has(id)).toBe(true);

@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SaveDataRepository } from '@infrastructure/repository/SaveDataRepository';
 import { ISaveData } from '@domain/save/SaveData';
-import { GamePhase, GuildRank } from '@domain/common/types';
+import { GamePhase, GuildRank, Quality, Attribute, ItemEffectType } from '@domain/common/types';
 import { createMockLocalStorage } from '../../utils/test-utils';
 
 describe('SaveDataRepository', () => {
@@ -203,20 +203,20 @@ describe('SaveDataRepository', () => {
         },
         inventoryState: {
           materials: [
-            { materialId: 'mat_herb', quality: 'C' as const, quantity: 5 },
-            { materialId: 'mat_water', quality: 'B' as const, quantity: 3 },
+            { materialId: 'mat_herb', quality: Quality.C, quantity: 5 },
+            { materialId: 'mat_water', quality: Quality.B, quantity: 3 },
           ],
           craftedItems: [
             {
               itemId: 'item_healing_potion',
-              quality: 'B' as const,
-              attributeValues: [{ attribute: 'WATER' as const, value: 8 }],
-              effectValues: [{ type: 'HP_RECOVERY' as const, value: 45 }],
+              quality: Quality.B,
+              attributeValues: [{ attribute: Attribute.WATER, value: 8 }],
+              effectValues: [{ type: ItemEffectType.HP_RECOVERY, value: 45 }],
               usedMaterials: [
                 {
                   materialId: 'mat_herb',
                   quantity: 2,
-                  quality: 'C' as const,
+                  quality: Quality.C,
                   isRare: false,
                 },
               ],

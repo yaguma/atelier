@@ -37,6 +37,7 @@ export interface RequirementProgress {
  * 品質順序マップ
  */
 const QualityOrder: Record<Quality, number> = {
+  [Quality.E]: 0,
   [Quality.D]: 1,
   [Quality.C]: 2,
   [Quality.B]: 3,

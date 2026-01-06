@@ -111,8 +111,8 @@ export function createNewGameUseCase(
       stateManager.updateGameState(gameState);
       stateManager.updatePlayerState(playerState);
 
-      // 初期デッキを生成
-      const initialDeck = deckService.createInitialDeck();
+      // 初期デッキを生成（非同期）
+      const initialDeck = await deckService.createInitialDeck();
       const shuffledDeck = deckService.shuffle(initialDeck);
       stateManager.updateDeckState(shuffledDeck);
 

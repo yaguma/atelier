@@ -17,7 +17,8 @@ import { GamePhase, GuildRank, Quality } from '@domain/common/types';
 import { GameProgress } from '@domain/game/GameState';
 import { Rank, createRank } from '@domain/rank/RankEntity';
 import type { IPromotionTest } from '@domain/rank/Rank';
-import { createCraftedItem, ICraftedItem } from '@domain/item/ItemEntity';
+import { createCraftedItem } from '@domain/item/ItemEntity';
+import type { ICraftedItem } from '@domain/item/Item';
 
 /**
  * テスト用調合済みアイテムを作成するヘルパー

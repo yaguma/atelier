@@ -2,7 +2,7 @@
   {
     "id": "G",
     "name": "見習い錬金術師",
-    "requiredContribution": 100,
+    "maxPromotionGauge": 100,
     "dayLimit": 30,
     "specialRules": [],
     "promotionTest": {
@@ -28,7 +28,7 @@
   {
     "id": "F",
     "name": "駆け出し錬金術師",
-    "requiredContribution": 200,
+    "maxPromotionGauge": 200,
     "dayLimit": 30,
     "specialRules": [
       {
@@ -56,7 +56,7 @@
   {
     "id": "E",
     "name": "一人前錬金術師",
-    "requiredContribution": 350,
+    "maxPromotionGauge": 350,
     "dayLimit": 35,
     "specialRules": [
       {
@@ -91,7 +91,7 @@
   {
     "id": "D",
     "name": "熟練錬金術師",
-    "requiredContribution": 500,
+    "maxPromotionGauge": 500,
     "dayLimit": 35,
     "specialRules": [
       {
@@ -128,7 +128,7 @@
   {
     "id": "C",
     "name": "上級錬金術師",
-    "requiredContribution": 700,
+    "maxPromotionGauge": 700,
     "dayLimit": 35,
     "specialRules": [
       {
@@ -164,7 +164,7 @@
   {
     "id": "B",
     "name": "准マイスター",
-    "requiredContribution": 1000,
+    "maxPromotionGauge": 1000,
     "dayLimit": 35,
     "specialRules": [
       {
@@ -202,7 +202,7 @@
   {
     "id": "A",
     "name": "マイスター",
-    "requiredContribution": 1500,
+    "maxPromotionGauge": 1500,
     "dayLimit": 35,
     "specialRules": [
       {
@@ -239,8 +239,8 @@
   {
     "id": "S",
     "name": "伝説の錬金術師",
-    "requiredContribution": 0,
-    "dayLimit": 0,
+    "maxPromotionGauge": 9999,
+    "dayLimit": 999,
     "specialRules": [],
     "promotionTest": null,
     "unlockedGatheringCards": [],

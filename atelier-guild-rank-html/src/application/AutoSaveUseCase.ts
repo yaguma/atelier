@@ -170,7 +170,7 @@ function convertToSaveInventoryState(
 ): IInventoryState {
   return {
     materials: inventoryState.materials.map((material) => ({
-      materialId: material.id,
+      materialId: material.materialId,
       quality: material.quality,
       quantity: material.quantity,
     })),
@@ -212,10 +212,10 @@ function convertToSaveQuestState(
   questState: ReturnType<StateManager['getQuestState']>
 ): IQuestState {
   return {
-    activeQuests: questState.activeQuests.map((quest) => ({
-      questId: quest.questId,
-      remainingDays: quest.remainingDays,
-      acceptedDay: quest.acceptedDay,
+    activeQuests: questState.activeQuests.map((activeQuest) => ({
+      questId: activeQuest.quest.id,
+      remainingDays: activeQuest.remainingDays,
+      acceptedDay: activeQuest.acceptedDay,
     })),
     todayClients: [], // TODO: 本日の依頼者リストの追加が必要
     questLimit: 3, // TODO: 同時受注上限の追加が必要

@@ -135,6 +135,7 @@ describe('Item Entity', () => {
     ];
 
     const sampleCraftedItemData = {
+      id: 'crafted_1',
       itemId: 'item_healing_potion',
       quality: Quality.B,
       attributeValues: sampleAttributeValues,

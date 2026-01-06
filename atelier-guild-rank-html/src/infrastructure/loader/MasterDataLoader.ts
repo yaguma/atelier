@@ -13,7 +13,13 @@ import { IItem } from '@domain/item/Item';
 import { IQuestTemplate } from '@domain/quest/Quest';
 import { IGuildRank } from '@domain/rank/Rank';
 import { IArtifact } from '@domain/artifact/Artifact';
-import { IMasterDataLoader, MasterDataSet } from './IMasterDataLoader';
+import {
+  IMasterDataLoader,
+  MasterDataSet,
+  IClient,
+  IInitialDeck,
+  IShopItem,
+} from './IMasterDataLoader';
 
 /**
  * マスターデータ読み込みエラー
@@ -116,6 +122,9 @@ export class MasterDataLoader implements IMasterDataLoader {
       quests,
       ranks,
       artifacts,
+      clients,
+      initialDeck,
+      shopItems,
     ] = await Promise.all([
       this.load<IGatheringCard[]>('cards/gathering.json'),
       this.load<IRecipeCard[]>('cards/recipe.json'),
@@ -125,6 +134,9 @@ export class MasterDataLoader implements IMasterDataLoader {
       this.load<IQuestTemplate[]>('quests.json'),
       this.load<IGuildRank[]>('ranks.json'),
       this.load<IArtifact[]>('artifacts.json'),
+      this.load<IClient[]>('clients.json'),
+      this.load<IInitialDeck>('initial_deck.json'),
+      this.load<IShopItem[]>('shop_items.json'),
     ]);
 
     return {
@@ -138,6 +150,9 @@ export class MasterDataLoader implements IMasterDataLoader {
       quests,
       ranks,
       artifacts,
+      clients,
+      initialDeck,
+      shopItems,
     };
   }
 

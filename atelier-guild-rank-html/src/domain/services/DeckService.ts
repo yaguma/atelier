@@ -1,6 +1,7 @@
 /**
  * デッキドメインサービス
  * TASK-0090: デッキドメインサービス
+ * TASK-0148: 初期デッキ生成のマスターデータ対応
  *
  * デッキの操作（追加、削除、ドロー、使用、シャッフル）を管理する
  */
@@ -13,8 +14,14 @@ import {
   createRecipeCard,
   createEnhancementCard,
 } from '@domain/card/CardEntity';
-import type { Card } from '@domain/card/Card';
+import type {
+  Card,
+  IGatheringCard,
+  IRecipeCard,
+  IEnhancementCard,
+} from '@domain/card/Card';
 import { CardType, GuildRank, Rarity, EffectType, EnhancementTarget, ItemCategory } from '@domain/common/types';
+import type { IMasterDataLoader, MasterDataSet, IInitialDeck } from '@infrastructure/loader/IMasterDataLoader';
 
 /**
  * 操作結果型
@@ -116,6 +123,16 @@ export function createDeck(cards: (GatheringCard | RecipeCard | EnhancementCard)
  * デッキに関するビジネスロジックを提供する
  */
 export class DeckService {
+  private readonly masterDataLoader?: IMasterDataLoader;
+
+  /**
+   * コンストラクタ
+   * @param masterDataLoader マスターデータローダー（オプション）
+   */
+  constructor(masterDataLoader?: IMasterDataLoader) {
+    this.masterDataLoader = masterDataLoader;
+  }
+
   /**
    * デッキにカードを追加する
    * @param deck 対象デッキ
@@ -272,10 +289,52 @@ export class DeckService {
   }
 
   /**
-   * 初期デッキを生成する
+   * 初期デッキを生成する（マスターデータ使用）
+   * マスターデータローダーが設定されている場合はinitial_deck.jsonを使用
+   * 設定されていない場合はフォールバックとしてハードコードの初期デッキを使用
    * @returns 初期デッキ
    */
-  createInitialDeck(): Deck {
+  async createInitialDeck(): Promise<Deck> {
+    if (!this.masterDataLoader) {
+      // フォールバック: ハードコードの初期デッキ
+      return this.createDefaultInitialDeck();
+    }
+
+    try {
+      const masterData = await this.masterDataLoader.loadAll();
+      const initialDeckData = masterData.initialDeck;
+
+      const cards: (GatheringCard | RecipeCard | EnhancementCard)[] = [];
+
+      // カードIDリストに基づいてカードを生成
+      // 同じIDが複数回出現する場合、各出現にユニークなIDを付与
+      const cardIdCounts = new Map<string, number>();
+
+      for (const cardId of initialDeckData.cardIds) {
+        const currentCount = cardIdCounts.get(cardId) || 0;
+        cardIdCounts.set(cardId, currentCount + 1);
+
+        // ユニークなIDを生成（2枚目以降は _2, _3...を付与）
+        const uniqueId = currentCount === 0 ? cardId : `${cardId}_${currentCount + 1}`;
+
+        const card = this.findAndCreateCard(cardId, uniqueId, masterData);
+        if (card) {
+          cards.push(card);
+        }
+      }
+
+      return createDeck(cards);
+    } catch {
+      // エラー時はフォールバック
+      return this.createDefaultInitialDeck();
+    }
+  }
+
+  /**
+   * デフォルトの初期デッキを生成する（フォールバック用）
+   * @returns 初期デッキ
+   */
+  createDefaultInitialDeck(): Deck {
     const cards: (GatheringCard | RecipeCard | EnhancementCard)[] = [];
 
     // 採取地カードを追加（各2枚）
@@ -297,6 +356,48 @@ export class DeckService {
     }
 
     return createDeck(cards);
+  }
+
+  /**
+   * マスターデータからカードを検索してエンティティを生成
+   * @param cardId 検索するカードID
+   * @param uniqueId 生成するカードに付与するユニークID
+   * @param masterData マスターデータセット
+   * @returns カードエンティティ（見つからない場合はundefined）
+   */
+  private findAndCreateCard(
+    cardId: string,
+    uniqueId: string,
+    masterData: MasterDataSet
+  ): GatheringCard | RecipeCard | EnhancementCard | undefined {
+    // 採取地カードを検索
+    const gatheringCard = masterData.cards.gathering.find(c => c.id === cardId);
+    if (gatheringCard) {
+      return createGatheringCard({
+        ...gatheringCard,
+        id: uniqueId,
+      } as IGatheringCard);
+    }
+
+    // レシピカードを検索
+    const recipeCard = masterData.cards.recipe.find(c => c.id === cardId);
+    if (recipeCard) {
+      return createRecipeCard({
+        ...recipeCard,
+        id: uniqueId,
+      } as IRecipeCard);
+    }
+
+    // 強化カードを検索
+    const enhancementCard = masterData.cards.enhancement.find(c => c.id === cardId);
+    if (enhancementCard) {
+      return createEnhancementCard({
+        ...enhancementCard,
+        id: uniqueId,
+      } as IEnhancementCard);
+    }
+
+    return undefined;
   }
 
   /**

@@ -23,6 +23,13 @@ import {
 import { Quality, EffectType, EnhancementTarget } from '@domain/common/types';
 
 /**
+ * ユニークIDを生成する
+ */
+function generateUniqueId(): string {
+  return `crafted_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+}
+
+/**
  * 操作結果型
  */
 export type Result<T> =
@@ -187,6 +194,7 @@ export class AlchemyService {
 
     // アイテムを生成
     const craftedItem = createCraftedItem({
+      id: generateUniqueId(),
       itemId: recipe.getOutputItemId(),
       quality,
       attributeValues: [],
@@ -279,6 +287,7 @@ export class AlchemyService {
 
     // アイテムを生成
     const craftedItem = createCraftedItem({
+      id: generateUniqueId(),
       itemId: recipe.getOutputItemId(),
       quality,
       attributeValues: [],

@@ -8,7 +8,7 @@
 
 import { StateManager } from '@application/StateManager';
 import { EventBus, GameEventType, Reward } from '@domain/events/GameEvents';
-import { Quality } from '@domain/common/types';
+import { Quality, QuestType } from '@domain/common/types';
 import { IActiveQuest } from '@domain/quest/QuestEntity';
 
 /**
@@ -49,6 +49,7 @@ export interface DeliverItemUseCase {
  * 品質ボーナス倍率マップ
  */
 const QualityBonusMultiplier: Record<Quality, number> = {
+  [Quality.E]: 0.25,
   [Quality.D]: 0.5,
   [Quality.C]: 1.0,
   [Quality.B]: 1.25,
@@ -92,14 +93,14 @@ export function createDeliverItemUseCase(
     const condition = activeQuest.quest.condition;
 
     // 特定アイテム納品条件
-    if (condition.type === 'specific_item') {
-      return condition.targetItemId === itemId;
+    if (condition.type === QuestType.SPECIFIC) {
+      return condition.itemId === itemId;
     }
 
     // カテゴリ指定条件（TODO: 将来的に拡張）
-    if (condition.type === 'category_item') {
-      // 簡易実装: 現時点ではtargetItemIdと一致するかのみチェック
-      return condition.targetItemId === itemId;
+    if (condition.type === QuestType.CATEGORY) {
+      // 簡易実装: 現時点ではitemIdと一致するかのみチェック
+      return condition.itemId === itemId;
     }
 
     return false;
@@ -159,7 +160,7 @@ export function createDeliverItemUseCase(
     stateManager.updatePlayerState({
       ...playerState,
       gold: playerState.gold + reward.gold,
-      contribution: playerState.contribution + reward.contribution,
+      promotionGauge: playerState.promotionGauge + reward.contribution,
     });
   };
 

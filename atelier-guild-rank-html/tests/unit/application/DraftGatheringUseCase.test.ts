@@ -34,8 +34,7 @@ describe('DraftGatheringUseCase', () => {
       {
         materialId: `material_${id}`,
         probability: 1.0, // 100%獲得
-        minQuantity: 1,
-        maxQuantity: 2,
+        quantity: 1,
       },
     ],
   });

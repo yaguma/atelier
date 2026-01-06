@@ -51,6 +51,7 @@ export enum CardType {
  * 素材・アイテムの品質を表す
  */
 export enum Quality {
+  E = 'E',
   D = 'D',
   C = 'C',
   B = 'B',
@@ -114,6 +115,8 @@ export enum EnhancementTarget {
   GATHERING = 'GATHERING',
   /** 調合行動を強化 */
   ALCHEMY = 'ALCHEMY',
+  /** 調合行動を強化（別名） */
+  CRAFT = 'CRAFT',
   /** 納品行動を強化 */
   DELIVERY = 'DELIVERY',
   /** 全行動を強化 */
@@ -127,6 +130,8 @@ export enum EnhancementTarget {
 export enum EffectType {
   /** 品質アップ */
   QUALITY_UP = 'QUALITY_UP',
+  /** 品質ブースト（調合時） */
+  QUALITY_BOOST = 'QUALITY_BOOST',
   /** 素材節約 */
   MATERIAL_SAVE = 'MATERIAL_SAVE',
   /** 獲得素材+1 */
@@ -135,6 +140,8 @@ export enum EffectType {
   RARE_CHANCE_UP = 'RARE_CHANCE_UP',
   /** 報酬金アップ */
   GOLD_BONUS = 'GOLD_BONUS',
+  /** ゴールドアップ（別名） */
+  GOLD_UP = 'GOLD_UP',
   /** 貢献度アップ */
   CONTRIBUTION_BONUS = 'CONTRIBUTION_BONUS',
   /** 行動コスト軽減 */
@@ -173,6 +180,8 @@ export enum ItemCategory {
 export enum ItemEffectType {
   /** HP回復 */
   HP_RECOVERY = 'HP_RECOVERY',
+  /** HP回復（別名） */
+  HEAL = 'HEAL',
   /** 攻撃力アップ */
   ATTACK_UP = 'ATTACK_UP',
   /** 防御力アップ */

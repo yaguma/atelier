@@ -113,7 +113,7 @@ export function createStartPromotionTestUseCase(
       }
 
       // 昇格ゲージチェック
-      if (playerState.promotionGauge < playerState.maxPromotionGauge) {
+      if (playerState.promotionGauge < playerState.promotionGaugeMax) {
         return {
           success: false,
           error: 'INSUFFICIENT_PROMOTION_GAUGE',

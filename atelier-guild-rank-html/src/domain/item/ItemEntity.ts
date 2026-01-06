@@ -26,6 +26,7 @@ import type {
  * 品質に応じた補正倍率
  */
 const QualityMultiplier: Record<Quality, number> = {
+  [Quality.E]: 0.25,
   [Quality.D]: 0.5,
   [Quality.C]: 1.0,
   [Quality.B]: 1.5,

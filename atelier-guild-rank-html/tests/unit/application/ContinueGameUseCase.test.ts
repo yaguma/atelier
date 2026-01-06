@@ -16,7 +16,7 @@ import { GameFlowManager, createGameFlowManager } from '@application/GameFlowMan
 import { EventBus, createEventBus, GameEventType } from '@domain/events/GameEvents';
 import { ISaveDataRepository } from '@infrastructure/repository/ISaveDataRepository';
 import { ISaveData } from '@domain/save/SaveData';
-import { GamePhase, GuildRank } from '@domain/common/types';
+import { GamePhase, GuildRank, Quality } from '@domain/common/types';
 
 describe('ContinueGameUseCase', () => {
   let continueGameUseCase: ContinueGameUseCase;
@@ -49,7 +49,7 @@ describe('ContinueGameUseCase', () => {
       ownedCards: ['card1', 'card2', 'card3', 'card4', 'card5', 'card6'],
     },
     inventoryState: {
-      materials: [{ materialId: 'herb', quality: 'C', quantity: 5 }],
+      materials: [{ materialId: 'herb', quality: Quality.C, quantity: 5 }],
       craftedItems: [],
       storageLimit: 20,
     },

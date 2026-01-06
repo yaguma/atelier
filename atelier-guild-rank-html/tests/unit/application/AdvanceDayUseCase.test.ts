@@ -13,7 +13,7 @@ import {
 } from '@application/AdvanceDayUseCase';
 import { StateManager, createStateManager } from '@application/StateManager';
 import { EventBus, createEventBus, GameEventType } from '@domain/events/GameEvents';
-import { GamePhase, GuildRank } from '@domain/common/types';
+import { GamePhase, GuildRank, QuestType } from '@domain/common/types';
 import { IQuest, IActiveQuest } from '@domain/quest/QuestEntity';
 
 describe('AdvanceDayUseCase', () => {
@@ -26,8 +26,8 @@ describe('AdvanceDayUseCase', () => {
     id,
     clientId: 'client1',
     condition: {
-      type: 'specific_item',
-      targetItemId: 'item_1',
+      type: QuestType.SPECIFIC,
+      itemId: 'item_1',
       quantity: 1,
     },
     contribution: 10,
@@ -56,7 +56,7 @@ describe('AdvanceDayUseCase', () => {
       ...playerState,
       actionPoints: 3,
       gold: 100,
-      contribution: 50,
+      promotionGauge: 50,
       rankDaysRemaining: 30,
     });
 
@@ -150,7 +150,6 @@ describe('AdvanceDayUseCase', () => {
       const initialContribution = 50;
       stateManager.updatePlayerState({
         ...playerState,
-        contribution: initialContribution,
         promotionGauge: initialContribution,
       });
 

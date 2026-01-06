@@ -99,6 +99,7 @@ describe('QuestJudgmentService', () => {
 
   // テスト用アイテムデータ
   const healingPotionItem: ICraftedItem = {
+    id: 'crafted_healing_potion_1',
     itemId: 'healing_potion',
     quality: Quality.B,
     attributeValues: [],
@@ -107,6 +108,7 @@ describe('QuestJudgmentService', () => {
   };
 
   const medicineItem: ICraftedItem = {
+    id: 'crafted_medicine_1',
     itemId: 'medicine_1',
     quality: Quality.A,
     attributeValues: [],
@@ -115,6 +117,7 @@ describe('QuestJudgmentService', () => {
   };
 
   const fireItem: ICraftedItem = {
+    id: 'crafted_fire_1',
     itemId: 'fire_item_1',
     quality: Quality.B,
     attributeValues: [{ attribute: Attribute.FIRE, value: 60 }],

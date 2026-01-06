@@ -47,7 +47,7 @@ describe('CraftItemUseCase', () => {
       },
     ],
     outputItemId: `item_${id}`,
-    category: ItemCategory.CONSUMABLE,
+    category: ItemCategory.MEDICINE,
   });
 
   // テスト用の強化カードデータ

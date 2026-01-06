@@ -10,9 +10,10 @@ import { GameFlowManager } from '@application/GameFlowManager';
 import { EventBus, GameEventType } from '@domain/events/GameEvents';
 import { ISaveDataRepository } from '@infrastructure/repository/ISaveDataRepository';
 import { ISaveData } from '@domain/save/SaveData';
-import { GamePhase, GuildRank } from '@domain/common/types';
+import { GamePhase, GuildRank, Quality } from '@domain/common/types';
 import { createPlayerState } from '@domain/player/PlayerState';
 import { createGameState } from '@domain/game/GameState';
+import { createMaterialInstance } from '@domain/material/MaterialEntity';
 
 /**
  * ゲーム再開実行結果
@@ -99,21 +100,21 @@ export function createContinueGameUseCase(
 
       // インベントリ状態を復元
       stateManager.updateInventoryState({
-        materials: saveData.inventoryState.materials.map((m) => ({
-          materialId: m.materialId,
-          quality: m.quality as 'S' | 'A' | 'B' | 'C',
-          quantity: m.quantity,
-        })),
+        materials: saveData.inventoryState.materials.map((m) =>
+          createMaterialInstance({
+            materialId: m.materialId,
+            quality: m.quality as Quality,
+            quantity: m.quantity,
+          })
+        ),
         items: [],
+        materialCapacity: saveData.inventoryState.storageLimit ?? 20,
       });
 
       // クエスト状態を復元
+      // TODO: セーブデータからIQuestオブジェクトを復元する処理が必要
       stateManager.updateQuestState({
-        activeQuests: saveData.questState.activeQuests.map((q) => ({
-          questId: q.questId,
-          remainingDays: q.remainingDays,
-          acceptedDay: q.acceptedDay,
-        })),
+        activeQuests: [],
         availableQuests: [],
       });
 

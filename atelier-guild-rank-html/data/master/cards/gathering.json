@@ -3,10 +3,13 @@
     "id": "gathering_backyard",
     "name": "裏庭",
     "type": "GATHERING",
-    "baseCost": 0,
+    "cost": 0,
     "presentationCount": 2,
     "rareRate": 0,
-    "materialPool": ["weed", "water"],
+    "materials": [
+      { "materialId": "weed", "quantity": 1, "probability": 0.9 },
+      { "materialId": "water", "quantity": 1, "probability": 0.9 }
+    ],
     "rarity": "COMMON",
     "unlockRank": "G",
     "description": "いつでも使える、低品質"
@@ -15,10 +18,15 @@
     "id": "gathering_nearby_forest",
     "name": "近くの森",
     "type": "GATHERING",
-    "baseCost": 0,
+    "cost": 0,
     "presentationCount": 3,
     "rareRate": 10,
-    "materialPool": ["herb", "mushroom", "wood", "pure_water"],
+    "materials": [
+      { "materialId": "herb", "quantity": 1, "probability": 0.8 },
+      { "materialId": "mushroom", "quantity": 1, "probability": 0.7 },
+      { "materialId": "wood", "quantity": 1, "probability": 0.6 },
+      { "materialId": "pure_water", "quantity": 1, "probability": 0.5 }
+    ],
     "rarity": "COMMON",
     "unlockRank": "G",
     "description": "基本素材、安定"
@@ -27,10 +35,15 @@
     "id": "gathering_riverside",
     "name": "川辺",
     "type": "GATHERING",
-    "baseCost": 0,
+    "cost": 0,
     "presentationCount": 3,
     "rareRate": 10,
-    "materialPool": ["fish", "water_grass", "sand", "pure_water"],
+    "materials": [
+      { "materialId": "fish", "quantity": 1, "probability": 0.7 },
+      { "materialId": "water_grass", "quantity": 1, "probability": 0.8 },
+      { "materialId": "sand", "quantity": 1, "probability": 0.9 },
+      { "materialId": "pure_water", "quantity": 1, "probability": 0.6 }
+    ],
     "rarity": "COMMON",
     "unlockRank": "F",
     "description": "水属性特化"
@@ -39,10 +52,13 @@
     "id": "gathering_herb_garden",
     "name": "薬草園",
     "type": "GATHERING",
-    "baseCost": 0,
+    "cost": 0,
     "presentationCount": 2,
     "rareRate": 5,
-    "materialPool": ["herb", "flower"],
+    "materials": [
+      { "materialId": "herb", "quantity": 1, "probability": 0.9 },
+      { "materialId": "flower", "quantity": 1, "probability": 0.8 }
+    ],
     "rarity": "COMMON",
     "unlockRank": "G",
     "description": "手入れされた薬草園"
@@ -51,10 +67,14 @@
     "id": "gathering_beach",
     "name": "砂浜",
     "type": "GATHERING",
-    "baseCost": 0,
+    "cost": 0,
     "presentationCount": 3,
     "rareRate": 5,
-    "materialPool": ["shell", "salt", "sand"],
+    "materials": [
+      { "materialId": "shell", "quantity": 1, "probability": 0.8 },
+      { "materialId": "salt", "quantity": 1, "probability": 0.7 },
+      { "materialId": "sand", "quantity": 1, "probability": 0.9 }
+    ],
     "rarity": "COMMON",
     "unlockRank": "G",
     "description": "貝殻や塩が手に入る"
@@ -63,10 +83,14 @@
     "id": "gathering_swamp",
     "name": "沼地",
     "type": "GATHERING",
-    "baseCost": 1,
+    "cost": 1,
     "presentationCount": 3,
     "rareRate": 15,
-    "materialPool": ["poison_mushroom", "slime", "water_grass"],
+    "materials": [
+      { "materialId": "poison_mushroom", "quantity": 1, "probability": 0.7 },
+      { "materialId": "slime", "quantity": 1, "probability": 0.8 },
+      { "materialId": "water_grass", "quantity": 1, "probability": 0.6 }
+    ],
     "rarity": "UNCOMMON",
     "unlockRank": "F",
     "description": "毒草や粘液が採れる"
@@ -75,10 +99,14 @@
     "id": "gathering_mountain_rocks",
     "name": "山麓の岩場",
     "type": "GATHERING",
-    "baseCost": 1,
+    "cost": 1,
     "presentationCount": 4,
     "rareRate": 15,
-    "materialPool": ["ore", "stone", "rare_ore"],
+    "materials": [
+      { "materialId": "ore", "quantity": 1, "probability": 0.7 },
+      { "materialId": "stone", "quantity": 1, "probability": 0.9 },
+      { "materialId": "rare_ore", "quantity": 1, "probability": 0.3 }
+    ],
     "rarity": "UNCOMMON",
     "unlockRank": "E",
     "description": "火・土属性"
@@ -87,10 +115,14 @@
     "id": "gathering_deep_forest",
     "name": "深い森",
     "type": "GATHERING",
-    "baseCost": 1,
+    "cost": 1,
     "presentationCount": 4,
     "rareRate": 15,
-    "materialPool": ["ancient_wood", "rare_mushroom", "herb"],
+    "materials": [
+      { "materialId": "ancient_wood", "quantity": 1, "probability": 0.4 },
+      { "materialId": "rare_mushroom", "quantity": 1, "probability": 0.5 },
+      { "materialId": "herb", "quantity": 1, "probability": 0.8 }
+    ],
     "rarity": "UNCOMMON",
     "unlockRank": "E",
     "description": "レアな木材やキノコ"
@@ -99,10 +131,15 @@
     "id": "gathering_deep_cave",
     "name": "奥地の洞窟",
     "type": "GATHERING",
-    "baseCost": 1,
+    "cost": 1,
     "presentationCount": 4,
     "rareRate": 20,
-    "materialPool": ["rare_moss", "ore", "magic_material", "crystal"],
+    "materials": [
+      { "materialId": "rare_moss", "quantity": 1, "probability": 0.5 },
+      { "materialId": "ore", "quantity": 1, "probability": 0.7 },
+      { "materialId": "magic_material", "quantity": 1, "probability": 0.2 },
+      { "materialId": "crystal", "quantity": 1, "probability": 0.4 }
+    ],
     "rarity": "UNCOMMON",
     "unlockRank": "D",
     "description": "レア素材多め"
@@ -111,10 +148,15 @@
     "id": "gathering_volcano",
     "name": "火山地帯",
     "type": "GATHERING",
-    "baseCost": 2,
+    "cost": 2,
     "presentationCount": 5,
     "rareRate": 25,
-    "materialPool": ["volcanic_stone", "ash", "lava_crystal", "sulfur"],
+    "materials": [
+      { "materialId": "volcanic_stone", "quantity": 1, "probability": 0.5 },
+      { "materialId": "ash", "quantity": 1, "probability": 0.8 },
+      { "materialId": "lava_crystal", "quantity": 1, "probability": 0.3 },
+      { "materialId": "sulfur", "quantity": 1, "probability": 0.7 }
+    ],
     "rarity": "RARE",
     "unlockRank": "C",
     "description": "火属性特化、高品質"
@@ -123,10 +165,14 @@
     "id": "gathering_ancient_ruins",
     "name": "古代遺跡",
     "type": "GATHERING",
-    "baseCost": 2,
+    "cost": 2,
     "presentationCount": 5,
     "rareRate": 30,
-    "materialPool": ["magic_material", "ancient_fragment", "magic_stone"],
+    "materials": [
+      { "materialId": "magic_material", "quantity": 1, "probability": 0.3 },
+      { "materialId": "ancient_fragment", "quantity": 1, "probability": 0.5 },
+      { "materialId": "magic_stone", "quantity": 1, "probability": 0.4 }
+    ],
     "rarity": "RARE",
     "unlockRank": "B",
     "description": "特殊素材、最高品質"
@@ -135,10 +181,14 @@
     "id": "gathering_crystal_cave",
     "name": "水晶洞窟",
     "type": "GATHERING",
-    "baseCost": 2,
+    "cost": 2,
     "presentationCount": 5,
     "rareRate": 30,
-    "materialPool": ["crystal", "magic_stone", "rare_ore"],
+    "materials": [
+      { "materialId": "crystal", "quantity": 1, "probability": 0.5 },
+      { "materialId": "magic_stone", "quantity": 1, "probability": 0.4 },
+      { "materialId": "rare_ore", "quantity": 1, "probability": 0.5 }
+    ],
     "rarity": "EPIC",
     "unlockRank": "B",
     "description": "輝く水晶の洞窟"
@@ -147,10 +197,14 @@
     "id": "gathering_dragon_peak",
     "name": "竜の峰",
     "type": "GATHERING",
-    "baseCost": 3,
+    "cost": 3,
     "presentationCount": 6,
     "rareRate": 40,
-    "materialPool": ["dragon_scale", "volcanic_stone", "magic_material"],
+    "materials": [
+      { "materialId": "dragon_scale", "quantity": 1, "probability": 0.3 },
+      { "materialId": "volcanic_stone", "quantity": 1, "probability": 0.6 },
+      { "materialId": "magic_material", "quantity": 1, "probability": 0.4 }
+    ],
     "rarity": "LEGENDARY",
     "unlockRank": "A",
     "description": "伝説の竜が住まう山"
@@ -159,10 +213,14 @@
     "id": "gathering_sanctuary",
     "name": "聖域",
     "type": "GATHERING",
-    "baseCost": 2,
+    "cost": 2,
     "presentationCount": 5,
     "rareRate": 35,
-    "materialPool": ["holy_water", "alpine_herb", "moon_drop"],
+    "materials": [
+      { "materialId": "holy_water", "quantity": 1, "probability": 0.5 },
+      { "materialId": "alpine_herb", "quantity": 1, "probability": 0.5 },
+      { "materialId": "moon_drop", "quantity": 1, "probability": 0.3 }
+    ],
     "rarity": "EPIC",
     "unlockRank": "A",
     "description": "神聖な場所、浄化された素材"

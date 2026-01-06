@@ -26,8 +26,8 @@ describe('AcceptQuestUseCase', () => {
     id,
     clientId: 'client1',
     condition: {
-      type: 'specific_item',
-      targetItemId: 'item1',
+      type: QuestType.SPECIFIC,
+      itemId: 'item1',
       quantity: 1,
     },
     contribution: 10,

@@ -365,8 +365,8 @@ describe('DeckService', () => {
   });
 
   describe('createInitialDeck（初期デッキ生成）', () => {
-    it('初期デッキを生成できる', () => {
-      const deck = deckService.createInitialDeck();
+    it('初期デッキを生成できる（フォールバック）', async () => {
+      const deck = await deckService.createInitialDeck();
 
       expect(deck).toBeDefined();
       expect(deck.cards.length).toBeGreaterThan(0);
@@ -374,8 +374,27 @@ describe('DeckService', () => {
       expect(deck.discardPile).toEqual([]);
     });
 
-    it('初期デッキはGランクのカードのみ含む', () => {
-      const deck = deckService.createInitialDeck();
+    it('初期デッキはGランクのカードのみ含む（フォールバック）', async () => {
+      const deck = await deckService.createInitialDeck();
+
+      for (const card of deck.cards) {
+        expect(card.unlockRank).toBe(GuildRank.G);
+      }
+    });
+  });
+
+  describe('createDefaultInitialDeck（デフォルト初期デッキ生成）', () => {
+    it('デフォルト初期デッキを生成できる', () => {
+      const deck = deckService.createDefaultInitialDeck();
+
+      expect(deck).toBeDefined();
+      expect(deck.cards.length).toBeGreaterThan(0);
+      expect(deck.hand).toEqual([]);
+      expect(deck.discardPile).toEqual([]);
+    });
+
+    it('デフォルト初期デッキはGランクのカードのみ含む', () => {
+      const deck = deckService.createDefaultInitialDeck();
 
       for (const card of deck.cards) {
         expect(card.unlockRank).toBe(GuildRank.G);

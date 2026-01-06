@@ -82,7 +82,7 @@ describe('PurchaseItemUseCase', () => {
     stateManager.updatePlayerState({
       ...playerState,
       actionPoints: 3,
-      maxActionPoints: 3,
+      actionPointsMax: 3,
       gold: 1000,
       rank: GuildRank.G,
     });

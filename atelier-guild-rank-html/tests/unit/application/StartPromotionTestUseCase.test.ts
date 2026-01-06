@@ -60,7 +60,7 @@ describe('StartPromotionTestUseCase', () => {
       ...playerState,
       rank: GuildRank.G,
       promotionGauge: 100,
-      maxPromotionGauge: 100,
+      promotionGaugeMax: 100,
     });
 
     // ゲーム状態を設定
@@ -137,7 +137,7 @@ describe('StartPromotionTestUseCase', () => {
       stateManager.updatePlayerState({
         ...playerState,
         promotionGauge: 50,
-        maxPromotionGauge: 100,
+        promotionGaugeMax: 100,
       });
 
       const result = await startPromotionTestUseCase.execute();
@@ -168,7 +168,7 @@ describe('StartPromotionTestUseCase', () => {
         ...playerState,
         rank: GuildRank.S,
         promotionGauge: 100,
-        maxPromotionGauge: 100,
+        promotionGaugeMax: 100,
       });
 
       // Sランクにはpromotion testがない
