@@ -1,0 +1,514 @@
+[
+  {
+    "id": "shop_gathering_riverside",
+    "type": "card",
+    "itemId": "gathering_riverside",
+    "price": 80,
+    "stock": -1,
+    "unlockRank": "F",
+    "description": "川辺の採取地カード"
+  },
+  {
+    "id": "shop_gathering_herb_garden",
+    "type": "card",
+    "itemId": "gathering_herb_garden",
+    "price": 100,
+    "stock": -1,
+    "unlockRank": "G",
+    "description": "薬草園の採取地カード"
+  },
+  {
+    "id": "shop_gathering_swamp",
+    "type": "card",
+    "itemId": "gathering_swamp",
+    "price": 120,
+    "stock": -1,
+    "unlockRank": "F",
+    "description": "沼地の採取地カード"
+  },
+  {
+    "id": "shop_gathering_mountain_rocks",
+    "type": "card",
+    "itemId": "gathering_mountain_rocks",
+    "price": 150,
+    "stock": -1,
+    "unlockRank": "E",
+    "description": "山麓の岩場の採取地カード"
+  },
+  {
+    "id": "shop_gathering_deep_forest",
+    "type": "card",
+    "itemId": "gathering_deep_forest",
+    "price": 180,
+    "stock": -1,
+    "unlockRank": "E",
+    "description": "深い森の採取地カード"
+  },
+  {
+    "id": "shop_gathering_deep_cave",
+    "type": "card",
+    "itemId": "gathering_deep_cave",
+    "price": 250,
+    "stock": -1,
+    "unlockRank": "D",
+    "description": "奥地の洞窟の採取地カード"
+  },
+  {
+    "id": "shop_gathering_volcano",
+    "type": "card",
+    "itemId": "gathering_volcano",
+    "price": 400,
+    "stock": -1,
+    "unlockRank": "C",
+    "description": "火山地帯の採取地カード"
+  },
+  {
+    "id": "shop_gathering_ancient_ruins",
+    "type": "card",
+    "itemId": "gathering_ancient_ruins",
+    "price": 600,
+    "stock": -1,
+    "unlockRank": "B",
+    "description": "古代遺跡の採取地カード"
+  },
+  {
+    "id": "shop_gathering_crystal_cave",
+    "type": "card",
+    "itemId": "gathering_crystal_cave",
+    "price": 700,
+    "stock": -1,
+    "unlockRank": "B",
+    "description": "水晶洞窟の採取地カード"
+  },
+  {
+    "id": "shop_gathering_dragon_peak",
+    "type": "card",
+    "itemId": "gathering_dragon_peak",
+    "price": 1500,
+    "stock": -1,
+    "unlockRank": "A",
+    "description": "竜の峰の採取地カード"
+  },
+  {
+    "id": "shop_gathering_sanctuary",
+    "type": "card",
+    "itemId": "gathering_sanctuary",
+    "price": 1200,
+    "stock": -1,
+    "unlockRank": "A",
+    "description": "聖域の採取地カード"
+  },
+  {
+    "id": "shop_recipe_antidote",
+    "type": "card",
+    "itemId": "recipe_antidote",
+    "price": 100,
+    "stock": -1,
+    "unlockRank": "F",
+    "description": "解毒剤のレシピカード"
+  },
+  {
+    "id": "shop_recipe_slime_oil",
+    "type": "card",
+    "itemId": "recipe_slime_oil",
+    "price": 80,
+    "stock": -1,
+    "unlockRank": "F",
+    "description": "スライムオイルのレシピカード"
+  },
+  {
+    "id": "shop_recipe_bomb",
+    "type": "card",
+    "itemId": "recipe_bomb",
+    "price": 200,
+    "stock": -1,
+    "unlockRank": "E",
+    "description": "爆弾のレシピカード"
+  },
+  {
+    "id": "shop_recipe_steel_sword",
+    "type": "card",
+    "itemId": "recipe_steel_sword",
+    "price": 250,
+    "stock": -1,
+    "unlockRank": "E",
+    "description": "鋼の剣のレシピカード"
+  },
+  {
+    "id": "shop_recipe_high_healing_potion",
+    "type": "card",
+    "itemId": "recipe_high_healing_potion",
+    "price": 180,
+    "stock": -1,
+    "unlockRank": "E",
+    "description": "高級回復薬のレシピカード"
+  },
+  {
+    "id": "shop_recipe_magic_potion",
+    "type": "card",
+    "itemId": "recipe_magic_potion",
+    "price": 200,
+    "stock": -1,
+    "unlockRank": "E",
+    "description": "魔力の薬のレシピカード"
+  },
+  {
+    "id": "shop_recipe_silver_sword",
+    "type": "card",
+    "itemId": "recipe_silver_sword",
+    "price": 400,
+    "stock": -1,
+    "unlockRank": "D",
+    "description": "銀の剣のレシピカード"
+  },
+  {
+    "id": "shop_recipe_mega_bomb",
+    "type": "card",
+    "itemId": "recipe_mega_bomb",
+    "price": 350,
+    "stock": -1,
+    "unlockRank": "D",
+    "description": "メガボムのレシピカード"
+  },
+  {
+    "id": "shop_recipe_magic_staff",
+    "type": "card",
+    "itemId": "recipe_magic_staff",
+    "price": 500,
+    "stock": -1,
+    "unlockRank": "C",
+    "description": "魔法の杖のレシピカード"
+  },
+  {
+    "id": "shop_recipe_elixir",
+    "type": "card",
+    "itemId": "recipe_elixir",
+    "price": 600,
+    "stock": -1,
+    "unlockRank": "C",
+    "description": "エリクシルのレシピカード"
+  },
+  {
+    "id": "shop_recipe_crystal_sword",
+    "type": "card",
+    "itemId": "recipe_crystal_sword",
+    "price": 1000,
+    "stock": -1,
+    "unlockRank": "B",
+    "description": "水晶の剣のレシピカード"
+  },
+  {
+    "id": "shop_recipe_panacea",
+    "type": "card",
+    "itemId": "recipe_panacea",
+    "price": 800,
+    "stock": -1,
+    "unlockRank": "B",
+    "description": "万能薬のレシピカード"
+  },
+  {
+    "id": "shop_recipe_philosophers_stone",
+    "type": "card",
+    "itemId": "recipe_philosophers_stone",
+    "price": 5000,
+    "stock": 1,
+    "unlockRank": "A",
+    "description": "賢者の石のレシピカード（限定1枚）"
+  },
+  {
+    "id": "shop_recipe_dragon_blade",
+    "type": "card",
+    "itemId": "recipe_dragon_blade",
+    "price": 3000,
+    "stock": 1,
+    "unlockRank": "A",
+    "description": "竜鱗の剣のレシピカード（限定1枚）"
+  },
+  {
+    "id": "shop_enhance_sage_catalyst",
+    "type": "card",
+    "itemId": "enhance_sage_catalyst",
+    "price": 80,
+    "stock": 3,
+    "unlockRank": "G",
+    "description": "賢者の触媒カード"
+  },
+  {
+    "id": "shop_enhance_spirit_guide",
+    "type": "card",
+    "itemId": "enhance_spirit_guide",
+    "price": 80,
+    "stock": 3,
+    "unlockRank": "G",
+    "description": "精霊の導きカード"
+  },
+  {
+    "id": "shop_enhance_guild_letter",
+    "type": "card",
+    "itemId": "enhance_guild_letter",
+    "price": 100,
+    "stock": 3,
+    "unlockRank": "G",
+    "description": "ギルド推薦状カード"
+  },
+  {
+    "id": "shop_enhance_gold_coin",
+    "type": "card",
+    "itemId": "enhance_gold_coin",
+    "price": 100,
+    "stock": 3,
+    "unlockRank": "G",
+    "description": "金の呼び水カード"
+  },
+  {
+    "id": "shop_enhance_alchemy_ash",
+    "type": "card",
+    "itemId": "enhance_alchemy_ash",
+    "price": 200,
+    "stock": 2,
+    "unlockRank": "E",
+    "description": "錬金の灰カード"
+  },
+  {
+    "id": "shop_enhance_lucky_charm",
+    "type": "card",
+    "itemId": "enhance_lucky_charm",
+    "price": 200,
+    "stock": 2,
+    "unlockRank": "E",
+    "description": "幸運のお守りカード"
+  },
+  {
+    "id": "shop_enhance_negotiation",
+    "type": "card",
+    "itemId": "enhance_negotiation",
+    "price": 300,
+    "stock": 2,
+    "unlockRank": "D",
+    "description": "交渉術の書カード"
+  },
+  {
+    "id": "shop_enhance_quality_high",
+    "type": "card",
+    "itemId": "enhance_quality_high",
+    "price": 500,
+    "stock": 2,
+    "unlockRank": "C",
+    "description": "高品質調合カード"
+  },
+  {
+    "id": "shop_enhance_meditation",
+    "type": "card",
+    "itemId": "enhance_meditation",
+    "price": 400,
+    "stock": 2,
+    "unlockRank": "C",
+    "description": "集中の瞑想カード"
+  },
+  {
+    "id": "shop_enhance_master_guide",
+    "type": "card",
+    "itemId": "enhance_master_guide",
+    "price": 350,
+    "stock": 2,
+    "unlockRank": "D",
+    "description": "達人の導きカード"
+  },
+  {
+    "id": "shop_enhance_all_bonus",
+    "type": "card",
+    "itemId": "enhance_all_bonus",
+    "price": 1000,
+    "stock": 1,
+    "unlockRank": "B",
+    "description": "錬金術師の奥義カード（限定1枚）"
+  },
+  {
+    "id": "shop_enhance_treasure_map",
+    "type": "card",
+    "itemId": "enhance_treasure_map",
+    "price": 800,
+    "stock": 1,
+    "unlockRank": "B",
+    "description": "宝の地図カード（限定1枚）"
+  },
+  {
+    "id": "shop_material_herb",
+    "type": "material",
+    "itemId": "herb",
+    "quality": "C",
+    "price": 15,
+    "stock": 5,
+    "unlockRank": "G",
+    "description": "薬草（品質C）"
+  },
+  {
+    "id": "shop_material_pure_water",
+    "type": "material",
+    "itemId": "pure_water",
+    "quality": "C",
+    "price": 20,
+    "stock": 5,
+    "unlockRank": "G",
+    "description": "清水（品質C）"
+  },
+  {
+    "id": "shop_material_mushroom",
+    "type": "material",
+    "itemId": "mushroom",
+    "quality": "C",
+    "price": 15,
+    "stock": 5,
+    "unlockRank": "G",
+    "description": "キノコ（品質C）"
+  },
+  {
+    "id": "shop_material_fish",
+    "type": "material",
+    "itemId": "fish",
+    "quality": "C",
+    "price": 18,
+    "stock": 5,
+    "unlockRank": "G",
+    "description": "魚（品質C）"
+  },
+  {
+    "id": "shop_material_ore",
+    "type": "material",
+    "itemId": "ore",
+    "quality": "C",
+    "price": 25,
+    "stock": 3,
+    "unlockRank": "E",
+    "description": "鉱石（品質C）"
+  },
+  {
+    "id": "shop_material_wood",
+    "type": "material",
+    "itemId": "wood",
+    "quality": "C",
+    "price": 20,
+    "stock": 5,
+    "unlockRank": "G",
+    "description": "木材（品質C）"
+  },
+  {
+    "id": "shop_material_sulfur",
+    "type": "material",
+    "itemId": "sulfur",
+    "quality": "C",
+    "price": 30,
+    "stock": 3,
+    "unlockRank": "E",
+    "description": "硫黄（品質C）"
+  },
+  {
+    "id": "shop_material_oil",
+    "type": "material",
+    "itemId": "oil",
+    "quality": "C",
+    "price": 25,
+    "stock": 3,
+    "unlockRank": "E",
+    "description": "油（品質C）"
+  },
+  {
+    "id": "shop_artifact_quality_ring",
+    "type": "artifact",
+    "itemId": "artifact_quality_ring",
+    "price": 300,
+    "stock": 1,
+    "unlockRank": "F",
+    "description": "品質の指輪 - 調合品の品質を少し上げる"
+  },
+  {
+    "id": "shop_artifact_gathering_gloves",
+    "type": "artifact",
+    "itemId": "artifact_gathering_gloves",
+    "price": 200,
+    "stock": 1,
+    "unlockRank": "G",
+    "description": "採取手袋 - 採取時に素材を1つ多く獲得"
+  },
+  {
+    "id": "shop_artifact_gold_pendant",
+    "type": "artifact",
+    "itemId": "artifact_gold_pendant",
+    "price": 350,
+    "stock": 1,
+    "unlockRank": "E",
+    "description": "黄金のペンダント - 報酬金+15%"
+  },
+  {
+    "id": "shop_artifact_contribution_badge",
+    "type": "artifact",
+    "itemId": "artifact_contribution_badge",
+    "price": 400,
+    "stock": 1,
+    "unlockRank": "E",
+    "description": "貢献のバッジ - 貢献度+10%"
+  },
+  {
+    "id": "shop_artifact_storage_box",
+    "type": "artifact",
+    "itemId": "artifact_storage_box",
+    "price": 250,
+    "stock": 1,
+    "unlockRank": "G",
+    "description": "拡張収納箱 - 素材保管上限+5"
+  },
+  {
+    "id": "shop_artifact_material_pouch",
+    "type": "artifact",
+    "itemId": "artifact_material_pouch",
+    "price": 500,
+    "stock": 1,
+    "unlockRank": "D",
+    "description": "素材節約の袋 - 20%で素材消費なし"
+  },
+  {
+    "id": "shop_artifact_rare_finder",
+    "type": "artifact",
+    "itemId": "artifact_rare_finder",
+    "price": 600,
+    "stock": 1,
+    "unlockRank": "D",
+    "description": "レアファインダー - レア素材確率+15%"
+  },
+  {
+    "id": "shop_artifact_efficiency_charm",
+    "type": "artifact",
+    "itemId": "artifact_efficiency_charm",
+    "price": 800,
+    "stock": 1,
+    "unlockRank": "C",
+    "description": "効率のチャーム - 行動コスト-1"
+  },
+  {
+    "id": "shop_artifact_masters_ring",
+    "type": "artifact",
+    "itemId": "artifact_masters_ring",
+    "price": 1500,
+    "stock": 1,
+    "unlockRank": "B",
+    "description": "マイスターの指輪 - 品質大幅上昇"
+  },
+  {
+    "id": "shop_artifact_action_amulet",
+    "type": "artifact",
+    "itemId": "artifact_action_amulet",
+    "price": 2000,
+    "stock": 1,
+    "unlockRank": "A",
+    "description": "行動のアミュレット - 行動ポイント+1"
+  },
+  {
+    "id": "shop_artifact_legendary_charm",
+    "type": "artifact",
+    "itemId": "artifact_legendary_charm",
+    "price": 5000,
+    "stock": 1,
+    "unlockRank": "S",
+    "description": "伝説のチャーム - 全能力強化"
+  }
+]

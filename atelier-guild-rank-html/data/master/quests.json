@@ -8,7 +8,7 @@
     "baseDeadline": 3,
     "conditionTemplate": {
       "type": "SPECIFIC",
-      "itemId": "item_healing_potion",
+      "itemId": "healing_potion",
       "quantity": 1
     },
     "unlockRank": "G",
@@ -23,11 +23,56 @@
     "baseDeadline": 2,
     "conditionTemplate": {
       "type": "SPECIFIC",
-      "itemId": "item_mushroom_soup",
+      "itemId": "mushroom_soup",
       "quantity": 1
     },
     "unlockRank": "G",
     "flavorTextTemplate": "キノコスープを1つお願い。"
+  },
+  {
+    "id": "quest_g_nutrition",
+    "type": "SPECIFIC",
+    "difficulty": "easy",
+    "baseContribution": 9,
+    "baseGold": 45,
+    "baseDeadline": 2,
+    "conditionTemplate": {
+      "type": "SPECIFIC",
+      "itemId": "nutrition",
+      "quantity": 1
+    },
+    "unlockRank": "G",
+    "flavorTextTemplate": "栄養剤を1つ作ってほしい。"
+  },
+  {
+    "id": "quest_g_fish_dish",
+    "type": "SPECIFIC",
+    "difficulty": "easy",
+    "baseContribution": 8,
+    "baseGold": 35,
+    "baseDeadline": 2,
+    "conditionTemplate": {
+      "type": "SPECIFIC",
+      "itemId": "fish_dish",
+      "quantity": 1
+    },
+    "unlockRank": "G",
+    "flavorTextTemplate": "美味しい魚料理を作ってくれ。"
+  },
+  {
+    "id": "quest_g_shell_accessory",
+    "type": "SPECIFIC",
+    "difficulty": "easy",
+    "baseContribution": 7,
+    "baseGold": 30,
+    "baseDeadline": 2,
+    "conditionTemplate": {
+      "type": "SPECIFIC",
+      "itemId": "shell_accessory",
+      "quantity": 1
+    },
+    "unlockRank": "G",
+    "flavorTextTemplate": "貝殻のアクセサリーが欲しいの。"
   },
   {
     "id": "quest_g_any_medicine",
@@ -53,14 +98,29 @@
     "baseDeadline": 3,
     "conditionTemplate": {
       "type": "SPECIFIC",
-      "itemId": "item_antidote",
+      "itemId": "antidote",
       "quantity": 2
     },
     "unlockRank": "F",
     "flavorTextTemplate": "解毒剤を2つ調達してくれ。"
   },
   {
-    "id": "quest_f_iron_sword",
+    "id": "quest_f_slime_oil",
+    "type": "SPECIFIC",
+    "difficulty": "normal",
+    "baseContribution": 12,
+    "baseGold": 50,
+    "baseDeadline": 3,
+    "conditionTemplate": {
+      "type": "SPECIFIC",
+      "itemId": "slime_oil",
+      "quantity": 2
+    },
+    "unlockRank": "F",
+    "flavorTextTemplate": "スライムオイルを2つ頼む。"
+  },
+  {
+    "id": "quest_e_steel_sword",
     "type": "SPECIFIC",
     "difficulty": "normal",
     "baseContribution": 20,
@@ -68,14 +128,14 @@
     "baseDeadline": 4,
     "conditionTemplate": {
       "type": "SPECIFIC",
-      "itemId": "item_iron_sword",
+      "itemId": "steel_sword",
       "quantity": 1
     },
-    "unlockRank": "F",
-    "flavorTextTemplate": "冒険に出るので鉄の剣が必要だ。"
+    "unlockRank": "E",
+    "flavorTextTemplate": "冒険に出るので鋼の剣が必要だ。"
   },
   {
-    "id": "quest_f_bomb",
+    "id": "quest_e_bomb",
     "type": "SPECIFIC",
     "difficulty": "normal",
     "baseContribution": 18,
@@ -83,10 +143,10 @@
     "baseDeadline": 3,
     "conditionTemplate": {
       "type": "SPECIFIC",
-      "itemId": "item_bomb",
+      "itemId": "bomb",
       "quantity": 1
     },
-    "unlockRank": "F",
+    "unlockRank": "E",
     "flavorTextTemplate": "洞窟探索用に爆弾が欲しい。"
   },
   {
@@ -98,11 +158,26 @@
     "baseDeadline": 4,
     "conditionTemplate": {
       "type": "SPECIFIC",
-      "itemId": "item_high_healing_potion",
+      "itemId": "high_healing_potion",
       "quantity": 1
     },
     "unlockRank": "E",
     "flavorTextTemplate": "高級回復薬を調合してくれないか。"
+  },
+  {
+    "id": "quest_e_magic_potion",
+    "type": "SPECIFIC",
+    "difficulty": "normal",
+    "baseContribution": 22,
+    "baseGold": 100,
+    "baseDeadline": 4,
+    "conditionTemplate": {
+      "type": "SPECIFIC",
+      "itemId": "magic_potion",
+      "quantity": 1
+    },
+    "unlockRank": "E",
+    "flavorTextTemplate": "魔力の薬を調合してほしい。"
   },
   {
     "id": "quest_e_quality_medicine",
@@ -144,7 +219,7 @@
     "baseDeadline": 5,
     "conditionTemplate": {
       "type": "SPECIFIC",
-      "itemId": "item_silver_sword",
+      "itemId": "silver_sword",
       "quantity": 1
     },
     "unlockRank": "D",
@@ -159,7 +234,7 @@
     "baseDeadline": 4,
     "conditionTemplate": {
       "type": "SPECIFIC",
-      "itemId": "item_mega_bomb",
+      "itemId": "mega_bomb",
       "quantity": 1
     },
     "unlockRank": "D",
@@ -174,11 +249,26 @@
     "baseDeadline": 6,
     "conditionTemplate": {
       "type": "SPECIFIC",
-      "itemId": "item_elixir",
+      "itemId": "elixir",
       "quantity": 1
     },
     "unlockRank": "C",
     "flavorTextTemplate": "万能薬エリクシルを調合できるか？"
+  },
+  {
+    "id": "quest_c_magic_staff",
+    "type": "SPECIFIC",
+    "difficulty": "hard",
+    "baseContribution": 45,
+    "baseGold": 280,
+    "baseDeadline": 5,
+    "conditionTemplate": {
+      "type": "SPECIFIC",
+      "itemId": "magic_staff",
+      "quantity": 1
+    },
+    "unlockRank": "C",
+    "flavorTextTemplate": "魔法の杖を作れる錬金術師を探していた。"
   },
   {
     "id": "quest_c_fire_attribute",
@@ -205,11 +295,26 @@
     "baseDeadline": 7,
     "conditionTemplate": {
       "type": "SPECIFIC",
-      "itemId": "item_crystal_sword",
+      "itemId": "crystal_sword",
       "quantity": 1
     },
     "unlockRank": "B",
     "flavorTextTemplate": "伝説の水晶の剣を作れるのは君だけだ。"
+  },
+  {
+    "id": "quest_b_panacea",
+    "type": "SPECIFIC",
+    "difficulty": "extreme",
+    "baseContribution": 70,
+    "baseGold": 450,
+    "baseDeadline": 6,
+    "conditionTemplate": {
+      "type": "SPECIFIC",
+      "itemId": "panacea",
+      "quantity": 1
+    },
+    "unlockRank": "B",
+    "flavorTextTemplate": "万能薬を調合できる者を探している。"
   },
   {
     "id": "quest_a_dragon_blade",
@@ -220,7 +325,7 @@
     "baseDeadline": 10,
     "conditionTemplate": {
       "type": "SPECIFIC",
-      "itemId": "item_dragon_blade",
+      "itemId": "dragon_blade",
       "quantity": 1
     },
     "unlockRank": "A",
@@ -235,7 +340,7 @@
     "baseDeadline": 14,
     "conditionTemplate": {
       "type": "SPECIFIC",
-      "itemId": "item_philosophers_stone",
+      "itemId": "philosophers_stone",
       "quantity": 1
     },
     "unlockRank": "S",

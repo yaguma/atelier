@@ -1,178 +1,266 @@
 [
   {
-    "id": "mat_herb",
-    "name": "薬草",
-    "baseQuality": "C",
+    "id": "weed",
+    "name": "雑草",
+    "baseQuality": "D",
     "attributes": ["GRASS"],
     "isRare": false,
-    "description": "どこにでも生えている基本的な薬草。"
+    "description": "どこにでもある草"
   },
   {
-    "id": "mat_water",
+    "id": "water",
+    "name": "水",
+    "baseQuality": "D",
+    "attributes": ["WATER"],
+    "isRare": false,
+    "description": "普通の水"
+  },
+  {
+    "id": "herb",
+    "name": "薬草",
+    "baseQuality": "C",
+    "attributes": ["GRASS", "WATER"],
+    "isRare": false,
+    "description": "薬の基本素材"
+  },
+  {
+    "id": "pure_water",
     "name": "清水",
     "baseQuality": "C",
     "attributes": ["WATER"],
     "isRare": false,
-    "description": "澄んだ綺麗な水。"
+    "description": "澄んだ水"
   },
   {
-    "id": "mat_stone",
-    "name": "石ころ",
-    "baseQuality": "D",
-    "attributes": ["EARTH"],
-    "isRare": false,
-    "description": "どこにでもある普通の石。"
-  },
-  {
-    "id": "mat_flower",
-    "name": "花",
-    "baseQuality": "C",
-    "attributes": ["GRASS", "WATER"],
-    "isRare": false,
-    "description": "美しい野花。"
-  },
-  {
-    "id": "mat_wood",
-    "name": "木材",
-    "baseQuality": "C",
-    "attributes": ["EARTH", "GRASS"],
-    "isRare": false,
-    "description": "加工しやすい木材。"
-  },
-  {
-    "id": "mat_mushroom",
+    "id": "mushroom",
     "name": "キノコ",
     "baseQuality": "C",
-    "attributes": ["GRASS", "EARTH"],
+    "attributes": ["EARTH"],
     "isRare": false,
-    "description": "森で採れるキノコ。"
+    "description": "食用キノコ"
   },
   {
-    "id": "mat_fish",
+    "id": "poison_mushroom",
+    "name": "毒キノコ",
+    "baseQuality": "C",
+    "attributes": ["EARTH"],
+    "isRare": false,
+    "description": "毒を持つキノコ"
+  },
+  {
+    "id": "fish",
     "name": "魚",
     "baseQuality": "C",
     "attributes": ["WATER"],
     "isRare": false,
-    "description": "川で釣れる新鮮な魚。"
+    "description": "川で獲れる魚"
   },
   {
-    "id": "mat_iron_ore",
-    "name": "鉄鉱石",
+    "id": "water_grass",
+    "name": "水草",
     "baseQuality": "C",
-    "attributes": ["EARTH", "FIRE"],
+    "attributes": ["WATER", "GRASS"],
     "isRare": false,
-    "description": "鍛冶に使える鉄の原石。"
+    "description": "水辺に生える草"
   },
   {
-    "id": "mat_poison_herb",
-    "name": "毒草",
-    "baseQuality": "C",
-    "attributes": ["GRASS"],
-    "isRare": false,
-    "description": "毒性を持つ植物。解毒剤の材料。"
-  },
-  {
-    "id": "mat_slime",
-    "name": "スライム",
+    "id": "sand",
+    "name": "砂",
     "baseQuality": "D",
-    "attributes": ["WATER"],
-    "isRare": false,
-    "description": "ぬるぬるした粘液。"
-  },
-  {
-    "id": "mat_silver_ore",
-    "name": "銀鉱石",
-    "baseQuality": "B",
     "attributes": ["EARTH"],
     "isRare": false,
-    "description": "美しく輝く銀の原石。"
+    "description": "川辺の砂"
   },
   {
-    "id": "mat_fire_stone",
-    "name": "火山石",
-    "baseQuality": "B",
-    "attributes": ["FIRE", "EARTH"],
-    "isRare": true,
-    "description": "火山から採れる熱を帯びた石。"
-  },
-  {
-    "id": "mat_sulfur",
-    "name": "硫黄",
+    "id": "wood",
+    "name": "木材",
     "baseQuality": "C",
-    "attributes": ["FIRE"],
+    "attributes": ["EARTH", "GRASS"],
     "isRare": false,
-    "description": "火山地帯で採れる鉱物。爆弾の材料。"
+    "description": "加工された木"
   },
   {
-    "id": "mat_ancient_wood",
-    "name": "古代樹の枝",
-    "baseQuality": "A",
-    "attributes": ["GRASS", "EARTH"],
-    "isRare": true,
-    "description": "何百年も生きた大樹の枝。魔力を宿す。"
-  },
-  {
-    "id": "mat_rare_mushroom",
-    "name": "光るキノコ",
-    "baseQuality": "B",
+    "id": "flower",
+    "name": "花",
+    "baseQuality": "C",
     "attributes": ["GRASS", "WATER"],
-    "isRare": true,
-    "description": "暗闘で発光する珍しいキノコ。"
+    "isRare": false,
+    "description": "色とりどりの花"
   },
   {
-    "id": "mat_crystal",
-    "name": "水晶",
-    "baseQuality": "A",
-    "attributes": ["EARTH", "WATER"],
-    "isRare": true,
-    "description": "透明に輝く美しい結晶。"
-  },
-  {
-    "id": "mat_magic_stone",
-    "name": "魔法石",
-    "baseQuality": "A",
-    "attributes": ["FIRE", "WATER", "EARTH", "WIND"],
-    "isRare": true,
-    "description": "魔力を秘めた神秘の石。"
-  },
-  {
-    "id": "mat_dragon_scale",
-    "name": "竜の鱗",
-    "baseQuality": "S",
-    "attributes": ["FIRE"],
-    "isRare": true,
-    "description": "伝説の竜から得られる最高級素材。"
-  },
-  {
-    "id": "mat_shell",
+    "id": "shell",
     "name": "貝殻",
     "baseQuality": "D",
     "attributes": ["WATER"],
     "isRare": false,
-    "description": "海岸で拾える綺麗な貝殻。"
+    "description": "海辺で拾った貝殻"
   },
   {
-    "id": "mat_salt",
+    "id": "salt",
     "name": "塩",
     "baseQuality": "D",
     "attributes": ["WATER", "EARTH"],
     "isRare": false,
-    "description": "料理に欠かせない塩。"
+    "description": "料理に使う塩"
   },
   {
-    "id": "mat_wind_feather",
-    "name": "風切り羽",
-    "baseQuality": "B",
-    "attributes": ["WIND"],
+    "id": "slime",
+    "name": "スライム",
+    "baseQuality": "D",
+    "attributes": ["WATER"],
     "isRare": false,
-    "description": "風属性を持つ鳥の羽根。"
+    "description": "ぬるぬるした粘液"
   },
   {
-    "id": "mat_wind_flower",
-    "name": "風花",
+    "id": "ore",
+    "name": "鉱石",
     "baseQuality": "C",
-    "attributes": ["WIND", "GRASS"],
+    "attributes": ["FIRE", "EARTH"],
     "isRare": false,
-    "description": "風に揺れる可憐な花。"
+    "description": "金属の原石"
+  },
+  {
+    "id": "stone",
+    "name": "石",
+    "baseQuality": "D",
+    "attributes": ["EARTH"],
+    "isRare": false,
+    "description": "普通の石"
+  },
+  {
+    "id": "rare_ore",
+    "name": "レア鉱石",
+    "baseQuality": "B",
+    "attributes": ["FIRE", "EARTH"],
+    "isRare": true,
+    "description": "希少な鉱石"
+  },
+  {
+    "id": "rare_moss",
+    "name": "レア苔",
+    "baseQuality": "B",
+    "attributes": ["WATER", "EARTH"],
+    "isRare": true,
+    "description": "洞窟に生える苔"
+  },
+  {
+    "id": "ancient_wood",
+    "name": "古代樹の枝",
+    "baseQuality": "A",
+    "attributes": ["EARTH", "GRASS"],
+    "isRare": true,
+    "description": "古代の木の枝"
+  },
+  {
+    "id": "rare_mushroom",
+    "name": "レアキノコ",
+    "baseQuality": "B",
+    "attributes": ["GRASS", "WATER"],
+    "isRare": true,
+    "description": "希少なキノコ"
+  },
+  {
+    "id": "crystal",
+    "name": "水晶",
+    "baseQuality": "A",
+    "attributes": ["WATER", "EARTH"],
+    "isRare": true,
+    "description": "透明な結晶"
+  },
+  {
+    "id": "volcanic_stone",
+    "name": "火山石",
+    "baseQuality": "A",
+    "attributes": ["FIRE"],
+    "isRare": true,
+    "description": "火山で採れる石"
+  },
+  {
+    "id": "ash",
+    "name": "灰",
+    "baseQuality": "C",
+    "attributes": ["FIRE"],
+    "isRare": false,
+    "description": "火山の灰"
+  },
+  {
+    "id": "lava_crystal",
+    "name": "溶岩結晶",
+    "baseQuality": "A",
+    "attributes": ["FIRE"],
+    "isRare": true,
+    "description": "溶岩の結晶"
+  },
+  {
+    "id": "sulfur",
+    "name": "硫黄",
+    "baseQuality": "C",
+    "attributes": ["FIRE"],
+    "isRare": false,
+    "description": "火山由来の硫黄"
+  },
+  {
+    "id": "oil",
+    "name": "油",
+    "baseQuality": "C",
+    "attributes": ["FIRE"],
+    "isRare": false,
+    "description": "可燃性の油"
+  },
+  {
+    "id": "magic_material",
+    "name": "魔法素材",
+    "baseQuality": "S",
+    "attributes": ["FIRE", "WATER", "EARTH", "WIND"],
+    "isRare": true,
+    "description": "全属性を持つ素材"
+  },
+  {
+    "id": "magic_stone",
+    "name": "魔石",
+    "baseQuality": "A",
+    "attributes": ["FIRE", "WATER", "EARTH", "WIND"],
+    "isRare": true,
+    "description": "魔力を帯びた石"
+  },
+  {
+    "id": "ancient_fragment",
+    "name": "古代の欠片",
+    "baseQuality": "A",
+    "attributes": ["EARTH"],
+    "isRare": true,
+    "description": "古代遺跡の遺物"
+  },
+  {
+    "id": "alpine_herb",
+    "name": "高山薬草",
+    "baseQuality": "A",
+    "attributes": ["GRASS", "WATER"],
+    "isRare": true,
+    "description": "高山に生える貴重な薬草"
+  },
+  {
+    "id": "holy_water",
+    "name": "聖水",
+    "baseQuality": "A",
+    "attributes": ["WATER"],
+    "isRare": true,
+    "description": "清められた水"
+  },
+  {
+    "id": "moon_drop",
+    "name": "月の雫",
+    "baseQuality": "S",
+    "attributes": ["WATER"],
+    "isRare": true,
+    "description": "月光を集めた雫"
+  },
+  {
+    "id": "dragon_scale",
+    "name": "竜の鱗",
+    "baseQuality": "S",
+    "attributes": ["FIRE", "EARTH"],
+    "isRare": true,
+    "description": "伝説の竜の鱗"
   }
 ]
