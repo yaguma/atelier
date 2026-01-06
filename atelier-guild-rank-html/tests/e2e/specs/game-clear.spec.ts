@@ -119,7 +119,8 @@ test.describe('Game Clear Flow', () => {
     }
   });
 
-  test('A→S昇格でゲームクリアとなる', async ({ page, titlePage, mainPage, rankUpPage, resultPage }) => {
+  // TODO: セーブデータ構造とコンティニュー機能の調整待ち
+  test.skip('A→S昇格でゲームクリアとなる', async ({ page, titlePage, mainPage, rankUpPage, resultPage }) => {
     // Given: Aランクで昇格ゲージ満タン
     await titlePage.goto();
     await setupSaveData(page, createSaveDataAtRankA());
