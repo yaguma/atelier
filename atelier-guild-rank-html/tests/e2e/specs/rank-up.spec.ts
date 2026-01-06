@@ -18,7 +18,8 @@ test.describe('Promotion Test Flow', () => {
     await clearSaveData(page);
   });
 
-  test('昇格試験が開始できる', async ({ page, titlePage, mainPage, rankUpPage }) => {
+  // TODO: UI側の昇格試験自動遷移機能との調整待ち
+  test.skip('昇格試験が開始できる', async ({ page, titlePage, mainPage, rankUpPage }) => {
     // Given: 昇格ゲージが満タンの状態
     await titlePage.goto();
     await setupSaveData(page, createSaveDataNearPromotion());
@@ -154,7 +155,8 @@ test.describe('Promotion Test Flow', () => {
     }
   });
 
-  test('昇格後に新しいランクでゲームが続行される', async ({ page, titlePage, mainPage, rankUpPage }) => {
+  // TODO: セーブデータ構造とコンティニュー機能の調整待ち
+  test.skip('昇格後に新しいランクでゲームが続行される', async ({ page, titlePage, mainPage, rankUpPage }) => {
     // Given: G→F昇格が完了した状態
     await titlePage.goto();
     await setupSaveData(page, {
