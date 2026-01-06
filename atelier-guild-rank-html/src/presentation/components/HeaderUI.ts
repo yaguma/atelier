@@ -108,7 +108,8 @@ export class HeaderUI extends UIComponent {
 
     // ランク名
     const rankLabel = document.createElement('span');
-    rankLabel.className = 'header-rank';
+    rankLabel.className = 'header-rank rank-display';
+    rankLabel.setAttribute('data-testid', 'rank-display');
     rankLabel.textContent = `ランク: ${this._state.rankName}`;
     section.appendChild(rankLabel);
 
@@ -141,7 +142,8 @@ export class HeaderUI extends UIComponent {
 
     // 残り日数
     const daysElement = document.createElement('span');
-    daysElement.className = 'header-days';
+    daysElement.className = 'header-days day-display';
+    daysElement.setAttribute('data-testid', 'day-display');
     if (this._state.remainingDays <= WARNING_DAYS_THRESHOLD) {
       daysElement.classList.add('warning');
     }
@@ -150,7 +152,8 @@ export class HeaderUI extends UIComponent {
 
     // ゴールド
     const goldElement = document.createElement('span');
-    goldElement.className = 'header-gold';
+    goldElement.className = 'header-gold gold-display';
+    goldElement.setAttribute('data-testid', 'gold-display');
     goldElement.textContent = `💰 ${this._state.gold}G`;
     section.appendChild(goldElement);
 

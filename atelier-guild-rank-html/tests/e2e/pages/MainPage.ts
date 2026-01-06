@@ -96,12 +96,22 @@ export class MainPage extends BasePage {
   }
 
   /**
-   * 現在の日数を取得
+   * 残り日数を取得（UIに表示されている値）
    */
-  async getDay(): Promise<number> {
+  async getRemainingDays(): Promise<number> {
     const text = await this.dayDisplay.textContent() ?? '0';
     const match = text.match(/(\d+)/);
     return match ? parseInt(match[1], 10) : 0;
+  }
+
+  /**
+   * 現在の日数を取得（totalDays - remainingDays + 1 で計算）
+   * UIには残り日数が表示されているので、現在日数は残り日数から計算する
+   * @param totalDays 総日数（デフォルト30）
+   */
+  async getDay(totalDays = 30): Promise<number> {
+    const remaining = await this.getRemainingDays();
+    return totalDays - remaining + 1;
   }
 
   /**

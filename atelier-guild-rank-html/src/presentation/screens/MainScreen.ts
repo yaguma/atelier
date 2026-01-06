@@ -59,6 +59,7 @@ export class MainScreen extends UIComponent implements Screen {
   protected createElement(): HTMLElement {
     const element = document.createElement('div');
     element.className = 'main-screen';
+    element.setAttribute('data-testid', 'main-screen');
     return element;
   }
 
@@ -106,6 +107,7 @@ export class MainScreen extends UIComponent implements Screen {
   private createPhaseIndicator(): HTMLElement {
     const indicator = document.createElement('nav');
     indicator.className = 'phase-indicator';
+    indicator.setAttribute('data-testid', 'phase-indicator');
 
     const phases: { id: GamePhase; label: string }[] = [
       { id: 'quest', label: '依頼' },
@@ -118,6 +120,7 @@ export class MainScreen extends UIComponent implements Screen {
       const item = document.createElement('div');
       item.className = 'phase-item';
       item.setAttribute('data-phase', phase.id);
+      item.setAttribute('data-testid', `phase-${phase.id}`);
       item.textContent = phase.label;
 
       if (phase.id === this._currentPhase) {
