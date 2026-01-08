@@ -879,23 +879,286 @@ describe('UIFactory', () => {
     });
   });
 
+  describe('createScrollPanel', () => {
+    // スクロールパネル用モックシーンを追加
+    const createScrollPanelMockScene = () => ({
+      add: {
+        container: vi.fn().mockReturnValue({
+          add: vi.fn().mockReturnThis(),
+          destroy: vi.fn(),
+        }),
+        graphics: vi.fn().mockReturnValue({
+          fillStyle: vi.fn().mockReturnThis(),
+          fillRoundedRect: vi.fn().mockReturnThis(),
+          clear: vi.fn().mockReturnThis(),
+          destroy: vi.fn(),
+        }),
+        text: vi.fn().mockReturnValue({
+          setOrigin: vi.fn().mockReturnThis(),
+          setText: vi.fn().mockReturnThis(),
+          destroy: vi.fn(),
+        }),
+        image: vi.fn().mockReturnValue({
+          setDisplaySize: vi.fn().mockReturnThis(),
+        }),
+      },
+      tweens: {
+        add: vi.fn(),
+        addCounter: vi.fn().mockReturnValue({
+          stop: vi.fn(),
+        }),
+      },
+    });
+
+    const createScrollPanelMockRexUI = () => {
+      const mockSizer = {
+        add: vi.fn().mockReturnThis(),
+        remove: vi.fn().mockReturnThis(),
+        removeAll: vi.fn().mockReturnThis(),
+      };
+
+      const mockPanel = {
+        layout: vi.fn().mockReturnThis(),
+        setT: vi.fn().mockReturnThis(),
+        destroy: vi.fn(),
+      };
+
+      return {
+        add: {
+          label: vi.fn().mockReturnValue({
+            layout: vi.fn().mockReturnThis(),
+            setInteractive: vi.fn().mockReturnThis(),
+            on: vi.fn().mockReturnThis(),
+            disableInteractive: vi.fn().mockReturnThis(),
+          }),
+          roundRectangle: vi.fn().mockReturnValue({
+            setFillStyle: vi.fn().mockReturnThis(),
+          }),
+          sizer: vi.fn().mockReturnValue(mockSizer),
+          scrollablePanel: vi.fn().mockReturnValue(mockPanel),
+          dialog: vi.fn(),
+        },
+        _mockSizer: mockSizer,
+        _mockPanel: mockPanel,
+      };
+    };
+
+    it('createScrollPanel()でスクロールパネルを生成できる', () => {
+      const spMockScene = createScrollPanelMockScene();
+      const spMockRexUI = createScrollPanelMockRexUI();
+      const factory = new UIFactory(spMockScene as any, spMockRexUI as any);
+
+      const result = factory.createScrollPanel({
+        x: 100,
+        y: 100,
+        width: 400,
+        height: 300,
+      });
+
+      expect(spMockRexUI.add.scrollablePanel).toHaveBeenCalled();
+      expect(result.panel).toBeDefined();
+      expect(result.addItem).toBeInstanceOf(Function);
+      expect(result.removeItem).toBeInstanceOf(Function);
+      expect(result.clear).toBeInstanceOf(Function);
+      expect(result.scrollTo).toBeInstanceOf(Function);
+      expect(result.refresh).toBeInstanceOf(Function);
+    });
+
+    it('createScrollPanel()で初期コンテンツを設定できる', () => {
+      const spMockScene = createScrollPanelMockScene();
+      const spMockRexUI = createScrollPanelMockRexUI();
+      const factory = new UIFactory(spMockScene as any, spMockRexUI as any);
+
+      const mockItem = spMockScene.add.text();
+
+      factory.createScrollPanel({
+        x: 100,
+        y: 100,
+        width: 400,
+        height: 300,
+        content: [mockItem],
+      });
+
+      expect(spMockRexUI._mockSizer.add).toHaveBeenCalled();
+    });
+
+    it('createScrollPanel()で水平スクロールを設定できる', () => {
+      const spMockScene = createScrollPanelMockScene();
+      const spMockRexUI = createScrollPanelMockRexUI();
+      const factory = new UIFactory(spMockScene as any, spMockRexUI as any);
+
+      factory.createScrollPanel({
+        x: 100,
+        y: 100,
+        width: 400,
+        height: 300,
+        scrollMode: 'horizontal',
+      });
+
+      expect(spMockRexUI.add.sizer).toHaveBeenCalledWith(
+        expect.objectContaining({
+          orientation: 'x',
+        })
+      );
+      expect(spMockRexUI.add.scrollablePanel).toHaveBeenCalledWith(
+        expect.objectContaining({
+          scrollMode: 1,
+        })
+      );
+    });
+
+    it('addItem()でアイテムを追加できる', () => {
+      const spMockScene = createScrollPanelMockScene();
+      const spMockRexUI = createScrollPanelMockRexUI();
+      const factory = new UIFactory(spMockScene as any, spMockRexUI as any);
+
+      const result = factory.createScrollPanel({
+        x: 100,
+        y: 100,
+        width: 400,
+        height: 300,
+      });
+
+      const mockItem = spMockScene.add.text();
+      result.addItem(mockItem as any);
+
+      expect(spMockRexUI._mockSizer.add).toHaveBeenCalled();
+      expect(spMockRexUI._mockPanel.layout).toHaveBeenCalled();
+    });
+
+    it('removeItem()でアイテムを削除できる', () => {
+      const spMockScene = createScrollPanelMockScene();
+      const spMockRexUI = createScrollPanelMockRexUI();
+      const factory = new UIFactory(spMockScene as any, spMockRexUI as any);
+
+      const result = factory.createScrollPanel({
+        x: 100,
+        y: 100,
+        width: 400,
+        height: 300,
+      });
+
+      const mockItem = spMockScene.add.text();
+      result.removeItem(mockItem as any);
+
+      expect(spMockRexUI._mockSizer.remove).toHaveBeenCalled();
+      expect(spMockRexUI._mockPanel.layout).toHaveBeenCalled();
+    });
+
+    it('clear()で全アイテムをクリアできる', () => {
+      const spMockScene = createScrollPanelMockScene();
+      const spMockRexUI = createScrollPanelMockRexUI();
+      const factory = new UIFactory(spMockScene as any, spMockRexUI as any);
+
+      const result = factory.createScrollPanel({
+        x: 100,
+        y: 100,
+        width: 400,
+        height: 300,
+      });
+
+      result.clear();
+
+      expect(spMockRexUI._mockSizer.removeAll).toHaveBeenCalled();
+      expect(spMockRexUI._mockPanel.layout).toHaveBeenCalled();
+    });
+
+    it('scrollTo()でスクロール位置を設定できる', () => {
+      const spMockScene = createScrollPanelMockScene();
+      const spMockRexUI = createScrollPanelMockRexUI();
+      const factory = new UIFactory(spMockScene as any, spMockRexUI as any);
+
+      const result = factory.createScrollPanel({
+        x: 100,
+        y: 100,
+        width: 400,
+        height: 300,
+      });
+
+      result.scrollTo(0.5);
+
+      expect(spMockRexUI._mockPanel.setT).toHaveBeenCalledWith(0.5);
+    });
+
+    it('scrollTo()でスクロール位置がクランプされる', () => {
+      const spMockScene = createScrollPanelMockScene();
+      const spMockRexUI = createScrollPanelMockRexUI();
+      const factory = new UIFactory(spMockScene as any, spMockRexUI as any);
+
+      const result = factory.createScrollPanel({
+        x: 100,
+        y: 100,
+        width: 400,
+        height: 300,
+      });
+
+      // 範囲外の値
+      result.scrollTo(1.5);
+      expect(spMockRexUI._mockPanel.setT).toHaveBeenCalledWith(1);
+
+      result.scrollTo(-0.5);
+      expect(spMockRexUI._mockPanel.setT).toHaveBeenCalledWith(0);
+    });
+
+    it('refresh()でレイアウトを更新できる', () => {
+      const spMockScene = createScrollPanelMockScene();
+      const spMockRexUI = createScrollPanelMockRexUI();
+      const factory = new UIFactory(spMockScene as any, spMockRexUI as any);
+
+      const result = factory.createScrollPanel({
+        x: 100,
+        y: 100,
+        width: 400,
+        height: 300,
+      });
+
+      result.refresh();
+
+      expect(spMockRexUI._mockPanel.layout).toHaveBeenCalled();
+    });
+
+    it('createScrollPanel()でスクロールバーを非表示にできる', () => {
+      const spMockScene = createScrollPanelMockScene();
+      const spMockRexUI = createScrollPanelMockRexUI();
+      const factory = new UIFactory(spMockScene as any, spMockRexUI as any);
+
+      factory.createScrollPanel({
+        x: 100,
+        y: 100,
+        width: 400,
+        height: 300,
+        showScrollbar: false,
+      });
+
+      expect(spMockRexUI.add.scrollablePanel).toHaveBeenCalledWith(
+        expect.objectContaining({
+          slider: undefined,
+        })
+      );
+    });
+
+    it('createListPanel()でリストパネルを生成できる', () => {
+      const spMockScene = createScrollPanelMockScene();
+      const spMockRexUI = createScrollPanelMockRexUI();
+      const factory = new UIFactory(spMockScene as any, spMockRexUI as any);
+
+      const result = factory.createListPanel({
+        x: 100,
+        y: 100,
+        width: 400,
+        height: 300,
+      });
+
+      expect(spMockRexUI.add.scrollablePanel).toHaveBeenCalled();
+      expect(result.panel).toBeDefined();
+    });
+  });
+
   describe('未実装メソッド', () => {
     it('createPanel()はエラーをスローする', () => {
       expect(() => {
         uiFactory.createPanel({ x: 0, y: 0, width: 100, height: 100 });
       }).toThrow('Not implemented - see TASK-0175');
-    });
-
-    it('createScrollPanel()はエラーをスローする', () => {
-      expect(() => {
-        uiFactory.createScrollPanel({
-          x: 0,
-          y: 0,
-          width: 100,
-          height: 100,
-          content: [],
-        });
-      }).toThrow('Not implemented - see TASK-0178');
     });
 
     it('createGridButtons()はエラーをスローする', () => {

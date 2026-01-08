@@ -21,6 +21,7 @@ import type {
   ProgressBarOptions,
   ProgressBarObject,
   ScrollPanelOptions,
+  ScrollPanelObject,
   GridButtonsOptions,
   ToastOptions,
   TooltipOptions,
@@ -892,12 +893,169 @@ export class UIFactory {
 
   /**
    * スクロールパネルを生成
+   *
+   * rexUIのScrollablePanelを使用してスクロール可能なリストを生成する。
+   * 垂直/水平スクロールをサポートし、マウスホイールでのスクロールも可能。
+   *
    * @param options スクロールパネルオプション
-   * @returns rexUI ScrollablePanelオブジェクト
-   * @see TASK-0178
+   * @returns ScrollPanelオブジェクト
+   *
+   * @example
+   * ```typescript
+   * const scrollPanel = uiFactory.createScrollPanel({
+   *   x: 640,
+   *   y: 360,
+   *   width: 400,
+   *   height: 300,
+   *   scrollMode: 'vertical',
+   * });
+   *
+   * // アイテムを追加
+   * scrollPanel.addItem(this.scene.add.text(0, 0, 'Item 1'));
+   * scrollPanel.addItem(this.scene.add.text(0, 0, 'Item 2'));
+   *
+   * // スクロール位置を設定
+   * scrollPanel.scrollTo(0.5); // 50%の位置へ
+   * ```
    */
-  createScrollPanel(_options: ScrollPanelOptions): unknown {
-    throw new Error('Not implemented - see TASK-0178');
+  createScrollPanel(options: ScrollPanelOptions): ScrollPanelObject {
+    const {
+      x,
+      y,
+      width,
+      height,
+      content,
+      scrollMode = 'vertical',
+      style,
+      showScrollbar = true,
+      itemSpacing = 8,
+    } = options;
+
+    // 背景
+    const background = this.rexUI.add.roundRectangle(
+      0, 0, 0, 0,
+      style?.cornerRadius ?? 8,
+      style?.backgroundColor ?? Colors.panelBackground
+    );
+
+    // コンテンツコンテナ（Sizer）
+    const contentSizer = this.rexUI.add.sizer({
+      orientation: scrollMode === 'horizontal' ? 'x' : 'y',
+      space: { item: itemSpacing },
+    });
+
+    // 初期コンテンツを追加
+    if (content) {
+      const items = Array.isArray(content) ? content : [content];
+      items.forEach(item => contentSizer.add(item));
+    }
+
+    // スライダー設定
+    const sliderConfig = showScrollbar ? {
+      track: this.rexUI.add.roundRectangle(
+        0, 0, 8, 0, 4, Colors.backgroundDark
+      ),
+      thumb: this.rexUI.add.roundRectangle(
+        0, 0, 8, 40, 4, Colors.primary
+      ),
+    } : undefined;
+
+    // パディング取得
+    const padding = typeof style?.padding === 'number' ? style.padding : 10;
+
+    // スクロールパネル
+    const panel = this.rexUI.add.scrollablePanel({
+      x,
+      y,
+      width,
+      height,
+      scrollMode: scrollMode === 'horizontal' ? 1 : 0,
+      background,
+      panel: {
+        child: contentSizer,
+        mask: {
+          padding: 1,
+        },
+      },
+      slider: sliderConfig,
+      space: {
+        left: padding,
+        right: padding,
+        top: padding,
+        bottom: padding,
+        panel: showScrollbar ? 10 : 0,
+      },
+      mouseWheelScroller: {
+        focus: false,
+        speed: 0.1,
+      },
+    });
+
+    panel.layout();
+
+    // ヘルパー関数
+    const addItem = (item: Phaser.GameObjects.GameObject): void => {
+      contentSizer.add(item);
+      panel.layout();
+    };
+
+    const removeItem = (item: Phaser.GameObjects.GameObject): void => {
+      contentSizer.remove(item, true);
+      panel.layout();
+    };
+
+    const clear = (): void => {
+      contentSizer.removeAll(true);
+      panel.layout();
+    };
+
+    const scrollTo = (percentage: number): void => {
+      const clampedPercentage = Math.max(0, Math.min(1, percentage));
+      panel.setT(clampedPercentage);
+    };
+
+    const refresh = (): void => {
+      panel.layout();
+    };
+
+    return {
+      panel,
+      addItem,
+      removeItem,
+      clear,
+      scrollTo,
+      refresh,
+    };
+  }
+
+  /**
+   * リストパネルを生成（便利メソッド）
+   *
+   * @param options リストパネルオプション
+   * @returns ScrollPanelオブジェクト
+   */
+  createListPanel(options: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    items?: Phaser.GameObjects.GameObject[];
+    itemSpacing?: number;
+  }): ScrollPanelObject {
+    return this.createScrollPanel({
+      x: options.x,
+      y: options.y,
+      width: options.width,
+      height: options.height,
+      content: options.items,
+      scrollMode: 'vertical',
+      itemSpacing: options.itemSpacing ?? 8,
+      style: {
+        backgroundColor: Colors.panelBackground,
+        cornerRadius: 8,
+        padding: 10,
+      },
+    });
   }
 
   /**

@@ -229,13 +229,33 @@ export interface ProgressBarObject {
  */
 export interface ScrollPanelOptions extends UIBounds {
   /** コンテンツ */
-  content: Phaser.GameObjects.GameObject | Phaser.GameObjects.GameObject[];
+  content?: Phaser.GameObjects.GameObject | Phaser.GameObjects.GameObject[];
   /** スクロールモード */
   scrollMode?: 'vertical' | 'horizontal' | 'both';
   /** スタイル設定 */
   style?: UIBaseStyle;
   /** スクロールバー表示 */
   showScrollbar?: boolean;
+  /** アイテム間隔 */
+  itemSpacing?: number;
+}
+
+/**
+ * スクロールパネルオブジェクト（生成結果）
+ */
+export interface ScrollPanelObject {
+  /** スクロールパネル本体 */
+  panel: unknown; // rexUI.ScrollablePanel
+  /** アイテムを追加 */
+  addItem: (item: Phaser.GameObjects.GameObject) => void;
+  /** アイテムを削除 */
+  removeItem: (item: Phaser.GameObjects.GameObject) => void;
+  /** 全アイテムをクリア */
+  clear: () => void;
+  /** スクロール位置を設定（0〜1） */
+  scrollTo: (percentage: number) => void;
+  /** レイアウトを更新 */
+  refresh: () => void;
 }
 
 /**
