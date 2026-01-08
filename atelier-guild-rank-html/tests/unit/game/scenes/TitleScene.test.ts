@@ -366,6 +366,55 @@ describe('TitleScene', () => {
       expect(titleScene.isTransitioning).toBe(false);
     });
   });
+
+  describe('コンティニューボタン', () => {
+    it('create()でコンティニューボタンが作成される', () => {
+      titleScene.init();
+      titleScene.preload();
+      titleScene.create();
+
+      const button = titleScene.getContinueButton();
+      expect(button).toBeDefined();
+    });
+
+    it('初期状態ではセーブデータがない（LocalStorageが空の場合）', () => {
+      titleScene.init();
+      expect(titleScene.hasSaveData).toBe(false);
+    });
+
+    it('セーブデータがある場合はhasSaveDataがtrue', () => {
+      // LocalStorageにモックデータを設定
+      const mockLocalStorage = {
+        getItem: vi.fn().mockReturnValue('{"some": "data"}'),
+        setItem: vi.fn(),
+        removeItem: vi.fn(),
+        clear: vi.fn(),
+        length: 1,
+        key: vi.fn(),
+      };
+      Object.defineProperty(global, 'localStorage', {
+        value: mockLocalStorage,
+        writable: true,
+      });
+
+      const sceneWithSave = new TitleScene();
+      sceneWithSave.init();
+      expect(sceneWithSave.hasSaveData).toBe(true);
+
+      // クリーンアップ
+      Object.defineProperty(global, 'localStorage', {
+        value: {
+          getItem: vi.fn().mockReturnValue(null),
+          setItem: vi.fn(),
+          removeItem: vi.fn(),
+          clear: vi.fn(),
+          length: 0,
+          key: vi.fn(),
+        },
+        writable: true,
+      });
+    });
+  });
 });
 
 describe('TitleScene シーンキー', () => {
