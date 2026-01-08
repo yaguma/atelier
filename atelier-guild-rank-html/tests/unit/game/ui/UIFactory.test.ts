@@ -26,6 +26,22 @@ describe('UIFactory', () => {
   let mockRexUI: any;
   let uiFactory: UIFactory;
 
+  // ボタンモック用ヘルパー
+  const createMockButton = () => {
+    const mockButton = {
+      layout: vi.fn().mockReturnThis(),
+      setInteractive: vi.fn().mockReturnThis(),
+      on: vi.fn().mockReturnThis(),
+      disableInteractive: vi.fn().mockReturnThis(),
+    };
+    return mockButton;
+  };
+
+  // RoundRectangleモック用ヘルパー
+  const createMockRoundRectangle = () => ({
+    setFillStyle: vi.fn().mockReturnThis(),
+  });
+
   beforeEach(() => {
     mockScene = {
       add: {
@@ -38,12 +54,19 @@ describe('UIFactory', () => {
         text: vi.fn().mockReturnValue({
           setOrigin: vi.fn().mockReturnThis(),
         }),
+        image: vi.fn().mockReturnValue({
+          setDisplaySize: vi.fn().mockReturnThis(),
+        }),
+      },
+      tweens: {
+        add: vi.fn(),
       },
     };
 
     mockRexUI = {
       add: {
-        label: vi.fn(),
+        label: vi.fn().mockReturnValue(createMockButton()),
+        roundRectangle: vi.fn().mockReturnValue(createMockRoundRectangle()),
         buttons: vi.fn(),
         dialog: vi.fn(),
       },
@@ -82,22 +105,168 @@ describe('UIFactory', () => {
 
     it('dialogスタイルが定義されている', () => {
       expect(DefaultUIStyles.dialog).toBeDefined();
-      expect(DefaultUIStyles.dialog.borderColor).toBe(Colors.accent);
+      expect(DefaultUIStyles.dialog.borderColor).toBe(Colors.gold);
     });
 
     it('progressBarスタイルが定義されている', () => {
       expect(DefaultUIStyles.progressBar).toBeDefined();
-      expect(DefaultUIStyles.progressBar.backgroundColor).toBe(Colors.progressBackground);
+      expect(DefaultUIStyles.progressBar.backgroundColor).toBe(Colors.backgroundDark);
+    });
+  });
+
+  describe('createButton', () => {
+    it('createButton()でボタンを生成できる', () => {
+      const button = uiFactory.createButton({ x: 100, y: 100, text: 'Test' });
+
+      expect(mockRexUI.add.roundRectangle).toHaveBeenCalled();
+      expect(mockScene.add.text).toHaveBeenCalled();
+      expect(mockRexUI.add.label).toHaveBeenCalled();
+      expect(button).toBeDefined();
+      expect(button.layout).toHaveBeenCalled();
+    });
+
+    it('createButton()は有効なボタンにインタラクションを設定する', () => {
+      const mockButton = createMockButton();
+      mockRexUI.add.label = vi.fn().mockReturnValue(mockButton);
+
+      uiFactory.createButton({
+        x: 100,
+        y: 100,
+        text: 'Test',
+        onClick: vi.fn(),
+        disabled: false,
+      });
+
+      expect(mockButton.setInteractive).toHaveBeenCalledWith({ useHandCursor: true });
+      expect(mockButton.on).toHaveBeenCalledWith('pointerover', expect.any(Function));
+      expect(mockButton.on).toHaveBeenCalledWith('pointerout', expect.any(Function));
+      expect(mockButton.on).toHaveBeenCalledWith('pointerdown', expect.any(Function));
+      expect(mockButton.on).toHaveBeenCalledWith('pointerup', expect.any(Function));
+    });
+
+    it('createButton()は無効なボタンにインタラクションを設定しない', () => {
+      const mockButton = createMockButton();
+      mockRexUI.add.label = vi.fn().mockReturnValue(mockButton);
+
+      uiFactory.createButton({
+        x: 100,
+        y: 100,
+        text: 'Test',
+        disabled: true,
+      });
+
+      expect(mockButton.setInteractive).not.toHaveBeenCalled();
+      expect(mockButton.on).not.toHaveBeenCalled();
+    });
+
+    it('createButton()はアイコン付きボタンを生成できる', () => {
+      uiFactory.createButton({
+        x: 100,
+        y: 100,
+        text: 'Test',
+        icon: 'test-icon',
+        iconSize: 24,
+      });
+
+      expect(mockScene.add.image).toHaveBeenCalledWith(0, 0, 'test-icon');
+      expect(mockScene.add.image().setDisplaySize).toHaveBeenCalledWith(24, 24);
+    });
+
+    it('createButton()はカスタムスタイルを適用できる', () => {
+      uiFactory.createButton({
+        x: 100,
+        y: 100,
+        text: 'Test',
+        style: {
+          backgroundColor: 0xff0000,
+          cornerRadius: 16,
+        },
+      });
+
+      expect(mockRexUI.add.roundRectangle).toHaveBeenCalledWith(
+        0,
+        0,
+        150, // default width
+        44, // default height
+        16, // custom cornerRadius
+        0xff0000 // custom backgroundColor
+      );
+    });
+
+    it('createPrimaryButton()でプライマリボタンを生成できる', () => {
+      const button = uiFactory.createPrimaryButton({ x: 100, y: 100, text: 'Test' });
+
+      expect(button).toBeDefined();
+      expect(mockRexUI.add.roundRectangle).toHaveBeenCalledWith(
+        0,
+        0,
+        expect.any(Number),
+        expect.any(Number),
+        8,
+        Colors.primary
+      );
+    });
+
+    it('createSecondaryButton()でセカンダリボタンを生成できる', () => {
+      const button = uiFactory.createSecondaryButton({ x: 100, y: 100, text: 'Test' });
+
+      expect(button).toBeDefined();
+      expect(mockRexUI.add.roundRectangle).toHaveBeenCalledWith(
+        0,
+        0,
+        expect.any(Number),
+        expect.any(Number),
+        8,
+        Colors.secondary
+      );
+    });
+
+    it('createDangerButton()で危険ボタンを生成できる', () => {
+      const button = uiFactory.createDangerButton({ x: 100, y: 100, text: 'Test' });
+
+      expect(button).toBeDefined();
+      expect(mockRexUI.add.roundRectangle).toHaveBeenCalledWith(
+        0,
+        0,
+        expect.any(Number),
+        expect.any(Number),
+        8,
+        Colors.danger
+      );
+    });
+
+    it('setButtonEnabled()でボタンを無効化できる', () => {
+      const mockBackground = createMockRoundRectangle();
+      const mockButton = {
+        ...createMockButton(),
+        getElement: vi.fn().mockReturnValue(mockBackground),
+      };
+      mockRexUI.add.label = vi.fn().mockReturnValue(mockButton);
+
+      const button = uiFactory.createButton({ x: 100, y: 100, text: 'Test' });
+      uiFactory.setButtonEnabled(button as any, false);
+
+      expect(mockButton.disableInteractive).toHaveBeenCalled();
+      expect(mockBackground.setFillStyle).toHaveBeenCalledWith(Colors.disabled);
+    });
+
+    it('setButtonEnabled()でボタンを有効化できる', () => {
+      const mockBackground = createMockRoundRectangle();
+      const mockButton = {
+        ...createMockButton(),
+        getElement: vi.fn().mockReturnValue(mockBackground),
+      };
+      mockRexUI.add.label = vi.fn().mockReturnValue(mockButton);
+
+      const button = uiFactory.createButton({ x: 100, y: 100, text: 'Test' });
+      uiFactory.setButtonEnabled(button as any, true);
+
+      expect(mockButton.setInteractive).toHaveBeenCalledWith({ useHandCursor: true });
+      expect(mockBackground.setFillStyle).toHaveBeenCalledWith(Colors.primary);
     });
   });
 
   describe('未実装メソッド', () => {
-    it('createButton()はエラーをスローする', () => {
-      expect(() => {
-        uiFactory.createButton({ x: 0, y: 0, text: 'Test' });
-      }).toThrow('Not implemented - see TASK-0173');
-    });
-
     it('createLabel()はエラーをスローする', () => {
       expect(() => {
         uiFactory.createLabel({ x: 0, y: 0, text: 'Test' });

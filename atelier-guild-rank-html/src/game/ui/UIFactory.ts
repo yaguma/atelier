@@ -10,6 +10,8 @@ import Phaser from 'phaser';
 import type UIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin';
 import { Colors } from '../config/ColorPalette';
 import { TextStyles } from '../config/TextStyles';
+import type Label from 'phaser3-rex-plugins/templates/ui/label/Label';
+import type RoundRectangle from 'phaser3-rex-plugins/plugins/roundrectangle';
 import type {
   ButtonOptions,
   LabelOptions,
@@ -21,6 +23,7 @@ import type {
   ToastOptions,
   TooltipOptions,
   UIBaseStyle,
+  UIPadding,
 } from './UITypes';
 
 /**
@@ -46,7 +49,7 @@ export const DefaultUIStyles = {
   /** ダイアログのデフォルトスタイル */
   dialog: {
     backgroundColor: Colors.panelBackground,
-    borderColor: Colors.accent,
+    borderColor: Colors.gold,
     borderWidth: 2,
     cornerRadius: 16,
     padding: 24,
@@ -54,7 +57,7 @@ export const DefaultUIStyles = {
 
   /** プログレスバーのデフォルトスタイル */
   progressBar: {
-    backgroundColor: Colors.progressBackground,
+    backgroundColor: Colors.backgroundDark,
     cornerRadius: 4,
   } satisfies UIBaseStyle,
 } as const;
@@ -97,12 +100,215 @@ export class UIFactory {
 
   /**
    * ボタンを生成
+   *
+   * rexUIのLabelコンポーネントを使用してボタンを生成する。
+   * ホバー、プレス、無効状態をサポートし、クリックイベントを設定可能。
+   *
    * @param options ボタンオプション
-   * @returns rexUI Buttonオブジェクト
-   * @see TASK-0173
+   * @returns rexUI Labelオブジェクト
+   *
+   * @example
+   * ```typescript
+   * const button = uiFactory.createButton({
+   *   x: 640,
+   *   y: 400,
+   *   text: 'Start Game',
+   *   onClick: () => console.log('clicked!'),
+   * });
+   * ```
    */
-  createButton(_options: ButtonOptions): unknown {
-    throw new Error('Not implemented - see TASK-0173');
+  createButton(options: ButtonOptions): Label {
+    const {
+      x,
+      y,
+      text,
+      width,
+      height,
+      style,
+      textStyle,
+      onClick,
+      disabled = false,
+      icon,
+      iconSize,
+    } = options;
+
+    // スタイル設定を取得
+    const normalColor = style?.normal ?? style?.backgroundColor ?? Colors.primary;
+    const hoverColor = style?.hover ?? Colors.primaryHover;
+    const pressedColor = style?.pressed ?? Colors.primaryActive;
+    const disabledColor = style?.disabled ?? Colors.disabled;
+    const cornerRadius = style?.cornerRadius ?? DefaultUIStyles.button.cornerRadius;
+
+    // パディング設定を取得
+    const padding = this.getPadding(
+      style?.padding ?? DefaultUIStyles.button.padding
+    );
+
+    // 現在の背景色（状態管理用）
+    const currentColor = disabled ? disabledColor : normalColor;
+
+    // 背景の角丸四角形を生成
+    const background = this.rexUI.add.roundRectangle(
+      0,
+      0,
+      width ?? 150,
+      height ?? 44,
+      cornerRadius,
+      currentColor
+    ) as RoundRectangle;
+
+    // テキストオブジェクトを生成
+    const textObject = this.scene.add.text(
+      0,
+      0,
+      text,
+      textStyle ?? TextStyles.button
+    );
+
+    // アイコンオブジェクトを生成（オプション）
+    let iconObject: Phaser.GameObjects.Image | undefined;
+    if (icon) {
+      iconObject = this.scene.add.image(0, 0, icon);
+      if (iconSize) {
+        iconObject.setDisplaySize(iconSize, iconSize);
+      }
+    }
+
+    // Labelを生成
+    const button = this.rexUI.add.label({
+      x,
+      y,
+      width: width ?? undefined,
+      height: height ?? undefined,
+      background,
+      icon: iconObject,
+      text: textObject,
+      space: {
+        left: padding.left,
+        right: padding.right,
+        top: padding.top,
+        bottom: padding.bottom,
+        icon: iconObject ? 8 : 0,
+      },
+      align: 'center',
+    }) as Label;
+
+    // レイアウトを適用
+    button.layout();
+
+    // インタラクションを設定（無効でない場合）
+    if (!disabled) {
+      button.setInteractive({ useHandCursor: true });
+
+      // ホバー時
+      button.on('pointerover', () => {
+        background.setFillStyle(hoverColor);
+      });
+
+      // ホバー解除時
+      button.on('pointerout', () => {
+        background.setFillStyle(normalColor);
+      });
+
+      // プレス時
+      button.on('pointerdown', () => {
+        background.setFillStyle(pressedColor);
+        this.scene.tweens.add({
+          targets: button,
+          scaleX: 0.95,
+          scaleY: 0.95,
+          duration: 50,
+        });
+      });
+
+      // リリース時
+      button.on('pointerup', () => {
+        background.setFillStyle(hoverColor);
+        this.scene.tweens.add({
+          targets: button,
+          scaleX: 1,
+          scaleY: 1,
+          duration: 50,
+          onComplete: () => {
+            if (onClick) {
+              onClick();
+            }
+          },
+        });
+      });
+    }
+
+    return button;
+  }
+
+  /**
+   * プライマリボタンを生成（デフォルトスタイル）
+   * @param options ボタンオプション（styleを除く）
+   * @returns rexUI Labelオブジェクト
+   */
+  createPrimaryButton(options: Omit<ButtonOptions, 'style'>): Label {
+    return this.createButton({
+      ...options,
+      style: {
+        backgroundColor: Colors.primary,
+        normal: Colors.primary,
+        hover: Colors.primaryHover,
+        pressed: Colors.primaryActive,
+        cornerRadius: 8,
+      },
+    });
+  }
+
+  /**
+   * セカンダリボタンを生成
+   * @param options ボタンオプション（styleを除く）
+   * @returns rexUI Labelオブジェクト
+   */
+  createSecondaryButton(options: Omit<ButtonOptions, 'style'>): Label {
+    return this.createButton({
+      ...options,
+      style: {
+        backgroundColor: Colors.secondary,
+        normal: Colors.secondary,
+        hover: Colors.secondaryHover,
+        pressed: Colors.secondary,
+        cornerRadius: 8,
+      },
+    });
+  }
+
+  /**
+   * 危険ボタンを生成（削除などの操作用）
+   * @param options ボタンオプション（styleを除く）
+   * @returns rexUI Labelオブジェクト
+   */
+  createDangerButton(options: Omit<ButtonOptions, 'style'>): Label {
+    return this.createButton({
+      ...options,
+      style: {
+        backgroundColor: Colors.danger,
+        normal: Colors.danger,
+        hover: 0xec4555, // 少し明るい赤
+        pressed: 0xcc2535, // 少し暗い赤
+        cornerRadius: 8,
+      },
+    });
+  }
+
+  /**
+   * ボタンの有効/無効を切り替える
+   * @param button 対象のボタン
+   * @param enabled 有効状態
+   */
+  setButtonEnabled(button: Label, enabled: boolean): void {
+    const background = (button as unknown as { getElement(name: string): RoundRectangle }).getElement('background');
+    if (enabled) {
+      button.setInteractive({ useHandCursor: true });
+      background.setFillStyle(Colors.primary);
+    } else {
+      button.disableInteractive();
+      background.setFillStyle(Colors.disabled);
+    }
   }
 
   /**
@@ -186,6 +392,23 @@ export class UIFactory {
   // =====================================================
   // ユーティリティメソッド
   // =====================================================
+
+  /**
+   * パディング設定を正規化して取得
+   * @param padding パディング設定（数値またはオブジェクト）
+   * @returns 正規化されたパディングオブジェクト
+   */
+  protected getPadding(padding: number | UIPadding): Required<UIPadding> {
+    if (typeof padding === 'number') {
+      return { top: padding, bottom: padding, left: padding, right: padding };
+    }
+    return {
+      top: padding.top ?? 0,
+      bottom: padding.bottom ?? 0,
+      left: padding.left ?? 0,
+      right: padding.right ?? 0,
+    };
+  }
 
   /**
    * 角丸四角形を生成

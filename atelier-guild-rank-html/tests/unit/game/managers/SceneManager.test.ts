@@ -230,6 +230,7 @@ describe('SceneManager', () => {
           start: vi.fn(),
           stop: vi.fn(),
           launch: vi.fn(),
+          run: vi.fn(),
           pause: vi.fn(),
           resume: vi.fn(),
           getScene: vi.fn().mockReturnValue(mockScene),

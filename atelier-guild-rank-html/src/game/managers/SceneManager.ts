@@ -7,6 +7,12 @@
  */
 
 import Phaser from 'phaser';
+
+/**
+ * Phaser.Scenes.SceneManagerへの型エイリアス
+ * このファイル内のSceneManagerクラスとの名前衝突を避けるため
+ */
+type PhaserSceneManager = Phaser.Scenes.SceneManager;
 import type { ISceneManager } from './ISceneManager';
 import type { SceneKey } from '../config/SceneKeys';
 import {
@@ -239,15 +245,15 @@ export class SceneManager implements ISceneManager {
       return;
     }
 
-    const scenePlugin = this.game.scene;
+    const scenePlugin = this.game.scene as PhaserSceneManager;
 
     // 現在のシーンを一時停止
     if (this.currentScene && this.openOverlaysSet.size === 0) {
       scenePlugin.pause(this.currentScene);
     }
 
-    // オーバーレイを開始
-    scenePlugin.launch(sceneKey, data);
+    // オーバーレイを開始（runはSceneManagerで利用可能）
+    scenePlugin.run(sceneKey, data);
     this.openOverlaysSet.add(sceneKey);
 
     // フェードイン（Phaserシーンがアクティブになった後）
@@ -273,7 +279,7 @@ export class SceneManager implements ISceneManager {
       return;
     }
 
-    const scenePlugin = this.game.scene;
+    const scenePlugin = this.game.scene as PhaserSceneManager;
 
     // フェードアウト
     if (transition.type === 'fade' && transition.duration > 0) {
@@ -386,7 +392,7 @@ export class SceneManager implements ISceneManager {
       return;
     }
 
-    const scenePlugin = this.game.scene;
+    const scenePlugin = this.game.scene as PhaserSceneManager;
 
     if (transition?.type === 'fade' && transition.duration > 0) {
       // フェードアウト

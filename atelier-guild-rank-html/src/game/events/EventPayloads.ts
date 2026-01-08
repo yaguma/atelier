@@ -218,6 +218,40 @@ export interface ToastShownPayload {
 }
 
 // =====================================================
+// シーン遷移ペイロード
+// =====================================================
+
+/**
+ * シーン遷移開始時のペイロード
+ */
+export interface SceneTransitionStartPayload {
+  from: string | null;
+  to: string;
+}
+
+/**
+ * シーン遷移完了時のペイロード
+ */
+export interface SceneTransitionCompletePayload {
+  from: string | null;
+  to: string;
+}
+
+/**
+ * オーバーレイ開始時のペイロード
+ */
+export interface SceneOverlayOpenedPayload {
+  sceneKey: string;
+}
+
+/**
+ * オーバーレイ終了時のペイロード
+ */
+export interface SceneOverlayClosedPayload {
+  sceneKey: string;
+}
+
+// =====================================================
 // イベントペイロードマップ
 // =====================================================
 
@@ -293,6 +327,12 @@ export interface EventPayloadMap {
   // シーン
   'scene:ready': undefined;
   'scene:shutdown': undefined;
+
+  // シーン遷移
+  'scene:transition:start': SceneTransitionStartPayload;
+  'scene:transition:complete': SceneTransitionCompletePayload;
+  'scene:overlay:opened': SceneOverlayOpenedPayload;
+  'scene:overlay:closed': SceneOverlayClosedPayload;
 }
 
 /**
