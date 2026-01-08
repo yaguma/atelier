@@ -297,6 +297,22 @@ export interface GridButtonsOptions extends UIPosition {
 }
 
 /**
+ * グリッドボタンオブジェクト（生成結果）
+ */
+export interface GridButtonsObject {
+  /** グリッドボタン本体 */
+  grid: unknown; // rexUI.GridButtons
+  /** 選択中のアイテムIDを取得 */
+  getSelectedId: () => string | null;
+  /** 選択アイテムを設定 */
+  setSelectedId: (id: string | null) => void;
+  /** 全アイテムを取得 */
+  getItems: () => Array<{ id: string; data?: unknown }>;
+  /** アイテムを更新 */
+  refresh: (items: GridItem[]) => void;
+}
+
+/**
  * トーストオプション
  */
 export interface ToastOptions {

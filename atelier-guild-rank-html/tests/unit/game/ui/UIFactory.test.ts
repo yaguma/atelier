@@ -1154,24 +1154,302 @@ describe('UIFactory', () => {
     });
   });
 
+  describe('createGridButtons', () => {
+    // GridButtons用のモック
+    const createGridButtonsMockScene = () => ({
+      add: {
+        graphics: vi.fn().mockReturnValue({
+          fillStyle: vi.fn().mockReturnThis(),
+          fillRoundedRect: vi.fn().mockReturnThis(),
+        }),
+        text: vi.fn().mockReturnValue({
+          setOrigin: vi.fn().mockReturnThis(),
+        }),
+        image: vi.fn().mockReturnValue({
+          setDisplaySize: vi.fn().mockReturnThis(),
+        }),
+        container: vi.fn().mockReturnValue({
+          add: vi.fn().mockReturnThis(),
+        }),
+      },
+      tweens: {
+        add: vi.fn(),
+      },
+    });
+
+    const createGridButtonsMockRexUI = () => {
+      const mockGrid = {
+        layout: vi.fn().mockReturnThis(),
+        on: vi.fn().mockReturnThis(),
+        getElement: vi.fn().mockReturnValue([[]]),
+      };
+
+      const mockRoundRect = {
+        setFillStyle: vi.fn().mockReturnThis(),
+      };
+
+      const mockLabel = {
+        layout: vi.fn().mockReturnThis(),
+        getElement: vi.fn().mockReturnValue(mockRoundRect),
+      };
+
+      return {
+        add: {
+          roundRectangle: vi.fn().mockReturnValue(mockRoundRect),
+          label: vi.fn().mockReturnValue(mockLabel),
+          gridButtons: vi.fn().mockReturnValue(mockGrid),
+        },
+        _mockGrid: mockGrid,
+        _mockRoundRect: mockRoundRect,
+        _mockLabel: mockLabel,
+      };
+    };
+
+    it('createGridButtons()でグリッドボタンを生成できる', () => {
+      const gbMockScene = createGridButtonsMockScene();
+      const gbMockRexUI = createGridButtonsMockRexUI();
+      const factory = new UIFactory(gbMockScene as any, gbMockRexUI as any);
+
+      const result = factory.createGridButtons({
+        x: 640,
+        y: 360,
+        columns: 3,
+        cellWidth: 80,
+        cellHeight: 80,
+        items: [
+          { id: 'item1', content: 'アイテム1' },
+          { id: 'item2', content: 'アイテム2' },
+          { id: 'item3', content: 'アイテム3' },
+        ],
+      });
+
+      expect(gbMockRexUI.add.gridButtons).toHaveBeenCalled();
+      expect(result.grid).toBeDefined();
+    });
+
+    it('createGridButtons()で選択IDの取得・設定ができる', () => {
+      const gbMockScene = createGridButtonsMockScene();
+      const gbMockRexUI = createGridButtonsMockRexUI();
+      const factory = new UIFactory(gbMockScene as any, gbMockRexUI as any);
+
+      const result = factory.createGridButtons({
+        x: 640,
+        y: 360,
+        columns: 3,
+        cellWidth: 80,
+        cellHeight: 80,
+        items: [
+          { id: 'item1', content: 'アイテム1' },
+          { id: 'item2', content: 'アイテム2' },
+        ],
+      });
+
+      // 初期値はnull
+      expect(result.getSelectedId()).toBeNull();
+
+      // 選択を設定
+      result.setSelectedId('item1');
+      expect(result.getSelectedId()).toBe('item1');
+
+      // nullに戻す
+      result.setSelectedId(null);
+      expect(result.getSelectedId()).toBeNull();
+    });
+
+    it('createGridButtons()でアイテム一覧を取得できる', () => {
+      const gbMockScene = createGridButtonsMockScene();
+      const gbMockRexUI = createGridButtonsMockRexUI();
+      const factory = new UIFactory(gbMockScene as any, gbMockRexUI as any);
+
+      const result = factory.createGridButtons({
+        x: 640,
+        y: 360,
+        columns: 3,
+        cellWidth: 80,
+        cellHeight: 80,
+        items: [
+          { id: 'item1', content: 'アイテム1', data: { value: 100 } },
+          { id: 'item2', content: 'アイテム2', data: { value: 200 } },
+        ],
+      });
+
+      const items = result.getItems();
+      expect(items).toHaveLength(2);
+      expect(items[0]).toEqual({ id: 'item1', data: { value: 100 } });
+      expect(items[1]).toEqual({ id: 'item2', data: { value: 200 } });
+    });
+
+    it('createGridButtons()でクリックイベントが設定される', () => {
+      const gbMockScene = createGridButtonsMockScene();
+      const gbMockRexUI = createGridButtonsMockRexUI();
+      const factory = new UIFactory(gbMockScene as any, gbMockRexUI as any);
+
+      const onItemClick = vi.fn();
+
+      factory.createGridButtons({
+        x: 640,
+        y: 360,
+        columns: 3,
+        cellWidth: 80,
+        cellHeight: 80,
+        items: [
+          { id: 'item1', content: 'アイテム1' },
+        ],
+        onItemClick,
+      });
+
+      // イベントが登録されていることを確認
+      expect(gbMockRexUI._mockGrid.on).toHaveBeenCalledWith('button.click', expect.any(Function));
+    });
+
+    it('createGridButtons()でホバーイベントが設定される', () => {
+      const gbMockScene = createGridButtonsMockScene();
+      const gbMockRexUI = createGridButtonsMockRexUI();
+      const factory = new UIFactory(gbMockScene as any, gbMockRexUI as any);
+
+      const onItemHover = vi.fn();
+
+      factory.createGridButtons({
+        x: 640,
+        y: 360,
+        columns: 3,
+        cellWidth: 80,
+        cellHeight: 80,
+        items: [
+          { id: 'item1', content: 'アイテム1' },
+        ],
+        onItemHover,
+      });
+
+      // イベントが登録されていることを確認
+      expect(gbMockRexUI._mockGrid.on).toHaveBeenCalledWith('button.over', expect.any(Function));
+      expect(gbMockRexUI._mockGrid.on).toHaveBeenCalledWith('button.out', expect.any(Function));
+    });
+
+    it('createGridButtons()でGameObjectコンテンツを使用できる', () => {
+      const gbMockScene = createGridButtonsMockScene();
+      const gbMockRexUI = createGridButtonsMockRexUI();
+      const factory = new UIFactory(gbMockScene as any, gbMockRexUI as any);
+
+      const mockGameObject = { type: 'mockObject' };
+
+      const result = factory.createGridButtons({
+        x: 640,
+        y: 360,
+        columns: 3,
+        cellWidth: 80,
+        cellHeight: 80,
+        items: [
+          { id: 'item1', content: mockGameObject as any },
+        ],
+      });
+
+      expect(gbMockRexUI.add.label).toHaveBeenCalledWith(
+        expect.objectContaining({
+          icon: mockGameObject,
+        })
+      );
+      expect(result.grid).toBeDefined();
+    });
+
+    it('createGridButtons()でスペース設定ができる', () => {
+      const gbMockScene = createGridButtonsMockScene();
+      const gbMockRexUI = createGridButtonsMockRexUI();
+      const factory = new UIFactory(gbMockScene as any, gbMockRexUI as any);
+
+      factory.createGridButtons({
+        x: 640,
+        y: 360,
+        columns: 3,
+        cellWidth: 80,
+        cellHeight: 80,
+        items: [
+          { id: 'item1', content: 'アイテム1' },
+        ],
+        space: { column: 16, row: 12 },
+      });
+
+      expect(gbMockRexUI.add.gridButtons).toHaveBeenCalledWith(
+        expect.objectContaining({
+          space: { column: 16, row: 12 },
+        })
+      );
+    });
+
+    it('createGridButtons()で不足分のセルがプレースホルダーで埋まる', () => {
+      const gbMockScene = createGridButtonsMockScene();
+      const gbMockRexUI = createGridButtonsMockRexUI();
+      const factory = new UIFactory(gbMockScene as any, gbMockRexUI as any);
+
+      // 3列で2アイテム → 1つプレースホルダーが必要
+      factory.createGridButtons({
+        x: 640,
+        y: 360,
+        columns: 3,
+        cellWidth: 80,
+        cellHeight: 80,
+        items: [
+          { id: 'item1', content: 'アイテム1' },
+          { id: 'item2', content: 'アイテム2' },
+        ],
+      });
+
+      // labelが3回呼ばれる（2アイテム + 1プレースホルダー）
+      expect(gbMockRexUI.add.label).toHaveBeenCalledTimes(3);
+    });
+
+    it('createGridButtons()でrefresh()が警告を出す', () => {
+      const gbMockScene = createGridButtonsMockScene();
+      const gbMockRexUI = createGridButtonsMockRexUI();
+      const factory = new UIFactory(gbMockScene as any, gbMockRexUI as any);
+
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const result = factory.createGridButtons({
+        x: 640,
+        y: 360,
+        columns: 3,
+        cellWidth: 80,
+        cellHeight: 80,
+        items: [{ id: 'item1', content: 'アイテム1' }],
+      });
+
+      result.refresh([{ id: 'item2', content: 'アイテム2' }]);
+
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Full rebuild not implemented'));
+      consoleSpy.mockRestore();
+    });
+
+    it('createCardGrid()でカードグリッドを生成できる', () => {
+      const gbMockScene = createGridButtonsMockScene();
+      const gbMockRexUI = createGridButtonsMockRexUI();
+      const factory = new UIFactory(gbMockScene as any, gbMockRexUI as any);
+
+      const onSelect = vi.fn();
+
+      const result = factory.createCardGrid({
+        x: 640,
+        y: 360,
+        items: [
+          { id: 'card1', content: 'カード1', data: { type: 'recipe' } },
+          { id: 'card2', content: 'カード2' },
+        ],
+        columns: 4,
+        cellWidth: 100,
+        cellHeight: 140,
+        onSelect,
+      });
+
+      expect(gbMockRexUI.add.gridButtons).toHaveBeenCalled();
+      expect(result.grid).toBeDefined();
+    });
+  });
+
   describe('未実装メソッド', () => {
     it('createPanel()はエラーをスローする', () => {
       expect(() => {
         uiFactory.createPanel({ x: 0, y: 0, width: 100, height: 100 });
       }).toThrow('Not implemented - see TASK-0175');
-    });
-
-    it('createGridButtons()はエラーをスローする', () => {
-      expect(() => {
-        uiFactory.createGridButtons({
-          x: 0,
-          y: 0,
-          items: [],
-          columns: 4,
-          cellWidth: 100,
-          cellHeight: 100,
-        });
-      }).toThrow('Not implemented - see TASK-0179');
     });
 
     it('showToast()はエラーをスローする', () => {

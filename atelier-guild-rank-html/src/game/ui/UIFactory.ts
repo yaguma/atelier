@@ -23,6 +23,8 @@ import type {
   ScrollPanelOptions,
   ScrollPanelObject,
   GridButtonsOptions,
+  GridButtonsObject,
+  GridItem,
   ToastOptions,
   TooltipOptions,
   UIBaseStyle,
@@ -1060,12 +1062,236 @@ export class UIFactory {
 
   /**
    * グリッドボタンを生成
+   *
+   * rexUIのGridButtonsコンポーネントを使用してグリッド状のボタン群を生成する。
+   * 選択状態の管理とクリック/ホバーイベントをサポート。
+   *
    * @param options グリッドボタンオプション
-   * @returns rexUI GridButtonsオブジェクト
-   * @see TASK-0179
+   * @returns GridButtonsオブジェクト
+   *
+   * @example
+   * ```typescript
+   * const grid = uiFactory.createGridButtons({
+   *   x: 640,
+   *   y: 360,
+   *   columns: 3,
+   *   cellWidth: 80,
+   *   cellHeight: 80,
+   *   items: [
+   *     { id: 'item1', content: 'アイテム1' },
+   *     { id: 'item2', content: 'アイテム2' },
+   *     { id: 'item3', content: 'アイテム3' },
+   *   ],
+   *   onItemClick: (id, data) => console.log('clicked:', id),
+   * });
+   * ```
    */
-  createGridButtons(_options: GridButtonsOptions): unknown {
-    throw new Error('Not implemented - see TASK-0179');
+  createGridButtons(options: GridButtonsOptions): GridButtonsObject {
+    const {
+      x,
+      y,
+      items,
+      columns,
+      cellWidth,
+      cellHeight,
+      space,
+      onItemClick,
+      onItemHover,
+      style,
+    } = options;
+
+    let selectedId: string | null = null;
+    const itemsRef: GridItem[] = [...items];
+
+    // ボタン生成関数
+    const createButtonCell = (item: GridItem): Label => {
+      const isSelected = item.selected ?? false;
+      const isDisabled = item.disabled ?? false;
+
+      const bgColor = isDisabled
+        ? Colors.disabled
+        : isSelected
+          ? Colors.primary
+          : style?.backgroundColor ?? Colors.panelBackground;
+
+      const background = this.rexUI.add.roundRectangle(
+        0, 0, cellWidth, cellHeight,
+        style?.cornerRadius ?? 8,
+        bgColor
+      ) as RoundRectangle;
+
+      // コンテンツオブジェクト
+      let contentObj: Phaser.GameObjects.GameObject;
+      if (typeof item.content === 'string') {
+        contentObj = this.scene.add.text(0, 0, item.content, TextStyles.body);
+      } else {
+        contentObj = item.content;
+      }
+
+      const button = this.rexUI.add.label({
+        width: cellWidth,
+        height: cellHeight,
+        background,
+        text: typeof item.content === 'string' ? contentObj : undefined,
+        icon: typeof item.content !== 'string' ? contentObj : undefined,
+        align: 'center',
+      }) as Label;
+
+      // データを保持
+      (button as unknown as { itemId: string }).itemId = item.id;
+      (button as unknown as { itemData: unknown }).itemData = item.data;
+      (button as unknown as { isDisabled: boolean }).isDisabled = isDisabled;
+
+      return button;
+    };
+
+    // グリッドボタン生成
+    const buttons = items.map(item => createButtonCell(item));
+
+    // 行に分割
+    const rows: Label[][] = [];
+    for (let i = 0; i < buttons.length; i += columns) {
+      const row = buttons.slice(i, i + columns);
+      // 不足分を透明プレースホルダーで埋める
+      while (row.length < columns) {
+        const placeholder = this.rexUI.add.label({
+          width: cellWidth,
+          height: cellHeight,
+          background: this.rexUI.add.roundRectangle(0, 0, cellWidth, cellHeight, 0, 0x000000, 0),
+        }) as Label;
+        row.push(placeholder);
+      }
+      rows.push(row);
+    }
+
+    // GridButtons生成
+    const grid = this.rexUI.add.gridButtons({
+      x,
+      y,
+      width: columns * cellWidth + (columns - 1) * (space?.column ?? 8),
+      background: this.rexUI.add.roundRectangle(0, 0, 0, 0, 0, 0x000000, 0),
+      buttons: rows,
+      space: {
+        column: space?.column ?? 8,
+        row: space?.row ?? 8,
+      },
+    });
+
+    grid.layout();
+
+    // 選択状態の更新関数
+    const updateSelectionVisual = (): void => {
+      const allButtons = grid.getElement('buttons') as unknown as Label[][];
+      allButtons.flat().forEach((btn: unknown) => {
+        if (!btn) return;
+        const typedBtn = btn as Label & { itemId?: string; isDisabled?: boolean };
+        if (!typedBtn.itemId) return;
+
+        const bg = (typedBtn as unknown as { getElement(name: string): RoundRectangle }).getElement('background');
+        if (bg) {
+          if (typedBtn.isDisabled) {
+            bg.setFillStyle(Colors.disabled);
+          } else if (typedBtn.itemId === selectedId) {
+            bg.setFillStyle(Colors.primary);
+          } else {
+            bg.setFillStyle(style?.backgroundColor ?? Colors.panelBackground);
+          }
+        }
+      });
+    };
+
+    // クリックイベント
+    grid.on('button.click', (button: unknown) => {
+      const typedButton = button as Label & { itemId?: string; itemData?: unknown; isDisabled?: boolean };
+      if (!typedButton || !typedButton.itemId || typedButton.isDisabled) return;
+
+      selectedId = typedButton.itemId;
+      updateSelectionVisual();
+
+      if (onItemClick) {
+        onItemClick(typedButton.itemId, typedButton.itemData);
+      }
+    });
+
+    // ホバーイベント
+    grid.on('button.over', (button: unknown) => {
+      const typedButton = button as Label & { itemId?: string; itemData?: unknown; isDisabled?: boolean };
+      if (!typedButton || !typedButton.itemId || typedButton.isDisabled) return;
+      if (typedButton.itemId === selectedId) return;
+
+      const bg = (typedButton as unknown as { getElement(name: string): RoundRectangle }).getElement('background');
+      if (bg) {
+        bg.setFillStyle(Colors.backgroundLight);
+      }
+
+      if (onItemHover) {
+        onItemHover(typedButton.itemId, typedButton.itemData);
+      }
+    });
+
+    grid.on('button.out', (button: unknown) => {
+      const typedButton = button as Label & { itemId?: string; isDisabled?: boolean };
+      if (!typedButton || !typedButton.itemId || typedButton.isDisabled) return;
+      if (typedButton.itemId === selectedId) return;
+
+      const bg = (typedButton as unknown as { getElement(name: string): RoundRectangle }).getElement('background');
+      if (bg) {
+        bg.setFillStyle(style?.backgroundColor ?? Colors.panelBackground);
+      }
+    });
+
+    return {
+      grid,
+      getSelectedId: () => selectedId,
+      setSelectedId: (id: string | null) => {
+        selectedId = id;
+        updateSelectionVisual();
+      },
+      getItems: () => itemsRef.map(i => ({ id: i.id, data: i.data })),
+      refresh: (newItems: GridItem[]) => {
+        // アイテムリストを更新（簡易実装: 選択状態のみリセット）
+        itemsRef.length = 0;
+        itemsRef.push(...newItems);
+        selectedId = null;
+        // 完全な再構築は複雑なため、ログで警告
+        console.warn('GridButtons refresh: Full rebuild not implemented. Consider recreating the grid.');
+      },
+    };
+  }
+
+  /**
+   * カードグリッドを生成（便利メソッド）
+   *
+   * @param options カードグリッドオプション
+   * @returns GridButtonsオブジェクト
+   */
+  createCardGrid(options: {
+    x: number;
+    y: number;
+    items: Array<{ id: string; content: string | Phaser.GameObjects.GameObject; data?: unknown }>;
+    columns?: number;
+    cellWidth?: number;
+    cellHeight?: number;
+    onSelect?: (id: string, data?: unknown) => void;
+  }): GridButtonsObject {
+    return this.createGridButtons({
+      x: options.x,
+      y: options.y,
+      columns: options.columns ?? 4,
+      cellWidth: options.cellWidth ?? 100,
+      cellHeight: options.cellHeight ?? 140,
+      items: options.items.map(item => ({
+        id: item.id,
+        content: item.content,
+        data: item.data,
+      })),
+      onItemClick: options.onSelect,
+      space: { column: 10, row: 10 },
+      style: {
+        backgroundColor: Colors.panelBackground,
+        cornerRadius: 8,
+      },
+    });
   }
 
   /**
