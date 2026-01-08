@@ -20,7 +20,8 @@
       "@domain/*": ["src/domain/*"],
       "@application/*": ["src/application/*"],
       "@infrastructure/*": ["src/infrastructure/*"],
-      "@presentation/*": ["src/presentation/*"]
+      "@presentation/*": ["src/presentation/*"],
+      "@game/*": ["src/game/*"]
     }
   },
   "include": ["src/**/*.ts", "tests/**/*.ts"],
