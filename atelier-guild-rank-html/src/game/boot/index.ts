@@ -1,0 +1,4 @@
+/**
+ * Bootモジュールエクスポート
+ */
+export * from './AssetList';

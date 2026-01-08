@@ -9,6 +9,7 @@ import { EventBus } from '@game/events/EventBus';
 import { SceneManager } from '@game/managers/SceneManager';
 import { DialogManager } from '@game/managers/DialogManager';
 import { ToastManager } from '@game/managers/ToastManager';
+import { SceneKeys } from '@game/config/SceneKeys';
 
 describe('Phase 1 統合テスト', () => {
   beforeEach(() => {
@@ -54,7 +55,7 @@ describe('Phase 1 統合テスト', () => {
       eventBus.on('state:ap:changed', callback2);
       eventBus.on('state:ap:changed', callback3);
 
-      eventBus.emit('state:ap:changed', { ap: 5, maxAp: 10, delta: -1 });
+      eventBus.emit('state:ap:changed', { ap: 5, maxAP: 10 });
 
       expect(callback1).toHaveBeenCalledTimes(1);
       expect(callback2).toHaveBeenCalledTimes(1);
@@ -228,28 +229,28 @@ describe('Phase 1 統合テスト', () => {
       eventBus.on('scene:transition:complete', completeCallback);
 
       // ゲームインスタンスがないのでエラーにならずに状態だけ更新される
-      await sceneManager.goTo('TITLE');
+      await sceneManager.goTo(SceneKeys.TITLE);
 
       expect(startCallback).toHaveBeenCalledWith({
         from: null,
-        to: 'TITLE',
+        to: SceneKeys.TITLE,
       });
       expect(completeCallback).toHaveBeenCalledWith({
         from: null,
-        to: 'TITLE',
+        to: SceneKeys.TITLE,
       });
     });
 
     it('履歴が正しく記録される', async () => {
       const sceneManager = SceneManager.getInstance();
 
-      await sceneManager.goTo('TITLE');
-      await sceneManager.goTo('MAIN');
+      await sceneManager.goTo(SceneKeys.TITLE);
+      await sceneManager.goTo(SceneKeys.MAIN);
 
       const history = sceneManager.getHistory();
       expect(history.length).toBe(2);
-      expect(history[0].to).toBe('TITLE');
-      expect(history[1].to).toBe('MAIN');
+      expect(history[0].to).toBe(SceneKeys.TITLE);
+      expect(history[1].to).toBe(SceneKeys.MAIN);
     });
   });
 
@@ -286,7 +287,7 @@ describe('Phase 1 統合テスト', () => {
       const unsubscribers: (() => void)[] = [];
       unsubscribers.push(eventBus.on('state:gold:changed', () => {}));
       unsubscribers.push(eventBus.on('state:ap:changed', () => {}));
-      unsubscribers.push(eventBus.onVoid('ui:continueGame:clicked', () => {}));
+      unsubscribers.push(eventBus.onVoid('ui:continue:clicked', () => {}));
 
       expect(eventBus.listenerCount()).toBe(3);
 
@@ -312,23 +313,19 @@ describe('Phase 1 統合テスト', () => {
       });
     });
 
-    it('game:newGame:startedイベントが正しいペイロードを持つ', () => {
+    it('state:gold:changedイベントが正しいペイロードを持つ', () => {
       const eventBus = EventBus.getInstance();
       const callback = vi.fn();
 
-      eventBus.on('game:newGame:started', callback);
-      eventBus.emit('game:newGame:started', {
-        initialGold: 1000,
-        initialAp: 10,
-        initialDay: 1,
-        initialRank: 'G',
+      eventBus.on('state:gold:changed', callback);
+      eventBus.emit('state:gold:changed', {
+        gold: 1000,
+        delta: 500,
       });
 
       expect(callback).toHaveBeenCalledWith({
-        initialGold: 1000,
-        initialAp: 10,
-        initialDay: 1,
-        initialRank: 'G',
+        gold: 1000,
+        delta: 500,
       });
     });
   });
