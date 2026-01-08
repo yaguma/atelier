@@ -8,10 +8,11 @@
 
 import Phaser from 'phaser';
 import type UIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin';
-import { Colors } from '../config/ColorPalette';
+import { Colors, OverlayAlpha } from '../config/ColorPalette';
 import { TextStyles } from '../config/TextStyles';
 import type Label from 'phaser3-rex-plugins/templates/ui/label/Label';
 import type RoundRectangle from 'phaser3-rex-plugins/plugins/roundrectangle';
+import type Dialog from 'phaser3-rex-plugins/templates/ui/dialog/Dialog';
 import type {
   ButtonOptions,
   LabelOptions,
@@ -508,12 +509,199 @@ export class UIFactory {
 
   /**
    * ダイアログを生成
+   *
+   * rexUIのDialogコンポーネントを使用してモーダルダイアログを生成する。
+   * タイトル、コンテンツ、ボタン配置をサポートし、ESCキーでの閉じる動作も対応。
+   *
    * @param options ダイアログオプション
-   * @returns rexUI Dialogオブジェクト
-   * @see TASK-0176
+   * @returns Dialogオブジェクトとモーダル背景を含む構造体
+   *
+   * @example
+   * ```typescript
+   * const { dialog, close } = uiFactory.createDialog({
+   *   title: '確認',
+   *   content: '保存しますか？',
+   *   modal: true,
+   *   buttons: [
+   *     { text: 'キャンセル', onClick: () => console.log('cancel') },
+   *     { text: '保存', onClick: () => console.log('save'), primary: true },
+   *   ],
+   * });
+   * ```
    */
-  createDialog(_options: DialogOptions): unknown {
-    throw new Error('Not implemented - see TASK-0176');
+  createDialog(options: DialogOptions): { dialog: Dialog; close: () => void; modalBackground?: Phaser.GameObjects.Rectangle } {
+    const {
+      title,
+      content,
+      buttons,
+      width = 400,
+      modal = true,
+      closeOnBackgroundClick = true,
+    } = options;
+
+    // モーダル背景
+    let modalBackground: Phaser.GameObjects.Rectangle | undefined;
+    if (modal) {
+      modalBackground = this.scene.add.rectangle(
+        this.scene.cameras.main.centerX,
+        this.scene.cameras.main.centerY,
+        this.scene.cameras.main.width,
+        this.scene.cameras.main.height,
+        Colors.overlay,
+        OverlayAlpha.medium
+      );
+      modalBackground.setInteractive();
+      modalBackground.setDepth(999);
+    }
+
+    // closeDialog関数を先に定義
+    const closeDialog = (): void => {
+      if (this.escKeyHandler) {
+        this.scene.input.keyboard?.off('keydown-ESC', this.escKeyHandler);
+        this.escKeyHandler = undefined;
+      }
+      dialog.destroy();
+      if (modalBackground) {
+        modalBackground.destroy();
+      }
+    };
+
+    // 背景クリックで閉じる
+    if (modal && modalBackground && closeOnBackgroundClick) {
+      modalBackground.on('pointerdown', closeDialog);
+    }
+
+    // タイトルテキスト
+    const titleText = this.scene.add.text(0, 0, title, TextStyles.titleSmall);
+
+    // コンテンツ
+    let contentObject: Phaser.GameObjects.Text | Phaser.GameObjects.GameObject;
+    if (typeof content === 'string') {
+      contentObject = this.scene.add.text(0, 0, content, {
+        ...TextStyles.body,
+        wordWrap: { width: width - 40 },
+      });
+    } else {
+      contentObject = content;
+    }
+
+    // アクションボタン
+    const actionButtons = buttons?.map(btn => {
+      return this.createButton({
+        x: 0,
+        y: 0,
+        text: btn.text,
+        width: 100,
+        height: 36,
+        style: {
+          backgroundColor: btn.primary ? Colors.primary : Colors.secondary,
+          normal: btn.primary ? Colors.primary : Colors.secondary,
+          hover: btn.primary ? Colors.primaryHover : Colors.secondaryHover,
+          cornerRadius: 6,
+        },
+        onClick: () => {
+          btn.onClick();
+          closeDialog();
+        },
+      });
+    });
+
+    // ダイアログ本体
+    const dialog = this.rexUI.add.dialog({
+      x: this.scene.cameras.main.centerX,
+      y: this.scene.cameras.main.centerY,
+      width,
+      background: this.rexUI.add.roundRectangle(
+        0, 0, 0, 0, 12, Colors.panelBackground
+      ),
+      title: titleText,
+      content: contentObject,
+      actions: actionButtons ?? [],
+      space: {
+        title: 20,
+        content: 20,
+        action: 10,
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: 20,
+      },
+      align: {
+        actions: 'right',
+      },
+    }) as Dialog;
+
+    dialog.layout();
+    dialog.setDepth(1000);
+
+    // ESCキーで閉じる
+    this.escKeyHandler = closeDialog;
+    this.scene.input.keyboard?.once('keydown-ESC', this.escKeyHandler);
+
+    return { dialog, close: closeDialog, modalBackground };
+  }
+
+  /**
+   * ESCキーハンドラ（ダイアログ用）
+   */
+  private escKeyHandler?: () => void;
+
+  /**
+   * 確認ダイアログを生成
+   *
+   * @param options 確認ダイアログオプション
+   * @returns Dialogオブジェクトとclose関数
+   */
+  createConfirmDialog(options: {
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    onCancel?: () => void;
+    confirmText?: string;
+    cancelText?: string;
+  }): { dialog: Dialog; close: () => void } {
+    return this.createDialog({
+      title: options.title,
+      content: options.message,
+      modal: true,
+      buttons: [
+        {
+          text: options.cancelText ?? 'キャンセル',
+          onClick: () => options.onCancel?.(),
+        },
+        {
+          text: options.confirmText ?? '確認',
+          onClick: options.onConfirm,
+          primary: true,
+        },
+      ],
+    });
+  }
+
+  /**
+   * 情報ダイアログを生成
+   *
+   * @param options 情報ダイアログオプション
+   * @returns Dialogオブジェクトとclose関数
+   */
+  createAlertDialog(options: {
+    title: string;
+    message: string;
+    onClose?: () => void;
+    buttonText?: string;
+  }): { dialog: Dialog; close: () => void } {
+    return this.createDialog({
+      title: options.title,
+      content: options.message,
+      modal: true,
+      buttons: [
+        {
+          text: options.buttonText ?? 'OK',
+          onClick: () => options.onClose?.(),
+          primary: true,
+        },
+      ],
+    });
   }
 
   /**

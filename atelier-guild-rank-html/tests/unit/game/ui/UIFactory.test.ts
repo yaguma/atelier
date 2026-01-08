@@ -455,17 +455,171 @@ describe('UIFactory', () => {
     });
   });
 
+  describe('createDialog', () => {
+    // ダイアログ用モックを追加
+    const createMockDialog = () => ({
+      layout: vi.fn().mockReturnThis(),
+      setDepth: vi.fn().mockReturnThis(),
+      destroy: vi.fn(),
+    });
+
+    const createDialogMockScene = () => ({
+      ...mockScene,
+      add: {
+        ...mockScene.add,
+        rectangle: vi.fn().mockReturnValue({
+          setInteractive: vi.fn().mockReturnThis(),
+          setDepth: vi.fn().mockReturnThis(),
+          destroy: vi.fn(),
+          on: vi.fn().mockReturnThis(),
+        }),
+      },
+      cameras: {
+        main: {
+          centerX: 640,
+          centerY: 360,
+          width: 1280,
+          height: 720,
+        },
+      },
+      input: {
+        keyboard: {
+          once: vi.fn(),
+          off: vi.fn(),
+        },
+      },
+    });
+
+    beforeEach(() => {
+      mockRexUI.add.dialog = vi.fn().mockReturnValue(createMockDialog());
+    });
+
+    it('createDialog()でダイアログを生成できる', () => {
+      const dialogMockScene = createDialogMockScene();
+      const factory = new UIFactory(dialogMockScene as any, mockRexUI);
+
+      const result = factory.createDialog({
+        title: 'Test Dialog',
+        content: 'This is test content',
+      });
+
+      expect(mockRexUI.add.dialog).toHaveBeenCalled();
+      expect(result.dialog).toBeDefined();
+      expect(result.close).toBeInstanceOf(Function);
+    });
+
+    it('createDialog()でモーダル背景が生成される', () => {
+      const dialogMockScene = createDialogMockScene();
+      const factory = new UIFactory(dialogMockScene as any, mockRexUI);
+
+      const result = factory.createDialog({
+        title: 'Test',
+        content: 'Content',
+        modal: true,
+      });
+
+      expect(dialogMockScene.add.rectangle).toHaveBeenCalled();
+      expect(result.modalBackground).toBeDefined();
+    });
+
+    it('createDialog()でモーダル背景を無効にできる', () => {
+      const dialogMockScene = createDialogMockScene();
+      const factory = new UIFactory(dialogMockScene as any, mockRexUI);
+
+      const result = factory.createDialog({
+        title: 'Test',
+        content: 'Content',
+        modal: false,
+      });
+
+      expect(result.modalBackground).toBeUndefined();
+    });
+
+    it('createDialog()でボタンを設定できる', () => {
+      const dialogMockScene = createDialogMockScene();
+      const factory = new UIFactory(dialogMockScene as any, mockRexUI);
+      const onConfirm = vi.fn();
+      const onCancel = vi.fn();
+
+      factory.createDialog({
+        title: 'Test',
+        content: 'Content',
+        buttons: [
+          { text: 'Cancel', onClick: onCancel },
+          { text: 'OK', onClick: onConfirm, primary: true },
+        ],
+      });
+
+      // ボタン生成が呼ばれたことを確認（createButtonがlabelを呼ぶ）
+      expect(mockRexUI.add.label).toHaveBeenCalled();
+    });
+
+    it('close()でダイアログとモーダル背景が破棄される', () => {
+      const dialogMockScene = createDialogMockScene();
+      const factory = new UIFactory(dialogMockScene as any, mockRexUI);
+      const mockDialogObj = createMockDialog();
+      mockRexUI.add.dialog = vi.fn().mockReturnValue(mockDialogObj);
+
+      const result = factory.createDialog({
+        title: 'Test',
+        content: 'Content',
+        modal: true,
+      });
+
+      result.close();
+
+      expect(mockDialogObj.destroy).toHaveBeenCalled();
+    });
+
+    it('createConfirmDialog()で確認ダイアログを生成できる', () => {
+      const dialogMockScene = createDialogMockScene();
+      const factory = new UIFactory(dialogMockScene as any, mockRexUI);
+      const onConfirm = vi.fn();
+
+      const result = factory.createConfirmDialog({
+        title: '確認',
+        message: '実行しますか？',
+        onConfirm,
+      });
+
+      expect(mockRexUI.add.dialog).toHaveBeenCalled();
+      expect(result.dialog).toBeDefined();
+    });
+
+    it('createAlertDialog()で情報ダイアログを生成できる', () => {
+      const dialogMockScene = createDialogMockScene();
+      const factory = new UIFactory(dialogMockScene as any, mockRexUI);
+
+      const result = factory.createAlertDialog({
+        title: 'お知らせ',
+        message: '処理が完了しました',
+      });
+
+      expect(mockRexUI.add.dialog).toHaveBeenCalled();
+      expect(result.dialog).toBeDefined();
+    });
+
+    it('ESCキーハンドラが登録される', () => {
+      const dialogMockScene = createDialogMockScene();
+      const factory = new UIFactory(dialogMockScene as any, mockRexUI);
+
+      factory.createDialog({
+        title: 'Test',
+        content: 'Content',
+      });
+
+      expect(dialogMockScene.input.keyboard.once).toHaveBeenCalledWith(
+        'keydown-ESC',
+        expect.any(Function)
+      );
+    });
+  });
+
   describe('未実装メソッド', () => {
     it('createPanel()はエラーをスローする', () => {
       expect(() => {
         uiFactory.createPanel({ x: 0, y: 0, width: 100, height: 100 });
       }).toThrow('Not implemented - see TASK-0175');
-    });
-
-    it('createDialog()はエラーをスローする', () => {
-      expect(() => {
-        uiFactory.createDialog({ title: 'Test', content: 'Content' });
-      }).toThrow('Not implemented - see TASK-0176');
     });
 
     it('createProgressBar()はエラーをスローする', () => {
