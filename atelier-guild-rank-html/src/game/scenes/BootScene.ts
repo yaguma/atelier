@@ -3,7 +3,8 @@
  *
  * ゲーム起動時に最初に実行されるシーン。
  * すべてのアセット（画像、音声、JSON）をプリロードし、
- * 完了後にTitleSceneへ遷移する。
+ * 視覚的な進捗バーで読み込み状況を表示する。
+ * 完了後にフェードアウトしてTitleSceneへ遷移する。
  * 設計文書: docs/design/atelier-guild-rank-phaser/architecture.md
  */
 
@@ -11,6 +12,8 @@ import { BaseGameScene, SceneInitData } from './BaseGameScene';
 import { SceneKeys } from '../config/SceneKeys';
 import { AllAssets, getTotalAssetCount, AssetLoadItem } from '../boot/AssetList';
 import { SceneManager } from '../managers/SceneManager';
+import { Colors } from '../config/ColorPalette';
+import { TextStyles } from '../config/TextStyles';
 
 /**
  * プログレスコールバック型
@@ -28,6 +31,16 @@ export interface AssetLoadError {
   /** エラーメッセージ */
   message: string;
 }
+
+/**
+ * プログレスバー設定
+ */
+const PROGRESS_BAR_CONFIG = {
+  width: 400,
+  height: 30,
+  padding: 4,
+  cornerRadius: 15,
+} as const;
 
 /**
  * BootScene - 起動・プリロードシーン
@@ -48,10 +61,31 @@ export class BootScene extends BaseGameScene {
   /** アセット総数 */
   private totalCount = 0;
 
+  /** プログレスバー背景 */
+  private progressBox: Phaser.GameObjects.Graphics | null = null;
+
+  /** プログレスバー */
+  private progressBar: Phaser.GameObjects.Graphics | null = null;
+
+  /** タイトルテキスト */
+  private titleText: Phaser.GameObjects.Text | null = null;
+
+  /** サブタイトルテキスト */
+  private subtitleText: Phaser.GameObjects.Text | null = null;
+
+  /** パーセントテキスト */
+  private percentText: Phaser.GameObjects.Text | null = null;
+
   /** ローディングテキスト */
   private loadingText: Phaser.GameObjects.Text | null = null;
 
-  /** プログレスコールバック（TASK-0184で使用） */
+  /** アセット名テキスト */
+  private assetText: Phaser.GameObjects.Text | null = null;
+
+  /** ローディングドットアニメーションタイマー */
+  private loadingDotTimer: Phaser.Time.TimerEvent | null = null;
+
+  /** プログレスコールバック */
   private progressCallback: ProgressCallback | null = null;
 
   /** ロードエラー一覧 */
@@ -86,7 +120,6 @@ export class BootScene extends BaseGameScene {
 
   /**
    * プログレスコールバックを設定
-   * TASK-0184のプログレスバーで使用
    * @param callback プログレスコールバック（0-1の値を受け取る）
    */
   setProgressCallback(callback: ProgressCallback): void {
@@ -127,11 +160,17 @@ export class BootScene extends BaseGameScene {
    * アセット読み込み処理
    */
   protected onPreload(): void {
-    // ローディングテキスト表示（プログレスバーはTASK-0184で実装）
-    this.createLoadingText();
+    // 背景色設定
+    this.cameras.main.setBackgroundColor(Colors.background);
+
+    // UI構築
+    this.createLoadingUI();
 
     // ローダーイベント設定
     this.setupLoaderEvents();
+
+    // ローディングドットアニメーション開始
+    this.startLoadingAnimation();
 
     // 全アセット読み込み開始
     this.loadAllAssets();
@@ -144,6 +183,17 @@ export class BootScene extends BaseGameScene {
   protected onCreate(_data?: SceneInitData): void {
     this._isLoadComplete = true;
 
+    // ロード完了テキスト更新
+    if (this.loadingText) {
+      this.loadingText.setText('Ready');
+    }
+    if (this.assetText) {
+      this.assetText.setText('Complete!');
+    }
+
+    // ローディングアニメーション停止
+    this.stopLoadingAnimation();
+
     // ロードエラーがあればログ出力
     if (this.loadErrors.length > 0) {
       console.warn(
@@ -154,8 +204,9 @@ export class BootScene extends BaseGameScene {
 
     // テストモードでなければTitleSceneへ遷移
     if (!this.skipTransition) {
-      // 少し遅延させてから遷移（ローディング完了を表示するため）
-      this.time.delayedCall(500, () => {
+      // フェードアウトしてから遷移
+      this.cameras.main.fadeOut(500, 0, 0, 0);
+      this.cameras.main.once('camerafadeoutcomplete', () => {
         this.transitionToTitle();
       });
     }
@@ -170,24 +221,131 @@ export class BootScene extends BaseGameScene {
   }
 
   // =====================================================
-  // プライベートメソッド
+  // プライベートメソッド - UI構築
   // =====================================================
 
   /**
-   * ローディングテキストを作成
+   * ローディングUIを作成
    */
-  private createLoadingText(): void {
+  private createLoadingUI(): void {
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
 
-    this.loadingText = this.add
-      .text(centerX, centerY, 'Loading... 0%', {
-        fontSize: '24px',
-        color: '#ffffff',
-        fontFamily: 'Arial, sans-serif',
+    // タイトル
+    this.createTitleText(centerX, centerY);
+
+    // プログレスバー
+    this.createProgressBar(centerX, centerY);
+
+    // ローディングテキスト類
+    this.createLoadingTexts(centerX, centerY);
+  }
+
+  /**
+   * タイトルテキストを作成
+   */
+  private createTitleText(centerX: number, centerY: number): void {
+    // メインタイトル
+    this.titleText = this.add
+      .text(centerX, centerY - 100, 'Atelier Guild Rank', {
+        ...TextStyles.titleLarge,
+        fontSize: '42px',
+      })
+      .setOrigin(0.5);
+
+    // サブタイトル
+    this.subtitleText = this.add
+      .text(centerX, centerY - 50, '〜錬金術師ギルド物語〜', {
+        ...TextStyles.body,
+        fontSize: '18px',
       })
       .setOrigin(0.5);
   }
+
+  /**
+   * プログレスバーを作成
+   */
+  private createProgressBar(centerX: number, centerY: number): void {
+    const { width, height, cornerRadius } = PROGRESS_BAR_CONFIG;
+
+    // プログレスボックス（背景）
+    this.progressBox = this.add.graphics();
+    this.progressBox.fillStyle(Colors.backgroundDark);
+    this.progressBox.fillRoundedRect(
+      centerX - width / 2,
+      centerY + 20,
+      width,
+      height,
+      cornerRadius
+    );
+
+    // プログレスバー
+    this.progressBar = this.add.graphics();
+  }
+
+  /**
+   * ローディングテキスト類を作成
+   */
+  private createLoadingTexts(centerX: number, centerY: number): void {
+    // パーセントテキスト
+    this.percentText = this.add
+      .text(centerX, centerY + 35, '0%', {
+        ...TextStyles.body,
+        fontSize: '16px',
+      })
+      .setOrigin(0.5);
+
+    // ローディングテキスト
+    this.loadingText = this.add
+      .text(centerX, centerY + 70, 'Loading', {
+        ...TextStyles.bodySmall,
+      })
+      .setOrigin(0.5);
+
+    // アセット名テキスト
+    this.assetText = this.add
+      .text(centerX, centerY + 95, '', {
+        ...TextStyles.bodySmall,
+        fontSize: '12px',
+      })
+      .setOrigin(0.5);
+  }
+
+  // =====================================================
+  // プライベートメソッド - アニメーション
+  // =====================================================
+
+  /**
+   * ローディングドットアニメーションを開始
+   */
+  private startLoadingAnimation(): void {
+    this.loadingDotTimer = this.time.addEvent({
+      delay: 500,
+      callback: () => {
+        if (this.loadingText && !this._isLoadComplete) {
+          const currentText = this.loadingText.text;
+          const dots = (currentText.match(/\./g) || []).length;
+          const newDots = (dots + 1) % 4;
+          this.loadingText.setText('Loading' + '.'.repeat(newDots));
+        }
+      },
+      loop: true,
+    });
+  }
+
+  /**
+   * ローディングアニメーションを停止
+   */
+  private stopLoadingAnimation(): void {
+    if (this.loadingDotTimer) {
+      this.loadingDotTimer.remove();
+      this.loadingDotTimer = null;
+    }
+  }
+
+  // =====================================================
+  // プライベートメソッド - ローダー
+  // =====================================================
 
   /**
    * ローダーイベントを設定
@@ -196,16 +354,18 @@ export class BootScene extends BaseGameScene {
     // プログレスイベント
     this.load.on('progress', (value: number) => {
       this.loadedCount = Math.round(value * this.totalCount);
-      this.updateLoadingText(value);
+      this.updateProgressBar(value);
 
       if (this.progressCallback) {
         this.progressCallback(value);
       }
     });
 
-    // ファイル読み込み完了イベント
-    this.load.on('filecomplete', (_key: string, _type: string, _data: unknown) => {
-      // 個別ファイルの完了処理（必要に応じて拡張）
+    // ファイル読み込み中イベント
+    this.load.on('fileprogress', (file: Phaser.Loader.File) => {
+      if (this.assetText) {
+        this.assetText.setText(file.key);
+      }
     });
 
     // 全ファイル読み込み完了イベント
@@ -226,12 +386,35 @@ export class BootScene extends BaseGameScene {
   }
 
   /**
-   * ローディングテキストを更新
+   * プログレスバーを更新
    */
-  private updateLoadingText(progress: number): void {
-    if (this.loadingText) {
-      const percent = Math.round(progress * 100);
-      this.loadingText.setText(`Loading... ${percent}%`);
+  private updateProgressBar(value: number): void {
+    if (!this.progressBar) return;
+
+    const centerX = this.cameras.main.centerX;
+    const centerY = this.cameras.main.centerY;
+    const { width, height, padding, cornerRadius } = PROGRESS_BAR_CONFIG;
+
+    // プログレスバーをクリアして再描画
+    this.progressBar.clear();
+    this.progressBar.fillStyle(Colors.primary);
+
+    const fillWidth = (width - padding * 2) * value;
+    const innerCornerRadius = cornerRadius - padding;
+
+    if (fillWidth > 0) {
+      this.progressBar.fillRoundedRect(
+        centerX - width / 2 + padding,
+        centerY + 20 + padding,
+        fillWidth,
+        height - padding * 2,
+        innerCornerRadius > 0 ? innerCornerRadius : 0
+      );
+    }
+
+    // パーセントテキスト更新
+    if (this.percentText) {
+      this.percentText.setText(`${Math.round(value * 100)}%`);
     }
   }
 

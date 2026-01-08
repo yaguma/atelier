@@ -42,16 +42,28 @@ vi.mock('phaser', () => {
           text: vi.fn().mockReturnValue({
             setOrigin: vi.fn().mockReturnThis(),
             setText: vi.fn(),
+            text: 'Loading',
+          }),
+          graphics: vi.fn().mockReturnValue({
+            fillStyle: vi.fn().mockReturnThis(),
+            fillRoundedRect: vi.fn().mockReturnThis(),
+            clear: vi.fn().mockReturnThis(),
           }),
         };
         cameras = {
           main: {
             centerX: 400,
             centerY: 300,
+            setBackgroundColor: vi.fn(),
+            fadeOut: vi.fn(),
+            once: vi.fn(),
           },
         };
         time = {
           delayedCall: vi.fn(),
+          addEvent: vi.fn().mockReturnValue({
+            remove: vi.fn(),
+          }),
         };
 
         constructor(config: { key: string }) {
@@ -86,16 +98,28 @@ vi.mock('phaser', () => {
         text: vi.fn().mockReturnValue({
           setOrigin: vi.fn().mockReturnThis(),
           setText: vi.fn(),
+          text: 'Loading',
+        }),
+        graphics: vi.fn().mockReturnValue({
+          fillStyle: vi.fn().mockReturnThis(),
+          fillRoundedRect: vi.fn().mockReturnThis(),
+          clear: vi.fn().mockReturnThis(),
         }),
       };
       cameras = {
         main: {
           centerX: 400,
           centerY: 300,
+          setBackgroundColor: vi.fn(),
+          fadeOut: vi.fn(),
+          once: vi.fn(),
         },
       };
       time = {
         delayedCall: vi.fn(),
+        addEvent: vi.fn().mockReturnValue({
+          remove: vi.fn(),
+        }),
       };
 
       constructor(config: { key: string }) {
@@ -173,18 +197,43 @@ describe('BootScene', () => {
       expect(bootScene.load.on).toHaveBeenCalledWith('progress', expect.any(Function));
       expect(bootScene.load.on).toHaveBeenCalledWith('complete', expect.any(Function));
       expect(bootScene.load.on).toHaveBeenCalledWith('loaderror', expect.any(Function));
+      expect(bootScene.load.on).toHaveBeenCalledWith('fileprogress', expect.any(Function));
     });
 
-    it('preload()でローディングテキストが作成される', () => {
+    it('preload()で背景色が設定される', () => {
       bootScene.init();
       bootScene.preload();
+      expect(bootScene.cameras.main.setBackgroundColor).toHaveBeenCalled();
+    });
+
+    it('preload()でタイトルテキストが作成される', () => {
+      bootScene.init();
+      bootScene.preload();
+      // add.textが複数回呼ばれる（タイトル、サブタイトル、パーセント、ローディング、アセット名）
       expect(bootScene.add.text).toHaveBeenCalled();
+    });
+
+    it('preload()でプログレスバーが作成される', () => {
+      bootScene.init();
+      bootScene.preload();
+      // add.graphicsが2回呼ばれる（背景とプログレスバー）
+      expect(bootScene.add.graphics).toHaveBeenCalledTimes(2);
+    });
+
+    it('preload()でローディングアニメーションが開始される', () => {
+      bootScene.init();
+      bootScene.preload();
+      expect(bootScene.time.addEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          delay: 500,
+          loop: true,
+        })
+      );
     });
 
     it('preload()で全アセットの読み込みが開始される', () => {
       bootScene.init();
       bootScene.preload();
-      // アセット読み込みメソッドが呼ばれたことを確認
       expect(bootScene.load.image).toHaveBeenCalled();
       expect(bootScene.load.audio).toHaveBeenCalled();
       expect(bootScene.load.json).toHaveBeenCalled();
@@ -195,7 +244,6 @@ describe('BootScene', () => {
     it('プログレスコールバックを設定できる', () => {
       const callback: ProgressCallback = vi.fn();
       bootScene.setProgressCallback(callback);
-      // コールバックは内部プロパティなので直接確認できないが、エラーなく設定できることを確認
       expect(true).toBe(true);
     });
 
@@ -205,13 +253,11 @@ describe('BootScene', () => {
       bootScene.init();
       bootScene.preload();
 
-      // load.onに渡されたprogressコールバックを取得して実行
       const progressCall = (bootScene.load.on as ReturnType<typeof vi.fn>).mock.calls.find(
         (call: unknown[]) => call[0] === 'progress'
       );
       expect(progressCall).toBeDefined();
 
-      // progressコールバックを実行
       const progressHandler = progressCall![1] as (value: number) => void;
       progressHandler(0.5);
 
@@ -222,27 +268,24 @@ describe('BootScene', () => {
   describe('スキップトランジション', () => {
     it('スキップトランジションを設定できる', () => {
       bootScene.setSkipTransition(true);
-      // エラーなく設定できることを確認
       expect(true).toBe(true);
     });
 
-    it('スキップ設定時はcreate()で遷移しない', () => {
+    it('スキップ設定時はcreate()でフェードアウトしない', () => {
       bootScene.setSkipTransition(true);
       bootScene.init();
       bootScene.preload();
       bootScene.create();
 
-      // time.delayedCallが呼ばれないことを確認
-      expect(bootScene.time.delayedCall).not.toHaveBeenCalled();
+      expect(bootScene.cameras.main.fadeOut).not.toHaveBeenCalled();
     });
 
-    it('スキップ未設定時はcreate()で遷移する', () => {
+    it('スキップ未設定時はcreate()でフェードアウトする', () => {
       bootScene.init();
       bootScene.preload();
       bootScene.create();
 
-      // time.delayedCallが呼ばれることを確認
-      expect(bootScene.time.delayedCall).toHaveBeenCalledWith(500, expect.any(Function));
+      expect(bootScene.cameras.main.fadeOut).toHaveBeenCalledWith(500, 0, 0, 0);
     });
   });
 
@@ -250,8 +293,8 @@ describe('BootScene', () => {
     it('ロードエラーが不変配列として返される', () => {
       const errors1 = bootScene.getLoadErrors();
       const errors2 = bootScene.getLoadErrors();
-      expect(errors1).not.toBe(errors2); // 異なる配列インスタンス
-      expect(errors1).toEqual(errors2); // 内容は同じ
+      expect(errors1).not.toBe(errors2);
+      expect(errors1).toEqual(errors2);
     });
   });
 
@@ -268,13 +311,47 @@ describe('BootScene', () => {
       expect(bootScene.isLoadComplete).toBe(true);
     });
   });
+
+  describe('進捗バー更新', () => {
+    it('プログレスイベントでプログレスバーが更新される', () => {
+      bootScene.init();
+      bootScene.preload();
+
+      const progressCall = (bootScene.load.on as ReturnType<typeof vi.fn>).mock.calls.find(
+        (call: unknown[]) => call[0] === 'progress'
+      );
+
+      const progressHandler = progressCall![1] as (value: number) => void;
+      progressHandler(0.5);
+
+      // graphicsのclearとfillRoundedRectが呼ばれることを確認
+      const graphicsMock = (bootScene.add.graphics as ReturnType<typeof vi.fn>).mock.results[1]
+        .value;
+      expect(graphicsMock.clear).toHaveBeenCalled();
+    });
+  });
+
+  describe('ファイルプログレスイベント', () => {
+    it('fileprogress時にアセット名が更新される', () => {
+      bootScene.init();
+      bootScene.preload();
+
+      const fileProgressCall = (bootScene.load.on as ReturnType<typeof vi.fn>).mock.calls.find(
+        (call: unknown[]) => call[0] === 'fileprogress'
+      );
+      expect(fileProgressCall).toBeDefined();
+
+      // fileprogress コールバックがあることを確認
+      const fileProgressHandler = fileProgressCall![1] as (file: { key: string }) => void;
+      expect(typeof fileProgressHandler).toBe('function');
+    });
+  });
 });
 
 describe('BootScene アセットカウント', () => {
   it('getTotalAssetCountがアセット総数を返す', () => {
     const count = getTotalAssetCount();
     expect(count).toBeGreaterThan(0);
-    // 現在の定義: ImageAssets(21) + AudioAssets(14) + JsonAssets(11) = 46
     expect(count).toBe(46);
   });
 });
