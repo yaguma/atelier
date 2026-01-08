@@ -313,12 +313,187 @@ export class UIFactory {
 
   /**
    * ラベルを生成
+   *
+   * rexUIのLabelコンポーネントを使用してアイコン付きラベルを生成する。
+   * アイコンの有無、配置方向（水平/垂直）をサポート。
+   *
    * @param options ラベルオプション
    * @returns rexUI Labelオブジェクト
-   * @see TASK-0174
+   *
+   * @example
+   * ```typescript
+   * // テキストのみのラベル
+   * const label = uiFactory.createLabel({
+   *   x: 100,
+   *   y: 100,
+   *   text: 'Hello World',
+   * });
+   *
+   * // アイコン付きラベル
+   * const iconLabel = uiFactory.createLabel({
+   *   x: 100,
+   *   y: 150,
+   *   text: '100',
+   *   icon: 'icon-gold',
+   *   iconSize: 24,
+   * });
+   * ```
    */
-  createLabel(_options: LabelOptions): unknown {
-    throw new Error('Not implemented - see TASK-0174');
+  createLabel(options: LabelOptions): Label {
+    const {
+      x,
+      y,
+      text,
+      icon,
+      iconSize,
+      textStyle,
+      orientation = 'horizontal',
+      space = 8,
+      align = 'center',
+    } = options;
+
+    // ラベル設定オブジェクト
+    const labelConfig: Record<string, unknown> = {
+      x,
+      y,
+      orientation,
+      space: { icon: space },
+      align,
+    };
+
+    // アイコンオブジェクトを生成（オプション）
+    if (icon) {
+      const iconObject = this.scene.add.image(0, 0, icon);
+      if (iconSize) {
+        iconObject.setDisplaySize(iconSize, iconSize);
+      }
+      labelConfig.icon = iconObject;
+    }
+
+    // テキストオブジェクトを生成
+    const textObject = this.scene.add.text(
+      0,
+      0,
+      text,
+      textStyle ?? TextStyles.body
+    );
+    labelConfig.text = textObject;
+
+    // Labelを生成してレイアウト適用
+    const label = this.rexUI.add.label(labelConfig) as Label;
+    label.layout();
+
+    return label;
+  }
+
+  /**
+   * 値表示用ラベル（アイコン + 値）を生成
+   *
+   * @param options 値ラベルオプション
+   * @returns rexUI Labelオブジェクト
+   *
+   * @example
+   * ```typescript
+   * const goldLabel = uiFactory.createValueLabel({
+   *   x: 100,
+   *   y: 100,
+   *   icon: 'icon-gold',
+   *   value: 1000,
+   * });
+   * ```
+   */
+  createValueLabel(options: {
+    x: number;
+    y: number;
+    icon: string;
+    value: number | string;
+    iconSize?: number;
+    valueStyle?: Phaser.Types.GameObjects.Text.TextStyle;
+  }): Label {
+    const { x, y, icon, value, iconSize = 24, valueStyle } = options;
+
+    return this.createLabel({
+      x,
+      y,
+      icon,
+      iconSize,
+      text: String(value),
+      textStyle: valueStyle ?? TextStyles.number,
+      orientation: 'horizontal',
+      space: 8,
+    });
+  }
+
+  /**
+   * タイトルラベルを生成
+   *
+   * @param options タイトルラベルオプション
+   * @returns Phaserテキストオブジェクト
+   */
+  createTitleLabel(options: {
+    x: number;
+    y: number;
+    text: string;
+    size?: 'large' | 'medium' | 'small';
+  }): Phaser.GameObjects.Text {
+    const { x, y, text, size = 'medium' } = options;
+
+    const styleKey = size === 'large' ? 'titleLarge' :
+                     size === 'small' ? 'titleSmall' : 'titleMedium';
+
+    return this.scene.add.text(x, y, text, TextStyles[styleKey])
+      .setOrigin(0.5);
+  }
+
+  /**
+   * 説明ラベルを生成
+   *
+   * @param options 説明ラベルオプション
+   * @returns Phaserテキストオブジェクト
+   */
+  createDescriptionLabel(options: {
+    x: number;
+    y: number;
+    text: string;
+    width?: number;
+  }): Phaser.GameObjects.Text {
+    const { x, y, text, width } = options;
+
+    const style: Phaser.Types.GameObjects.Text.TextStyle = {
+      ...TextStyles.body,
+    };
+
+    if (width) {
+      style.wordWrap = { width };
+    }
+
+    return this.scene.add.text(x, y, text, style);
+  }
+
+  /**
+   * ラベルのテキストを更新
+   * @param label 対象のラベル
+   * @param text 新しいテキスト
+   */
+  updateLabelText(label: Label, text: string): void {
+    const textObj = (label as unknown as { getElement(name: string): Phaser.GameObjects.Text | undefined }).getElement('text');
+    if (textObj) {
+      textObj.setText(text);
+      label.layout();
+    }
+  }
+
+  /**
+   * ラベルのアイコンを更新
+   * @param label 対象のラベル
+   * @param iconKey 新しいアイコンのアセットキー
+   */
+  updateLabelIcon(label: Label, iconKey: string): void {
+    const iconObj = (label as unknown as { getElement(name: string): Phaser.GameObjects.Image | undefined }).getElement('icon');
+    if (iconObj && iconObj instanceof Phaser.GameObjects.Image) {
+      iconObj.setTexture(iconKey);
+      label.layout();
+    }
   }
 
   /**

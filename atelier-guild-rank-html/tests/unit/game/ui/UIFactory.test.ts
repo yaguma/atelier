@@ -9,13 +9,26 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Phaserをモック
 vi.mock('phaser', () => {
+  // モック用のImageクラス
+  class MockImage {
+    setTexture = vi.fn();
+  }
+
   return {
     default: {
       Scene: class MockScene {},
+      GameObjects: {
+        Image: MockImage,
+      },
     },
     Scene: class MockScene {},
+    GameObjects: {
+      Image: MockImage,
+    },
   };
 });
+
+import Phaser from 'phaser';
 
 // UIFactoryをモック後にインポート
 import { UIFactory, DefaultUIStyles } from '@game/ui/UIFactory';
@@ -266,13 +279,183 @@ describe('UIFactory', () => {
     });
   });
 
-  describe('未実装メソッド', () => {
-    it('createLabel()はエラーをスローする', () => {
-      expect(() => {
-        uiFactory.createLabel({ x: 0, y: 0, text: 'Test' });
-      }).toThrow('Not implemented - see TASK-0174');
+  describe('createLabel', () => {
+    it('createLabel()でテキストラベルを生成できる', () => {
+      const label = uiFactory.createLabel({ x: 100, y: 100, text: 'Test Label' });
+
+      expect(mockScene.add.text).toHaveBeenCalled();
+      expect(mockRexUI.add.label).toHaveBeenCalled();
+      expect(label).toBeDefined();
+      expect(label.layout).toHaveBeenCalled();
     });
 
+    it('createLabel()でアイコン付きラベルを生成できる', () => {
+      uiFactory.createLabel({
+        x: 100,
+        y: 100,
+        text: 'Test',
+        icon: 'test-icon',
+        iconSize: 24,
+      });
+
+      expect(mockScene.add.image).toHaveBeenCalledWith(0, 0, 'test-icon');
+      expect(mockScene.add.image().setDisplaySize).toHaveBeenCalledWith(24, 24);
+      expect(mockScene.add.text).toHaveBeenCalled();
+      expect(mockRexUI.add.label).toHaveBeenCalled();
+    });
+
+    it('createLabel()で垂直配置を指定できる', () => {
+      uiFactory.createLabel({
+        x: 100,
+        y: 100,
+        text: 'Test',
+        orientation: 'vertical',
+      });
+
+      expect(mockRexUI.add.label).toHaveBeenCalledWith(
+        expect.objectContaining({
+          orientation: 'vertical',
+        })
+      );
+    });
+
+    it('createLabel()でアイコンとテキストの間隔を設定できる', () => {
+      uiFactory.createLabel({
+        x: 100,
+        y: 100,
+        text: 'Test',
+        space: 16,
+      });
+
+      expect(mockRexUI.add.label).toHaveBeenCalledWith(
+        expect.objectContaining({
+          space: { icon: 16 },
+        })
+      );
+    });
+
+    it('createValueLabel()で値ラベルを生成できる', () => {
+      const label = uiFactory.createValueLabel({
+        x: 100,
+        y: 100,
+        icon: 'icon-gold',
+        value: 1000,
+      });
+
+      expect(mockScene.add.image).toHaveBeenCalledWith(0, 0, 'icon-gold');
+      expect(mockScene.add.text).toHaveBeenCalled();
+      expect(label).toBeDefined();
+    });
+
+    it('createValueLabel()で数値を文字列に変換する', () => {
+      uiFactory.createValueLabel({
+        x: 100,
+        y: 100,
+        icon: 'icon-gold',
+        value: 1234,
+      });
+
+      // テキストとして '1234' が渡されることを確認
+      expect(mockScene.add.text).toHaveBeenCalledWith(
+        0,
+        0,
+        '1234',
+        expect.any(Object)
+      );
+    });
+
+    it('createTitleLabel()でタイトルラベルを生成できる', () => {
+      const title = uiFactory.createTitleLabel({
+        x: 640,
+        y: 100,
+        text: 'Game Title',
+        size: 'large',
+      });
+
+      expect(mockScene.add.text).toHaveBeenCalled();
+      expect(title.setOrigin).toHaveBeenCalledWith(0.5);
+    });
+
+    it('createTitleLabel()のデフォルトサイズはmedium', () => {
+      uiFactory.createTitleLabel({
+        x: 640,
+        y: 100,
+        text: 'Section Title',
+      });
+
+      expect(mockScene.add.text).toHaveBeenCalled();
+    });
+
+    it('createDescriptionLabel()で説明ラベルを生成できる', () => {
+      const desc = uiFactory.createDescriptionLabel({
+        x: 100,
+        y: 200,
+        text: 'This is a description',
+      });
+
+      expect(mockScene.add.text).toHaveBeenCalled();
+      expect(desc).toBeDefined();
+    });
+
+    it('createDescriptionLabel()でワードラップ幅を設定できる', () => {
+      uiFactory.createDescriptionLabel({
+        x: 100,
+        y: 200,
+        text: 'Long description text',
+        width: 300,
+      });
+
+      expect(mockScene.add.text).toHaveBeenCalledWith(
+        100,
+        200,
+        'Long description text',
+        expect.objectContaining({
+          wordWrap: { width: 300 },
+        })
+      );
+    });
+
+    it('updateLabelText()でラベルのテキストを更新できる', () => {
+      const mockTextObj = { setText: vi.fn() };
+      const mockLabel = {
+        ...createMockButton(),
+        getElement: vi.fn().mockReturnValue(mockTextObj),
+      };
+      mockRexUI.add.label = vi.fn().mockReturnValue(mockLabel);
+
+      const label = uiFactory.createLabel({ x: 100, y: 100, text: 'Original' });
+      uiFactory.updateLabelText(label as any, 'Updated');
+
+      expect(mockLabel.getElement).toHaveBeenCalledWith('text');
+      expect(mockTextObj.setText).toHaveBeenCalledWith('Updated');
+      expect(mockLabel.layout).toHaveBeenCalled();
+    });
+
+    it('updateLabelIcon()でラベルのアイコンを更新できる', () => {
+      const mockIconObj = Object.assign(Object.create(Phaser.GameObjects.Image.prototype), {
+        setTexture: vi.fn(),
+      });
+      const mockLabel = {
+        ...createMockButton(),
+        getElement: vi.fn().mockReturnValue(mockIconObj),
+      };
+      mockRexUI.add.label = vi.fn().mockReturnValue(mockLabel);
+
+      const label = uiFactory.createLabel({
+        x: 100,
+        y: 100,
+        text: 'Test',
+        icon: 'old-icon',
+      });
+      uiFactory.updateLabelIcon(label as any, 'new-icon');
+
+      expect(mockLabel.getElement).toHaveBeenCalledWith('icon');
+      expect(mockIconObj.setTexture).toHaveBeenCalledWith('new-icon');
+      expect(mockLabel.layout).toHaveBeenCalled();
+    });
+  });
+
+  describe('未実装メソッド', () => {
     it('createPanel()はエラーをスローする', () => {
       expect(() => {
         uiFactory.createPanel({ x: 0, y: 0, width: 100, height: 100 });
