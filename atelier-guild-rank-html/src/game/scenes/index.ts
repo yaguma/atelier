@@ -1,0 +1,4 @@
+/**
+ * シーンモジュールエクスポート
+ */
+export * from './BaseGameScene';
