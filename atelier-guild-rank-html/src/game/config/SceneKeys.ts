@@ -23,7 +23,15 @@ export const SceneKeys = {
   GAME_OVER: 'GameOverScene',
   /** ゲームクリアシーン */
   GAME_CLEAR: 'GameClearScene',
+  /** テストシーン（開発用） */
+  TEST: 'TestScene',
 } as const;
+
+/**
+ * シーンキー定数オブジェクト（エイリアス）
+ * @deprecated SceneKeysを使用してください
+ */
+export const SCENE_KEYS = SceneKeys;
 
 /**
  * シーンキーの型定義
