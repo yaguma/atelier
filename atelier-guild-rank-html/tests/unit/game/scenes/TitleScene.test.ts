@@ -9,6 +9,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { EventBus } from '@game/events/EventBus';
 import { SceneKeys } from '@game/config/SceneKeys';
+import { SceneManager } from '@game/managers/SceneManager';
+import { UIActionEvents } from '@game/events/EventTypes';
 
 // Phaserをモック
 vi.mock('phaser', () => {
@@ -41,6 +43,7 @@ vi.mock('phaser', () => {
         sound = {
           play: vi.fn(),
           stopByKey: vi.fn(),
+          stopAll: vi.fn(),
         };
         add = {
           text: vi.fn().mockReturnValue({
@@ -103,6 +106,7 @@ vi.mock('phaser', () => {
       sound = {
         play: vi.fn(),
         stopByKey: vi.fn(),
+        stopAll: vi.fn(),
       };
       add = {
         text: vi.fn().mockReturnValue({
@@ -132,10 +136,63 @@ vi.mock('phaser', () => {
           remove: vi.fn(),
         }),
       };
+      tweens = {
+        add: vi.fn(),
+        addCounter: vi.fn(),
+      };
 
       constructor(config: { key: string }) {
         this.sys.settings.key = config.key;
       }
+    },
+  };
+});
+
+// rexUIプラグインをモック
+vi.mock('phaser3-rex-plugins/templates/ui/ui-plugin', () => {
+  return {
+    default: class MockUIPlugin {
+      add = {
+        roundRectangle: vi.fn().mockReturnValue({
+          setFillStyle: vi.fn(),
+        }),
+        label: vi.fn().mockReturnValue({
+          layout: vi.fn(),
+          setInteractive: vi.fn().mockReturnThis(),
+          on: vi.fn().mockReturnThis(),
+        }),
+      };
+    },
+  };
+});
+
+// UIFactoryをモック
+vi.mock('@game/ui/UIFactory', () => {
+  const mockButton = {
+    layout: vi.fn(),
+    setInteractive: vi.fn().mockReturnThis(),
+    on: vi.fn().mockReturnThis(),
+    setPosition: vi.fn(),
+  };
+
+  return {
+    UIFactory: vi.fn().mockImplementation(() => ({
+      createButton: vi.fn().mockReturnValue(mockButton),
+      createPrimaryButton: vi.fn().mockReturnValue(mockButton),
+      createSecondaryButton: vi.fn().mockReturnValue(mockButton),
+    })),
+  };
+});
+
+// SceneManagerをモック
+vi.mock('@game/managers/SceneManager', () => {
+  return {
+    SceneManager: {
+      getInstance: vi.fn().mockReturnValue({
+        goTo: vi.fn(),
+        getCurrentScene: vi.fn(),
+      }),
+      resetInstance: vi.fn(),
     },
   };
 });
@@ -291,6 +348,22 @@ describe('TitleScene', () => {
       titleScene.shutdown();
 
       expect(titleScene.sound.stopByKey).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('新規ゲームボタン', () => {
+    it('create()で新規ゲームボタンが作成される', () => {
+      titleScene.init();
+      titleScene.preload();
+      titleScene.create();
+
+      const button = titleScene.getNewGameButton();
+      expect(button).toBeDefined();
+    });
+
+    it('初期状態では遷移中ではない', () => {
+      titleScene.init();
+      expect(titleScene.isTransitioning).toBe(false);
     });
   });
 });

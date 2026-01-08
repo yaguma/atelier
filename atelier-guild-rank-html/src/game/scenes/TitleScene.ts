@@ -12,6 +12,10 @@ import { SceneKeys } from '../config/SceneKeys';
 import { ImageKeys, AudioKeys } from '../assets/AssetKeys';
 import { Colors } from '../config/ColorPalette';
 import { TextStyles } from '../config/TextStyles';
+import { UIFactory } from '../ui/UIFactory';
+import { UIActionEvents } from '../events/EventTypes';
+import { SceneManager } from '../managers/SceneManager';
+import type Label from 'phaser3-rex-plugins/templates/ui/label/Label';
 
 /**
  * タイトル画面のレイアウト設定
@@ -29,6 +33,12 @@ const LAYOUT = {
   fadeInDuration: 500,
   /** BGM音量 */
   bgmVolume: 0.5,
+  /** ボタンの幅 */
+  buttonWidth: 200,
+  /** ボタンの高さ */
+  buttonHeight: 50,
+  /** 新規ゲームボタンのY位置（メニューコンテナ内） */
+  newGameButtonY: 0,
 } as const;
 
 /**
@@ -62,6 +72,15 @@ export class TitleScene extends BaseGameScene {
   /** 背景画像がロードされているか */
   private _hasBackground = false;
 
+  /** UIFactory */
+  private uiFactory: UIFactory | null = null;
+
+  /** 新規ゲームボタン */
+  private newGameButton: Label | null = null;
+
+  /** 遷移中フラグ（連打防止） */
+  private _isTransitioning = false;
+
   /**
    * コンストラクタ
    */
@@ -83,6 +102,21 @@ export class TitleScene extends BaseGameScene {
     return this._hasBackground;
   }
 
+  /**
+   * 遷移中かどうか
+   */
+  get isTransitioning(): boolean {
+    return this._isTransitioning;
+  }
+
+  /**
+   * 新規ゲームボタンを取得
+   * @returns 新規ゲームボタン（null の場合もある）
+   */
+  getNewGameButton(): Label | null {
+    return this.newGameButton;
+  }
+
   // =====================================================
   // BaseGameScene ライフサイクル実装
   // =====================================================
@@ -93,6 +127,7 @@ export class TitleScene extends BaseGameScene {
   protected onInit(_data?: SceneInitData): void {
     this._hasBgm = false;
     this._hasBackground = false;
+    this._isTransitioning = false;
   }
 
   /**
@@ -110,6 +145,9 @@ export class TitleScene extends BaseGameScene {
     const { width, height } = this.cameras.main;
     const centerX = width / 2;
 
+    // UIFactory初期化
+    this.uiFactory = new UIFactory(this, this.rexUI);
+
     // 背景色設定
     this.cameras.main.setBackgroundColor(Colors.background);
 
@@ -121,6 +159,9 @@ export class TitleScene extends BaseGameScene {
 
     // メニューコンテナ
     this.createMenuContainer(centerX);
+
+    // メニューボタン作成
+    this.createMenuButtons();
 
     // バージョン表示
     this.createVersionText(width, height);
@@ -219,7 +260,55 @@ export class TitleScene extends BaseGameScene {
    */
   private createMenuContainer(centerX: number): void {
     this.menuContainer = this.add.container(centerX, LAYOUT.menuY);
-    // ボタンは後続タスク（TASK-0186, TASK-0187）で実装
+  }
+
+  /**
+   * メニューボタンを作成
+   */
+  private createMenuButtons(): void {
+    if (!this.uiFactory || !this.menuContainer) {
+      return;
+    }
+
+    // 新規ゲームボタン
+    this.newGameButton = this.uiFactory.createPrimaryButton({
+      x: 0,
+      y: LAYOUT.newGameButtonY,
+      text: '新規ゲーム',
+      width: LAYOUT.buttonWidth,
+      height: LAYOUT.buttonHeight,
+      onClick: () => this.onNewGameClick(),
+    });
+    this.menuContainer.add(this.newGameButton);
+
+    // コンティニューボタンはTASK-0187で追加
+  }
+
+  /**
+   * 新規ゲームボタンクリック時の処理
+   */
+  private onNewGameClick(): void {
+    // 連打防止
+    if (this._isTransitioning) {
+      return;
+    }
+    this._isTransitioning = true;
+
+    // SE再生
+    if (this.cache.audio.exists(AudioKeys.SE_CLICK)) {
+      this.sound.play(AudioKeys.SE_CLICK);
+    }
+
+    // BGM停止
+    this.sound.stopAll();
+
+    // イベント発行
+    this.eventBus.emitVoid(UIActionEvents.NEW_GAME_CLICKED);
+
+    // MainSceneへ遷移
+    SceneManager.getInstance().goTo(SceneKeys.MAIN, {
+      isNewGame: true,
+    });
   }
 
   /**
