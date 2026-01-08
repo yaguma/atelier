@@ -14,12 +14,17 @@ import { createStateManager } from './application/StateManager';
 import { createGameFlowManager } from './application/GameFlowManager';
 import { DeckService } from './domain/services/DeckService';
 import { createNewGameUseCase } from './application/NewGameUseCase';
+import { createAcceptQuestUseCase } from './application/AcceptQuestUseCase';
 import { HeaderUI } from './presentation/components/HeaderUI';
-import { QuestAcceptPhaseUI } from './presentation/phases/QuestAcceptPhaseUI';
+import { QuestAcceptPhaseUI, QuestData } from './presentation/phases/QuestAcceptPhaseUI';
 import { GatheringPhaseUI } from './presentation/phases/GatheringPhaseUI';
 import { AlchemyPhaseUI } from './presentation/phases/AlchemyPhaseUI';
 import { DeliveryPhaseUI } from './presentation/phases/DeliveryPhaseUI';
-import { GuildRank, GamePhase } from './domain/common/types';
+import { GuildRank, GamePhase, QuestType } from './domain/common/types';
+import { MasterDataLoader } from './infrastructure/loader/MasterDataLoader';
+import { IQuestTemplate } from './domain/quest/Quest';
+import { IQuest, createQuest } from './domain/quest/QuestEntity';
+import { IItem } from './domain/item/Item';
 
 console.log('アトリエギルドランク 起動中...');
 
@@ -40,6 +45,15 @@ let gameFlowManager = createGameFlowManager(eventBus);
 
 /** DeckService */
 let deckService = new DeckService();
+
+/** MasterDataLoader */
+let masterDataLoader = new MasterDataLoader('/data/master');
+
+/** アイテムマスターデータマップ（ID → Item） */
+let itemsMap: Map<string, IItem> = new Map();
+
+/** クエストテンプレートマスターデータ */
+let questTemplates: IQuestTemplate[] = [];
 
 /** HeaderUI */
 let headerUI: HeaderUI | null = null;
@@ -138,10 +152,150 @@ function updatePhaseUI(): void {
 }
 
 /**
+ * ランク順序マップ
+ */
+const RankOrder: Record<GuildRank, number> = {
+  [GuildRank.G]: 0,
+  [GuildRank.F]: 1,
+  [GuildRank.E]: 2,
+  [GuildRank.D]: 3,
+  [GuildRank.C]: 4,
+  [GuildRank.B]: 5,
+  [GuildRank.A]: 6,
+  [GuildRank.S]: 7,
+};
+
+/**
+ * マスターデータをロードする
+ */
+async function loadMasterData(): Promise<void> {
+  try {
+    // クエストテンプレートをロード
+    questTemplates = await masterDataLoader.load<IQuestTemplate[]>('quests.json');
+    console.log(`クエストテンプレート ${questTemplates.length} 件ロード`);
+
+    // アイテムデータをロード
+    const items = await masterDataLoader.load<IItem[]>('items.json');
+    itemsMap.clear();
+    items.forEach(item => itemsMap.set(item.id, item));
+    console.log(`アイテム ${items.length} 件ロード`);
+  } catch (error) {
+    console.error('マスターデータロードエラー:', error);
+  }
+}
+
+/**
+ * クエストIDを生成する
+ */
+function generateQuestId(): string {
+  return `quest_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+}
+
+/**
+ * プレイヤーランクに基づいて利用可能なクエストを生成する
+ * @param playerRank プレイヤーの現在のランク
+ * @param count 生成するクエスト数
+ * @returns 生成されたクエスト一覧
+ */
+function generateAvailableQuests(playerRank: GuildRank, count: number = 5): IQuest[] {
+  const playerRankOrder = RankOrder[playerRank];
+
+  // プレイヤーランク以下のクエストをフィルタ
+  const availableTemplates = questTemplates.filter(template => {
+    const templateRankOrder = RankOrder[template.unlockRank as GuildRank];
+    return templateRankOrder <= playerRankOrder;
+  });
+
+  if (availableTemplates.length === 0) {
+    console.warn('利用可能なクエストテンプレートがありません');
+    return [];
+  }
+
+  // ランダムに選択（重複なし）
+  const shuffled = [...availableTemplates].sort(() => Math.random() - 0.5);
+  const selected = shuffled.slice(0, Math.min(count, shuffled.length));
+
+  // IQuestに変換
+  return selected.map(template => {
+    const condition = {
+      type: template.type as QuestType,
+      ...template.conditionTemplate,
+    };
+
+    return createQuest({
+      id: generateQuestId(),
+      clientId: 'default_client',
+      condition: condition as any,
+      contribution: template.baseContribution,
+      gold: template.baseGold,
+      deadline: template.baseDeadline,
+      difficulty: template.difficulty,
+      flavorText: template.flavorTextTemplate || '',
+    });
+  });
+}
+
+/**
+ * IQuestをQuestData（UI用）に変換する
+ */
+function convertQuestToQuestData(quest: IQuest): QuestData {
+  // アイテム名を取得
+  let requiredItem = '不明';
+  let requiredQuantity = 1;
+
+  if (quest.condition.itemId) {
+    const item = itemsMap.get(quest.condition.itemId);
+    requiredItem = item?.name || quest.condition.itemId;
+    requiredQuantity = quest.condition.quantity || 1;
+  } else if (quest.condition.category) {
+    requiredItem = `${quest.condition.category}系アイテム`;
+    requiredQuantity = quest.condition.quantity || 1;
+  }
+
+  // 難易度を数値に変換
+  const difficultyMap: Record<string, number> = {
+    'easy': 1,
+    'normal': 2,
+    'hard': 3,
+    'extreme': 5,
+  };
+
+  return {
+    id: quest.id,
+    name: quest.flavorText.slice(0, 20) || `依頼: ${requiredItem}`,
+    description: quest.flavorText,
+    reward: quest.gold,
+    requiredItem,
+    requiredQuantity,
+    difficulty: difficultyMap[quest.difficulty] || 2,
+  };
+}
+
+/**
+ * クエストUIを更新する
+ */
+function updateQuestUI(): void {
+  if (!questPhaseUI) return;
+
+  const questState = stateManager.getQuestState();
+
+  // availableQuestsをQuestDataに変換
+  const availableQuestData = questState.availableQuests.map(q => convertQuestToQuestData(q));
+  questPhaseUI.setAvailableQuests(availableQuestData);
+
+  // activeQuestsをQuestDataに変換
+  const acceptedQuestData = questState.activeQuests.map(aq => convertQuestToQuestData(aq.quest));
+  questPhaseUI.setAcceptedQuests(acceptedQuestData);
+}
+
+/**
  * ゲーム開始処理
  */
 async function startNewGame(): Promise<void> {
   console.log('新規ゲーム開始');
+
+  // マスターデータをロード
+  await loadMasterData();
 
   // NewGameUseCaseを実行
   const newGameUseCase = createNewGameUseCase(
@@ -155,6 +309,17 @@ async function startNewGame(): Promise<void> {
   const result = await newGameUseCase.execute({ forceOverwrite: true });
 
   if (result.success) {
+    // 利用可能なクエストを生成
+    const playerState = stateManager.getPlayerState();
+    const availableQuests = generateAvailableQuests(playerState.rank);
+    console.log(`利用可能なクエスト ${availableQuests.length} 件生成`);
+
+    // クエスト状態を更新
+    stateManager.updateQuestState({
+      activeQuests: [],
+      availableQuests: availableQuests,
+    });
+
     // メイン画面に遷移
     await screenManager?.goTo('main', 'fade');
 
@@ -164,6 +329,27 @@ async function startNewGame(): Promise<void> {
 
       // フッターUIを追加
       mainScreen.setFooterContent(createFooterUI());
+
+      // クエストUIにデータを設定（マウント前に行う必要あり）
+      updateQuestUI();
+
+      // クエスト受注コールバックを設定
+      const acceptQuestUseCase = createAcceptQuestUseCase(stateManager, eventBus);
+      questPhaseUI!.onQuestAccept(async (questId: string) => {
+        console.log('クエスト受注:', questId);
+        const result = await acceptQuestUseCase.execute(questId);
+        if (result.success) {
+          console.log('クエスト受注成功');
+          // UIを再構築して更新を反映
+          updateQuestUI();
+          // QuestAcceptPhaseUIを再マウントして表示を更新
+          const dummyContainer = document.createElement('div');
+          questPhaseUI!.mount(dummyContainer);
+          mainScreen!.registerPhaseContent('quest', questPhaseUI!.getElement());
+        } else {
+          console.error('クエスト受注失敗:', result.error);
+        }
+      });
 
       // フェーズUIをダミーコンテナにマウントしてビルドを完了させる
       const dummyContainer = document.createElement('div');

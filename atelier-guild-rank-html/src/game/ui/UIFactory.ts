@@ -19,6 +19,7 @@ import type {
   PanelOptions,
   DialogOptions,
   ProgressBarOptions,
+  ProgressBarObject,
   ScrollPanelOptions,
   GridButtonsOptions,
   ToastOptions,
@@ -706,12 +707,187 @@ export class UIFactory {
 
   /**
    * プログレスバーを生成
+   *
+   * Graphicsを使用してプログレスバーを生成する。
+   * 値の即時更新とアニメーション付き更新をサポート。
+   *
    * @param options プログレスバーオプション
-   * @returns rexUI ProgressBarオブジェクト
-   * @see TASK-0177
+   * @returns ProgressBarオブジェクト
+   *
+   * @example
+   * ```typescript
+   * const progressBar = uiFactory.createProgressBar({
+   *   x: 640,
+   *   y: 400,
+   *   width: 200,
+   *   height: 20,
+   *   value: 50,
+   *   maxValue: 100,
+   *   showText: true,
+   * });
+   *
+   * // 値を更新（アニメーションなし）
+   * progressBar.setValue(75);
+   *
+   * // 値を更新（アニメーション付き）
+   * progressBar.setValue(100, true);
+   * ```
    */
-  createProgressBar(_options: ProgressBarOptions): unknown {
-    throw new Error('Not implemented - see TASK-0177');
+  createProgressBar(options: ProgressBarOptions): ProgressBarObject {
+    const {
+      x,
+      y,
+      width,
+      height,
+      value,
+      maxValue,
+      barColor,
+      backgroundColor,
+      showText = false,
+      textFormat,
+    } = options;
+
+    const bgColor = backgroundColor ?? Colors.backgroundDark;
+    const fillColor = barColor ?? Colors.primary;
+    const radius = height / 2;
+
+    // コンテナ
+    const container = this.scene.add.container(x, y);
+
+    // 背景
+    const background = this.scene.add.graphics();
+    background.fillStyle(bgColor);
+    background.fillRoundedRect(-width / 2, -height / 2, width, height, radius);
+    container.add(background);
+
+    // バー
+    const bar = this.scene.add.graphics();
+    container.add(bar);
+
+    // テキスト
+    let textObj: Phaser.GameObjects.Text | undefined;
+    if (showText) {
+      textObj = this.scene.add.text(0, 0, '', TextStyles.bodySmall)
+        .setOrigin(0.5);
+      container.add(textObj);
+    }
+
+    // 状態管理
+    let currentValue = value;
+    let currentMaxValue = maxValue;
+    let currentTween: Phaser.Tweens.Tween | undefined;
+
+    // テキストフォーマット関数
+    const formatText = textFormat ?? ((val: number, max: number) => `${Math.round(val)}/${max}`);
+
+    // バー更新関数
+    const updateBar = (val: number, animate: boolean = false): void => {
+      // 値をクランプ
+      const clampedValue = Math.max(0, Math.min(val, currentMaxValue));
+      const percent = currentMaxValue > 0 ? clampedValue / currentMaxValue : 0;
+      const barWidth = (width - 4) * percent;
+
+      // 既存のTweenをキャンセル
+      if (currentTween) {
+        currentTween.stop();
+        currentTween = undefined;
+      }
+
+      if (animate && this.scene.tweens) {
+        // アニメーション更新
+        currentTween = this.scene.tweens.addCounter({
+          from: currentValue,
+          to: clampedValue,
+          duration: 300,
+          onUpdate: (tween) => {
+            const tweenValue = tween.getValue() ?? 0;
+            const tweenPercent = currentMaxValue > 0 ? tweenValue / currentMaxValue : 0;
+            const tweenWidth = (width - 4) * tweenPercent;
+
+            bar.clear();
+            bar.fillStyle(fillColor);
+            if (tweenWidth > 0) {
+              bar.fillRoundedRect(
+                -width / 2 + 2,
+                -height / 2 + 2,
+                tweenWidth,
+                height - 4,
+                Math.max(0, radius - 2)
+              );
+            }
+
+            if (textObj) {
+              textObj.setText(formatText(tweenValue, currentMaxValue));
+            }
+          },
+          onComplete: () => {
+            currentTween = undefined;
+          },
+        });
+      } else {
+        // 即時更新
+        bar.clear();
+        bar.fillStyle(fillColor);
+        if (barWidth > 0) {
+          bar.fillRoundedRect(
+            -width / 2 + 2,
+            -height / 2 + 2,
+            barWidth,
+            height - 4,
+            Math.max(0, radius - 2)
+          );
+        }
+
+        if (textObj) {
+          textObj.setText(formatText(clampedValue, currentMaxValue));
+        }
+      }
+
+      currentValue = clampedValue;
+    };
+
+    // 初期描画
+    updateBar(value, false);
+
+    return {
+      container,
+      background,
+      bar,
+      text: textObj,
+      getValue: () => currentValue,
+      setValue: (val: number, animate: boolean = false) => updateBar(val, animate),
+      setMaxValue: (max: number) => {
+        currentMaxValue = max;
+        updateBar(currentValue, false);
+      },
+    };
+  }
+
+  /**
+   * ランクゲージを生成（特殊なプログレスバー）
+   *
+   * @param options ランクゲージオプション
+   * @returns ProgressBarオブジェクト
+   */
+  createRankGauge(options: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    contribution: number;
+    maxContribution: number;
+  }): ProgressBarObject {
+    return this.createProgressBar({
+      x: options.x,
+      y: options.y,
+      width: options.width,
+      height: options.height,
+      value: options.contribution,
+      maxValue: options.maxContribution,
+      barColor: Colors.gold,
+      backgroundColor: Colors.backgroundDark,
+      showText: true,
+    });
   }
 
   /**

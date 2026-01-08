@@ -205,6 +205,26 @@ export interface ProgressBarOptions extends UIPosition {
 }
 
 /**
+ * プログレスバーオブジェクト（生成結果）
+ */
+export interface ProgressBarObject {
+  /** コンテナ */
+  container: Phaser.GameObjects.Container;
+  /** 背景 */
+  background: Phaser.GameObjects.Graphics;
+  /** バー */
+  bar: Phaser.GameObjects.Graphics;
+  /** テキスト（オプション） */
+  text?: Phaser.GameObjects.Text;
+  /** 現在値を取得 */
+  getValue: () => number;
+  /** 値を設定（animateでアニメーション付き更新） */
+  setValue: (value: number, animate?: boolean) => void;
+  /** 最大値を設定 */
+  setMaxValue: (maxValue: number) => void;
+}
+
+/**
  * スクロールパネルオプション
  */
 export interface ScrollPanelOptions extends UIBounds {

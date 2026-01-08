@@ -615,24 +615,275 @@ describe('UIFactory', () => {
     });
   });
 
+  describe('createProgressBar', () => {
+    // プログレスバー用モックシーンを追加
+    const createProgressBarMockScene = () => ({
+      add: {
+        container: vi.fn().mockReturnValue({
+          add: vi.fn().mockReturnThis(),
+          destroy: vi.fn(),
+        }),
+        graphics: vi.fn().mockReturnValue({
+          fillStyle: vi.fn().mockReturnThis(),
+          fillRoundedRect: vi.fn().mockReturnThis(),
+          clear: vi.fn().mockReturnThis(),
+          destroy: vi.fn(),
+        }),
+        text: vi.fn().mockReturnValue({
+          setOrigin: vi.fn().mockReturnThis(),
+          setText: vi.fn().mockReturnThis(),
+          destroy: vi.fn(),
+        }),
+        image: vi.fn().mockReturnValue({
+          setDisplaySize: vi.fn().mockReturnThis(),
+        }),
+      },
+      tweens: {
+        add: vi.fn(),
+        addCounter: vi.fn().mockReturnValue({
+          stop: vi.fn(),
+        }),
+      },
+    });
+
+    it('createProgressBar()でプログレスバーを生成できる', () => {
+      const pbMockScene = createProgressBarMockScene();
+      const factory = new UIFactory(pbMockScene as any, mockRexUI);
+
+      const result = factory.createProgressBar({
+        x: 100,
+        y: 100,
+        width: 200,
+        height: 20,
+        value: 50,
+        maxValue: 100,
+      });
+
+      expect(pbMockScene.add.container).toHaveBeenCalledWith(100, 100);
+      expect(pbMockScene.add.graphics).toHaveBeenCalled();
+      expect(result.container).toBeDefined();
+      expect(result.background).toBeDefined();
+      expect(result.bar).toBeDefined();
+      expect(result.getValue).toBeInstanceOf(Function);
+      expect(result.setValue).toBeInstanceOf(Function);
+      expect(result.setMaxValue).toBeInstanceOf(Function);
+    });
+
+    it('createProgressBar()でテキスト表示を有効にできる', () => {
+      const pbMockScene = createProgressBarMockScene();
+      const factory = new UIFactory(pbMockScene as any, mockRexUI);
+
+      const result = factory.createProgressBar({
+        x: 100,
+        y: 100,
+        width: 200,
+        height: 20,
+        value: 50,
+        maxValue: 100,
+        showText: true,
+      });
+
+      expect(pbMockScene.add.text).toHaveBeenCalled();
+      expect(result.text).toBeDefined();
+    });
+
+    it('createProgressBar()でテキスト表示がデフォルトで無効', () => {
+      const pbMockScene = createProgressBarMockScene();
+      const factory = new UIFactory(pbMockScene as any, mockRexUI);
+
+      const result = factory.createProgressBar({
+        x: 100,
+        y: 100,
+        width: 200,
+        height: 20,
+        value: 50,
+        maxValue: 100,
+      });
+
+      expect(result.text).toBeUndefined();
+    });
+
+    it('getValue()で現在値を取得できる', () => {
+      const pbMockScene = createProgressBarMockScene();
+      const factory = new UIFactory(pbMockScene as any, mockRexUI);
+
+      const result = factory.createProgressBar({
+        x: 100,
+        y: 100,
+        width: 200,
+        height: 20,
+        value: 50,
+        maxValue: 100,
+      });
+
+      expect(result.getValue()).toBe(50);
+    });
+
+    it('setValue()で値を即時更新できる', () => {
+      const pbMockScene = createProgressBarMockScene();
+      const factory = new UIFactory(pbMockScene as any, mockRexUI);
+
+      const result = factory.createProgressBar({
+        x: 100,
+        y: 100,
+        width: 200,
+        height: 20,
+        value: 50,
+        maxValue: 100,
+      });
+
+      result.setValue(75);
+
+      expect(result.getValue()).toBe(75);
+      // barのclearとfillRoundedRectが呼ばれることを確認
+      const mockBar = pbMockScene.add.graphics();
+      expect(mockBar.clear).toHaveBeenCalled();
+    });
+
+    it('setValue()で値がクランプされる', () => {
+      const pbMockScene = createProgressBarMockScene();
+      const factory = new UIFactory(pbMockScene as any, mockRexUI);
+
+      const result = factory.createProgressBar({
+        x: 100,
+        y: 100,
+        width: 200,
+        height: 20,
+        value: 50,
+        maxValue: 100,
+      });
+
+      // 最大値を超える場合
+      result.setValue(150);
+      expect(result.getValue()).toBe(100);
+
+      // 負の値の場合
+      result.setValue(-10);
+      expect(result.getValue()).toBe(0);
+    });
+
+    it('setValue()でアニメーション付き更新ができる', () => {
+      const pbMockScene = createProgressBarMockScene();
+      const factory = new UIFactory(pbMockScene as any, mockRexUI);
+
+      const result = factory.createProgressBar({
+        x: 100,
+        y: 100,
+        width: 200,
+        height: 20,
+        value: 50,
+        maxValue: 100,
+      });
+
+      result.setValue(100, true);
+
+      expect(pbMockScene.tweens.addCounter).toHaveBeenCalledWith(
+        expect.objectContaining({
+          from: 50,
+          to: 100,
+          duration: 300,
+        })
+      );
+    });
+
+    it('setMaxValue()で最大値を更新できる', () => {
+      const pbMockScene = createProgressBarMockScene();
+      const factory = new UIFactory(pbMockScene as any, mockRexUI);
+
+      const result = factory.createProgressBar({
+        x: 100,
+        y: 100,
+        width: 200,
+        height: 20,
+        value: 50,
+        maxValue: 100,
+      });
+
+      result.setMaxValue(200);
+
+      // 現在値は維持される
+      expect(result.getValue()).toBe(50);
+    });
+
+    it('createProgressBar()でカスタム色を適用できる', () => {
+      const pbMockScene = createProgressBarMockScene();
+      const factory = new UIFactory(pbMockScene as any, mockRexUI);
+
+      factory.createProgressBar({
+        x: 100,
+        y: 100,
+        width: 200,
+        height: 20,
+        value: 50,
+        maxValue: 100,
+        barColor: 0xff0000,
+        backgroundColor: 0x333333,
+      });
+
+      const mockBackground = pbMockScene.add.graphics();
+      expect(mockBackground.fillStyle).toHaveBeenCalledWith(0x333333);
+    });
+
+    it('createProgressBar()でカスタムテキストフォーマットを使用できる', () => {
+      const pbMockScene = createProgressBarMockScene();
+      const factory = new UIFactory(pbMockScene as any, mockRexUI);
+
+      const customFormat = (value: number, max: number) => `${value}/${max} pts`;
+
+      factory.createProgressBar({
+        x: 100,
+        y: 100,
+        width: 200,
+        height: 20,
+        value: 50,
+        maxValue: 100,
+        showText: true,
+        textFormat: customFormat,
+      });
+
+      const mockText = pbMockScene.add.text();
+      expect(mockText.setText).toHaveBeenCalled();
+    });
+
+    it('createRankGauge()でランクゲージを生成できる', () => {
+      const pbMockScene = createProgressBarMockScene();
+      const factory = new UIFactory(pbMockScene as any, mockRexUI);
+
+      const result = factory.createRankGauge({
+        x: 100,
+        y: 100,
+        width: 200,
+        height: 20,
+        contribution: 500,
+        maxContribution: 1000,
+      });
+
+      expect(result.container).toBeDefined();
+      expect(result.getValue()).toBe(500);
+    });
+
+    it('createRankGauge()はテキスト表示がデフォルトで有効', () => {
+      const pbMockScene = createProgressBarMockScene();
+      const factory = new UIFactory(pbMockScene as any, mockRexUI);
+
+      const result = factory.createRankGauge({
+        x: 100,
+        y: 100,
+        width: 200,
+        height: 20,
+        contribution: 500,
+        maxContribution: 1000,
+      });
+
+      expect(result.text).toBeDefined();
+    });
+  });
+
   describe('未実装メソッド', () => {
     it('createPanel()はエラーをスローする', () => {
       expect(() => {
         uiFactory.createPanel({ x: 0, y: 0, width: 100, height: 100 });
       }).toThrow('Not implemented - see TASK-0175');
-    });
-
-    it('createProgressBar()はエラーをスローする', () => {
-      expect(() => {
-        uiFactory.createProgressBar({
-          x: 0,
-          y: 0,
-          width: 100,
-          height: 20,
-          value: 50,
-          maxValue: 100,
-        });
-      }).toThrow('Not implemented - see TASK-0177');
     });
 
     it('createScrollPanel()はエラーをスローする', () => {
