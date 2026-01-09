@@ -8,7 +8,11 @@
 export { HandLayout, type HandLayoutType } from './HandConstants';
 
 // インターフェース
-export { type IHandContainer, type HandContainerOptions } from './IHandContainer';
+export {
+  type IHandContainer,
+  type HandContainerOptions,
+  type CardSelectableFilter,
+} from './IHandContainer';
 
 // ユーティリティ
 export { calculateCardPositions, type CardPosition } from './HandLayoutUtils';

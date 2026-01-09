@@ -10,6 +10,11 @@ import { Card } from '@domain/card/Card';
 import { HandLayoutType } from './HandConstants';
 
 /**
+ * カード選択フィルター
+ */
+export type CardSelectableFilter = (card: Card, index: number) => boolean;
+
+/**
  * 手札コンテナ作成オプション
  */
 export interface HandContainerOptions {
@@ -25,6 +30,8 @@ export interface HandContainerOptions {
   onCardSelect?: (card: Card, index: number) => void;
   /** カード選択解除時コールバック */
   onCardDeselect?: (card: Card, index: number) => void;
+  /** カード確定時コールバック（ENTERキー押下時） */
+  onCardConfirm?: (card: Card, index: number) => void;
 }
 
 /**
@@ -109,6 +116,38 @@ export interface IHandContainer {
    * @param selectable true: 選択可能、false: 選択不可
    */
   setSelectable(selectable: boolean): void;
+
+  /**
+   * 選択フィルターを設定する
+   * @param filter 選択可否を判定するフィルター関数
+   */
+  setSelectableFilter(filter: CardSelectableFilter): void;
+
+  /**
+   * 選択フィルターを解除する
+   */
+  clearSelectableFilter(): void;
+
+  /**
+   * 指定インデックスのカードが選択可能かを確認する
+   * @param index カードのインデックス
+   * @returns true: 選択可能、false: 選択不可
+   */
+  isCardSelectable(index: number): boolean;
+
+  // ========================================
+  // キーボード操作
+  // ========================================
+
+  /**
+   * キーボードナビゲーションを有効化する
+   */
+  enableKeyboardNavigation(): void;
+
+  /**
+   * キーボードナビゲーションを無効化する
+   */
+  disableKeyboardNavigation(): void;
 
   // ========================================
   // レイアウト

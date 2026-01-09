@@ -8,7 +8,11 @@
 
 import Phaser from 'phaser';
 import { Card } from '@domain/card/Card';
-import { IHandContainer, HandContainerOptions } from './IHandContainer';
+import {
+  IHandContainer,
+  HandContainerOptions,
+  CardSelectableFilter,
+} from './IHandContainer';
 import { ICardView } from '../card/ICardView';
 import { HandLayout, HandLayoutType } from './HandConstants';
 import { calculateCardPositions } from './HandLayoutUtils';
@@ -53,6 +57,15 @@ export class HandContainer implements IHandContainer {
   /** カード選択解除コールバック */
   private onCardDeselect?: (card: Card, index: number) => void;
 
+  /** カード確定コールバック */
+  private onCardConfirm?: (card: Card, index: number) => void;
+
+  /** 選択フィルター */
+  private selectableFilter?: CardSelectableFilter;
+
+  /** キーボードナビゲーション有効フラグ */
+  private keyboardEnabled: boolean = false;
+
   /**
    * コンストラクタ
    * @param scene Phaserシーン
@@ -65,6 +78,7 @@ export class HandContainer implements IHandContainer {
     this.layoutType = options.layoutType ?? 'horizontal';
     this.onCardSelect = options.onCardSelect;
     this.onCardDeselect = options.onCardDeselect;
+    this.onCardConfirm = options.onCardConfirm;
 
     this.container = scene.add.container(0, 0);
     this.container.setDepth(100);
@@ -192,6 +206,9 @@ export class HandContainer implements IHandContainer {
 
     if (!this.selectable || index < 0 || index >= this.cards.length) return;
 
+    // フィルターで選択不可の場合は何もしない
+    if (!this.isCardSelectable(index)) return;
+
     // 既存の選択を解除
     if (this.selectedIndex >= 0 && this.selectedIndex !== index) {
       this.cardViews[this.selectedIndex]?.setSelected(false);
@@ -227,7 +244,147 @@ export class HandContainer implements IHandContainer {
    */
   setSelectable(selectable: boolean): void {
     this.selectable = selectable;
-    this.cardViews.forEach((cv) => cv.setInteractive(selectable));
+    this.updateCardSelectability();
+  }
+
+  /**
+   * 選択フィルターを設定する
+   */
+  setSelectableFilter(filter: CardSelectableFilter): void {
+    this.selectableFilter = filter;
+
+    // 選択中のカードがフィルターで無効になった場合は選択解除
+    if (
+      this.selectedIndex >= 0 &&
+      !this.isCardSelectable(this.selectedIndex)
+    ) {
+      this.deselectCard();
+    }
+
+    this.updateCardSelectability();
+  }
+
+  /**
+   * 選択フィルターを解除する
+   */
+  clearSelectableFilter(): void {
+    this.selectableFilter = undefined;
+    this.updateCardSelectability();
+  }
+
+  /**
+   * 指定インデックスのカードが選択可能かを確認する
+   */
+  isCardSelectable(index: number): boolean {
+    if (index < 0 || index >= this.cards.length) return false;
+
+    if (!this.selectableFilter) return true;
+
+    return this.selectableFilter(this.cards[index], index);
+  }
+
+  /**
+   * カードの選択可能状態を更新する
+   */
+  private updateCardSelectability(): void {
+    this.cardViews.forEach((cardView, index) => {
+      const canSelect = this.selectable && this.isCardSelectable(index);
+      cardView.setInteractive(canSelect);
+    });
+  }
+
+  // ========================================
+  // キーボード操作
+  // ========================================
+
+  /**
+   * キーボードナビゲーションを有効化する
+   */
+  enableKeyboardNavigation(): void {
+    if (this.keyboardEnabled) return;
+    this.keyboardEnabled = true;
+
+    this.scene.input.keyboard?.on('keydown-LEFT', this.handleKeyLeft, this);
+    this.scene.input.keyboard?.on('keydown-RIGHT', this.handleKeyRight, this);
+    this.scene.input.keyboard?.on('keydown-ENTER', this.handleKeyEnter, this);
+    this.scene.input.keyboard?.on('keydown-ESC', this.handleKeyEscape, this);
+  }
+
+  /**
+   * キーボードナビゲーションを無効化する
+   */
+  disableKeyboardNavigation(): void {
+    if (!this.keyboardEnabled) return;
+    this.keyboardEnabled = false;
+
+    this.scene.input.keyboard?.off('keydown-LEFT', this.handleKeyLeft, this);
+    this.scene.input.keyboard?.off('keydown-RIGHT', this.handleKeyRight, this);
+    this.scene.input.keyboard?.off('keydown-ENTER', this.handleKeyEnter, this);
+    this.scene.input.keyboard?.off('keydown-ESC', this.handleKeyEscape, this);
+  }
+
+  /**
+   * 左キーハンドラ
+   */
+  private handleKeyLeft = (): void => {
+    if (!this.selectable || this.cards.length === 0) return;
+
+    if (this.selectedIndex < 0) {
+      // 未選択時は最初のカードを選択
+      this.selectFirstSelectableCard();
+    } else {
+      const newIndex =
+        this.selectedIndex <= 0
+          ? this.cards.length - 1
+          : this.selectedIndex - 1;
+      this.selectCard(newIndex);
+    }
+  };
+
+  /**
+   * 右キーハンドラ
+   */
+  private handleKeyRight = (): void => {
+    if (!this.selectable || this.cards.length === 0) return;
+
+    if (this.selectedIndex < 0) {
+      // 未選択時は最初のカードを選択
+      this.selectFirstSelectableCard();
+    } else {
+      const newIndex =
+        this.selectedIndex >= this.cards.length - 1
+          ? 0
+          : this.selectedIndex + 1;
+      this.selectCard(newIndex);
+    }
+  };
+
+  /**
+   * ENTERキーハンドラ
+   */
+  private handleKeyEnter = (): void => {
+    if (this.selectedIndex >= 0 && this.onCardConfirm) {
+      this.onCardConfirm(this.cards[this.selectedIndex], this.selectedIndex);
+    }
+  };
+
+  /**
+   * ESCキーハンドラ
+   */
+  private handleKeyEscape = (): void => {
+    this.deselectCard();
+  };
+
+  /**
+   * 最初の選択可能なカードを選択する
+   */
+  private selectFirstSelectableCard(): void {
+    for (let i = 0; i < this.cards.length; i++) {
+      if (this.isCardSelectable(i)) {
+        this.selectCard(i);
+        return;
+      }
+    }
   }
 
   // ========================================
@@ -284,6 +441,7 @@ export class HandContainer implements IHandContainer {
    * リソースを破棄する
    */
   destroy(): void {
+    this.disableKeyboardNavigation();
     this.clearCardViews();
     this.container.destroy();
   }

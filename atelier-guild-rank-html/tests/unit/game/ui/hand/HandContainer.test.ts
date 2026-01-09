@@ -531,4 +531,228 @@ describe('HandContainer', () => {
       expect(container.getSelectedIndex()).toBe(1);
     });
   });
+
+  // ========================================
+  // TASK-0197: カード選択機能強化
+  // ========================================
+
+  describe('選択フィルター機能', () => {
+    it('setSelectableFilterでフィルターを設定できる', () => {
+      const container = new HandContainer(mockScene as any);
+      const card1 = { ...createTestCard('001'), cost: 1 };
+      const card2 = { ...createTestCard('002'), cost: 3 };
+      container.setCards([card1, card2]);
+
+      // コスト2以下のみ選択可能
+      container.setSelectableFilter((card) => card.cost <= 2);
+
+      // コスト1のカードは選択可能
+      container.selectCard(0);
+      expect(container.getSelectedIndex()).toBe(0);
+
+      // コスト3のカードは選択不可
+      container.deselectCard();
+      container.selectCard(1);
+      expect(container.getSelectedIndex()).toBe(-1);
+    });
+
+    it('clearSelectableFilterでフィルターを解除できる', () => {
+      const container = new HandContainer(mockScene as any);
+      const card1 = { ...createTestCard('001'), cost: 1 };
+      const card2 = { ...createTestCard('002'), cost: 3 };
+      container.setCards([card1, card2]);
+
+      container.setSelectableFilter((card) => card.cost <= 2);
+      container.clearSelectableFilter();
+
+      // フィルター解除後はすべてのカードが選択可能
+      container.selectCard(1);
+      expect(container.getSelectedIndex()).toBe(1);
+    });
+
+    it('フィルター変更時に既存の選択が無効な場合は解除される', () => {
+      const container = new HandContainer(mockScene as any);
+      const card1 = { ...createTestCard('001'), cost: 1 };
+      const card2 = { ...createTestCard('002'), cost: 3 };
+      container.setCards([card1, card2]);
+
+      container.selectCard(1);
+      expect(container.getSelectedIndex()).toBe(1);
+
+      // フィルター適用で選択中カードが無効になる
+      container.setSelectableFilter((card) => card.cost <= 2);
+      expect(container.getSelectedIndex()).toBe(-1);
+    });
+
+    it('isCardSelectable()で選択可否を確認できる', () => {
+      const container = new HandContainer(mockScene as any);
+      const card1 = { ...createTestCard('001'), cost: 1 };
+      const card2 = { ...createTestCard('002'), cost: 3 };
+      container.setCards([card1, card2]);
+
+      container.setSelectableFilter((card) => card.cost <= 2);
+
+      expect(container.isCardSelectable(0)).toBe(true);
+      expect(container.isCardSelectable(1)).toBe(false);
+    });
+  });
+
+  describe('キーボード操作', () => {
+    let mockKeyboard: {
+      on: ReturnType<typeof vi.fn>;
+      off: ReturnType<typeof vi.fn>;
+    };
+
+    beforeEach(() => {
+      mockKeyboard = {
+        on: vi.fn().mockReturnThis(),
+        off: vi.fn().mockReturnThis(),
+      };
+      mockScene.input.keyboard = mockKeyboard;
+    });
+
+    it('enableKeyboardNavigation()でキーボード操作を有効化できる', () => {
+      const container = new HandContainer(mockScene as any);
+      container.setCards([createTestCard('001'), createTestCard('002')]);
+
+      container.enableKeyboardNavigation();
+
+      expect(mockKeyboard.on).toHaveBeenCalledWith(
+        'keydown-LEFT',
+        expect.any(Function),
+        expect.anything()
+      );
+      expect(mockKeyboard.on).toHaveBeenCalledWith(
+        'keydown-RIGHT',
+        expect.any(Function),
+        expect.anything()
+      );
+      expect(mockKeyboard.on).toHaveBeenCalledWith(
+        'keydown-ENTER',
+        expect.any(Function),
+        expect.anything()
+      );
+      expect(mockKeyboard.on).toHaveBeenCalledWith(
+        'keydown-ESC',
+        expect.any(Function),
+        expect.anything()
+      );
+    });
+
+    it('disableKeyboardNavigation()でキーボード操作を無効化できる', () => {
+      const container = new HandContainer(mockScene as any);
+      container.enableKeyboardNavigation();
+      container.disableKeyboardNavigation();
+
+      expect(mockKeyboard.off).toHaveBeenCalledWith(
+        'keydown-LEFT',
+        expect.any(Function),
+        expect.anything()
+      );
+    });
+
+    it('左キーで前のカードを選択できる', () => {
+      const container = new HandContainer(mockScene as any);
+      container.setCards([createTestCard('001'), createTestCard('002'), createTestCard('003')]);
+      container.selectCard(1);
+      container.enableKeyboardNavigation();
+
+      // キーボードイベントをシミュレート
+      const leftHandler = mockKeyboard.on.mock.calls.find(
+        (call) => call[0] === 'keydown-LEFT'
+      )?.[1];
+      leftHandler?.();
+
+      expect(container.getSelectedIndex()).toBe(0);
+    });
+
+    it('右キーで次のカードを選択できる', () => {
+      const container = new HandContainer(mockScene as any);
+      container.setCards([createTestCard('001'), createTestCard('002'), createTestCard('003')]);
+      container.selectCard(1);
+      container.enableKeyboardNavigation();
+
+      // キーボードイベントをシミュレート
+      const rightHandler = mockKeyboard.on.mock.calls.find(
+        (call) => call[0] === 'keydown-RIGHT'
+      )?.[1];
+      rightHandler?.();
+
+      expect(container.getSelectedIndex()).toBe(2);
+    });
+
+    it('左端で左キーを押すと右端に移動する', () => {
+      const container = new HandContainer(mockScene as any);
+      container.setCards([createTestCard('001'), createTestCard('002'), createTestCard('003')]);
+      container.selectCard(0);
+      container.enableKeyboardNavigation();
+
+      const leftHandler = mockKeyboard.on.mock.calls.find(
+        (call) => call[0] === 'keydown-LEFT'
+      )?.[1];
+      leftHandler?.();
+
+      expect(container.getSelectedIndex()).toBe(2);
+    });
+
+    it('右端で右キーを押すと左端に移動する', () => {
+      const container = new HandContainer(mockScene as any);
+      container.setCards([createTestCard('001'), createTestCard('002'), createTestCard('003')]);
+      container.selectCard(2);
+      container.enableKeyboardNavigation();
+
+      const rightHandler = mockKeyboard.on.mock.calls.find(
+        (call) => call[0] === 'keydown-RIGHT'
+      )?.[1];
+      rightHandler?.();
+
+      expect(container.getSelectedIndex()).toBe(0);
+    });
+
+    it('ESCキーで選択を解除できる', () => {
+      const container = new HandContainer(mockScene as any);
+      container.setCards([createTestCard('001')]);
+      container.selectCard(0);
+      container.enableKeyboardNavigation();
+
+      const escHandler = mockKeyboard.on.mock.calls.find(
+        (call) => call[0] === 'keydown-ESC'
+      )?.[1];
+      escHandler?.();
+
+      expect(container.getSelectedIndex()).toBe(-1);
+    });
+
+    it('ENTERキーでonCardConfirmコールバックが呼ばれる', () => {
+      const onCardConfirm = vi.fn();
+      const container = new HandContainer(mockScene as any, { onCardConfirm });
+      const card = createTestCard('001');
+      container.setCards([card]);
+      container.selectCard(0);
+      container.enableKeyboardNavigation();
+
+      const enterHandler = mockKeyboard.on.mock.calls.find(
+        (call) => call[0] === 'keydown-ENTER'
+      )?.[1];
+      enterHandler?.();
+
+      expect(onCardConfirm).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'test-001' }),
+        0
+      );
+    });
+
+    it('未選択時に左右キーを押すと最初のカードを選択する', () => {
+      const container = new HandContainer(mockScene as any);
+      container.setCards([createTestCard('001'), createTestCard('002')]);
+      container.enableKeyboardNavigation();
+
+      const rightHandler = mockKeyboard.on.mock.calls.find(
+        (call) => call[0] === 'keydown-RIGHT'
+      )?.[1];
+      rightHandler?.();
+
+      expect(container.getSelectedIndex()).toBe(0);
+    });
+  });
 });
