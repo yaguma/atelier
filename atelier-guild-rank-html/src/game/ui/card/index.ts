@@ -37,3 +37,6 @@ export {
 export { GatheringCardView, type GatheringCardViewOptions } from './GatheringCardView';
 export { RecipeCardView, type RecipeCardViewOptions } from './RecipeCardView';
 export { EnhancementCardView, type EnhancementCardViewOptions } from './EnhancementCardView';
+
+// ツールチップ
+export { CardTooltip, type CardTooltipConfig } from './CardTooltip';
