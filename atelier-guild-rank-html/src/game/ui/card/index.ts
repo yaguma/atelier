@@ -35,3 +35,4 @@ export {
 
 // カードビュー実装
 export { GatheringCardView, type GatheringCardViewOptions } from './GatheringCardView';
+export { RecipeCardView, type RecipeCardViewOptions } from './RecipeCardView';
