@@ -109,6 +109,8 @@ describe('IHeaderUI インターフェース', () => {
         animateExpGain: () => {},
         animateGoldChange: () => {},
         animateAPChange: () => {},
+        animateDayAdvance: () => Promise.resolve(),
+        showAPInsufficient: () => {},
         setVisible: () => {},
         destroy: () => {},
       };
@@ -123,6 +125,8 @@ describe('IHeaderUI インターフェース', () => {
       expect(typeof mockHeaderUI.animateExpGain).toBe('function');
       expect(typeof mockHeaderUI.animateGoldChange).toBe('function');
       expect(typeof mockHeaderUI.animateAPChange).toBe('function');
+      expect(typeof mockHeaderUI.animateDayAdvance).toBe('function');
+      expect(typeof mockHeaderUI.showAPInsufficient).toBe('function');
       expect(typeof mockHeaderUI.setVisible).toBe('function');
       expect(typeof mockHeaderUI.destroy).toBe('function');
     });
