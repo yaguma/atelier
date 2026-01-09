@@ -14,3 +14,6 @@ export {
   type QuestDisplayData,
   type InventoryDisplayData,
 } from './ISidebarUI';
+
+// 実装
+export { SidebarUI } from './SidebarUI';
