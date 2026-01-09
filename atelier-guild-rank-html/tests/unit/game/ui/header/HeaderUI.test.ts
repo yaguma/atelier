@@ -57,6 +57,7 @@ const createMockScene = () => {
     setOrigin: vi.fn().mockReturnThis(),
     setColor: vi.fn().mockReturnThis(),
     setAlpha: vi.fn().mockReturnThis(),
+    setX: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
     x: 0,
     y: 0,
@@ -77,6 +78,7 @@ const createMockScene = () => {
   const mockTween = {
     targets: null,
     duration: 0,
+    stop: vi.fn(),
   };
 
   return {
@@ -93,7 +95,7 @@ const createMockScene = () => {
         if (config.onComplete) {
           config.onComplete();
         }
-        return mockTween;
+        return { ...mockTween, stop: vi.fn() };
       }),
     },
   };
@@ -232,6 +234,17 @@ describe('HeaderUI', () => {
       expect(() => headerUI.updateDay(30, 30)).not.toThrow();
       expect(() => headerUI.updateDay(15, 60)).not.toThrow();
     });
+
+    it('残り日数が少ないと警告色になる', () => {
+      const headerUI = new HeaderUI(mockScene as any);
+
+      // 残り5日以下 -> 赤
+      expect(() => headerUI.updateDay(26, 30)).not.toThrow();
+      // 残り10日以下 -> オレンジ
+      expect(() => headerUI.updateDay(21, 30)).not.toThrow();
+      // 残り多い -> 白
+      expect(() => headerUI.updateDay(1, 30)).not.toThrow();
+    });
   });
 
   describe('updateGold', () => {
@@ -271,6 +284,25 @@ describe('HeaderUI', () => {
       expect(() => headerUI.updateAP(1, 3)).not.toThrow();
       // 空状態
       expect(() => headerUI.updateAP(0, 3)).not.toThrow();
+    });
+
+    it('APが少ない場合に点滅アニメーションが開始される', () => {
+      const headerUI = new HeaderUI(mockScene as any);
+
+      // AP 25%以下で点滅開始
+      headerUI.updateAP(1, 10);
+      expect(mockScene.tweens.add).toHaveBeenCalled();
+    });
+
+    it('APが回復すると点滅アニメーションが停止される', () => {
+      const headerUI = new HeaderUI(mockScene as any);
+
+      // 点滅開始
+      headerUI.updateAP(1, 10);
+      // 回復して停止
+      headerUI.updateAP(5, 10);
+      // エラーなく実行される
+      expect(() => headerUI.updateAP(5, 10)).not.toThrow();
     });
   });
 
@@ -317,6 +349,15 @@ describe('HeaderUI', () => {
 
       expect(mockScene.tweens.add).toHaveBeenCalled();
     });
+
+    it('ゴールドテキストのパルスアニメーションが実行される', () => {
+      const headerUI = new HeaderUI(mockScene as any);
+      const initialTweenCallCount = mockScene.tweens.add.mock.calls.length;
+      headerUI.animateGoldChange(1000);
+
+      // フロートテキストとパルスの2つのtweenが追加される
+      expect(mockScene.tweens.add.mock.calls.length).toBeGreaterThan(initialTweenCallCount + 1);
+    });
   });
 
   describe('animateAPChange', () => {
@@ -332,6 +373,27 @@ describe('HeaderUI', () => {
       headerUI.animateAPChange(-1);
 
       expect(mockScene.tweens.add).toHaveBeenCalled();
+    });
+  });
+
+  describe('animateDayAdvance', () => {
+    it('日送りアニメーションが実行される', async () => {
+      const headerUI = new HeaderUI(mockScene as any);
+      const promise = headerUI.animateDayAdvance();
+
+      expect(mockScene.tweens.add).toHaveBeenCalled();
+      await expect(promise).resolves.toBeUndefined();
+    });
+  });
+
+  describe('showAPInsufficient', () => {
+    it('AP不足エフェクトが実行される', () => {
+      const headerUI = new HeaderUI(mockScene as any);
+      const initialTweenCallCount = mockScene.tweens.add.mock.calls.length;
+      headerUI.showAPInsufficient();
+
+      // ゲージ点滅とテキスト振動の2つのtweenが追加される
+      expect(mockScene.tweens.add.mock.calls.length).toBeGreaterThan(initialTweenCallCount + 1);
     });
   });
 

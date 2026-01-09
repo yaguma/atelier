@@ -45,6 +45,9 @@ export class HeaderUI implements IHeaderUI {
   private currentData: HeaderUIData | null = null;
   private onMenuClick?: () => void;
 
+  // AP点滅アニメーション用
+  private apBlinkTween?: Phaser.Tweens.Tween;
+
   constructor(scene: Phaser.Scene, options: HeaderUIOptions = {}) {
     this.scene = scene;
     this.onMenuClick = options.onMenuClick;
@@ -311,6 +314,16 @@ export class HeaderUI implements IHeaderUI {
    */
   updateDay(current: number, max: number): void {
     this.dayText.setText(formatDay(current, max));
+
+    // 残り日数に応じた警告色
+    const remaining = max - current;
+    if (remaining <= 5) {
+      this.dayText.setColor('#ff4444'); // 危険: 赤
+    } else if (remaining <= 10) {
+      this.dayText.setColor('#ffaa00'); // 注意: オレンジ
+    } else {
+      this.dayText.setColor('#ffffff'); // 通常: 白
+    }
   }
 
   /**
@@ -355,6 +368,40 @@ export class HeaderUI implements IHeaderUI {
 
     // テキスト更新
     this.apText.setText(formatAP(current, max));
+
+    // APが少ない場合は点滅
+    if (ratio <= 0.25 && current > 0) {
+      this.startAPWarningBlink();
+    } else {
+      this.stopAPWarningBlink();
+    }
+  }
+
+  /**
+   * AP警告点滅を開始する
+   */
+  private startAPWarningBlink(): void {
+    if (this.apBlinkTween) return;
+
+    this.apBlinkTween = this.scene.tweens.add({
+      targets: this.apText,
+      alpha: 0.5,
+      duration: 500,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+  }
+
+  /**
+   * AP警告点滅を停止する
+   */
+  private stopAPWarningBlink(): void {
+    if (this.apBlinkTween) {
+      this.apBlinkTween.stop();
+      this.apBlinkTween = undefined;
+      this.apText.setAlpha(1);
+    }
   }
 
   // ========================================
@@ -406,7 +453,7 @@ export class HeaderUI implements IHeaderUI {
    */
   animateGoldChange(amount: number): void {
     const isGain = amount > 0;
-    const text = isGain ? `+${amount}` : `${amount}`;
+    const text = isGain ? `+${amount.toLocaleString()}` : `${amount.toLocaleString()}`;
     const style = isGain ? TextStyles.success : TextStyles.warning;
 
     const floatText = this.scene.add.text(
@@ -426,6 +473,16 @@ export class HeaderUI implements IHeaderUI {
       duration: 800,
       ease: 'Power2',
       onComplete: () => floatText.destroy(),
+    });
+
+    // ゴールドテキストのパルスアニメーション
+    this.scene.tweens.add({
+      targets: this.goldText,
+      scaleX: 1.2,
+      scaleY: 1.2,
+      duration: 100,
+      yoyo: true,
+      ease: 'Power2',
     });
   }
 
@@ -457,6 +514,51 @@ export class HeaderUI implements IHeaderUI {
     });
   }
 
+  /**
+   * 日送りアニメーション
+   * @returns アニメーション完了時に解決するPromise
+   */
+  animateDayAdvance(): Promise<void> {
+    return new Promise((resolve) => {
+      this.scene.tweens.add({
+        targets: this.dayText,
+        scaleX: 1.3,
+        scaleY: 1.3,
+        duration: 200,
+        yoyo: true,
+        ease: 'Power2',
+        onComplete: () => resolve(),
+      });
+    });
+  }
+
+  /**
+   * AP不足時の視覚効果を表示する
+   */
+  showAPInsufficient(): void {
+    // APゲージを赤く点滅
+    this.scene.tweens.add({
+      targets: this.apGaugeFill,
+      alpha: 0.3,
+      duration: 100,
+      yoyo: true,
+      repeat: 2,
+      ease: 'Power2',
+    });
+
+    // テキストを振動
+    const originalX = this.apText.x;
+    this.scene.tweens.add({
+      targets: this.apText,
+      x: originalX + 5,
+      duration: 50,
+      yoyo: true,
+      repeat: 3,
+      ease: 'Power2',
+      onComplete: () => this.apText.setX(originalX),
+    });
+  }
+
   // ========================================
   // 表示制御
   // ========================================
@@ -476,6 +578,8 @@ export class HeaderUI implements IHeaderUI {
    * リソースを破棄する
    */
   destroy(): void {
+    // AP点滅アニメーションを停止
+    this.stopAPWarningBlink();
     this.container.destroy();
   }
 }

@@ -122,6 +122,17 @@ export interface IHeaderUI {
    */
   animateAPChange(amount: number): void;
 
+  /**
+   * 日送りアニメーション
+   * @returns アニメーション完了時に解決するPromise
+   */
+  animateDayAdvance(): Promise<void>;
+
+  /**
+   * AP不足時の視覚効果を表示する
+   */
+  showAPInsufficient(): void;
+
   // ========================================
   // 表示制御
   // ========================================
