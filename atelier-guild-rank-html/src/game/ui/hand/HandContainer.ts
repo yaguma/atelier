@@ -1,66 +1,63 @@
-# TASK-0196: HandContainer表示実装
+/**
+ * 手札コンテナ
+ *
+ * 手札の表示と管理を担当するコンポーネント。
+ * カードの追加・削除、選択状態の管理、レイアウトの切り替えなどを行う。
+ * 設計文書: docs/tasks/atelier-guild-rank-phaser/TASK-0196.md
+ */
 
-**タスクID**: TASK-0196
-**タスクタイプ**: TDD
-**推定工数**: 4時間
-**フェーズ**: Phase 2 - 基本シーン・共通UI実装
-**信頼性レベル**: 🟡 *妥当な推測に基づく*
-
-## 関連文書
-
-- **概要**: [overview.md](./overview.md)
-- **UI設計**: [ui-design/overview.md](../../design/atelier-guild-rank-phaser/ui-design/overview.md)
-
-## タスク概要
-
-手札コンテナの表示機能を実装する。カードの追加・削除・並べ替えを視覚的に表現する。
-
-## 依存タスク
-
-- **前提タスク**: TASK-0195
-- **後続タスク**: TASK-0197
-
-## 完了条件
-
-- [x] HandContainerクラスが実装されている
-- [x] カードの追加アニメーションが動作する
-- [x] カードの削除アニメーションが動作する
-- [x] レイアウト切り替え（水平/扇形）が動作する
-- [x] カード枚数に応じた自動調整が行われる
-
----
-
-## 実装詳細
-
-### 1. HandContainer実装 🟡
-
-**信頼性**: 🟡 *TASK-0195の設計に基づく*
-
-**実装ファイル**: `src/presentation/phaser/ui/hand/HandContainer.ts`
-
-```typescript
 import Phaser from 'phaser';
-import { Card } from '../../../../domain/card/Card';
+import { Card } from '@domain/card/Card';
 import { IHandContainer, HandContainerOptions } from './IHandContainer';
 import { ICardView } from '../card/ICardView';
 import { HandLayout, HandLayoutType } from './HandConstants';
-import { calculateCardPositions, CardPosition } from './HandLayoutUtils';
+import { calculateCardPositions } from './HandLayoutUtils';
 import { createCardView } from '../card/CardViewFactory';
 
+/**
+ * 手札コンテナクラス
+ *
+ * 手札の視覚的表現と操作を管理する。
+ */
 export class HandContainer implements IHandContainer {
+  /** Phaserコンテナ */
   public readonly container: Phaser.GameObjects.Container;
 
+  /** シーン参照 */
   private scene: Phaser.Scene;
+
+  /** カードデータ配列 */
   private cards: Card[] = [];
+
+  /** カードビュー配列 */
   private cardViews: ICardView[] = [];
+
+  /** 選択中のカードインデックス */
   private selectedIndex: number = -1;
+
+  /** レイアウトタイプ */
   private layoutType: HandLayoutType;
+
+  /** 選択可能フラグ */
   private selectable: boolean = true;
+
+  /** 中心X座標 */
   private centerX: number;
+
+  /** 中心Y座標 */
   private centerY: number;
+
+  /** カード選択コールバック */
   private onCardSelect?: (card: Card, index: number) => void;
+
+  /** カード選択解除コールバック */
   private onCardDeselect?: (card: Card, index: number) => void;
 
+  /**
+   * コンストラクタ
+   * @param scene Phaserシーン
+   * @param options オプション
+   */
   constructor(scene: Phaser.Scene, options: HandContainerOptions = {}) {
     this.scene = scene;
     this.centerX = options.x ?? HandLayout.X;
@@ -73,6 +70,13 @@ export class HandContainer implements IHandContainer {
     this.container.setDepth(100);
   }
 
+  // ========================================
+  // 手札管理
+  // ========================================
+
+  /**
+   * 手札を設定する
+   */
   setCards(cards: Card[]): void {
     // 既存のカードビューを破棄
     this.clearCardViews();
@@ -91,6 +95,9 @@ export class HandContainer implements IHandContainer {
     this.applyLayout(false);
   }
 
+  /**
+   * カードを追加する
+   */
   addCard(card: Card, animate: boolean = true): void {
     this.cards.push(card);
     const index = this.cards.length - 1;
@@ -108,10 +115,14 @@ export class HandContainer implements IHandContainer {
     }
   }
 
+  /**
+   * カードを削除する
+   */
   removeCard(cardOrIndex: Card | number, animate: boolean = true): void {
-    const index = typeof cardOrIndex === 'number'
-      ? cardOrIndex
-      : this.cards.indexOf(cardOrIndex);
+    const index =
+      typeof cardOrIndex === 'number'
+        ? cardOrIndex
+        : this.cards.indexOf(cardOrIndex);
 
     if (index < 0 || index >= this.cards.length) return;
 
@@ -135,14 +146,27 @@ export class HandContainer implements IHandContainer {
     }
   }
 
+  /**
+   * 現在の手札を取得する
+   */
   getCards(): Card[] {
     return [...this.cards];
   }
 
+  /**
+   * 手札のカード数を取得する
+   */
   getCardCount(): number {
     return this.cards.length;
   }
 
+  // ========================================
+  // 選択管理
+  // ========================================
+
+  /**
+   * 選択中のカードを取得する
+   */
   getSelectedCard(): Card | null {
     if (this.selectedIndex >= 0 && this.selectedIndex < this.cards.length) {
       return this.cards[this.selectedIndex];
@@ -150,14 +174,21 @@ export class HandContainer implements IHandContainer {
     return null;
   }
 
+  /**
+   * 選択中のインデックスを取得する
+   */
   getSelectedIndex(): number {
     return this.selectedIndex;
   }
 
+  /**
+   * カードを選択する
+   */
   selectCard(cardOrIndex: Card | number): void {
-    const index = typeof cardOrIndex === 'number'
-      ? cardOrIndex
-      : this.cards.indexOf(cardOrIndex);
+    const index =
+      typeof cardOrIndex === 'number'
+        ? cardOrIndex
+        : this.cards.indexOf(cardOrIndex);
 
     if (!this.selectable || index < 0 || index >= this.cards.length) return;
 
@@ -174,6 +205,9 @@ export class HandContainer implements IHandContainer {
     }
   }
 
+  /**
+   * 選択を解除する
+   */
   deselectCard(): void {
     if (this.selectedIndex >= 0 && this.selectedIndex < this.cardViews.length) {
       const card = this.cards[this.selectedIndex];
@@ -188,39 +222,79 @@ export class HandContainer implements IHandContainer {
     }
   }
 
+  /**
+   * 選択可能状態を設定する
+   */
   setSelectable(selectable: boolean): void {
     this.selectable = selectable;
-    this.cardViews.forEach(cv => cv.setInteractive(selectable));
+    this.cardViews.forEach((cv) => cv.setInteractive(selectable));
   }
 
+  // ========================================
+  // レイアウト
+  // ========================================
+
+  /**
+   * レイアウトタイプを設定する
+   */
   setLayoutType(type: HandLayoutType): void {
     this.layoutType = type;
     this.applyLayout(true);
   }
 
+  /**
+   * 現在のレイアウトタイプを取得する
+   */
   getLayoutType(): HandLayoutType {
     return this.layoutType;
   }
 
+  /**
+   * レイアウトを更新する
+   */
   refresh(): void {
     this.applyLayout(false);
   }
 
+  // ========================================
+  // 表示
+  // ========================================
+
+  /**
+   * 表示・非表示を設定する
+   */
   setVisible(visible: boolean): void {
     this.container.setVisible(visible);
   }
 
+  /**
+   * 位置を設定する
+   */
   setPosition(x: number, y: number): void {
     this.centerX = x;
     this.centerY = y;
     this.applyLayout(false);
   }
 
+  // ========================================
+  // ライフサイクル
+  // ========================================
+
+  /**
+   * リソースを破棄する
+   */
   destroy(): void {
     this.clearCardViews();
     this.container.destroy();
   }
 
+  // ========================================
+  // プライベートメソッド
+  // ========================================
+
+  /**
+   * 手札用のカードビューを作成する
+   */
   private createCardViewForHand(card: Card, index: number): ICardView {
     const cardView = createCardView(this.scene, {
       card,
@@ -235,6 +309,9 @@ export class HandContainer implements IHandContainer {
     return cardView;
   }
 
+  /**
+   * カードクリックハンドラ
+   */
   private handleCardClick(index: number): void {
     if (!this.selectable) return;
 
@@ -246,6 +323,9 @@ export class HandContainer implements IHandContainer {
     }
   }
 
+  /**
+   * カードホバーハンドラ
+   */
   private handleCardHover(index: number, isHovering: boolean): void {
     if (!this.selectable || this.selectedIndex === index) return;
 
@@ -278,6 +358,9 @@ export class HandContainer implements IHandContainer {
     }
   }
 
+  /**
+   * レイアウトを適用する
+   */
   private applyLayout(animate: boolean): void {
     const positions = calculateCardPositions(
       this.cards.length,
@@ -310,6 +393,9 @@ export class HandContainer implements IHandContainer {
     });
   }
 
+  /**
+   * 指定インデックスのカードを削除する
+   */
   private removeCardAtIndex(index: number): void {
     const cardView = this.cardViews[index];
     cardView.destroy();
@@ -325,99 +411,13 @@ export class HandContainer implements IHandContainer {
     }
   }
 
+  /**
+   * カードビューをすべてクリアする
+   */
   private clearCardViews(): void {
-    this.cardViews.forEach(cv => cv.destroy());
+    this.cardViews.forEach((cv) => cv.destroy());
     this.cardViews = [];
     this.cards = [];
     this.selectedIndex = -1;
   }
 }
-```
-
-### 2. CardViewFactory実装 🟡
-
-**信頼性**: 🟡 *カード種別判定*
-
-**実装ファイル**: `src/presentation/phaser/ui/card/CardViewFactory.ts`
-
-```typescript
-import Phaser from 'phaser';
-import { Card } from '../../../../domain/card/Card';
-import { GatheringCard } from '../../../../domain/card/GatheringCard';
-import { RecipeCard } from '../../../../domain/card/RecipeCard';
-import { EnhancementCard } from '../../../../domain/card/EnhancementCard';
-import { ICardView, CardViewOptions } from './ICardView';
-import { GatheringCardView } from './GatheringCardView';
-import { RecipeCardView } from './RecipeCardView';
-import { EnhancementCardView } from './EnhancementCardView';
-
-export const createCardView = (
-  scene: Phaser.Scene,
-  options: CardViewOptions
-): ICardView => {
-  const { card } = options;
-
-  if (card instanceof GatheringCard) {
-    return new GatheringCardView(scene, options);
-  } else if (card instanceof RecipeCard) {
-    return new RecipeCardView(scene, options);
-  } else if (card instanceof EnhancementCard) {
-    return new EnhancementCardView(scene, options);
-  }
-
-  // デフォルトは採取地カードとして扱う
-  return new GatheringCardView(scene, options);
-};
-```
-
----
-
-## 単体テスト要件
-
-### テストケース1: カード追加 🟡
-
-**Given**: 空のHandContainerがある
-**When**: addCardを呼ぶ
-**Then**: カードが手札に追加される
-
-### テストケース2: カード削除 🟡
-
-**Given**: カードが3枚ある
-**When**: 中央のカードを削除する
-**Then**: カードが2枚になりレイアウトが再調整される
-
-### テストケース3: レイアウト切替 🟡
-
-**Given**: 水平レイアウトで表示中
-**When**: setLayoutType('fan')を呼ぶ
-**Then**: 扇形レイアウトに変更される
-
----
-
-## 実装手順
-
-1. `/tsumiki:tdd-requirements TASK-0196` - 詳細要件定義
-2. `/tsumiki:tdd-testcases` - テストケース作成
-3. `/tsumiki:tdd-red` - テスト実装（失敗）
-4. `/tsumiki:tdd-green` - 最小実装
-5. `/tsumiki:tdd-refactor` - リファクタリング
-6. `/tsumiki:tdd-verify-complete` - 品質確認
-
----
-
-## 注意事項
-
-- カード追加時のアニメーション方向
-- 大量カード時のパフォーマンス
-- CardViewFactoryの拡張性
-
----
-
-## 信頼性レベルサマリー
-
-- **総項目数**: 2項目
-- 🔵 **青信号**: 0項目 (0%)
-- 🟡 **黄信号**: 2項目 (100%)
-- 🔴 **赤信号**: 0項目 (0%)
-
-**品質評価**: 中品質

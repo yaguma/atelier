@@ -40,3 +40,6 @@ export { EnhancementCardView, type EnhancementCardViewOptions } from './Enhancem
 
 // ツールチップ
 export { CardTooltip, type CardTooltipConfig } from './CardTooltip';
+
+// ファクトリー
+export { createCardView, getCardViewClass } from './CardViewFactory';

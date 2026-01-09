@@ -12,3 +12,6 @@ export { type IHandContainer, type HandContainerOptions } from './IHandContainer
 
 // ユーティリティ
 export { calculateCardPositions, type CardPosition } from './HandLayoutUtils';
+
+// 実装
+export { HandContainer } from './HandContainer';
