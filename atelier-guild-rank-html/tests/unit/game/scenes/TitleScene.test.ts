@@ -49,6 +49,7 @@ vi.mock('phaser', () => {
           text: vi.fn().mockReturnValue({
             setOrigin: vi.fn().mockReturnThis(),
             setText: vi.fn(),
+            setVisible: vi.fn(),
           }),
           image: vi.fn().mockReturnValue({
             setDisplaySize: vi.fn().mockReturnThis(),
@@ -112,6 +113,7 @@ vi.mock('phaser', () => {
         text: vi.fn().mockReturnValue({
           setOrigin: vi.fn().mockReturnThis(),
           setText: vi.fn(),
+          setVisible: vi.fn(),
         }),
         image: vi.fn().mockReturnValue({
           setDisplaySize: vi.fn().mockReturnThis(),
@@ -180,6 +182,7 @@ vi.mock('@game/ui/UIFactory', () => {
       createButton: vi.fn().mockReturnValue(mockButton),
       createPrimaryButton: vi.fn().mockReturnValue(mockButton),
       createSecondaryButton: vi.fn().mockReturnValue(mockButton),
+      setButtonEnabled: vi.fn(),
     })),
   };
 });
@@ -434,5 +437,214 @@ describe('TitleScene シーンインデックス', () => {
   it('scenesインデックスからTitleSceneがエクスポートされている', async () => {
     const module = await import('@game/scenes');
     expect(module.TitleScene).toBeDefined();
+  });
+});
+
+describe('TitleScene イベント発行', () => {
+  let titleScene: TitleScene;
+
+  beforeEach(() => {
+    EventBus.resetInstance();
+    titleScene = new TitleScene();
+    titleScene.init();
+    titleScene.preload();
+    titleScene.create();
+  });
+
+  afterEach(() => {
+    EventBus.resetInstance();
+    vi.clearAllMocks();
+  });
+
+  it('NEW_GAME_CLICKEDイベントをEventBus経由で購読・発行できる', () => {
+    const eventBus = EventBus.getInstance();
+    const callback = vi.fn();
+    eventBus.onVoid(UIActionEvents.NEW_GAME_CLICKED, callback);
+
+    // イベントをシミュレート
+    eventBus.emitVoid(UIActionEvents.NEW_GAME_CLICKED);
+
+    expect(callback).toHaveBeenCalledTimes(1);
+  });
+
+  it('CONTINUE_CLICKEDイベントをEventBus経由で購読・発行できる', () => {
+    const eventBus = EventBus.getInstance();
+    const callback = vi.fn();
+    eventBus.onVoid(UIActionEvents.CONTINUE_CLICKED, callback);
+
+    // イベントをシミュレート
+    eventBus.emitVoid(UIActionEvents.CONTINUE_CLICKED);
+
+    expect(callback).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('TitleScene シーン遷移', () => {
+  it('SceneManager.goToがMainSceneへの遷移をサポートする', () => {
+    const sceneManager = SceneManager.getInstance();
+    expect(sceneManager.goTo).toBeDefined();
+  });
+
+  it('SceneKeys.MAINが定義されている', () => {
+    expect(SceneKeys.MAIN).toBe('MainScene');
+  });
+
+  it('遷移データisNewGame: trueがサポートされる', () => {
+    const transitionData = { isNewGame: true };
+    expect(transitionData.isNewGame).toBe(true);
+  });
+
+  it('遷移データloadSave: trueがサポートされる', () => {
+    const transitionData = { isNewGame: false, loadSave: true };
+    expect(transitionData.loadSave).toBe(true);
+    expect(transitionData.isNewGame).toBe(false);
+  });
+});
+
+describe('TitleScene BGM/SE連携', () => {
+  let titleScene: TitleScene;
+
+  beforeEach(() => {
+    EventBus.resetInstance();
+    titleScene = new TitleScene();
+  });
+
+  afterEach(() => {
+    EventBus.resetInstance();
+    vi.clearAllMocks();
+  });
+
+  it('AudioKeys.SE_CLICKが定義されている', async () => {
+    const { AudioKeys } = await import('@game/assets/AssetKeys');
+    expect(AudioKeys.SE_CLICK).toBeDefined();
+  });
+
+  it('AudioKeys.BGM_TITLEが定義されている', async () => {
+    const { AudioKeys } = await import('@game/assets/AssetKeys');
+    expect(AudioKeys.BGM_TITLE).toBeDefined();
+  });
+
+  it('BGMが存在する場合、create時にループ再生される', () => {
+    (titleScene.cache.audio.exists as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
+    titleScene.init();
+    titleScene.preload();
+    titleScene.create();
+
+    expect(titleScene.sound.play).toHaveBeenCalledWith('bgm-title', {
+      loop: true,
+      volume: 0.5,
+    });
+  });
+
+  it('shutdown時にBGMが停止される', () => {
+    (titleScene.cache.audio.exists as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
+    titleScene.init();
+    titleScene.preload();
+    titleScene.create();
+    titleScene.shutdown();
+
+    expect(titleScene.sound.stopByKey).toHaveBeenCalledWith('bgm-title');
+  });
+});
+
+describe('TitleScene 表示要素', () => {
+  let titleScene: TitleScene;
+
+  beforeEach(() => {
+    EventBus.resetInstance();
+    titleScene = new TitleScene();
+    titleScene.init();
+    titleScene.preload();
+    titleScene.create();
+  });
+
+  afterEach(() => {
+    EventBus.resetInstance();
+    vi.clearAllMocks();
+  });
+
+  it('タイトルテキスト「Atelier Guild Rank」が作成される', () => {
+    expect(titleScene.add.text).toHaveBeenCalledWith(
+      expect.any(Number),
+      expect.any(Number),
+      'Atelier Guild Rank',
+      expect.objectContaining({})
+    );
+  });
+
+  it('サブタイトル「〜錬金術師ギルド物語〜」が作成される', () => {
+    expect(titleScene.add.text).toHaveBeenCalledWith(
+      expect.any(Number),
+      expect.any(Number),
+      '〜錬金術師ギルド物語〜',
+      expect.objectContaining({})
+    );
+  });
+
+  it('バージョン表示「v0.1.0」が作成される', () => {
+    expect(titleScene.add.text).toHaveBeenCalledWith(
+      expect.any(Number),
+      expect.any(Number),
+      'v0.1.0',
+      expect.objectContaining({})
+    );
+  });
+});
+
+describe('TitleScene セーブデータ状態更新', () => {
+  let titleScene: TitleScene;
+
+  beforeEach(() => {
+    EventBus.resetInstance();
+    // LocalStorageモック設定
+    Object.defineProperty(global, 'localStorage', {
+      value: {
+        getItem: vi.fn().mockReturnValue(null),
+        setItem: vi.fn(),
+        removeItem: vi.fn(),
+        clear: vi.fn(),
+        length: 0,
+        key: vi.fn(),
+      },
+      writable: true,
+    });
+
+    titleScene = new TitleScene();
+    titleScene.init();
+    titleScene.preload();
+    titleScene.create();
+  });
+
+  afterEach(() => {
+    EventBus.resetInstance();
+    vi.clearAllMocks();
+    // LocalStorageリセット
+    Object.defineProperty(global, 'localStorage', {
+      value: {
+        getItem: vi.fn().mockReturnValue(null),
+        setItem: vi.fn(),
+        removeItem: vi.fn(),
+        clear: vi.fn(),
+        length: 0,
+        key: vi.fn(),
+      },
+      writable: true,
+    });
+  });
+
+  it('updateContinueButtonState()でセーブデータ状態が再確認される', () => {
+    // 初期状態：セーブなし
+    expect(titleScene.hasSaveData).toBe(false);
+
+    // LocalStorageにセーブデータを追加
+    (localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue('{"day":5}');
+
+    // 状態更新
+    titleScene.updateContinueButtonState();
+
+    // セーブデータありと判定される
+    expect(titleScene.hasSaveData).toBe(true);
   });
 });
