@@ -11,7 +11,10 @@ import type {
   QuestDisplayData,
   InventoryDisplayData,
 } from '../../../../../src/game/ui/sidebar/ISidebarUI';
-import type { SidebarTab } from '../../../../../src/game/ui/sidebar/SidebarConstants';
+import type {
+  SidebarTab,
+  InventoryFilter,
+} from '../../../../../src/game/ui/sidebar/SidebarConstants';
 
 describe('ISidebarUI インターフェース', () => {
   describe('QuestDisplayData', () => {
@@ -148,6 +151,10 @@ describe('ISidebarUI インターフェース', () => {
         setInventory: () => {},
         highlightItem: () => {},
         clearItemHighlight: () => {},
+        // TASK-0207: フィルター機能
+        setInventoryFilter: () => {},
+        getInventoryFilter: () => 'all' as InventoryFilter,
+        getFilteredInventoryCount: () => 0,
         setVisible: () => {},
         setEnabled: () => {},
         scrollToTop: () => {},
@@ -164,6 +171,10 @@ describe('ISidebarUI インターフェース', () => {
       expect(typeof mockSidebarUI.setInventory).toBe('function');
       expect(typeof mockSidebarUI.highlightItem).toBe('function');
       expect(typeof mockSidebarUI.clearItemHighlight).toBe('function');
+      // TASK-0207: フィルター機能
+      expect(typeof mockSidebarUI.setInventoryFilter).toBe('function');
+      expect(typeof mockSidebarUI.getInventoryFilter).toBe('function');
+      expect(typeof mockSidebarUI.getFilteredInventoryCount).toBe('function');
       expect(typeof mockSidebarUI.setVisible).toBe('function');
       expect(typeof mockSidebarUI.setEnabled).toBe('function');
       expect(typeof mockSidebarUI.scrollToTop).toBe('function');

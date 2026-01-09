@@ -12,7 +12,12 @@ import {
   QuestDisplayData,
   InventoryDisplayData,
 } from './ISidebarUI';
-import { SidebarLayout, SidebarColors, SidebarTab } from './SidebarConstants';
+import {
+  SidebarLayout,
+  SidebarColors,
+  SidebarTab,
+  InventoryFilter,
+} from './SidebarConstants';
 
 /**
  * 依頼リストアイテム
@@ -304,6 +309,9 @@ export class SidebarUI implements ISidebarUI {
   private selectedQuestId: string | null = null;
   private selectedItemId: string | null = null;
 
+  // インベントリフィルター (TASK-0207)
+  private inventoryFilter: InventoryFilter = 'all';
+
   // コールバック
   private onQuestSelect?: (quest: QuestDisplayData) => void;
   private onItemSelect?: (item: InventoryDisplayData) => void;
@@ -515,31 +523,7 @@ export class SidebarUI implements ISidebarUI {
 
   setInventory(items: InventoryDisplayData[]): void {
     this.inventory = items;
-
-    // 既存アイテムをクリア
-    this.inventoryItems.forEach((item) => item.destroy());
-    this.inventoryItems = [];
-
-    const itemWidth = SidebarLayout.WIDTH - SidebarLayout.PADDING * 2;
-
-    // 新しいアイテムを生成
-    items.forEach((inventoryItem, index) => {
-      const item = new InventoryListItem(
-        this.scene,
-        inventoryItem,
-        0,
-        index * (SidebarLayout.ITEM_HEIGHT + SidebarLayout.ITEM_SPACING),
-        itemWidth,
-        (i) => this.handleItemClick(i)
-      );
-      this.inventoryContainer.add(item.container);
-      this.inventoryItems.push(item);
-    });
-
-    // 選択状態を復元
-    if (this.selectedItemId) {
-      this.highlightItem(this.selectedItemId);
-    }
+    this.renderInventoryList();
   }
 
   private handleItemClick(item: InventoryDisplayData): void {
@@ -570,6 +554,60 @@ export class SidebarUI implements ISidebarUI {
     this.inventoryItems.forEach((item) => {
       item.setSelected(false);
     });
+  }
+
+  // ========================================
+  // インベントリフィルター (TASK-0207)
+  // ========================================
+
+  setInventoryFilter(filter: InventoryFilter): void {
+    this.inventoryFilter = filter;
+    this.renderInventoryList();
+  }
+
+  getInventoryFilter(): InventoryFilter {
+    return this.inventoryFilter;
+  }
+
+  getFilteredInventoryCount(): number {
+    return this.getFilteredInventory().length;
+  }
+
+  private getFilteredInventory(): InventoryDisplayData[] {
+    if (this.inventoryFilter === 'all') {
+      return this.inventory;
+    }
+    return this.inventory.filter(
+      (item) => item.category === this.inventoryFilter
+    );
+  }
+
+  private renderInventoryList(): void {
+    // 既存アイテムをクリア
+    this.inventoryItems.forEach((item) => item.destroy());
+    this.inventoryItems = [];
+
+    const itemWidth = SidebarLayout.WIDTH - SidebarLayout.PADDING * 2;
+    const filteredItems = this.getFilteredInventory();
+
+    // 新しいアイテムを生成
+    filteredItems.forEach((inventoryItem, index) => {
+      const item = new InventoryListItem(
+        this.scene,
+        inventoryItem,
+        0,
+        index * (SidebarLayout.ITEM_HEIGHT + SidebarLayout.ITEM_SPACING),
+        itemWidth,
+        (i) => this.handleItemClick(i)
+      );
+      this.inventoryContainer.add(item.container);
+      this.inventoryItems.push(item);
+    });
+
+    // 選択状態を復元
+    if (this.selectedItemId) {
+      this.highlightItem(this.selectedItemId);
+    }
   }
 
   // ========================================

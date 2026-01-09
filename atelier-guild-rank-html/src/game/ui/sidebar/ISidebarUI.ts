@@ -6,7 +6,7 @@
  */
 
 import Phaser from 'phaser';
-import { SidebarTab } from './SidebarConstants';
+import { SidebarTab, InventoryFilter } from './SidebarConstants';
 
 /**
  * 依頼表示データ
@@ -132,6 +132,28 @@ export interface ISidebarUI {
    * アイテムのハイライトをクリアする
    */
   clearItemHighlight(): void;
+
+  // ========================================
+  // インベントリフィルター (TASK-0207)
+  // ========================================
+
+  /**
+   * インベントリフィルターを設定する
+   * @param filter フィルター種別
+   */
+  setInventoryFilter(filter: InventoryFilter): void;
+
+  /**
+   * 現在のインベントリフィルターを取得する
+   * @returns 現在のフィルター
+   */
+  getInventoryFilter(): InventoryFilter;
+
+  /**
+   * フィルター適用後のアイテム数を取得する
+   * @returns フィルター適用後のアイテム数
+   */
+  getFilteredInventoryCount(): number;
 
   // ========================================
   // 表示制御

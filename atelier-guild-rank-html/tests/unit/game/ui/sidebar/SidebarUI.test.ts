@@ -224,12 +224,16 @@ describe('SidebarUI', () => {
   });
 
   describe('インベントリ', () => {
-    const createItemData = (id: string, name: string): InventoryDisplayData => ({
+    const createItemData = (
+      id: string,
+      name: string,
+      category: 'material' | 'item' | 'artifact' = 'material'
+    ): InventoryDisplayData => ({
       id,
       name,
       description: 'テストアイテム',
       count: 5,
-      category: 'material',
+      category,
     });
 
     it('インベントリを設定できる', () => {
@@ -266,6 +270,179 @@ describe('SidebarUI', () => {
       sidebarUI.highlightItem('i1');
 
       expect(() => sidebarUI.clearItemHighlight()).not.toThrow();
+    });
+  });
+
+  // ========================================
+  // TASK-0207: インベントリグリッド・フィルター機能テスト
+  // ========================================
+
+  describe('インベントリフィルター (TASK-0207)', () => {
+    const createItemData = (
+      id: string,
+      name: string,
+      category: 'material' | 'item' | 'artifact' = 'material'
+    ): InventoryDisplayData => ({
+      id,
+      name,
+      description: 'テストアイテム',
+      count: 5,
+      category,
+    });
+
+    it('初期フィルターは全て(all)である', () => {
+      const sidebarUI = new SidebarUI(mockScene as any);
+
+      expect(sidebarUI.getInventoryFilter()).toBe('all');
+    });
+
+    it('フィルターをmaterialに設定できる', () => {
+      const sidebarUI = new SidebarUI(mockScene as any);
+      sidebarUI.setInventoryFilter('material');
+
+      expect(sidebarUI.getInventoryFilter()).toBe('material');
+    });
+
+    it('フィルターをitemに設定できる', () => {
+      const sidebarUI = new SidebarUI(mockScene as any);
+      sidebarUI.setInventoryFilter('item');
+
+      expect(sidebarUI.getInventoryFilter()).toBe('item');
+    });
+
+    it('フィルターをartifactに設定できる', () => {
+      const sidebarUI = new SidebarUI(mockScene as any);
+      sidebarUI.setInventoryFilter('artifact');
+
+      expect(sidebarUI.getInventoryFilter()).toBe('artifact');
+    });
+
+    it('フィルターをallに戻せる', () => {
+      const sidebarUI = new SidebarUI(mockScene as any);
+      sidebarUI.setInventoryFilter('material');
+      sidebarUI.setInventoryFilter('all');
+
+      expect(sidebarUI.getInventoryFilter()).toBe('all');
+    });
+
+    it('フィルター適用後にgetFilteredInventoryCountが正しい数を返す', () => {
+      const sidebarUI = new SidebarUI(mockScene as any);
+      const items = [
+        createItemData('m1', '素材1', 'material'),
+        createItemData('m2', '素材2', 'material'),
+        createItemData('m3', '素材3', 'material'),
+        createItemData('i1', 'アイテム1', 'item'),
+        createItemData('i2', 'アイテム2', 'item'),
+        createItemData('a1', 'アーティファクト1', 'artifact'),
+      ];
+      sidebarUI.setInventory(items);
+
+      // 全て表示
+      sidebarUI.setInventoryFilter('all');
+      expect(sidebarUI.getFilteredInventoryCount()).toBe(6);
+
+      // 素材のみ
+      sidebarUI.setInventoryFilter('material');
+      expect(sidebarUI.getFilteredInventoryCount()).toBe(3);
+
+      // アイテムのみ
+      sidebarUI.setInventoryFilter('item');
+      expect(sidebarUI.getFilteredInventoryCount()).toBe(2);
+
+      // アーティファクトのみ
+      sidebarUI.setInventoryFilter('artifact');
+      expect(sidebarUI.getFilteredInventoryCount()).toBe(1);
+    });
+
+    it('フィルター変更後も選択状態が維持される', () => {
+      const sidebarUI = new SidebarUI(mockScene as any);
+      const items = [
+        createItemData('m1', '素材1', 'material'),
+        createItemData('i1', 'アイテム1', 'item'),
+      ];
+      sidebarUI.setInventory(items);
+
+      sidebarUI.highlightItem('m1');
+      sidebarUI.setInventoryFilter('material');
+
+      // 選択状態が維持されていることを確認（エラーなく実行される）
+      expect(() => sidebarUI.highlightItem('m1')).not.toThrow();
+    });
+  });
+
+  describe('インベントリグリッド表示 (TASK-0207)', () => {
+    const createItemData = (
+      id: string,
+      name: string,
+      category: 'material' | 'item' | 'artifact' = 'material',
+      count: number = 5
+    ): InventoryDisplayData => ({
+      id,
+      name,
+      description: 'テストアイテム',
+      count,
+      category,
+    });
+
+    it('素材5個、アイテム3個を設定するとgetFilteredInventoryCountが8を返す', () => {
+      const sidebarUI = new SidebarUI(mockScene as any);
+      const items = [
+        createItemData('m1', '素材1', 'material'),
+        createItemData('m2', '素材2', 'material'),
+        createItemData('m3', '素材3', 'material'),
+        createItemData('m4', '素材4', 'material'),
+        createItemData('m5', '素材5', 'material'),
+        createItemData('i1', 'アイテム1', 'item'),
+        createItemData('i2', 'アイテム2', 'item'),
+        createItemData('i3', 'アイテム3', 'item'),
+      ];
+
+      sidebarUI.setInventory(items);
+      sidebarUI.setInventoryFilter('all');
+
+      expect(sidebarUI.getFilteredInventoryCount()).toBe(8);
+    });
+
+    it('materialフィルターで素材のみ(5個)が返される', () => {
+      const sidebarUI = new SidebarUI(mockScene as any);
+      const items = [
+        createItemData('m1', '素材1', 'material'),
+        createItemData('m2', '素材2', 'material'),
+        createItemData('m3', '素材3', 'material'),
+        createItemData('m4', '素材4', 'material'),
+        createItemData('m5', '素材5', 'material'),
+        createItemData('i1', 'アイテム1', 'item'),
+        createItemData('i2', 'アイテム2', 'item'),
+        createItemData('i3', 'アイテム3', 'item'),
+      ];
+
+      sidebarUI.setInventory(items);
+      sidebarUI.setInventoryFilter('material');
+
+      expect(sidebarUI.getFilteredInventoryCount()).toBe(5);
+    });
+
+    it('アイテムをクリックするとハイライトされる', () => {
+      const sidebarUI = new SidebarUI(mockScene as any);
+      const items = [createItemData('i1', 'アイテム1', 'material')];
+      sidebarUI.setInventory(items);
+
+      // highlightItemがエラーなく動作
+      expect(() => sidebarUI.highlightItem('i1')).not.toThrow();
+    });
+
+    it('個数1のアイテムも正しく表示される', () => {
+      const sidebarUI = new SidebarUI(mockScene as any);
+      const items = [createItemData('i1', 'アイテム1', 'material', 1)];
+
+      expect(() => sidebarUI.setInventory(items)).not.toThrow();
+    });
+
+    it('個数99のアイテムも正しく表示される', () => {
+      const sidebarUI = new SidebarUI(mockScene as any);
+      const items = [createItemData('i1', 'アイテム1', 'material', 99)];
+
+      expect(() => sidebarUI.setInventory(items)).not.toThrow();
     });
   });
 

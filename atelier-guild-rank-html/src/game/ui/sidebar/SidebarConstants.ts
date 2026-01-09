@@ -11,6 +11,11 @@
 export type SidebarTab = 'quests' | 'inventory';
 
 /**
+ * インベントリフィルター種別 (TASK-0207)
+ */
+export type InventoryFilter = 'all' | 'material' | 'item' | 'artifact';
+
+/**
  * サイドバーレイアウト定数
  */
 export const SidebarLayout = {

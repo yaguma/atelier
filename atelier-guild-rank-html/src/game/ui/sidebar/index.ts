@@ -5,7 +5,12 @@
  */
 
 // 定数
-export { SidebarLayout, SidebarColors, type SidebarTab } from './SidebarConstants';
+export {
+  SidebarLayout,
+  SidebarColors,
+  type SidebarTab,
+  type InventoryFilter,
+} from './SidebarConstants';
 
 // インターフェース
 export {
