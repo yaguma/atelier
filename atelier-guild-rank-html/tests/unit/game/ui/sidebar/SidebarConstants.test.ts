@@ -5,7 +5,12 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { SidebarLayout, SidebarColors } from '../../../../../src/game/ui/sidebar/SidebarConstants';
+import {
+  SidebarLayout,
+  SidebarColors,
+  type SidebarTab,
+  type InventoryFilter,
+} from '../../../../../src/game/ui/sidebar/SidebarConstants';
 
 describe('SidebarConstants', () => {
   describe('SidebarLayout', () => {
@@ -74,6 +79,72 @@ describe('SidebarConstants', () => {
       expect(SidebarColors.ITEM_BACKGROUND).toBeTypeOf('number');
       expect(SidebarColors.ITEM_HOVER).toBeTypeOf('number');
       expect(SidebarColors.ITEM_SELECTED).toBeTypeOf('number');
+    });
+
+    // TASK-0208: 追加テスト
+    it('アクティブタブは非アクティブより明るい（数値が大きい）', () => {
+      expect(SidebarColors.TAB_ACTIVE).toBeGreaterThan(SidebarColors.TAB_INACTIVE);
+    });
+
+    it('ホバー色と選択色は背景色と異なる', () => {
+      expect(SidebarColors.ITEM_HOVER).not.toBe(SidebarColors.ITEM_BACKGROUND);
+      expect(SidebarColors.ITEM_SELECTED).not.toBe(SidebarColors.ITEM_BACKGROUND);
+    });
+  });
+
+  // TASK-0208: 型テスト
+  describe('SidebarTab 型', () => {
+    it('quests は有効な値', () => {
+      const tab: SidebarTab = 'quests';
+      expect(tab).toBe('quests');
+    });
+
+    it('inventory は有効な値', () => {
+      const tab: SidebarTab = 'inventory';
+      expect(tab).toBe('inventory');
+    });
+  });
+
+  describe('InventoryFilter 型 (TASK-0207)', () => {
+    it('all は有効な値', () => {
+      const filter: InventoryFilter = 'all';
+      expect(filter).toBe('all');
+    });
+
+    it('material は有効な値', () => {
+      const filter: InventoryFilter = 'material';
+      expect(filter).toBe('material');
+    });
+
+    it('item は有効な値', () => {
+      const filter: InventoryFilter = 'item';
+      expect(filter).toBe('item');
+    });
+
+    it('artifact は有効な値', () => {
+      const filter: InventoryFilter = 'artifact';
+      expect(filter).toBe('artifact');
+    });
+  });
+
+  describe('SidebarLayout 追加検証 (TASK-0208)', () => {
+    it('位置が画面右側に設定されている（1280幅の画面で右側）', () => {
+      expect(SidebarLayout.X).toBeGreaterThan(640);
+    });
+
+    it('サイドバーの基本サイズが適切', () => {
+      expect(SidebarLayout.WIDTH).toBeGreaterThanOrEqual(200);
+      expect(SidebarLayout.WIDTH).toBeLessThanOrEqual(400);
+      expect(SidebarLayout.HEIGHT).toBeGreaterThanOrEqual(400);
+    });
+
+    it('コンテンツY位置がタブ高さより大きい', () => {
+      expect(SidebarLayout.CONTENT_Y).toBeGreaterThanOrEqual(SidebarLayout.TAB_HEIGHT);
+    });
+
+    it('コンテンツ高さが全体高さ内に収まる', () => {
+      const contentEnd = SidebarLayout.CONTENT_Y + SidebarLayout.CONTENT_HEIGHT;
+      expect(contentEnd).toBeLessThanOrEqual(SidebarLayout.HEIGHT);
     });
   });
 });
