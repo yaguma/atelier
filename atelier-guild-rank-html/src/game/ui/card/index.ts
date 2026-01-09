@@ -32,3 +32,6 @@ export {
   getAllCardTypeDisplayOptions,
   type CardTypeDisplayOption,
 } from './CardTypeOptions';
+
+// カードビュー実装
+export { GatheringCardView, type GatheringCardViewOptions } from './GatheringCardView';
