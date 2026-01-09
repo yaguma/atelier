@@ -52,6 +52,9 @@ export const Colors = {
   // 特殊
   disabled: 0x555555,
   highlight: 0xffff00,
+
+  // アクセント（選択時など）
+  accent: 0x4a90d9,
 } as const;
 
 /**
