@@ -23,3 +23,6 @@ export {
   formatExp,
   getRankName,
 } from './HeaderUtils';
+
+// 実装
+export { HeaderUI } from './HeaderUI';
