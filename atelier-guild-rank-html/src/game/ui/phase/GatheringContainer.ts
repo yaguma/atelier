@@ -2,6 +2,7 @@
  * GatheringContainer 実装
  *
  * TASK-0222: GatheringContainer設計
+ * TASK-0223: GatheringContainer素材提示実装
  * 採取フェーズコンテナの基本実装
  */
 
@@ -19,6 +20,8 @@ import { GatheringContainerLayout } from './GatheringContainerConstants';
 import type { MaterialOption } from '../material/IMaterialOptionView';
 import { MaterialOptionView } from '../material/MaterialOptionView';
 import { GatheringCostView } from '../gathering/GatheringCostView';
+import { GatheringMaterialGenerator } from './GatheringMaterialGenerator';
+import { GatheringMaterialPresenter } from './GatheringMaterialPresenter';
 import { TextStyles } from '../../config/TextStyles';
 
 /**
@@ -33,6 +36,8 @@ export class GatheringContainer extends BasePhaseContainer implements IGathering
   private gatheringCard: GatheringCard | null = null;
   private materialOptionView?: MaterialOptionView;
   private costView?: GatheringCostView;
+  private materialGenerator: GatheringMaterialGenerator;
+  private materialPresenter?: GatheringMaterialPresenter;
 
   private currentAP: number = 0;
   private maxAP: number = 10;
@@ -42,6 +47,9 @@ export class GatheringContainer extends BasePhaseContainer implements IGathering
 
   // ボタン
   private confirmButton?: Phaser.GameObjects.Container;
+
+  // 素材マスターデータ
+  private materialMasterData?: Map<string, Material>;
 
   constructor(options: GatheringContainerOptions) {
     super({
@@ -55,6 +63,13 @@ export class GatheringContainer extends BasePhaseContainer implements IGathering
 
     this.onGatheringComplete = options.onGatheringComplete;
     this.onSkip = options.onSkip;
+
+    // 素材生成・提示コンポーネント初期化
+    this.materialGenerator = new GatheringMaterialGenerator();
+    this.materialPresenter = new GatheringMaterialPresenter(
+      this.scene,
+      this.container
+    );
   }
 
   // =====================================================
@@ -168,13 +183,75 @@ export class GatheringContainer extends BasePhaseContainer implements IGathering
 
   setGatheringCard(card: GatheringCard): void {
     this.gatheringCard = card;
-    // カード表示処理はTASK-0223で実装
     this.updateCostDisplay();
     this.updateConfirmButtonState();
   }
 
   getGatheringCard(): GatheringCard | null {
     return this.gatheringCard;
+  }
+
+  /**
+   * 素材マスターデータを設定
+   * @param materials 素材マスターデータ
+   */
+  setMaterialMasterData(materials: Map<string, Material>): void {
+    this.materialMasterData = materials;
+  }
+
+  /**
+   * 採取地カードから素材を生成して提示
+   * @param card 採取地カード
+   * @param useAnimation アニメーションを使用するか
+   */
+  async generateAndPresentMaterials(
+    card: GatheringCard,
+    useAnimation: boolean = true
+  ): Promise<void> {
+    this.setGatheringCard(card);
+
+    // 素材生成
+    const options = this.materialGenerator.generateMaterialOptions(
+      card,
+      this.materialMasterData
+    );
+
+    if (useAnimation && this.materialPresenter) {
+      // ローディング表示
+      this.showLoading('素材を探索中...');
+
+      // 素材提示アニメーション
+      await this.materialPresenter.presentMaterials(options, () => {
+        this.hideLoading();
+        this.setMaterialOptions(options);
+      });
+    } else {
+      // アニメーションなしで即座に表示
+      this.setMaterialOptions(options);
+    }
+
+    this.eventBus.emit('gathering:materials:generated' as any, { options });
+  }
+
+  /**
+   * 素材生成（アニメーションなし）
+   * @param card 採取地カード
+   * @returns 生成された素材選択肢
+   */
+  generateMaterialOptions(card: GatheringCard): MaterialOption[] {
+    return this.materialGenerator.generateMaterialOptions(
+      card,
+      this.materialMasterData
+    );
+  }
+
+  /**
+   * 素材がレアかどうか判定
+   * @param probability 出現確率
+   * @returns レア素材かどうか
+   */
+  isRareMaterial(probability: number): boolean {
+    return this.materialGenerator.isRareMaterial(probability);
   }
 
   // =====================================================

@@ -27,3 +27,6 @@ export { BasePhaseContainer } from './BasePhaseContainer';
 
 // 実装
 export { GatheringContainer } from './GatheringContainer';
+export { GatheringMaterialGenerator } from './GatheringMaterialGenerator';
+export type { IMaterialRepository, GeneratedMaterial } from './GatheringMaterialGenerator';
+export { GatheringMaterialPresenter } from './GatheringMaterialPresenter';
