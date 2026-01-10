@@ -140,6 +140,15 @@ function createMockScene(): Phaser.Scene {
     killTweensOf: vi.fn(),
   };
 
+  const mockKeyboard = {
+    on: vi.fn().mockReturnThis(),
+    off: vi.fn().mockReturnThis(),
+  };
+
+  const mockInput = {
+    keyboard: mockKeyboard,
+  };
+
   return {
     add: {
       container: vi.fn().mockImplementation(() => createMockContainer()),
@@ -148,6 +157,7 @@ function createMockScene(): Phaser.Scene {
     },
     tweens: mockTween,
     time: mockTime,
+    input: mockInput,
   } as unknown as Phaser.Scene;
 }
 
@@ -501,6 +511,164 @@ describe('AlchemyContainer', () => {
       expect(typeof container.setVisible).toBe('function');
       expect(typeof container.setEnabled).toBe('function');
       expect(typeof container.destroy).toBe('function');
+    });
+  });
+
+  // TASK-0228: レシピ選択機能のテスト
+  describe('レシピ選択UI強化', () => {
+    it('レシピ詳細パネルが作成される', () => {
+      const container = new AlchemyContainer({
+        scene: mockScene,
+        eventBus,
+      });
+      const card = createMockRecipeCard();
+      container.setRecipeCards([card]);
+
+      container.selectRecipe(card);
+
+      // 詳細パネルが表示される
+      expect(container.getSelectedRecipe()).toBe(card);
+    });
+
+    it('レシピ変更時にイベントが発火する', () => {
+      const changeHandler = vi.fn();
+      eventBus.on('alchemy:recipe:changed' as any, changeHandler);
+
+      const container = new AlchemyContainer({
+        scene: mockScene,
+        eventBus,
+      });
+      const card1 = createMockRecipeCard({ id: 'recipe-1', name: 'レシピ1' });
+      const card2 = createMockRecipeCard({ id: 'recipe-2', name: 'レシピ2' });
+      container.setRecipeCards([card1, card2]);
+
+      // 最初のレシピを選択
+      container.selectRecipe(card1);
+      // 2番目のレシピを選択（素材未選択なので確認なしで変更される）
+      container.selectRecipe(card2);
+
+      expect(changeHandler).toHaveBeenCalled();
+    });
+
+    it('同じレシピを再選択しても何も起きない', () => {
+      const selectHandler = vi.fn();
+      eventBus.on('alchemy:recipe:selected' as any, selectHandler);
+
+      const container = new AlchemyContainer({
+        scene: mockScene,
+        eventBus,
+      });
+      const card = createMockRecipeCard();
+      container.setRecipeCards([card]);
+
+      container.selectRecipe(card);
+      const callCount = selectHandler.mock.calls.length;
+
+      // 同じレシピを再選択
+      container.selectRecipe(card);
+
+      // イベントが追加で発火しない
+      expect(selectHandler.mock.calls.length).toBe(callCount);
+    });
+  });
+
+  describe('レシピ変更時の確認ダイアログ', () => {
+    it('素材選択中にレシピを変更すると確認が求められる', () => {
+      const container = new AlchemyContainer({
+        scene: mockScene,
+        eventBus,
+      });
+      const card1 = createMockRecipeCard({ id: 'recipe-1', name: 'レシピ1' });
+      const card2 = createMockRecipeCard({ id: 'recipe-2', name: 'レシピ2' });
+      const material = createMockMaterial({ id: 'mat-1', name: '薬草' });
+
+      container.setRecipeCards([card1, card2]);
+      container.setAvailableMaterials([material]);
+      container.selectRecipe(card1);
+      container.selectMaterial(material);
+
+      // 素材選択中にレシピを変更しようとする
+      // showConfirmDialogが呼ばれ、確認待ち状態になる
+      expect(container.getSelectedMaterials().length).toBe(1);
+    });
+
+    it('確認なしでレシピ変更が実行される（素材未選択時）', () => {
+      const container = new AlchemyContainer({
+        scene: mockScene,
+        eventBus,
+      });
+      const card1 = createMockRecipeCard({ id: 'recipe-1', name: 'レシピ1' });
+      const card2 = createMockRecipeCard({ id: 'recipe-2', name: 'レシピ2' });
+
+      container.setRecipeCards([card1, card2]);
+      container.selectRecipe(card1);
+
+      // 素材未選択でレシピを変更
+      container.selectRecipe(card2);
+
+      expect(container.getSelectedRecipe()).toBe(card2);
+    });
+  });
+
+  describe('キーボード操作', () => {
+    it('selectNextRecipeで次のレシピを選択できる', () => {
+      const container = new AlchemyContainer({
+        scene: mockScene,
+        eventBus,
+      });
+      const card1 = createMockRecipeCard({ id: 'recipe-1', name: 'レシピ1' });
+      const card2 = createMockRecipeCard({ id: 'recipe-2', name: 'レシピ2' });
+      container.setRecipeCards([card1, card2]);
+
+      container.selectRecipe(card1);
+      container.selectNextRecipe();
+
+      expect(container.getSelectedRecipe()).toBe(card2);
+    });
+
+    it('selectPreviousRecipeで前のレシピを選択できる', () => {
+      const container = new AlchemyContainer({
+        scene: mockScene,
+        eventBus,
+      });
+      const card1 = createMockRecipeCard({ id: 'recipe-1', name: 'レシピ1' });
+      const card2 = createMockRecipeCard({ id: 'recipe-2', name: 'レシピ2' });
+      container.setRecipeCards([card1, card2]);
+
+      container.selectRecipe(card2);
+      container.selectPreviousRecipe();
+
+      expect(container.getSelectedRecipe()).toBe(card1);
+    });
+
+    it('先頭でselectPreviousRecipeしても範囲外にならない', () => {
+      const container = new AlchemyContainer({
+        scene: mockScene,
+        eventBus,
+      });
+      const card1 = createMockRecipeCard({ id: 'recipe-1', name: 'レシピ1' });
+      const card2 = createMockRecipeCard({ id: 'recipe-2', name: 'レシピ2' });
+      container.setRecipeCards([card1, card2]);
+
+      container.selectRecipe(card1);
+      container.selectPreviousRecipe();
+
+      expect(container.getSelectedRecipe()).toBe(card1);
+    });
+
+    it('末尾でselectNextRecipeしても範囲外にならない', () => {
+      const container = new AlchemyContainer({
+        scene: mockScene,
+        eventBus,
+      });
+      const card1 = createMockRecipeCard({ id: 'recipe-1', name: 'レシピ1' });
+      const card2 = createMockRecipeCard({ id: 'recipe-2', name: 'レシピ2' });
+      container.setRecipeCards([card1, card2]);
+
+      container.selectRecipe(card2);
+      container.selectNextRecipe();
+
+      expect(container.getSelectedRecipe()).toBe(card2);
     });
   });
 });

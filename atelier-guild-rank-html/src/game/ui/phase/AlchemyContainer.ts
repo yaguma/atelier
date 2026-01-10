@@ -27,6 +27,7 @@ import { MaterialOptionView } from '../material/MaterialOptionView';
 import { AlchemyPreviewPanel } from '../alchemy/AlchemyPreviewPanel';
 import { HandContainer } from '../hand/HandContainer';
 import { TextStyles } from '../../config/TextStyles';
+import { Colors } from '../../config/ColorPalette';
 
 /**
  * AlchemyContainerクラス
@@ -43,6 +44,13 @@ export class AlchemyContainer
   // レシピ管理
   private recipeCards: RecipeCard[] = [];
   private selectedRecipe: RecipeCard | null = null;
+  private previousRecipe: RecipeCard | null = null;
+  private currentRecipeIndex: number = -1;
+
+  // レシピ選択UI
+  private recipeDetailPanel?: Phaser.GameObjects.Container;
+  private selectedRecipeHighlight?: Phaser.GameObjects.Graphics;
+  private confirmDialogContainer?: Phaser.GameObjects.Container;
 
   // 素材管理
   private availableMaterials: Material[] = [];
@@ -85,7 +93,9 @@ export class AlchemyContainer
   protected createContent(): void {
     this.createTitle(AlchemyContainerTexts.TITLE);
     this.createLayout();
+    this.createRecipeDetailPanel();
     this.createActions();
+    this.setupKeyboardControls();
   }
 
   protected async onEnter(): Promise<void> {
@@ -197,12 +207,310 @@ export class AlchemyContainer
   }
 
   // =====================================================
+  // レシピ詳細パネル
+  // =====================================================
+
+  private createRecipeDetailPanel(): void {
+    const { HAND_AREA } = AlchemyContainerLayout;
+
+    this.recipeDetailPanel = this.scene.add.container(
+      HAND_AREA.X + HAND_AREA.WIDTH + 20,
+      HAND_AREA.Y
+    );
+
+    // 背景
+    const bg = this.scene.add.graphics();
+    bg.fillStyle(0x2a2a4a, 0.9);
+    bg.fillRoundedRect(0, 0, 200, 160, 8);
+    bg.lineStyle(1, 0x4a4a6a);
+    bg.strokeRoundedRect(0, 0, 200, 160, 8);
+    this.recipeDetailPanel.add(bg);
+
+    // タイトル
+    const title = this.scene.add
+      .text(100, 10, 'レシピ詳細', {
+        ...TextStyles.body,
+        fontSize: '12px',
+        color: '#aaaaaa',
+      })
+      .setOrigin(0.5, 0);
+    this.recipeDetailPanel.add(title);
+
+    this.recipeDetailPanel.setVisible(false);
+    this.container.add(this.recipeDetailPanel);
+  }
+
+  private updateRecipeDetailPanel(): void {
+    if (!this.selectedRecipe || !this.recipeDetailPanel) {
+      this.recipeDetailPanel?.setVisible(false);
+      return;
+    }
+
+    // 既存のテキストを削除（背景とタイトルは残す）
+    const children = this.recipeDetailPanel.getAll().slice(2);
+    children.forEach((child) => (child as Phaser.GameObjects.GameObject).destroy());
+
+    const recipe = this.selectedRecipe;
+
+    // レシピ名
+    const nameText = this.scene.add
+      .text(100, 35, recipe.name, {
+        ...TextStyles.body,
+        fontSize: '14px',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5, 0);
+    this.recipeDetailPanel.add(nameText);
+
+    // 必要素材
+    const categoryLabel = this.scene.add.text(10, 60, '必要素材:', {
+      ...TextStyles.body,
+      fontSize: '11px',
+      color: '#aaaaaa',
+    });
+    this.recipeDetailPanel.add(categoryLabel);
+
+    const requiredMaterials = recipe.getRequiredMaterials();
+    const materialIds = requiredMaterials.map((rm) => rm.materialId);
+    const categoryText = this.scene.add.text(
+      10,
+      78,
+      materialIds.length > 0 ? materialIds.join(', ') : 'any',
+      {
+        ...TextStyles.body,
+        fontSize: '11px',
+        color: '#ffffff',
+      }
+    );
+    this.recipeDetailPanel.add(categoryText);
+
+    // 必要素材数
+    const countLabel = this.scene.add.text(10, 100, '必要数:', {
+      ...TextStyles.body,
+      fontSize: '11px',
+      color: '#aaaaaa',
+    });
+    this.recipeDetailPanel.add(countLabel);
+
+    const count = requiredMaterials.length > 0 ? requiredMaterials.length : 1;
+    const countText = this.scene.add.text(10, 118, `${count}個`, {
+      ...TextStyles.body,
+      fontSize: '11px',
+      color: '#ffffff',
+    });
+    this.recipeDetailPanel.add(countText);
+
+    // 効果説明
+    if (recipe.description) {
+      const descText = this.scene.add.text(10, 140, recipe.description, {
+        ...TextStyles.body,
+        fontSize: '10px',
+        color: '#888888',
+        wordWrap: { width: 180 },
+      });
+      this.recipeDetailPanel.add(descText);
+    }
+
+    this.recipeDetailPanel.setVisible(true);
+  }
+
+  // =====================================================
+  // 選択ハイライト
+  // =====================================================
+
+  private clearRecipeSelection(): void {
+    if (this.selectedRecipeHighlight) {
+      this.scene.tweens.killTweensOf(this.selectedRecipeHighlight);
+      this.selectedRecipeHighlight.destroy();
+      this.selectedRecipeHighlight = undefined;
+    }
+  }
+
+  private showRecipeHighlight(card: RecipeCard): void {
+    // HandContainerから対応するカードの位置を取得する
+    const cardIndex = this.recipeCards.indexOf(card);
+    if (cardIndex < 0) return;
+
+    const { HAND_AREA } = AlchemyContainerLayout;
+    const cardWidth = 90;
+    const spacing = 10;
+    const x = HAND_AREA.X + cardIndex * (cardWidth + spacing) + cardWidth / 2;
+    const y = HAND_AREA.Y + 70;
+
+    this.selectedRecipeHighlight = this.scene.add.graphics();
+    this.selectedRecipeHighlight.lineStyle(3, Colors.accent);
+    this.selectedRecipeHighlight.strokeRoundedRect(
+      x - cardWidth / 2 - 5,
+      y - 70 - 5,
+      cardWidth + 10,
+      140 + 10,
+      10
+    );
+
+    // グロー効果
+    this.scene.tweens.add({
+      targets: this.selectedRecipeHighlight,
+      alpha: 0.5,
+      duration: 500,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+
+    this.container.add(this.selectedRecipeHighlight);
+  }
+
+  // =====================================================
+  // 確認ダイアログ
+  // =====================================================
+
+  private showConfirmDialog(
+    message: string,
+    onConfirm: () => void,
+    onCancel: () => void
+  ): void {
+    if (this.confirmDialogContainer) {
+      this.confirmDialogContainer.destroy();
+    }
+
+    this.confirmDialogContainer = this.scene.add.container(0, 0);
+    this.confirmDialogContainer.setDepth(300);
+
+    // オーバーレイ
+    const overlay = this.scene.add.graphics();
+    overlay.fillStyle(0x000000, 0.7);
+    overlay.fillRect(0, 0, this.width, this.height);
+    this.confirmDialogContainer.add(overlay);
+
+    // ダイアログ
+    const panelWidth = 300;
+    const panelHeight = 150;
+    const panelX = (this.width - panelWidth) / 2;
+    const panelY = (this.height - panelHeight) / 2;
+
+    const panel = this.scene.add.graphics();
+    panel.fillStyle(Colors.panelBackground, 1);
+    panel.fillRoundedRect(panelX, panelY, panelWidth, panelHeight, 12);
+    panel.lineStyle(2, Colors.panelBorder);
+    panel.strokeRoundedRect(panelX, panelY, panelWidth, panelHeight, 12);
+    this.confirmDialogContainer.add(panel);
+
+    // メッセージ
+    const text = this.scene.add
+      .text(this.width / 2, panelY + 40, message, {
+        ...TextStyles.body,
+        fontSize: '13px',
+        align: 'center',
+      })
+      .setOrigin(0.5, 0);
+    this.confirmDialogContainer.add(text);
+
+    // キャンセルボタン
+    const cancelBtn = this.createButton(
+      this.width / 2 - 50,
+      panelY + panelHeight - 40,
+      'キャンセル',
+      () => {
+        this.confirmDialogContainer?.destroy();
+        this.confirmDialogContainer = undefined;
+        onCancel();
+      },
+      false
+    );
+    this.confirmDialogContainer.add(cancelBtn);
+
+    // OKボタン
+    const confirmBtn = this.createButton(
+      this.width / 2 + 50,
+      panelY + panelHeight - 40,
+      'OK',
+      () => {
+        this.confirmDialogContainer?.destroy();
+        this.confirmDialogContainer = undefined;
+        onConfirm();
+      },
+      true
+    );
+    this.confirmDialogContainer.add(confirmBtn);
+
+    this.container.add(this.confirmDialogContainer);
+  }
+
+  // =====================================================
+  // キーボード操作
+  // =====================================================
+
+  private setupKeyboardControls(): void {
+    // 左キーで前のレシピ選択
+    this.scene.input.keyboard?.on('keydown-LEFT', () => {
+      if (!this.container.visible) return;
+      this.selectPreviousRecipe();
+    });
+
+    // 右キーで次のレシピ選択
+    this.scene.input.keyboard?.on('keydown-RIGHT', () => {
+      if (!this.container.visible) return;
+      this.selectNextRecipe();
+    });
+
+    // Enterで調合
+    this.scene.input.keyboard?.on('keydown-ENTER', () => {
+      if (!this.container.visible) return;
+      this.craft();
+    });
+
+    // Escapeでスキップ
+    this.scene.input.keyboard?.on('keydown-ESC', () => {
+      if (!this.container.visible) return;
+      this.handleSkip();
+    });
+  }
+
+  /**
+   * 前のレシピを選択する
+   */
+  selectPreviousRecipe(): void {
+    if (this.recipeCards.length === 0) return;
+
+    const newIndex = Math.max(0, this.currentRecipeIndex - 1);
+    if (newIndex !== this.currentRecipeIndex || this.currentRecipeIndex < 0) {
+      this.currentRecipeIndex = newIndex < 0 ? 0 : newIndex;
+      this.selectRecipe(this.recipeCards[this.currentRecipeIndex]);
+    }
+  }
+
+  /**
+   * 次のレシピを選択する
+   */
+  selectNextRecipe(): void {
+    if (this.recipeCards.length === 0) return;
+
+    const newIndex = Math.min(
+      this.recipeCards.length - 1,
+      this.currentRecipeIndex + 1
+    );
+    if (newIndex !== this.currentRecipeIndex) {
+      this.currentRecipeIndex = newIndex;
+      this.selectRecipe(this.recipeCards[this.currentRecipeIndex]);
+    }
+  }
+
+  private removeKeyboardControls(): void {
+    this.scene.input.keyboard?.off('keydown-LEFT');
+    this.scene.input.keyboard?.off('keydown-RIGHT');
+    this.scene.input.keyboard?.off('keydown-ENTER');
+    this.scene.input.keyboard?.off('keydown-ESC');
+  }
+
+  // =====================================================
   // レシピカード管理
   // =====================================================
 
   setRecipeCards(cards: RecipeCard[]): void {
     this.recipeCards = cards;
     this.selectedRecipe = null;
+    this.previousRecipe = null;
+    this.currentRecipeIndex = -1;
 
     // HandContainerに設定
     // HandContainerはCard型を受け取るが、RecipeCardはCardの一種
@@ -210,6 +518,7 @@ export class AlchemyContainer
 
     this.updateMaterialOptions();
     this.updatePreview();
+    this.updateRecipeDetailPanel();
     this.updateCraftButtonState();
   }
 
@@ -219,16 +528,61 @@ export class AlchemyContainer
 
   selectRecipe(card: RecipeCard): void {
     this.handleRecipeSelect(card);
-    this.handContainer?.selectCard(card as any);
   }
 
   private handleRecipeSelect(card: RecipeCard): void {
+    // 同じレシピを再選択した場合は何もしない
+    if (this.selectedRecipe === card) {
+      return;
+    }
+
+    // レシピが変わり、かつ素材が選択されている場合は確認ダイアログ
+    if (
+      this.selectedRecipe !== null &&
+      this.selectedRecipe !== card &&
+      this.selectedMaterials.length > 0
+    ) {
+      this.showConfirmDialog(
+        'レシピを変更しますか？\n選択中の素材はリセットされます。',
+        () => this.executeRecipeChange(card),
+        () => {
+          // キャンセル：前のレシピを再選択
+          this.handContainer?.selectCard(this.selectedRecipe as any);
+        }
+      );
+    } else {
+      this.executeRecipeChange(card);
+    }
+  }
+
+  private executeRecipeChange(card: RecipeCard): void {
+    const isFirstSelection = this.selectedRecipe === null;
+    this.previousRecipe = this.selectedRecipe;
     this.selectedRecipe = card;
+    this.currentRecipeIndex = this.recipeCards.indexOf(card);
+
+    // 選択ハイライトを更新
+    this.clearRecipeSelection();
+    this.showRecipeHighlight(card);
+
+    // 素材リセット
     this.clearMaterials();
+
+    // 更新
+    this.handContainer?.selectCard(card as any);
     this.updateMaterialOptions();
+    this.updateRecipeDetailPanel();
     this.updatePreview();
     this.updateCraftButtonState();
+
+    // 初回選択はselectedイベントのみ、変更時はchangedイベントも発火
     this.eventBus.emit('alchemy:recipe:selected' as any, { recipe: card });
+    if (!isFirstSelection) {
+      this.eventBus.emit('alchemy:recipe:changed' as any, {
+        previousRecipe: this.previousRecipe,
+        newRecipe: card,
+      });
+    }
   }
 
   // =====================================================
@@ -307,18 +661,18 @@ export class AlchemyContainer
       return materials;
     }
 
-    // 要求カテゴリを取得
-    const requiredCategories = requiredMaterials.map((rm) => rm.category);
+    // 要求素材IDを取得
+    const requiredMaterialIds = requiredMaterials.map((rm) => rm.materialId);
 
-    if (requiredCategories.length === 0) {
+    if (requiredMaterialIds.length === 0) {
       return materials;
     }
 
-    // カテゴリでフィルタリング
+    // 素材IDでフィルタリング
     return materials.filter((m) => {
-      // 素材のカテゴリが要求カテゴリに含まれるか確認
-      return requiredCategories.some(
-        (category) => m.category === category || category === 'any'
+      // 素材のIDが要求素材IDに含まれるか確認
+      return requiredMaterialIds.some(
+        (materialId) => m.id === materialId || materialId === 'any'
       );
     });
   }
@@ -427,11 +781,12 @@ export class AlchemyContainer
   }
 
   private predictTraits(materials: Material[]): string[] {
-    // 素材の特性から継承（簡易版）
+    // 素材の属性から継承（簡易版）
     const traits: string[] = [];
     materials.forEach((m) => {
-      if (m.traits) {
-        traits.push(...m.traits);
+      const attributes = m.getAttributes();
+      if (attributes && attributes.length > 0) {
+        traits.push(...attributes.map((attr) => String(attr)));
       }
     });
     // 重複を除去して最大3つ
@@ -616,7 +971,7 @@ export class AlchemyContainer
       // 成功メッセージ
       const successText = this.scene.add
         .text(centerX, centerY - 20, `✨ ${result.craftedItemName}を調合！`, {
-          ...TextStyles.heading,
+          ...TextStyles.titleSmall,
           fontSize: '22px',
           color: '#ffd700',
         })
@@ -699,6 +1054,10 @@ export class AlchemyContainer
   // =====================================================
 
   destroy(): void {
+    this.removeKeyboardControls();
+    this.clearRecipeSelection();
+    this.confirmDialogContainer?.destroy();
+    this.recipeDetailPanel?.destroy();
     this.handContainer?.destroy();
     this.materialOptionView?.destroy();
     this.previewPanel?.destroy();
