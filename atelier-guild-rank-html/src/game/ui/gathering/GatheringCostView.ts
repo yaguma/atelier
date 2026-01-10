@@ -1,84 +1,20 @@
-# TASK-0221: GatheringCostView実装
+/**
+ * GatheringCostView 実装
+ *
+ * TASK-0221: GatheringCostView実装
+ * 採取フェーズでのAPコスト表示コンポーネント
+ */
 
-**タスクID**: TASK-0221
-**タスクタイプ**: TDD
-**推定工数**: 4時間
-**フェーズ**: Phase 3 - フェーズコンテナ・メイン画面実装
-**信頼性レベル**: 🔵 *設計書に記載*
-
-## 関連文書
-
-- **概要**: [overview.md](./overview.md)
-- **UI設計**: [ui-design/overview.md](../../design/atelier-guild-rank-phaser/ui-design/overview.md)
-
-## タスク概要
-
-採取フェーズでのAPコスト表示コンポーネントを実装する。現在のAPと必要APを視覚的に表示する。
-
-## 依存タスク
-
-- **前提タスク**: TASK-0173
-- **後続タスク**: TASK-0222
-
-## 完了条件
-
-- [x] IGatheringCostViewインターフェースが定義されている
-- [x] 必要APが表示される
-- [x] 現在のAPと比較表示される
-- [x] AP不足時に警告表示される
-- [x] コスト変更時にアニメーションがある
-
----
-
-## 実装詳細
-
-### 1. IGatheringCostViewインターフェース 🔵
-
-**信頼性**: 🔵 *コンポーネント設計*
-
-**実装ファイル**: `src/presentation/phaser/ui/gathering/IGatheringCostView.ts`
-
-```typescript
 import Phaser from 'phaser';
-
-export interface GatheringCostViewOptions {
-  x?: number;
-  y?: number;
-  currentAP?: number;
-  maxAP?: number;
-}
-
-export interface IGatheringCostView {
-  readonly container: Phaser.GameObjects.Container;
-
-  // AP設定
-  setCurrentAP(current: number, max: number): void;
-  setRequiredAP(cost: number): void;
-
-  // 状態チェック
-  canAfford(): boolean;
-  getRequiredAP(): number;
-
-  // 表示制御
-  setVisible(visible: boolean): void;
-
-  // 破棄
-  destroy(): void;
-}
-```
-
-### 2. GatheringCostView実装 🔵
-
-**信頼性**: 🔵 *APコスト表示*
-
-**実装ファイル**: `src/presentation/phaser/ui/gathering/GatheringCostView.ts`
-
-```typescript
-import Phaser from 'phaser';
-import { IGatheringCostView, GatheringCostViewOptions } from './IGatheringCostView';
+import type { IGatheringCostView, GatheringCostViewOptions } from './IGatheringCostView';
 import { Colors } from '../../config/ColorPalette';
 import { TextStyles } from '../../config/TextStyles';
 
+/**
+ * GatheringCostViewクラス
+ *
+ * 採取フェーズで必要APと現在APを視覚的に表示する。
+ */
 export class GatheringCostView implements IGatheringCostView {
   public readonly container: Phaser.GameObjects.Container;
 
@@ -89,25 +25,26 @@ export class GatheringCostView implements IGatheringCostView {
 
   // UI要素
   private background!: Phaser.GameObjects.Graphics;
-  private apIcon!: Phaser.GameObjects.Text;
-  private costLabel!: Phaser.GameObjects.Text;
   private costValue!: Phaser.GameObjects.Text;
-  private remainingLabel!: Phaser.GameObjects.Text;
   private remainingValue!: Phaser.GameObjects.Text;
   private warningText?: Phaser.GameObjects.Text;
   private apGauge!: Phaser.GameObjects.Graphics;
 
-  constructor(scene: Phaser.Scene, options: GatheringCostViewOptions = {}) {
-    this.scene = scene;
+  constructor(options: GatheringCostViewOptions) {
+    this.scene = options.scene;
     this.currentAP = options.currentAP ?? 0;
     this.maxAP = options.maxAP ?? 10;
 
     const x = options.x ?? 0;
     const y = options.y ?? 0;
 
-    this.container = scene.add.container(x, y);
+    this.container = this.scene.add.container(x, y);
     this.create();
   }
+
+  // =====================================================
+  // 初期化
+  // =====================================================
 
   private create(): void {
     // 背景
@@ -119,40 +56,46 @@ export class GatheringCostView implements IGatheringCostView {
     this.container.add(this.background);
 
     // タイトル
-    const title = this.scene.add.text(100, 15, '⚡ 消費AP', {
-      ...TextStyles.body,
-      fontSize: '14px',
-      fontStyle: 'bold',
-    }).setOrigin(0.5, 0);
+    const title = this.scene.add
+      .text(100, 15, '⚡ 消費AP', {
+        ...TextStyles.body,
+        fontSize: '14px',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5, 0);
     this.container.add(title);
 
     // 必要APコスト
-    this.costLabel = this.scene.add.text(20, 45, '必要:', {
+    const costLabel = this.scene.add.text(20, 45, '必要:', {
       ...TextStyles.body,
       fontSize: '13px',
     });
-    this.container.add(this.costLabel);
+    this.container.add(costLabel);
 
-    this.costValue = this.scene.add.text(180, 45, '0 AP', {
-      ...TextStyles.body,
-      fontSize: '16px',
-      fontStyle: 'bold',
-    }).setOrigin(1, 0);
+    this.costValue = this.scene.add
+      .text(180, 45, '0 AP', {
+        ...TextStyles.body,
+        fontSize: '16px',
+        fontStyle: 'bold',
+      })
+      .setOrigin(1, 0);
     this.container.add(this.costValue);
 
     // 残りAP
-    this.remainingLabel = this.scene.add.text(20, 70, '残り:', {
+    const remainingLabel = this.scene.add.text(20, 70, '残り:', {
       ...TextStyles.body,
       fontSize: '13px',
       color: '#aaaaaa',
     });
-    this.container.add(this.remainingLabel);
+    this.container.add(remainingLabel);
 
-    this.remainingValue = this.scene.add.text(180, 70, '0 AP', {
-      ...TextStyles.body,
-      fontSize: '13px',
-      color: '#aaaaaa',
-    }).setOrigin(1, 0);
+    this.remainingValue = this.scene.add
+      .text(180, 70, '0 AP', {
+        ...TextStyles.body,
+        fontSize: '13px',
+        color: '#aaaaaa',
+      })
+      .setOrigin(1, 0);
     this.container.add(this.remainingValue);
 
     // APゲージ
@@ -160,6 +103,10 @@ export class GatheringCostView implements IGatheringCostView {
     this.container.add(this.apGauge);
     this.updateAPGauge();
   }
+
+  // =====================================================
+  // AP設定
+  // =====================================================
 
   setCurrentAP(current: number, max: number): void {
     this.currentAP = current;
@@ -178,6 +125,10 @@ export class GatheringCostView implements IGatheringCostView {
     }
   }
 
+  // =====================================================
+  // 状態チェック
+  // =====================================================
+
   canAfford(): boolean {
     return this.currentAP >= this.requiredAP;
   }
@@ -185,6 +136,10 @@ export class GatheringCostView implements IGatheringCostView {
   getRequiredAP(): number {
     return this.requiredAP;
   }
+
+  // =====================================================
+  // 表示更新
+  // =====================================================
 
   private updateDisplay(): void {
     // コスト表示
@@ -230,9 +185,8 @@ export class GatheringCostView implements IGatheringCostView {
     this.apGauge.fillRoundedRect(gaugeX, gaugeY, gaugeWidth, gaugeHeight, 4);
 
     // 消費後の残りAP
-    const remainingRatio = this.maxAP > 0
-      ? Math.max(0, (this.currentAP - this.requiredAP) / this.maxAP)
-      : 0;
+    const remainingRatio =
+      this.maxAP > 0 ? Math.max(0, (this.currentAP - this.requiredAP) / this.maxAP) : 0;
     const remainingWidth = gaugeWidth * remainingRatio;
 
     if (remainingWidth > 0) {
@@ -257,19 +211,20 @@ export class GatheringCostView implements IGatheringCostView {
     this.apGauge.strokeRoundedRect(gaugeX, gaugeY, gaugeWidth, gaugeHeight, 4);
   }
 
+  // =====================================================
+  // 警告表示
+  // =====================================================
+
   private showWarning(): void {
     if (this.warningText) return;
 
-    this.warningText = this.scene.add.text(
-      100,
-      130,
-      '⚠️ APが不足しています',
-      {
+    this.warningText = this.scene.add
+      .text(100, 130, '⚠️ APが不足しています', {
         ...TextStyles.body,
         fontSize: '11px',
         color: '#ff4444',
-      }
-    ).setOrigin(0.5, 0);
+      })
+      .setOrigin(0.5, 0);
     this.container.add(this.warningText);
 
     // 点滅アニメーション
@@ -290,6 +245,10 @@ export class GatheringCostView implements IGatheringCostView {
     }
   }
 
+  // =====================================================
+  // アニメーション
+  // =====================================================
+
   private animateCostChange(): void {
     // コスト値のパルスアニメーション
     this.scene.tweens.add({
@@ -302,65 +261,20 @@ export class GatheringCostView implements IGatheringCostView {
     });
   }
 
+  // =====================================================
+  // 表示制御
+  // =====================================================
+
   setVisible(visible: boolean): void {
     this.container.setVisible(visible);
   }
+
+  // =====================================================
+  // 破棄
+  // =====================================================
 
   destroy(): void {
     this.hideWarning();
     this.container.destroy();
   }
 }
-```
-
----
-
-## 単体テスト要件
-
-### テストケース1: コスト表示 🔵
-
-**Given**: GatheringCostViewがある
-**When**: setRequiredAP(3)を呼ぶ
-**Then**: "3 AP"が表示される
-
-### テストケース2: AP不足警告 🔵
-
-**Given**: currentAP=2
-**When**: setRequiredAP(5)を呼ぶ
-**Then**: 警告テキストが表示される
-
-### テストケース3: 残りAP計算 🔵
-
-**Given**: currentAP=10, requiredAP=3
-**When**: 表示を確認
-**Then**: 残りAPが7と表示される
-
----
-
-## 実装手順
-
-1. `/tsumiki:tdd-requirements TASK-0221` - 詳細要件定義
-2. `/tsumiki:tdd-testcases` - テストケース作成
-3. `/tsumiki:tdd-red` - テスト実装（失敗）
-4. `/tsumiki:tdd-green` - 最小実装
-5. `/tsumiki:tdd-refactor` - リファクタリング
-6. `/tsumiki:tdd-verify-complete` - 品質確認
-
----
-
-## 注意事項
-
-- APゲージの視覚的表現
-- 警告の目立たせ方
-- コスト変更時のアニメーション
-
----
-
-## 信頼性レベルサマリー
-
-- **総項目数**: 2項目
-- 🔵 **青信号**: 2項目 (100%)
-- 🟡 **黄信号**: 0項目 (0%)
-- 🔴 **赤信号**: 0項目 (0%)
-
-**品質評価**: 高品質
