@@ -67,6 +67,12 @@ export class QuestAcceptContainer extends BasePhaseContainer {
   /** 受注済み依頼IDセット */
   private acceptedQuestIds: Set<string> = new Set();
 
+  /** 現在の受注済み依頼数 */
+  private currentAcceptedCount: number = 0;
+
+  /** 受注上限 */
+  private maxAcceptedQuests: number = 5;
+
   // UI要素
   private questListContainer!: Phaser.GameObjects.Container;
   private questPanel!: QuestPanel;
@@ -182,6 +188,63 @@ export class QuestAcceptContainer extends BasePhaseContainer {
   setAcceptedQuestIds(ids: string[]): void {
     this.acceptedQuestIds = new Set(ids);
     this.updateQuestList();
+  }
+
+  /**
+   * 受注済み依頼数と上限を設定する
+   * @param count 現在の受注済み数
+   * @param max 上限（省略時は現在値を維持）
+   */
+  setAcceptedQuestCount(count: number, max?: number): void {
+    this.currentAcceptedCount = count;
+    if (max !== undefined) {
+      this.maxAcceptedQuests = max;
+    }
+  }
+
+  /**
+   * 現在の受注済み依頼数を取得する
+   * @returns 受注済み数
+   */
+  getAcceptedQuestCount(): number {
+    return this.currentAcceptedCount;
+  }
+
+  /**
+   * 受注上限を取得する
+   * @returns 上限数
+   */
+  getMaxAcceptedQuests(): number {
+    return this.maxAcceptedQuests;
+  }
+
+  /**
+   * 追加の依頼を受注できるか判定する
+   * @returns 受注可能ならtrue
+   */
+  canAcceptMoreQuests(): boolean {
+    return this.currentAcceptedCount < this.maxAcceptedQuests;
+  }
+
+  /**
+   * 依頼の受注を実行する（テスト用の同期版）
+   * UIダイアログを介さずに直接受注処理を行う
+   * @param quest 受注する依頼
+   */
+  executeQuestAcceptDirect(quest: Quest): void {
+    // EventBusでイベント発火
+    this.eventBus.emit('quest:accept', { quest });
+
+    // 状態更新
+    this.acceptedQuestIds.add(quest.id);
+    this.currentAcceptedCount++;
+    this.updateQuestList();
+    this.questPanel?.setQuest(null);
+
+    // 完了コールバック
+    if (this.onQuestAccepted) {
+      this.onQuestAccepted(quest);
+    }
   }
 
   /**

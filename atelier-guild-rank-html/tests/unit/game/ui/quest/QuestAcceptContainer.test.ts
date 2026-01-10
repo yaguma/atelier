@@ -3,6 +3,7 @@
  *
  * TASK-0216: QuestAcceptContainer設計のテスト
  * TASK-0217: QuestAcceptContainer依頼表示実装のテスト
+ * TASK-0218: QuestAcceptContainer受注操作実装のテスト
  * 依頼受注フェーズのコンテナをテストする
  */
 
@@ -494,6 +495,75 @@ describe('QuestAcceptContainer', () => {
       expect(result.length).toBe(2);
       expect(result[0].deadline).toBe(5);
       expect(result[1].deadline).toBe(8);
+    });
+  });
+
+  // =====================================================
+  // TASK-0218: 受注操作実装テスト
+  // =====================================================
+
+  describe('受注上限', () => {
+    it('受注上限を設定できる', () => {
+      container.setAcceptedQuestCount(3, 5);
+      expect(container.getAcceptedQuestCount()).toBe(3);
+      expect(container.getMaxAcceptedQuests()).toBe(5);
+    });
+
+    it('受注上限に達していない場合、追加受注できる', () => {
+      container.setAcceptedQuestCount(2, 5);
+      expect(container.canAcceptMoreQuests()).toBe(true);
+    });
+
+    it('受注上限に達している場合、追加受注できない', () => {
+      container.setAcceptedQuestCount(5, 5);
+      expect(container.canAcceptMoreQuests()).toBe(false);
+    });
+
+    it('受注上限を超えている場合も追加受注できない', () => {
+      container.setAcceptedQuestCount(6, 5);
+      expect(container.canAcceptMoreQuests()).toBe(false);
+    });
+  });
+
+  describe('依頼受注イベント', () => {
+    it('依頼受注時にquest:acceptイベントが発火する', () => {
+      const callback = vi.fn();
+      eventBus.on('quest:accept', callback);
+
+      const quest = createMockQuest({ id: 'quest-1' });
+      container.setAvailableQuests([quest]);
+      container.selectQuest(quest);
+      container.executeQuestAcceptDirect(quest);
+
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          quest: quest,
+        })
+      );
+    });
+
+    it('受注後に受注済みカウントが増加する', () => {
+      container.setAcceptedQuestCount(2, 5);
+      const quest = createMockQuest({ id: 'quest-1' });
+
+      container.setAvailableQuests([quest]);
+      container.executeQuestAcceptDirect(quest);
+
+      expect(container.getAcceptedQuestCount()).toBe(3);
+    });
+
+    it('受注後に該当依頼が除外リストに追加される', () => {
+      const quests = [
+        createMockQuest({ id: 'quest-1' }),
+        createMockQuest({ id: 'quest-2' }),
+      ];
+
+      container.setAvailableQuests(quests);
+      container.executeQuestAcceptDirect(quests[0]);
+
+      const displayed = container.getDisplayQuests();
+      expect(displayed.length).toBe(1);
+      expect(displayed[0].id).toBe('quest-2');
     });
   });
 });
