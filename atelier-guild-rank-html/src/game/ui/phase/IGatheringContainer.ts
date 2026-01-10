@@ -66,9 +66,19 @@ export interface IGatheringContainer extends IPhaseContainer {
   /** 合計APコストを取得する */
   getTotalAPCost(): number;
 
+  // 選択上限
+  /** 選択上限を設定する */
+  setMaxSelections(max: number): void;
+  /** 選択上限を取得する */
+  getMaxSelections(): number;
+
   // 操作
   /** 採取を確定する */
-  confirmGathering(): void;
+  confirmGathering(): void | Promise<void>;
   /** 選択をリセットする */
   resetSelection(): void;
+
+  // 状態
+  /** 処理中かどうか */
+  getIsProcessing(): boolean;
 }

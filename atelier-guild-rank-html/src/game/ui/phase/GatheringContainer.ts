@@ -51,6 +51,14 @@ export class GatheringContainer extends BasePhaseContainer implements IGathering
   // 素材マスターデータ
   private materialMasterData?: Map<string, Material>;
 
+  // 選択管理
+  private maxSelections: number = 3;
+  private selectionLimitText?: Phaser.GameObjects.Text;
+  private apWarningText?: Phaser.GameObjects.Text;
+
+  // 処理中フラグ
+  private isProcessing: boolean = false;
+
   constructor(options: GatheringContainerOptions) {
     super({
       scene: options.scene,
@@ -281,13 +289,61 @@ export class GatheringContainer extends BasePhaseContainer implements IGathering
   private handleMaterialSelect(material: Material): void {
     this.updateCostDisplay();
     this.updateConfirmButtonState();
-    this.eventBus.emit('gathering:material:selected' as any, { material });
+
+    const selectedCount = this.getSelectedMaterials().length;
+
+    // 選択上限チェック
+    if (selectedCount >= this.maxSelections) {
+      this.showSelectionLimitReached();
+    }
+
+    this.eventBus.emit('gathering:material:selected' as any, {
+      material,
+      totalSelected: selectedCount,
+      maxSelections: this.maxSelections,
+    });
   }
 
   private handleMaterialDeselect(material: Material): void {
     this.updateCostDisplay();
     this.updateConfirmButtonState();
-    this.eventBus.emit('gathering:material:deselected' as any, { material });
+
+    // 上限メッセージを消す
+    this.hideSelectionLimitReached();
+
+    const selectedCount = this.getSelectedMaterials().length;
+
+    this.eventBus.emit('gathering:material:deselected' as any, {
+      material,
+      totalSelected: selectedCount,
+      maxSelections: this.maxSelections,
+    });
+  }
+
+  /**
+   * 選択上限に達したことを表示
+   */
+  private showSelectionLimitReached(): void {
+    if (this.selectionLimitText) return;
+
+    const { MATERIAL_AREA } = GatheringContainerLayout;
+    this.selectionLimitText = this.scene.add.text(
+      MATERIAL_AREA.X,
+      MATERIAL_AREA.Y + MATERIAL_AREA.HEIGHT + 10,
+      `選択上限（${this.maxSelections}個）に達しました`,
+      { ...TextStyles.body, fontSize: '12px', color: '#ffaa00' }
+    );
+    this.container.add(this.selectionLimitText);
+  }
+
+  /**
+   * 選択上限メッセージを非表示
+   */
+  private hideSelectionLimitReached(): void {
+    if (this.selectionLimitText) {
+      this.selectionLimitText.destroy();
+      this.selectionLimitText = undefined;
+    }
   }
 
   // =====================================================
@@ -297,6 +353,51 @@ export class GatheringContainer extends BasePhaseContainer implements IGathering
   private updateCostDisplay(): void {
     const totalCost = this.getTotalAPCost();
     this.costView?.setRequiredAP(totalCost);
+
+    // AP不足チェック
+    if (totalCost > this.currentAP && totalCost > 0) {
+      this.showAPWarning();
+    } else {
+      this.hideAPWarning();
+    }
+  }
+
+  /**
+   * AP不足警告を表示
+   */
+  private showAPWarning(): void {
+    if (this.apWarningText) return;
+
+    const shortage = this.getTotalAPCost() - this.currentAP;
+    const { SIDE_PANEL } = GatheringContainerLayout;
+
+    this.apWarningText = this.scene.add.text(
+      SIDE_PANEL.X,
+      SIDE_PANEL.Y + 140,
+      `⚠️ AP ${shortage} 不足`,
+      { ...TextStyles.body, fontSize: '12px', color: '#ff4444' }
+    );
+    this.container.add(this.apWarningText);
+
+    // 点滅アニメーション
+    this.scene.tweens.add({
+      targets: this.apWarningText,
+      alpha: 0.5,
+      duration: 500,
+      yoyo: true,
+      repeat: -1,
+    });
+  }
+
+  /**
+   * AP不足警告を非表示
+   */
+  private hideAPWarning(): void {
+    if (this.apWarningText) {
+      this.scene.tweens.killTweensOf(this.apWarningText);
+      this.apWarningText.destroy();
+      this.apWarningText = undefined;
+    }
   }
 
   private updateConfirmButtonState(): void {
@@ -334,31 +435,232 @@ export class GatheringContainer extends BasePhaseContainer implements IGathering
   // 操作
   // =====================================================
 
-  confirmGathering(): void {
-    if (!this.canConfirmGathering()) return;
-    if (!this.gatheringCard) return;
+  /**
+   * 選択上限を設定
+   */
+  setMaxSelections(max: number): void {
+    this.maxSelections = max;
+    this.materialOptionView?.setMaxSelections(max);
+  }
 
+  /**
+   * 選択上限を取得
+   */
+  getMaxSelections(): number {
+    return this.maxSelections;
+  }
+
+  /**
+   * 処理中かどうか
+   */
+  getIsProcessing(): boolean {
+    return this.isProcessing;
+  }
+
+  async confirmGathering(): Promise<void> {
+    if (!this.canConfirmGathering()) {
+      this.showCannotConfirmFeedback();
+      return;
+    }
+    if (!this.gatheringCard) return;
+    if (this.isProcessing) return;
+
+    // 操作を無効化
+    this.isProcessing = true;
+    this.setEnabled(false);
+
+    // 確定アニメーション
+    await this.playGatheringAnimation();
+
+    // 結果生成
     const result: GatheringResult = {
       selectedMaterials: this.getSelectedMaterials(),
       totalAPCost: this.getTotalAPCost(),
       gatheringCard: this.gatheringCard,
     };
 
+    // EventBus発火
     this.eventBus.emit('gathering:confirm' as any, result);
 
+    // 成功メッセージ
+    await this.showGatheringSuccess(result);
+
+    // 処理完了
+    this.isProcessing = false;
+
+    // コールバック
     if (this.onGatheringComplete) {
       this.onGatheringComplete(result);
     }
   }
 
+  /**
+   * 確定できないフィードバック（ボタン揺らし）
+   */
+  private showCannotConfirmFeedback(): void {
+    if (this.confirmButton) {
+      const originalX = this.confirmButton.x;
+      this.scene.tweens.add({
+        targets: this.confirmButton,
+        x: originalX + 5,
+        duration: 50,
+        yoyo: true,
+        repeat: 3,
+        onComplete: () => {
+          this.confirmButton!.x = originalX;
+        },
+      });
+    }
+  }
+
+  /**
+   * 採取アニメーション
+   */
+  private async playGatheringAnimation(): Promise<void> {
+    return new Promise((resolve) => {
+      const selectedMaterials = this.getSelectedMaterials();
+      const centerX = GatheringContainerLayout.WIDTH / 2;
+      const centerY = GatheringContainerLayout.HEIGHT / 2;
+
+      if (selectedMaterials.length === 0) {
+        resolve();
+        return;
+      }
+
+      // 素材が中央に集まるアニメーション
+      const particles: Phaser.GameObjects.Text[] = [];
+
+      selectedMaterials.forEach((material, index) => {
+        const startX = 260 + 50 + (index % 3) * 100;
+        const startY = 100 + Math.floor(index / 3) * 80;
+
+        const emoji = this.getMaterialEmoji(material);
+        const particle = this.scene.add
+          .text(startX, startY, emoji, {
+            fontSize: '24px',
+          })
+          .setOrigin(0.5);
+
+        this.container.add(particle);
+        particles.push(particle);
+
+        // 中央に集まる
+        this.scene.tweens.add({
+          targets: particle,
+          x: centerX,
+          y: centerY,
+          scaleX: 0.5,
+          scaleY: 0.5,
+          duration: 500,
+          delay: index * 100,
+          ease: 'Power2.easeIn',
+        });
+      });
+
+      // 集合後のエフェクト
+      this.scene.time.delayedCall(
+        500 + selectedMaterials.length * 100,
+        () => {
+          // 光のバースト
+          const burst = this.scene.add.graphics();
+          burst.fillStyle(0x00ff00, 0.5);
+          burst.fillCircle(centerX, centerY, 10);
+          this.container.add(burst);
+
+          this.scene.tweens.add({
+            targets: burst,
+            scaleX: 5,
+            scaleY: 5,
+            alpha: 0,
+            duration: 300,
+            ease: 'Power2',
+            onComplete: () => {
+              burst.destroy();
+              particles.forEach((p) => p.destroy());
+              resolve();
+            },
+          });
+        }
+      );
+    });
+  }
+
+  /**
+   * 採取成功メッセージ表示
+   */
+  private async showGatheringSuccess(result: GatheringResult): Promise<void> {
+    return new Promise((resolve) => {
+      const centerX = GatheringContainerLayout.WIDTH / 2;
+      const centerY = GatheringContainerLayout.HEIGHT / 2;
+
+      // 成功メッセージ
+      const successText = this.scene.add
+        .text(
+          centerX,
+          centerY,
+          `✨ ${result.selectedMaterials.length}個の素材を採取！`,
+          {
+            ...TextStyles.heading,
+            fontSize: '24px',
+            color: '#00ff00',
+          }
+        )
+        .setOrigin(0.5);
+      this.container.add(successText);
+
+      // AP消費表示
+      const apText = this.scene.add
+        .text(centerX, centerY + 40, `-${result.totalAPCost} AP`, {
+          ...TextStyles.body,
+          fontSize: '16px',
+          color: '#ffaa00',
+        })
+        .setOrigin(0.5);
+      this.container.add(apText);
+
+      // フェードアウト
+      this.scene.tweens.add({
+        targets: [successText, apText],
+        y: '-=30',
+        alpha: 0,
+        duration: 1500,
+        ease: 'Power2',
+        onComplete: () => {
+          successText.destroy();
+          apText.destroy();
+          resolve();
+        },
+      });
+    });
+  }
+
+  /**
+   * 素材から絵文字を取得
+   */
+  private getMaterialEmoji(material: { attributes?: string[] }): string {
+    const attrs = material.attributes ?? [];
+
+    if (attrs.includes('fire')) return '🔥';
+    if (attrs.includes('water')) return '💧';
+    if (attrs.includes('earth')) return '🌍';
+    if (attrs.includes('wind')) return '💨';
+    if (attrs.includes('light')) return '✨';
+    if (attrs.includes('dark')) return '🌙';
+
+    return '🌿';
+  }
+
   resetSelection(): void {
     this.materialOptionView?.clearSelection();
+    this.hideSelectionLimitReached();
+    this.hideAPWarning();
     this.updateCostDisplay();
     this.updateConfirmButtonState();
     this.eventBus.emit('gathering:reset' as any, {});
   }
 
   private handleSkip(): void {
+    if (this.isProcessing) return;
     this.eventBus.emit('gathering:skip' as any, {});
     if (this.onSkip) {
       this.onSkip();
@@ -370,6 +672,8 @@ export class GatheringContainer extends BasePhaseContainer implements IGathering
   // =====================================================
 
   destroy(): void {
+    this.hideSelectionLimitReached();
+    this.hideAPWarning();
     this.materialOptionView?.destroy();
     this.costView?.destroy();
     super.destroy();
