@@ -1,129 +1,35 @@
-# TASK-0220: MaterialOptionView設計・実装
+/**
+ * MaterialOptionView 実装
+ *
+ * TASK-0220: MaterialOptionView設計・実装
+ * 採取フェーズで素材選択肢をグリッド表示するコンポーネント
+ */
 
-**タスクID**: TASK-0220
-**タスクタイプ**: TDD
-**推定工数**: 4時間
-**フェーズ**: Phase 3 - フェーズコンテナ・メイン画面実装
-**信頼性レベル**: 🔵 *設計書に記載*
-
-## 関連文書
-
-- **概要**: [overview.md](./overview.md)
-- **UI設計**: [ui-design/overview.md](../../design/atelier-guild-rank-phaser/ui-design/overview.md)
-
-## タスク概要
-
-採取フェーズで素材選択肢を表示するコンポーネントを設計・実装する。選択可能な素材をグリッドで表示し、選択操作を提供する。
-
-## 依存タスク
-
-- **前提タスク**: TASK-0178, TASK-0199
-- **後続タスク**: TASK-0222
-
-## 完了条件
-
-- [x] IMaterialOptionViewインターフェースが定義されている
-- [x] 素材選択肢がグリッドで表示される
-- [x] 素材をクリックで選択できる
-- [x] 選択状態が視覚的にフィードバックされる
-- [x] 品質に応じた色分けがされる
-
----
-
-## 実装詳細
-
-### 1. MaterialOptionView定数 🔵
-
-**信頼性**: 🔵 *素材選択肢表示*
-
-**実装ファイル**: `src/presentation/phaser/ui/material/MaterialOptionViewConstants.ts`
-
-```typescript
-export const MaterialOptionLayout = {
-  // グリッド設定
-  COLUMNS: 3,
-  ITEM_WIDTH: 180,
-  ITEM_HEIGHT: 80,
-  ITEM_SPACING: 10,
-
-  // アイテム内部
-  ICON_SIZE: 48,
-  PADDING: 10,
-} as const;
-```
-
-### 2. IMaterialOptionViewインターフェース 🔵
-
-**信頼性**: 🔵 *コンポーネント設計*
-
-**実装ファイル**: `src/presentation/phaser/ui/material/IMaterialOptionView.ts`
-
-```typescript
 import Phaser from 'phaser';
-import { Material } from '../../../../domain/material/Material';
-
-export interface MaterialOption {
-  material: Material;
-  quantity: number;
-  probability?: number;
-}
-
-export interface MaterialOptionViewOptions {
-  x?: number;
-  y?: number;
-  options: MaterialOption[];
-  maxSelections?: number;
-  onSelect?: (material: Material) => void;
-  onDeselect?: (material: Material) => void;
-}
-
-export interface IMaterialOptionView {
-  readonly container: Phaser.GameObjects.Container;
-
-  // 選択肢設定
-  setOptions(options: MaterialOption[]): void;
-  getOptions(): MaterialOption[];
-
-  // 選択管理
-  getSelectedMaterials(): Material[];
-  selectMaterial(material: Material): void;
-  deselectMaterial(material: Material): void;
-  clearSelection(): void;
-
-  // 制限
-  setMaxSelections(max: number): void;
-  canSelectMore(): boolean;
-
-  // 表示制御
-  setVisible(visible: boolean): void;
-  setEnabled(enabled: boolean): void;
-
-  // 破棄
-  destroy(): void;
-}
-```
-
-### 3. MaterialOptionView実装 🔵
-
-**信頼性**: 🔵 *素材選択グリッド*
-
-**実装ファイル**: `src/presentation/phaser/ui/material/MaterialOptionView.ts`
-
-```typescript
-import Phaser from 'phaser';
-import { Material } from '../../../../domain/material/Material';
-import { IMaterialOptionView, MaterialOption, MaterialOptionViewOptions } from './IMaterialOptionView';
-import { MaterialOptionLayout } from './MaterialOptionViewConstants';
-import { MaterialQualityColors } from './MaterialConstants';
+import { Material } from '../../../domain/material/MaterialEntity';
+import type {
+  IMaterialOptionView,
+  MaterialOption,
+  MaterialOptionViewOptions,
+} from './IMaterialOptionView';
+import { MaterialOptionLayout, MaterialQualityColors } from './MaterialConstants';
 import { Colors } from '../../config/ColorPalette';
 import { TextStyles } from '../../config/TextStyles';
 
+/**
+ * 選択肢アイテムデータ
+ */
 interface OptionItemData {
   container: Phaser.GameObjects.Container;
   option: MaterialOption;
   selected: boolean;
 }
 
+/**
+ * MaterialOptionViewクラス
+ *
+ * 素材選択肢をグリッドで表示し、選択操作を提供する。
+ */
 export class MaterialOptionView implements IMaterialOptionView {
   public readonly container: Phaser.GameObjects.Container;
 
@@ -137,8 +43,8 @@ export class MaterialOptionView implements IMaterialOptionView {
   private onSelect?: (material: Material) => void;
   private onDeselect?: (material: Material) => void;
 
-  constructor(scene: Phaser.Scene, options: MaterialOptionViewOptions) {
-    this.scene = scene;
+  constructor(options: MaterialOptionViewOptions) {
+    this.scene = options.scene;
     this.maxSelections = options.maxSelections ?? 1;
     this.onSelect = options.onSelect;
     this.onDeselect = options.onDeselect;
@@ -146,12 +52,16 @@ export class MaterialOptionView implements IMaterialOptionView {
     const x = options.x ?? 0;
     const y = options.y ?? 0;
 
-    this.container = scene.add.container(x, y);
+    this.container = this.scene.add.container(x, y);
 
     if (options.options.length > 0) {
       this.setOptions(options.options);
     }
   }
+
+  // =====================================================
+  // 選択肢管理
+  // =====================================================
 
   setOptions(options: MaterialOption[]): void {
     this.clearItems();
@@ -176,6 +86,10 @@ export class MaterialOptionView implements IMaterialOptionView {
     return [...this.options];
   }
 
+  // =====================================================
+  // アイテム作成
+  // =====================================================
+
   private createOptionItem(option: MaterialOption, x: number, y: number): OptionItemData {
     const { ITEM_WIDTH, ITEM_HEIGHT, ICON_SIZE, PADDING } = MaterialOptionLayout;
     const itemContainer = this.scene.add.container(x, y);
@@ -186,8 +100,9 @@ export class MaterialOptionView implements IMaterialOptionView {
     itemContainer.add(bg);
 
     // 品質インジケーター
-    if (option.material.quality) {
-      const qualityColor = MaterialQualityColors[option.material.quality] ?? Colors.textPrimary;
+    const quality = option.material.baseQuality;
+    if (quality) {
+      const qualityColor = MaterialQualityColors[quality] ?? Colors.textPrimary;
       const qualityIndicator = this.scene.add.graphics();
       qualityIndicator.fillStyle(qualityColor, 1);
       qualityIndicator.fillRoundedRect(0, 0, 4, ITEM_HEIGHT, { tl: 8, bl: 8, tr: 0, br: 0 });
@@ -198,7 +113,7 @@ export class MaterialOptionView implements IMaterialOptionView {
     const icon = this.scene.add.text(
       PADDING + ICON_SIZE / 2,
       ITEM_HEIGHT / 2,
-      this.getMaterialEmoji(option.material.category),
+      this.getMaterialEmoji(option.material),
       { fontSize: '32px' }
     ).setOrigin(0.5);
     itemContainer.add(icon);
@@ -302,6 +217,10 @@ export class MaterialOptionView implements IMaterialOptionView {
     }
   }
 
+  // =====================================================
+  // 選択管理
+  // =====================================================
+
   getSelectedMaterials(): Material[] {
     return [...this.selectedMaterials];
   }
@@ -309,7 +228,7 @@ export class MaterialOptionView implements IMaterialOptionView {
   selectMaterial(material: Material): void {
     if (!this.canSelectMore()) return;
 
-    const itemData = this.optionItems.find(item => item.option.material === material);
+    const itemData = this.optionItems.find((item) => item.option.material === material);
     if (!itemData || itemData.selected) return;
 
     itemData.selected = true;
@@ -334,11 +253,11 @@ export class MaterialOptionView implements IMaterialOptionView {
   }
 
   deselectMaterial(material: Material): void {
-    const itemData = this.optionItems.find(item => item.option.material === material);
+    const itemData = this.optionItems.find((item) => item.option.material === material);
     if (!itemData || !itemData.selected) return;
 
     itemData.selected = false;
-    this.selectedMaterials = this.selectedMaterials.filter(m => m !== material);
+    this.selectedMaterials = this.selectedMaterials.filter((m) => m !== material);
 
     const bg = itemData.container.getData('bg') as Phaser.GameObjects.Graphics;
     this.drawItemBackground(bg, false);
@@ -349,7 +268,7 @@ export class MaterialOptionView implements IMaterialOptionView {
   }
 
   clearSelection(): void {
-    this.optionItems.forEach(item => {
+    this.optionItems.forEach((item) => {
       if (item.selected) {
         item.selected = false;
         const bg = item.container.getData('bg') as Phaser.GameObjects.Graphics;
@@ -359,6 +278,10 @@ export class MaterialOptionView implements IMaterialOptionView {
     this.selectedMaterials = [];
   }
 
+  // =====================================================
+  // 選択上限
+  // =====================================================
+
   setMaxSelections(max: number): void {
     this.maxSelections = max;
   }
@@ -366,6 +289,10 @@ export class MaterialOptionView implements IMaterialOptionView {
   canSelectMore(): boolean {
     return this.selectedMaterials.length < this.maxSelections;
   }
+
+  // =====================================================
+  // 表示制御
+  // =====================================================
 
   setVisible(visible: boolean): void {
     this.container.setVisible(visible);
@@ -376,77 +303,38 @@ export class MaterialOptionView implements IMaterialOptionView {
     this.container.setAlpha(enabled ? 1 : 0.5);
   }
 
+  // =====================================================
+  // 破棄
+  // =====================================================
+
   destroy(): void {
     this.clearItems();
     this.container.destroy();
   }
 
   private clearItems(): void {
-    this.optionItems.forEach(item => item.container.destroy());
+    this.optionItems.forEach((item) => item.container.destroy());
     this.optionItems = [];
   }
 
-  private getMaterialEmoji(category: string): string {
-    switch (category) {
-      case 'plant': return '🌿';
-      case 'mineral': return '💎';
-      case 'liquid': return '💧';
-      case 'powder': return '✨';
-      case 'monster': return '🦴';
-      default: return '📦';
-    }
+  // =====================================================
+  // ユーティリティ
+  // =====================================================
+
+  private getMaterialEmoji(material: Material): string {
+    // 属性から絵文字を決定
+    const attrs = material.attributes;
+    if (attrs.includes('fire' as any)) return '🔥';
+    if (attrs.includes('water' as any)) return '💧';
+    if (attrs.includes('earth' as any)) return '🌍';
+    if (attrs.includes('wind' as any)) return '💨';
+    if (attrs.includes('light' as any)) return '✨';
+    if (attrs.includes('dark' as any)) return '🌙';
+
+    // レア素材
+    if (material.isRare) return '💎';
+
+    // デフォルト
+    return '🌿';
   }
 }
-```
-
----
-
-## 単体テスト要件
-
-### テストケース1: 選択肢表示 🔵
-
-**Given**: MaterialOptionViewがある
-**When**: setOptions([...])を呼ぶ
-**Then**: グリッドで選択肢が表示される
-
-### テストケース2: 素材選択 🔵
-
-**Given**: 選択肢が表示されている
-**When**: 素材をクリック
-**Then**: 選択状態になりコールバックが呼ばれる
-
-### テストケース3: 選択上限 🔵
-
-**Given**: maxSelections=1で1つ選択済み
-**When**: 別の素材をクリック
-**Then**: 選択されない
-
----
-
-## 実装手順
-
-1. `/tsumiki:tdd-requirements TASK-0220` - 詳細要件定義
-2. `/tsumiki:tdd-testcases` - テストケース作成
-3. `/tsumiki:tdd-red` - テスト実装（失敗）
-4. `/tsumiki:tdd-green` - 最小実装
-5. `/tsumiki:tdd-refactor` - リファクタリング
-6. `/tsumiki:tdd-verify-complete` - 品質確認
-
----
-
-## 注意事項
-
-- グリッドレイアウトの計算
-- 選択上限の管理
-- 確率表示の扱い
-
----
-
-## 信頼性レベルサマリー
-
-- **総項目数**: 3項目
-- 🔵 **青信号**: 3項目 (100%)
-- 🟡 **黄信号**: 0項目 (0%)
-- 🔴 **赤信号**: 0項目 (0%)
-
-**品質評価**: 高品質

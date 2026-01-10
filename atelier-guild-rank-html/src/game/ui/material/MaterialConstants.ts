@@ -49,3 +49,22 @@ export const MaterialQualityColors: Record<Quality, number> = {
  * 素材ビューの表示モード
  */
 export type MaterialViewMode = 'compact' | 'detail';
+
+/**
+ * 素材選択肢グリッドのレイアウト定数
+ * TASK-0220
+ */
+export const MaterialOptionLayout = {
+  /** 列数 */
+  COLUMNS: 3,
+  /** アイテム幅 */
+  ITEM_WIDTH: 180,
+  /** アイテム高さ */
+  ITEM_HEIGHT: 80,
+  /** アイテム間隔 */
+  ITEM_SPACING: 10,
+  /** アイコンサイズ */
+  ICON_SIZE: 48,
+  /** パディング */
+  PADDING: 10,
+} as const;
