@@ -25,6 +25,8 @@ export const SceneKeys = {
   GAME_CLEAR: 'GameClearScene',
   /** テストシーン（開発用） */
   TEST: 'TestScene',
+  /** 調合テストシーン（開発用） */
+  ALCHEMY_TEST: 'AlchemyTestScene',
 } as const;
 
 /**
