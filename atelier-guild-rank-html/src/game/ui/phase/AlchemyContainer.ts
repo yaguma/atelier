@@ -689,10 +689,23 @@ export class AlchemyContainer
 
   selectMaterial(material: Material): void {
     if (!this.selectedMaterials.includes(material)) {
+      // 上限チェック
+      const required = this.getRequiredMaterialCount();
+      if (this.selectedMaterials.length >= required) {
+        this.showMaterialLimitFeedback();
+        return;
+      }
+
       this.selectedMaterials.push(material);
       this.materialOptionView?.selectMaterial(material);
       this.updatePreview();
       this.updateCraftButtonState();
+      this.eventBus.emit('alchemy:material:selected' as any, { material });
+
+      // 選択完了チェック
+      if (this.selectedMaterials.length >= required) {
+        this.onMaterialSelectionComplete();
+      }
     }
   }
 
@@ -703,6 +716,7 @@ export class AlchemyContainer
     this.materialOptionView?.deselectMaterial(material);
     this.updatePreview();
     this.updateCraftButtonState();
+    this.eventBus.emit('alchemy:material:deselected' as any, { material });
   }
 
   clearMaterials(): void {
@@ -714,10 +728,22 @@ export class AlchemyContainer
   }
 
   private handleMaterialSelect(material: Material): void {
+    // 上限チェック
+    const required = this.getRequiredMaterialCount();
+    if (this.selectedMaterials.length >= required) {
+      this.showMaterialLimitFeedback();
+      return;
+    }
+
     this.selectedMaterials.push(material);
     this.updatePreview();
     this.updateCraftButtonState();
     this.eventBus.emit('alchemy:material:selected' as any, { material });
+
+    // 選択完了チェック
+    if (this.selectedMaterials.length >= required) {
+      this.onMaterialSelectionComplete();
+    }
   }
 
   private handleMaterialDeselect(material: Material): void {
@@ -727,6 +753,47 @@ export class AlchemyContainer
     this.updatePreview();
     this.updateCraftButtonState();
     this.eventBus.emit('alchemy:material:deselected' as any, { material });
+  }
+
+  private showMaterialLimitFeedback(): void {
+    // 上限メッセージ表示
+    const message = this.scene.add
+      .text(
+        AlchemyContainerLayout.WIDTH / 2,
+        AlchemyContainerLayout.MATERIAL_AREA.Y + 100,
+        '素材の選択上限に達しました',
+        { ...TextStyles.body, fontSize: '12px', color: '#ffaa00' }
+      )
+      .setOrigin(0.5);
+    this.container.add(message);
+
+    this.scene.tweens.add({
+      targets: message,
+      y: message.y - 20,
+      alpha: 0,
+      duration: 1000,
+      ease: 'Power2',
+      onComplete: () => message.destroy(),
+    });
+  }
+
+  private onMaterialSelectionComplete(): void {
+    // 調合ボタンを強調
+    if (this.craftButton) {
+      this.scene.tweens.add({
+        targets: this.craftButton,
+        scaleX: 1.1,
+        scaleY: 1.1,
+        duration: 200,
+        yoyo: true,
+        ease: 'Power2',
+      });
+    }
+
+    // 完了イベント発火
+    this.eventBus.emit('alchemy:materials:complete' as any, {
+      materials: this.selectedMaterials,
+    });
   }
 
   // =====================================================

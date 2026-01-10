@@ -671,4 +671,188 @@ describe('AlchemyContainer', () => {
       expect(container.getSelectedRecipe()).toBe(card2);
     });
   });
+
+  // TASK-0229: 素材選択機能のテスト
+  describe('素材選択UI強化', () => {
+    it('素材選択時にイベントが発火する', () => {
+      const selectHandler = vi.fn();
+      eventBus.on('alchemy:material:selected' as any, selectHandler);
+
+      const container = new AlchemyContainer({
+        scene: mockScene,
+        eventBus,
+      });
+      const card = createMockRecipeCard();
+      const material = createMockMaterial({ id: 'mat-1', name: '薬草' });
+
+      container.setRecipeCards([card]);
+      container.setAvailableMaterials([material]);
+      container.selectRecipe(card);
+      container.selectMaterial(material);
+
+      expect(selectHandler).toHaveBeenCalledWith({ material });
+    });
+
+    it('素材選択解除時にイベントが発火する', () => {
+      const deselectHandler = vi.fn();
+      eventBus.on('alchemy:material:deselected' as any, deselectHandler);
+
+      const container = new AlchemyContainer({
+        scene: mockScene,
+        eventBus,
+      });
+      const card = createMockRecipeCard();
+      const material = createMockMaterial({ id: 'mat-1', name: '薬草' });
+
+      container.setRecipeCards([card]);
+      container.setAvailableMaterials([material]);
+      container.selectRecipe(card);
+      container.selectMaterial(material);
+      container.deselectMaterial(material);
+
+      expect(deselectHandler).toHaveBeenCalledWith({ material });
+    });
+
+    it('選択素材が正しく取得できる', () => {
+      const container = new AlchemyContainer({
+        scene: mockScene,
+        eventBus,
+      });
+      const card = createMockRecipeCard();
+      const material1 = createMockMaterial({ id: 'mat-1', name: '薬草1' });
+      const material2 = createMockMaterial({ id: 'mat-2', name: '薬草2' });
+
+      container.setRecipeCards([card]);
+      container.setAvailableMaterials([material1, material2]);
+      container.selectRecipe(card);
+      container.selectMaterial(material1);
+      container.selectMaterial(material2);
+
+      expect(container.getSelectedMaterials()).toContain(material1);
+      expect(container.getSelectedMaterials()).toContain(material2);
+    });
+
+    it('素材選択完了時にイベントが発火する', () => {
+      const completeHandler = vi.fn();
+      eventBus.on('alchemy:materials:complete' as any, completeHandler);
+
+      const container = new AlchemyContainer({
+        scene: mockScene,
+        eventBus,
+      });
+      // requiredMaterialsが2つのレシピを作成
+      const card = createMockRecipeCard({
+        requiredMaterials: [
+          { materialId: 'mat-1', quantity: 1 },
+          { materialId: 'mat-2', quantity: 1 },
+        ],
+      });
+      const material1 = createMockMaterial({ id: 'mat-1', name: '薬草1' });
+      const material2 = createMockMaterial({ id: 'mat-2', name: '薬草2' });
+
+      container.setRecipeCards([card]);
+      container.setAvailableMaterials([material1, material2]);
+      container.selectRecipe(card);
+      container.selectMaterial(material1);
+      container.selectMaterial(material2);
+
+      expect(completeHandler).toHaveBeenCalled();
+    });
+  });
+
+  describe('素材選択上限', () => {
+    it('上限を超えて素材を選択できない', () => {
+      const container = new AlchemyContainer({
+        scene: mockScene,
+        eventBus,
+      });
+      // requiredMaterialsが1つのレシピを作成
+      const card = createMockRecipeCard({
+        requiredMaterials: [{ materialId: 'mat-1', quantity: 1 }],
+      });
+      const material1 = createMockMaterial({ id: 'mat-1', name: '薬草1' });
+      const material2 = createMockMaterial({ id: 'mat-2', name: '薬草2' });
+
+      container.setRecipeCards([card]);
+      container.setAvailableMaterials([material1, material2]);
+      container.selectRecipe(card);
+      container.selectMaterial(material1);
+      container.selectMaterial(material2); // これは追加されない
+
+      // 選択されるのは1つのみ
+      expect(container.getSelectedMaterials().length).toBe(1);
+    });
+  });
+
+  describe('品質予測更新', () => {
+    it('素材選択で品質予測が更新される', () => {
+      const container = new AlchemyContainer({
+        scene: mockScene,
+        eventBus,
+      });
+      const card = createMockRecipeCard();
+      const highQualityMaterial = createMockMaterial({
+        id: 'mat-1',
+        name: '高品質素材',
+        baseQuality: Quality.A,
+      });
+
+      container.setRecipeCards([card]);
+      container.setAvailableMaterials([highQualityMaterial]);
+      container.selectRecipe(card);
+
+      // 素材選択前後で状態が変わる（内部でupdatePreviewが呼ばれる）
+      expect(container.getSelectedMaterials().length).toBe(0);
+      container.selectMaterial(highQualityMaterial);
+      expect(container.getSelectedMaterials().length).toBe(1);
+    });
+  });
+
+  describe('調合実行', () => {
+    it('canCraftがtrueの時に調合が実行される', async () => {
+      const onComplete = vi.fn();
+      const container = new AlchemyContainer({
+        scene: mockScene,
+        eventBus,
+        onAlchemyComplete: onComplete,
+      });
+      const card = createMockRecipeCard({
+        requiredMaterials: [{ materialId: 'mat-1', quantity: 1 }],
+      });
+      const material = createMockMaterial({ id: 'mat-1', name: '薬草' });
+
+      container.setRecipeCards([card]);
+      container.setAvailableMaterials([material]);
+      container.selectRecipe(card);
+      container.selectMaterial(material);
+
+      expect(container.canCraft()).toBe(true);
+      await container.craft();
+
+      expect(onComplete).toHaveBeenCalled();
+    });
+
+    it('調合完了時にalchemy:craftイベントが発火する', async () => {
+      const craftHandler = vi.fn();
+      eventBus.on('alchemy:craft' as any, craftHandler);
+
+      const container = new AlchemyContainer({
+        scene: mockScene,
+        eventBus,
+      });
+      const card = createMockRecipeCard({
+        requiredMaterials: [{ materialId: 'mat-1', quantity: 1 }],
+      });
+      const material = createMockMaterial({ id: 'mat-1', name: '薬草' });
+
+      container.setRecipeCards([card]);
+      container.setAvailableMaterials([material]);
+      container.selectRecipe(card);
+      container.selectMaterial(material);
+
+      await container.craft();
+
+      expect(craftHandler).toHaveBeenCalled();
+    });
+  });
 });
