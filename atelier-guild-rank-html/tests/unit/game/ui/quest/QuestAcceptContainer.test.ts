@@ -4,6 +4,7 @@
  * TASK-0216: QuestAcceptContainer設計のテスト
  * TASK-0217: QuestAcceptContainer依頼表示実装のテスト
  * TASK-0218: QuestAcceptContainer受注操作実装のテスト
+ * TASK-0219: QuestAcceptContainerテスト（統合テスト）
  * 依頼受注フェーズのコンテナをテストする
  */
 
