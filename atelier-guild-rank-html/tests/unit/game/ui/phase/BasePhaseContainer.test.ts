@@ -5,11 +5,40 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import Phaser from 'phaser';
 import { GamePhase } from '../../../../../src/domain/common/types';
 import { BasePhaseContainer } from '../../../../../src/game/ui/phase/BasePhaseContainer';
 import type { PhaseContainerConfig } from '../../../../../src/game/ui/phase/IPhaseContainer';
 import { EventBus } from '../../../../../src/game/events/EventBus';
+
+// Phaserをモック（vi.mockはホイスティングされるのでfactory内で定義）
+vi.mock('phaser', () => {
+  class MockRectangle {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+
+    constructor(x: number = 0, y: number = 0, width: number = 0, height: number = 0) {
+      this.x = x;
+      this.y = y;
+      this.width = width;
+      this.height = height;
+    }
+
+    static Contains = () => true;
+  }
+
+  return {
+    default: {
+      Geom: {
+        Rectangle: MockRectangle,
+      },
+    },
+    Geom: {
+      Rectangle: MockRectangle,
+    },
+  };
+});
 
 /**
  * テスト用の具象クラス
@@ -92,6 +121,68 @@ class TestPhaseContainer extends BasePhaseContainer {
   getEnabled(): boolean {
     return this.enabled;
   }
+
+  // テスト用UIヘルパーラッパー
+  testCreateTitle(title: string): any {
+    return this.createTitle(title);
+  }
+
+  testCreateDescription(description: string, y: number): any {
+    return this.createDescription(description, y);
+  }
+
+  testCreateButton(
+    x: number,
+    y: number,
+    label: string,
+    onClick: () => void,
+    primary: boolean = false,
+    enabled: boolean = true
+  ): any {
+    return this.createButton(x, y, label, onClick, primary, enabled);
+  }
+
+  testSetButtonEnabled(button: any, enabled: boolean): void {
+    this.setButtonEnabled(button, enabled);
+  }
+
+  // テスト用状態管理ラッパー
+  testGetState<T>(key: string): T | undefined {
+    return this.getState<T>(key);
+  }
+
+  testSetState<T>(key: string, value: T): void {
+    this.setState<T>(key, value);
+  }
+
+  testClearState(): void {
+    this.clearState();
+  }
+
+  // 状態変更履歴（テスト用）
+  public stateChangeHistory: Array<{ key: string; oldValue: unknown; newValue: unknown }> = [];
+
+  protected override onStateChange(key: string, oldValue: unknown, newValue: unknown): void {
+    this.stateChangeHistory.push({ key, oldValue, newValue });
+  }
+
+  // テスト用ローディングラッパー
+  testShowLoading(message: string = '処理中...'): void {
+    this.showLoading(message);
+  }
+
+  testHideLoading(): void {
+    this.hideLoading();
+  }
+
+  testIsLoading(): boolean {
+    return this.isLoading();
+  }
+
+  // テスト用エラー表示ラッパー
+  testShowError(message: string, onDismiss?: () => void): void {
+    this.showError(message, onDismiss);
+  }
 }
 
 /**
@@ -101,20 +192,40 @@ function createMockScene(): Phaser.Scene {
   const mockGraphics = {
     fillStyle: vi.fn().mockReturnThis(),
     fillRoundedRect: vi.fn().mockReturnThis(),
+    fillRect: vi.fn().mockReturnThis(),
     lineStyle: vi.fn().mockReturnThis(),
     strokeRoundedRect: vi.fn().mockReturnThis(),
+    clear: vi.fn().mockReturnThis(),
   };
 
-  const mockContainer = {
-    setDepth: vi.fn().mockReturnThis(),
-    setVisible: vi.fn().mockReturnThis(),
-    setAlpha: vi.fn().mockReturnThis(),
-    setY: vi.fn().mockReturnThis(),
-    add: vi.fn().mockReturnThis(),
-    destroy: vi.fn(),
-    x: 200,
-    y: 150,
+  const createMockContainer = () => {
+    const data: Record<string, unknown> = {};
+    return {
+      setDepth: vi.fn().mockReturnThis(),
+      setVisible: vi.fn().mockReturnThis(),
+      setAlpha: vi.fn().mockReturnThis(),
+      setY: vi.fn().mockReturnThis(),
+      add: vi.fn().mockReturnThis(),
+      destroy: vi.fn(),
+      setData: vi.fn().mockImplementation(function (this: any, key: string, value: unknown) {
+        data[key] = value;
+        return this;
+      }),
+      getData: vi.fn().mockImplementation((key: string) => {
+        return data[key];
+      }),
+      setInteractive: vi.fn().mockReturnThis(),
+      disableInteractive: vi.fn().mockReturnThis(),
+      on: vi.fn().mockReturnThis(),
+      x: 200,
+      y: 150,
+    };
   };
+
+  const createMockText = () => ({
+    setOrigin: vi.fn().mockReturnThis(),
+    setAlpha: vi.fn().mockReturnThis(),
+  });
 
   const mockTween = {
     add: vi.fn().mockImplementation((config: any) => {
@@ -128,8 +239,9 @@ function createMockScene(): Phaser.Scene {
 
   return {
     add: {
-      container: vi.fn().mockReturnValue(mockContainer),
+      container: vi.fn().mockImplementation(() => createMockContainer()),
       graphics: vi.fn().mockReturnValue(mockGraphics),
+      text: vi.fn().mockImplementation(() => createMockText()),
     },
     tweens: mockTween,
   } as unknown as Phaser.Scene;
@@ -335,6 +447,107 @@ describe('BasePhaseContainer', () => {
 
       const minimalContainer = new TestPhaseContainer(minimalConfig);
       expect(mockScene.add.container).toHaveBeenCalledWith(200, 150);
+    });
+  });
+
+  describe('UIヘルパー: createTitle', () => {
+    it('タイトルテキストを作成できる', () => {
+      const titleResult = container.testCreateTitle('テストタイトル');
+      expect(mockScene.add.text).toHaveBeenCalled();
+      expect(titleResult).toBeDefined();
+    });
+  });
+
+  describe('UIヘルパー: createDescription', () => {
+    it('説明テキストを作成できる', () => {
+      const descResult = container.testCreateDescription('テスト説明', 50);
+      expect(mockScene.add.text).toHaveBeenCalled();
+      expect(descResult).toBeDefined();
+    });
+  });
+
+  describe('UIヘルパー: createButton', () => {
+    it('ボタンを作成できる', () => {
+      const onClick = vi.fn();
+      const buttonResult = container.testCreateButton(100, 100, 'テストボタン', onClick, true, true);
+      expect(mockScene.add.container).toHaveBeenCalled();
+      expect(buttonResult).toBeDefined();
+    });
+
+    it('無効なボタンを作成できる', () => {
+      const onClick = vi.fn();
+      const buttonResult = container.testCreateButton(100, 100, 'テストボタン', onClick, false, false);
+      expect(buttonResult).toBeDefined();
+    });
+  });
+
+  describe('UIヘルパー: setButtonEnabled', () => {
+    it('ボタンの有効/無効を切り替えられる', () => {
+      const onClick = vi.fn();
+      const buttonResult = container.testCreateButton(100, 100, 'テストボタン', onClick, true, true);
+
+      container.testSetButtonEnabled(buttonResult, false);
+      expect(buttonResult.getData('enabled')).toBe(false);
+
+      container.testSetButtonEnabled(buttonResult, true);
+      expect(buttonResult.getData('enabled')).toBe(true);
+    });
+  });
+
+  describe('状態管理', () => {
+    it('状態を設定・取得できる', () => {
+      container.testSetState('testKey', 'testValue');
+      expect(container.testGetState<string>('testKey')).toBe('testValue');
+    });
+
+    it('存在しないキーはundefinedを返す', () => {
+      expect(container.testGetState<string>('nonExistent')).toBeUndefined();
+    });
+
+    it('状態をクリアできる', () => {
+      container.testSetState('key1', 'value1');
+      container.testSetState('key2', 'value2');
+      container.testClearState();
+      expect(container.testGetState<string>('key1')).toBeUndefined();
+      expect(container.testGetState<string>('key2')).toBeUndefined();
+    });
+
+    it('状態変更コールバックが呼ばれる', () => {
+      container.testSetState('testKey', 'newValue');
+      expect(container.stateChangeHistory).toContainEqual({
+        key: 'testKey',
+        oldValue: undefined,
+        newValue: 'newValue',
+      });
+    });
+  });
+
+  describe('ローディング表示', () => {
+    it('ローディング表示を開始できる', () => {
+      container.testShowLoading('読み込み中...');
+      expect(container.testIsLoading()).toBe(true);
+    });
+
+    it('ローディング表示を終了できる', () => {
+      container.testShowLoading('読み込み中...');
+      container.testHideLoading();
+      expect(container.testIsLoading()).toBe(false);
+    });
+
+    it('二重にローディング表示しない', () => {
+      container.testShowLoading('読み込み中...');
+      container.testShowLoading('二回目');
+      // 二回目は無視される
+      expect(container.testIsLoading()).toBe(true);
+    });
+  });
+
+  describe('エラー表示', () => {
+    it('エラー表示を行える', () => {
+      const onDismiss = vi.fn();
+      container.testShowError('テストエラー', onDismiss);
+      // エラーコンテナが作成される
+      expect(mockScene.add.container).toHaveBeenCalled();
     });
   });
 });
