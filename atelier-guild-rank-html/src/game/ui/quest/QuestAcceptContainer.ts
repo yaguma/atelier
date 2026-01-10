@@ -4,6 +4,7 @@
  * 依頼受注フェーズのコンテナクラス。
  * 利用可能な依頼の一覧表示と受注操作を行う。
  * 設計文書: docs/tasks/atelier-guild-rank-phaser/TASK-0216.md
+ * 設計文書: docs/tasks/atelier-guild-rank-phaser/TASK-0217.md
  */
 
 import Phaser from 'phaser';
@@ -14,6 +15,12 @@ import type { PhaseContainerConfig } from '../phase/IPhaseContainer';
 import { QuestPanel } from './QuestPanel';
 import { Colors } from '../../config/ColorPalette';
 import { TextStyles } from '../../config/TextStyles';
+import { QuestDifficulty } from '../../../domain/quest/QuestEntity';
+
+/**
+ * ソート種別
+ */
+export type SortType = 'deadline' | 'reward' | 'difficulty';
 
 /**
  * QuestAcceptContainer設定
@@ -50,6 +57,15 @@ export class QuestAcceptContainer extends BasePhaseContainer {
 
   /** 受注した依頼 */
   private acceptedQuest: Quest | null = null;
+
+  /** 現在のソート種別 */
+  private currentSort: SortType = 'deadline';
+
+  /** 難易度フィルター */
+  private difficultyFilter: QuestDifficulty | null = null;
+
+  /** 受注済み依頼IDセット */
+  private acceptedQuestIds: Set<string> = new Set();
 
   // UI要素
   private questListContainer!: Phaser.GameObjects.Container;
@@ -123,6 +139,72 @@ export class QuestAcceptContainer extends BasePhaseContainer {
     if (this.onSkip) {
       this.onSkip();
     }
+  }
+
+  /**
+   * ソート種別を設定する
+   * @param type ソート種別
+   */
+  setSortType(type: SortType): void {
+    this.currentSort = type;
+    this.updateQuestList();
+  }
+
+  /**
+   * 現在のソート種別を取得する
+   * @returns ソート種別
+   */
+  getSortType(): SortType {
+    return this.currentSort;
+  }
+
+  /**
+   * 難易度フィルターを設定する
+   * @param difficulty 難易度（nullで全件表示）
+   */
+  setDifficultyFilter(difficulty: QuestDifficulty | null): void {
+    this.difficultyFilter = difficulty;
+    this.updateQuestList();
+  }
+
+  /**
+   * 現在の難易度フィルターを取得する
+   * @returns 難易度フィルター
+   */
+  getDifficultyFilter(): QuestDifficulty | null {
+    return this.difficultyFilter;
+  }
+
+  /**
+   * 受注済み依頼IDを設定する
+   * @param ids 受注済み依頼IDリスト
+   */
+  setAcceptedQuestIds(ids: string[]): void {
+    this.acceptedQuestIds = new Set(ids);
+    this.updateQuestList();
+  }
+
+  /**
+   * 表示用の依頼リストを取得する
+   * フィルター、ソート、受注済み除外が適用された結果を返す
+   * @returns 表示用依頼リスト
+   */
+  getDisplayQuests(): Quest[] {
+    // 1. 受注済み除外
+    let quests = this.availableQuests.filter(
+      (q) => !this.acceptedQuestIds.has(q.id)
+    );
+
+    // 2. 難易度フィルター
+    if (this.difficultyFilter) {
+      quests = quests.filter((q) => q.difficulty === this.difficultyFilter);
+    }
+
+    // 3. ソート（コピーを作成してソート）
+    quests = [...quests];
+    this.sortQuestsArray(quests);
+
+    return quests;
   }
 
   // =====================================================
@@ -232,7 +314,10 @@ export class QuestAcceptContainer extends BasePhaseContainer {
     // 既存のリストアイテムをクリア（ヘッダー以外）
     this.clearQuestListItems();
 
-    this.availableQuests.forEach((quest, index) => {
+    // フィルター・ソート・除外が適用された依頼リストを取得
+    const displayQuests = this.getDisplayQuests();
+
+    displayQuests.forEach((quest, index) => {
       const item = this.createQuestListItem(quest, index);
       this.questListContainer.add(item);
     });
@@ -330,6 +415,37 @@ export class QuestAcceptContainer extends BasePhaseContainer {
         bg.fillStyle(quest === this.selectedQuest ? 0x4a4a8a : 0x2a2a4a, 0.9);
         bg.fillRoundedRect(0, 0, 330, 55, 6);
       }
+    }
+  }
+
+  // =====================================================
+  // ソート処理
+  // =====================================================
+
+  /**
+   * 依頼配列をソートする
+   * @param quests ソート対象の配列（in-place）
+   */
+  private sortQuestsArray(quests: Quest[]): void {
+    const diffOrder: Record<QuestDifficulty, number> = {
+      easy: 0,
+      normal: 1,
+      hard: 2,
+      expert: 3,
+    };
+
+    switch (this.currentSort) {
+      case 'deadline':
+        quests.sort((a, b) => a.deadline - b.deadline);
+        break;
+      case 'reward':
+        quests.sort((a, b) => b.gold - a.gold);
+        break;
+      case 'difficulty':
+        quests.sort(
+          (a, b) => (diffOrder[a.difficulty] ?? 0) - (diffOrder[b.difficulty] ?? 0)
+        );
+        break;
     }
   }
 

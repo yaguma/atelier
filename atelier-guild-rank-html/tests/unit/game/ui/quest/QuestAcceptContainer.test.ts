@@ -2,6 +2,7 @@
  * QuestAcceptContainer単体テスト
  *
  * TASK-0216: QuestAcceptContainer設計のテスト
+ * TASK-0217: QuestAcceptContainer依頼表示実装のテスト
  * 依頼受注フェーズのコンテナをテストする
  */
 
@@ -332,6 +333,167 @@ describe('QuestAcceptContainer', () => {
           }),
         })
       );
+    });
+  });
+
+  // =====================================================
+  // TASK-0217: 依頼表示実装テスト
+  // =====================================================
+
+  describe('ソート機能', () => {
+    it('期限順でソートできる', () => {
+      const quests = [
+        createMockQuest({ id: 'quest-1', deadline: 5 }),
+        createMockQuest({ id: 'quest-2', deadline: 2 }),
+        createMockQuest({ id: 'quest-3', deadline: 8 }),
+      ];
+
+      container.setAvailableQuests(quests);
+      container.setSortType('deadline');
+
+      const sorted = container.getDisplayQuests();
+      expect(sorted[0].deadline).toBe(2);
+      expect(sorted[1].deadline).toBe(5);
+      expect(sorted[2].deadline).toBe(8);
+    });
+
+    it('報酬順でソートできる', () => {
+      const quests = [
+        createMockQuest({ id: 'quest-1', gold: 500 }),
+        createMockQuest({ id: 'quest-2', gold: 1000 }),
+        createMockQuest({ id: 'quest-3', gold: 300 }),
+      ];
+
+      container.setAvailableQuests(quests);
+      container.setSortType('reward');
+
+      const sorted = container.getDisplayQuests();
+      expect(sorted[0].gold).toBe(1000);
+      expect(sorted[1].gold).toBe(500);
+      expect(sorted[2].gold).toBe(300);
+    });
+
+    it('難易度順でソートできる', () => {
+      const quests = [
+        createMockQuest({ id: 'quest-1', difficulty: 'hard' }),
+        createMockQuest({ id: 'quest-2', difficulty: 'easy' }),
+        createMockQuest({ id: 'quest-3', difficulty: 'expert' }),
+        createMockQuest({ id: 'quest-4', difficulty: 'normal' }),
+      ];
+
+      container.setAvailableQuests(quests);
+      container.setSortType('difficulty');
+
+      const sorted = container.getDisplayQuests();
+      expect(sorted[0].difficulty).toBe('easy');
+      expect(sorted[1].difficulty).toBe('normal');
+      expect(sorted[2].difficulty).toBe('hard');
+      expect(sorted[3].difficulty).toBe('expert');
+    });
+  });
+
+  describe('フィルター機能', () => {
+    it('難易度でフィルターできる', () => {
+      const quests = [
+        createMockQuest({ id: 'quest-1', difficulty: 'easy' }),
+        createMockQuest({ id: 'quest-2', difficulty: 'hard' }),
+        createMockQuest({ id: 'quest-3', difficulty: 'hard' }),
+        createMockQuest({ id: 'quest-4', difficulty: 'normal' }),
+      ];
+
+      container.setAvailableQuests(quests);
+      container.setDifficultyFilter('hard');
+
+      const filtered = container.getDisplayQuests();
+      expect(filtered.length).toBe(2);
+      expect(filtered.every((q) => q.difficulty === 'hard')).toBe(true);
+    });
+
+    it('フィルターをnullにすると全件表示される', () => {
+      const quests = [
+        createMockQuest({ id: 'quest-1', difficulty: 'easy' }),
+        createMockQuest({ id: 'quest-2', difficulty: 'hard' }),
+        createMockQuest({ id: 'quest-3', difficulty: 'normal' }),
+      ];
+
+      container.setAvailableQuests(quests);
+      container.setDifficultyFilter('hard');
+      container.setDifficultyFilter(null);
+
+      const filtered = container.getDisplayQuests();
+      expect(filtered.length).toBe(3);
+    });
+  });
+
+  describe('受注済み依頼の除外', () => {
+    it('受注済み依頼が除外される', () => {
+      const quests = [
+        createMockQuest({ id: 'quest-1' }),
+        createMockQuest({ id: 'quest-2' }),
+        createMockQuest({ id: 'quest-3' }),
+      ];
+
+      container.setAvailableQuests(quests);
+      container.setAcceptedQuestIds(['quest-2']);
+
+      const displayed = container.getDisplayQuests();
+      expect(displayed.length).toBe(2);
+      expect(displayed.find((q) => q.id === 'quest-2')).toBeUndefined();
+    });
+
+    it('複数の受注済み依頼が除外される', () => {
+      const quests = [
+        createMockQuest({ id: 'quest-1' }),
+        createMockQuest({ id: 'quest-2' }),
+        createMockQuest({ id: 'quest-3' }),
+      ];
+
+      container.setAvailableQuests(quests);
+      container.setAcceptedQuestIds(['quest-1', 'quest-3']);
+
+      const displayed = container.getDisplayQuests();
+      expect(displayed.length).toBe(1);
+      expect(displayed[0].id).toBe('quest-2');
+    });
+  });
+
+  describe('ソートとフィルターの組み合わせ', () => {
+    it('フィルターとソートが同時に適用される', () => {
+      const quests = [
+        createMockQuest({ id: 'quest-1', difficulty: 'hard', gold: 500 }),
+        createMockQuest({ id: 'quest-2', difficulty: 'easy', gold: 1000 }),
+        createMockQuest({ id: 'quest-3', difficulty: 'hard', gold: 800 }),
+        createMockQuest({ id: 'quest-4', difficulty: 'hard', gold: 300 }),
+      ];
+
+      container.setAvailableQuests(quests);
+      container.setDifficultyFilter('hard');
+      container.setSortType('reward');
+
+      const result = container.getDisplayQuests();
+      expect(result.length).toBe(3);
+      expect(result[0].gold).toBe(800);
+      expect(result[1].gold).toBe(500);
+      expect(result[2].gold).toBe(300);
+    });
+
+    it('フィルター、ソート、受注済み除外が全て適用される', () => {
+      const quests = [
+        createMockQuest({ id: 'quest-1', difficulty: 'hard', deadline: 5 }),
+        createMockQuest({ id: 'quest-2', difficulty: 'hard', deadline: 2 }),
+        createMockQuest({ id: 'quest-3', difficulty: 'easy', deadline: 1 }),
+        createMockQuest({ id: 'quest-4', difficulty: 'hard', deadline: 8 }),
+      ];
+
+      container.setAvailableQuests(quests);
+      container.setDifficultyFilter('hard');
+      container.setAcceptedQuestIds(['quest-2']);
+      container.setSortType('deadline');
+
+      const result = container.getDisplayQuests();
+      expect(result.length).toBe(2);
+      expect(result[0].deadline).toBe(5);
+      expect(result[1].deadline).toBe(8);
     });
   });
 });
