@@ -1,68 +1,68 @@
-# TASK-0216: QuestAcceptContainer設計
+/**
+ * QuestAcceptContainer実装
+ *
+ * 依頼受注フェーズのコンテナクラス。
+ * 利用可能な依頼の一覧表示と受注操作を行う。
+ * 設計文書: docs/tasks/atelier-guild-rank-phaser/TASK-0216.md
+ */
 
-**タスクID**: TASK-0216
-**タスクタイプ**: TDD
-**推定工数**: 4時間
-**フェーズ**: Phase 3 - フェーズコンテナ・メイン画面実装
-**信頼性レベル**: 🔵 *設計書に記載*
-
-## 関連文書
-
-- **概要**: [overview.md](./overview.md)
-- **UI設計**: [ui-design/overview.md](../../design/atelier-guild-rank-phaser/ui-design/overview.md)
-
-## タスク概要
-
-依頼受注フェーズのコンテナを設計する。利用可能な依頼の一覧表示と受注操作を行う。
-
-## 依存タスク
-
-- **前提タスク**: TASK-0213, TASK-0214
-- **後続タスク**: TASK-0217
-
-## 完了条件
-
-- [x] QuestAcceptContainerがBasePhaseContainerを継承している
-- [x] 利用可能依頼リストの表示領域が設計されている
-- [x] 選択した依頼の詳細表示が設計されている
-- [x] 受注/スキップの操作フローが設計されている
-
----
-
-## 実装詳細
-
-### 1. QuestAcceptContainer設計 🔵
-
-**信頼性**: 🔵 *依頼受注フェーズ*
-
-**実装ファイル**: `src/presentation/phaser/ui/phase/QuestAcceptContainer.ts`
-
-```typescript
 import Phaser from 'phaser';
-import { BasePhaseContainer } from './BasePhaseContainer';
-import { PhaseContainerConfig } from './IPhaseContainer';
-import { GamePhase } from '../../../../domain/common/GamePhase';
-import { Quest } from '../../../../domain/quest/Quest';
-import { QuestPanel } from '../quest/QuestPanel';
+import { GamePhase } from '../../../domain/common/types';
+import { Quest } from '../../../domain/quest/QuestEntity';
+import { BasePhaseContainer } from '../phase/BasePhaseContainer';
+import type { PhaseContainerConfig } from '../phase/IPhaseContainer';
+import { QuestPanel } from './QuestPanel';
+import { Colors } from '../../config/ColorPalette';
+import { TextStyles } from '../../config/TextStyles';
 
+/**
+ * QuestAcceptContainer設定
+ */
 export interface QuestAcceptContainerConfig extends PhaseContainerConfig {
+  /** 依頼受注時のコールバック */
   onQuestAccepted?: (quest: Quest) => void;
+  /** スキップ時のコールバック */
   onSkip?: () => void;
 }
 
+/**
+ * QuestAcceptContainerクラス
+ *
+ * 依頼受注フェーズのUIコンテナ。
+ * 利用可能な依頼リストの表示と、依頼の選択・受注を管理する。
+ */
 export class QuestAcceptContainer extends BasePhaseContainer {
-  public readonly phase: GamePhase = 'quest_accept';
+  // =====================================================
+  // 抽象プロパティの実装
+  // =====================================================
 
+  public readonly phase: GamePhase = GamePhase.QUEST_ACCEPT;
+
+  // =====================================================
+  // プライベートプロパティ
+  // =====================================================
+
+  /** 利用可能な依頼リスト */
   private availableQuests: Quest[] = [];
+
+  /** 選択中の依頼 */
   private selectedQuest: Quest | null = null;
+
+  /** 受注した依頼 */
+  private acceptedQuest: Quest | null = null;
 
   // UI要素
   private questListContainer!: Phaser.GameObjects.Container;
   private questPanel!: QuestPanel;
   private skipButton!: Phaser.GameObjects.Container;
 
+  // コールバック
   private onQuestAccepted?: (quest: Quest) => void;
   private onSkip?: () => void;
+
+  // =====================================================
+  // コンストラクタ
+  // =====================================================
 
   constructor(config: QuestAcceptContainerConfig) {
     super(config);
@@ -70,18 +70,64 @@ export class QuestAcceptContainer extends BasePhaseContainer {
     this.onSkip = config.onSkip;
   }
 
-  // --- 公開API ---
+  // =====================================================
+  // 公開API
+  // =====================================================
 
+  /**
+   * 利用可能な依頼リストを設定する
+   * @param quests 依頼リスト
+   */
   setAvailableQuests(quests: Quest[]): void {
     this.availableQuests = quests;
     this.updateQuestList();
   }
 
+  /**
+   * 選択中の依頼を取得する
+   * @returns 選択中の依頼、または null
+   */
   getSelectedQuest(): Quest | null {
     return this.selectedQuest;
   }
 
-  // --- BasePhaseContainer実装 ---
+  /**
+   * 依頼を選択する
+   * @param quest 選択する依頼
+   */
+  selectQuest(quest: Quest): void {
+    this.selectedQuest = quest;
+    this.questPanel?.setQuest(quest);
+    this.updateQuestListHighlight();
+  }
+
+  /**
+   * 選択中の依頼を受注する
+   */
+  acceptSelectedQuest(): void {
+    if (!this.selectedQuest) return;
+
+    this.acceptedQuest = this.selectedQuest;
+
+    if (this.onQuestAccepted) {
+      this.onQuestAccepted(this.selectedQuest);
+    }
+  }
+
+  /**
+   * 依頼を受けずにスキップする
+   */
+  skip(): void {
+    this.acceptedQuest = null;
+
+    if (this.onSkip) {
+      this.onSkip();
+    }
+  }
+
+  // =====================================================
+  // BasePhaseContainer実装
+  // =====================================================
 
   protected createContent(): void {
     this.createTitle('📋 依頼受注');
@@ -98,7 +144,8 @@ export class QuestAcceptContainer extends BasePhaseContainer {
   protected async onEnter(): Promise<void> {
     // フェーズ開始時の処理
     this.selectedQuest = null;
-    this.questPanel.setQuest(null);
+    this.acceptedQuest = null;
+    this.questPanel?.setQuest(null);
 
     // 依頼リストを更新
     this.updateQuestList();
@@ -107,15 +154,16 @@ export class QuestAcceptContainer extends BasePhaseContainer {
   protected async onExit(): Promise<void> {
     // フェーズ終了時の処理
     this.clearState();
+    this.selectedQuest = null;
   }
 
-  protected onUpdate(delta: number): void {
+  protected onUpdate(_delta: number): void {
     // 毎フレーム処理（必要に応じて）
   }
 
-  protected getCompletionResult(): any {
+  protected getCompletionResult(): unknown {
     return {
-      acceptedQuest: this.selectedQuest,
+      acceptedQuest: this.acceptedQuest,
     };
   }
 
@@ -124,7 +172,9 @@ export class QuestAcceptContainer extends BasePhaseContainer {
     return true;
   }
 
-  // --- UI作成 ---
+  // =====================================================
+  // UI作成
+  // =====================================================
 
   private createQuestListArea(): void {
     // 依頼リストエリア（左側）
@@ -171,16 +221,36 @@ export class QuestAcceptContainer extends BasePhaseContainer {
     this.container.add(this.skipButton);
   }
 
-  // --- 依頼リスト更新 ---
+  // =====================================================
+  // 依頼リスト更新
+  // =====================================================
 
   private updateQuestList(): void {
-    // 既存のリストアイテムをクリア
-    // ... 省略
+    // コンテナが初期化されていない場合は何もしない
+    if (!this.questListContainer) return;
+
+    // 既存のリストアイテムをクリア（ヘッダー以外）
+    this.clearQuestListItems();
 
     this.availableQuests.forEach((quest, index) => {
       const item = this.createQuestListItem(quest, index);
       this.questListContainer.add(item);
     });
+  }
+
+  private clearQuestListItems(): void {
+    // コンテナが初期化されていない場合は何もしない
+    if (!this.questListContainer) return;
+
+    // ヘッダー（背景とタイトル）以外を削除
+    // 背景(0)とヘッダーテキスト(1)を残す
+    while (this.questListContainer.length > 2) {
+      const item = this.questListContainer.getAt(this.questListContainer.length - 1);
+      if (item && typeof (item as any).destroy === 'function') {
+        (item as any).destroy();
+      }
+      this.questListContainer.removeAt(this.questListContainer.length - 1);
+    }
   }
 
   private createQuestListItem(quest: Quest, index: number): Phaser.GameObjects.Container {
@@ -194,14 +264,14 @@ export class QuestAcceptContainer extends BasePhaseContainer {
     itemContainer.add(bg);
 
     // 依頼名
-    const nameText = this.scene.add.text(10, 8, quest.name, {
+    const nameText = this.scene.add.text(10, 8, quest.flavorText || '依頼', {
       ...TextStyles.body,
       fontSize: '13px',
     });
     itemContainer.add(nameText);
 
     // 期限
-    const deadlineText = this.scene.add.text(10, 30, `期限: ${quest.remainingDays}日`, {
+    const deadlineText = this.scene.add.text(10, 30, `期限: ${quest.deadline}日`, {
       ...TextStyles.bodySmall,
       fontSize: '11px',
       color: '#aaaaaa',
@@ -209,7 +279,7 @@ export class QuestAcceptContainer extends BasePhaseContainer {
     itemContainer.add(deadlineText);
 
     // 報酬
-    const rewardText = this.scene.add.text(200, 20, `💰${quest.reward.gold}`, {
+    const rewardText = this.scene.add.text(200, 20, `💰${quest.gold}`, {
       ...TextStyles.bodySmall,
       fontSize: '11px',
       color: '#ffd700',
@@ -239,18 +309,19 @@ export class QuestAcceptContainer extends BasePhaseContainer {
     return itemContainer;
   }
 
-  // --- イベントハンドラ ---
-
-  private selectQuest(quest: Quest): void {
-    this.selectedQuest = quest;
-    this.questPanel.setQuest(quest);
-
-    // リストアイテムのハイライト更新
-    this.updateQuestListHighlight();
-  }
+  // =====================================================
+  // ハイライト更新
+  // =====================================================
 
   private updateQuestListHighlight(): void {
-    this.questListContainer.each((child: Phaser.GameObjects.Container) => {
+    // コンテナが初期化されていない場合は何もしない
+    if (!this.questListContainer) return;
+
+    // questListContainerの各アイテムを走査
+    for (let i = 2; i < this.questListContainer.length; i++) {
+      const child = this.questListContainer.getAt(i) as Phaser.GameObjects.Container;
+      if (!child || !child.getData) continue;
+
       const quest = child.getData('quest') as Quest | undefined;
       const bg = child.getData('bg') as Phaser.GameObjects.Graphics | undefined;
 
@@ -259,67 +330,30 @@ export class QuestAcceptContainer extends BasePhaseContainer {
         bg.fillStyle(quest === this.selectedQuest ? 0x4a4a8a : 0x2a2a4a, 0.9);
         bg.fillRoundedRect(0, 0, 330, 55, 6);
       }
-    });
+    }
   }
 
+  // =====================================================
+  // イベントハンドラ
+  // =====================================================
+
   private handleQuestAccept(quest: Quest): void {
+    this.acceptedQuest = quest;
+
     if (this.onQuestAccepted) {
       this.onQuestAccepted(quest);
     }
+
     this.complete();
   }
 
   private handleSkip(): void {
+    this.acceptedQuest = null;
+
     if (this.onSkip) {
       this.onSkip();
     }
+
     this.complete();
   }
 }
-```
-
----
-
-## 単体テスト要件
-
-### テストケース1: 依頼リスト表示 🔵
-
-**Given**: QuestAcceptContainerがある
-**When**: setAvailableQuests([...])を呼ぶ
-**Then**: 依頼リストが表示される
-
-### テストケース2: 依頼選択 🔵
-
-**Given**: 依頼リストが表示されている
-**When**: 依頼をクリックする
-**Then**: QuestPanelに詳細が表示される
-
----
-
-## 実装手順
-
-1. `/tsumiki:tdd-requirements TASK-0216` - 詳細要件定義
-2. `/tsumiki:tdd-testcases` - テストケース作成
-3. `/tsumiki:tdd-red` - テスト実装（失敗）
-4. `/tsumiki:tdd-green` - 最小実装
-5. `/tsumiki:tdd-refactor` - リファクタリング
-6. `/tsumiki:tdd-verify-complete` - 品質確認
-
----
-
-## 注意事項
-
-- 依頼リストのスクロール
-- 選択状態の管理
-- スキップ時の確認
-
----
-
-## 信頼性レベルサマリー
-
-- **総項目数**: 1項目
-- 🔵 **青信号**: 1項目 (100%)
-- 🟡 **黄信号**: 0項目 (0%)
-- 🔴 **赤信号**: 0項目 (0%)
-
-**品質評価**: 高品質

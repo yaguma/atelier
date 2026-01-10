@@ -10,3 +10,5 @@ export type { IQuestPanel, QuestPanelOptions, QuestProgress } from './IQuestPane
 
 // 実装
 export { QuestPanel } from './QuestPanel';
+export { QuestAcceptContainer } from './QuestAcceptContainer';
+export type { QuestAcceptContainerConfig } from './QuestAcceptContainer';
