@@ -1,101 +1,70 @@
-# TASK-0226: AlchemyPreviewPanel実装
+/**
+ * AlchemyPreviewPanel実装
+ *
+ * TASK-0226: 調合プレビューパネルの実装
+ * 調合フェーズで調合結果をプレビュー表示するパネル。
+ * 選択中の素材から予測される品質や特性を表示する。
+ *
+ * 設計文書: docs/tasks/atelier-guild-rank-phaser/TASK-0226.md
+ */
 
-**タスクID**: TASK-0226
-**タスクタイプ**: TDD
-**推定工数**: 4時間
-**フェーズ**: Phase 3 - フェーズコンテナ・メイン画面実装
-**信頼性レベル**: 🟡 *妥当な推測*
-
-## 関連文書
-
-- **概要**: [overview.md](./overview.md)
-- **UI設計**: [ui-design/overview.md](../../design/atelier-guild-rank-phaser/ui-design/overview.md)
-
-## タスク概要
-
-調合フェーズで調合結果をプレビュー表示するパネルを実装する。選択中の素材から予測される品質や特性を表示する。
-
-## 依存タスク
-
-- **前提タスク**: TASK-0199
-- **後続タスク**: TASK-0227
-
-## 完了条件
-
-- [x] IAlchemyPreviewPanelインターフェースが定義されている
-- [x] 予測品質が表示される
-- [x] 選択素材リストが表示される
-- [x] 調合可否のインジケーターがある
-- [x] 素材変更時にリアルタイム更新される
-
----
-
-## 実装詳細
-
-### 1. IAlchemyPreviewPanelインターフェース 🟡
-
-**信頼性**: 🟡 *調合プレビュー設計*
-
-**実装ファイル**: `src/presentation/phaser/ui/alchemy/IAlchemyPreviewPanel.ts`
-
-```typescript
 import Phaser from 'phaser';
-import { Material } from '../../../../domain/material/Material';
-import { Recipe } from '../../../../domain/card/RecipeCard';
-
-export interface AlchemyPreview {
-  recipe: Recipe;
-  materials: Material[];
-  predictedQuality: string;
-  predictedTraits: string[];
-  canCraft: boolean;
-  missingMaterials: string[];
-}
-
-export interface AlchemyPreviewPanelOptions {
-  x?: number;
-  y?: number;
-}
-
-export interface IAlchemyPreviewPanel {
-  readonly container: Phaser.GameObjects.Container;
-
-  // プレビュー設定
-  setPreview(preview: AlchemyPreview | null): void;
-  getPreview(): AlchemyPreview | null;
-
-  // 素材追加・削除（リアルタイム更新用）
-  addMaterial(material: Material): void;
-  removeMaterial(material: Material): void;
-  clearMaterials(): void;
-
-  // 表示制御
-  setVisible(visible: boolean): void;
-  setEnabled(enabled: boolean): void;
-
-  // 破棄
-  destroy(): void;
-}
-```
-
-### 2. AlchemyPreviewPanel実装 🟡
-
-**信頼性**: 🟡 *調合結果プレビュー*
-
-**実装ファイル**: `src/presentation/phaser/ui/alchemy/AlchemyPreviewPanel.ts`
-
-```typescript
-import Phaser from 'phaser';
-import { IAlchemyPreviewPanel, AlchemyPreview, AlchemyPreviewPanelOptions } from './IAlchemyPreviewPanel';
-import { Material } from '../../../../domain/material/Material';
+import { Material } from '@domain/material/MaterialEntity';
+import {
+  IAlchemyPreviewPanel,
+  AlchemyPreview,
+  AlchemyPreviewPanelOptions,
+} from './IAlchemyPreviewPanel';
 import { MaterialView } from '../material/MaterialView';
 import { Colors } from '../../config/ColorPalette';
 import { TextStyles } from '../../config/TextStyles';
 
+/**
+ * パネルレイアウト定数
+ */
+const PANEL_LAYOUT = {
+  WIDTH: 250,
+  HEIGHT: 350,
+  BORDER_RADIUS: 8,
+  PADDING: 15,
+  TITLE_Y: 15,
+  RECIPE_NAME_Y: 45,
+  QUALITY_SECTION_Y: 80,
+  MATERIALS_SECTION_Y: 150,
+  TRAITS_SECTION_Y: 260,
+  STATUS_INDICATOR_Y: 320,
+} as const;
+
+/**
+ * 品質別カラーマップ
+ */
+const QUALITY_COLORS: Record<string, string> = {
+  legendary: '#ffd700',
+  epic: '#a335ee',
+  rare: '#0070dd',
+  good: '#1eff00',
+  normal: '#ffffff',
+  poor: '#9d9d9d',
+};
+
+/**
+ * 品質レベル順序（ゲージ表示用）
+ */
+const QUALITY_LEVELS = ['poor', 'normal', 'good', 'rare', 'epic', 'legendary'];
+
+/**
+ * AlchemyPreviewPanelクラス
+ *
+ * 調合プレビュー情報を表示するパネルを管理する。
+ */
 export class AlchemyPreviewPanel implements IAlchemyPreviewPanel {
+  /** Phaserコンテナ */
   public readonly container: Phaser.GameObjects.Container;
 
+  /** シーン参照 */
   private scene: Phaser.Scene;
+
+  /** 現在のプレビュー情報 */
   private preview: AlchemyPreview | null = null;
 
   // UI要素
@@ -107,8 +76,14 @@ export class AlchemyPreviewPanel implements IAlchemyPreviewPanel {
   private traitsSection!: Phaser.GameObjects.Container;
   private statusIndicator!: Phaser.GameObjects.Container;
 
+  /** MaterialViewインスタンス管理 */
   private materialViews: MaterialView[] = [];
 
+  /**
+   * コンストラクタ
+   * @param scene Phaserシーン
+   * @param options オプション
+   */
   constructor(scene: Phaser.Scene, options: AlchemyPreviewPanelOptions = {}) {
     this.scene = scene;
 
@@ -119,51 +94,63 @@ export class AlchemyPreviewPanel implements IAlchemyPreviewPanel {
     this.create();
   }
 
+  /**
+   * パネルを構築
+   */
   private create(): void {
-    const width = 250;
-    const height = 350;
+    const { WIDTH, HEIGHT, BORDER_RADIUS, PADDING } = PANEL_LAYOUT;
 
     // 背景
     this.background = this.scene.add.graphics();
     this.background.fillStyle(Colors.panelBackground, 0.95);
-    this.background.fillRoundedRect(0, 0, width, height, 8);
+    this.background.fillRoundedRect(0, 0, WIDTH, HEIGHT, BORDER_RADIUS);
     this.background.lineStyle(1, Colors.panelBorder);
-    this.background.strokeRoundedRect(0, 0, width, height, 8);
+    this.background.strokeRoundedRect(0, 0, WIDTH, HEIGHT, BORDER_RADIUS);
     this.container.add(this.background);
 
     // タイトル
-    this.titleText = this.scene.add.text(width / 2, 15, '🔮 調合プレビュー', {
-      ...TextStyles.body,
-      fontSize: '14px',
-      fontStyle: 'bold',
-    }).setOrigin(0.5, 0);
+    this.titleText = this.scene.add.text(
+      WIDTH / 2,
+      PANEL_LAYOUT.TITLE_Y,
+      '🔮 調合プレビュー',
+      {
+        ...TextStyles.body,
+        fontSize: '14px',
+        fontStyle: 'bold',
+      }
+    ).setOrigin(0.5, 0);
     this.container.add(this.titleText);
 
     // レシピ名
-    this.recipeNameText = this.scene.add.text(width / 2, 45, '', {
-      ...TextStyles.body,
-      fontSize: '16px',
-      color: '#ffd700',
-    }).setOrigin(0.5, 0);
+    this.recipeNameText = this.scene.add.text(
+      WIDTH / 2,
+      PANEL_LAYOUT.RECIPE_NAME_Y,
+      '',
+      {
+        ...TextStyles.body,
+        fontSize: '16px',
+        color: '#ffd700',
+      }
+    ).setOrigin(0.5, 0);
     this.container.add(this.recipeNameText);
 
     // 予測品質セクション
-    this.qualitySection = this.scene.add.container(15, 80);
+    this.qualitySection = this.scene.add.container(PADDING, PANEL_LAYOUT.QUALITY_SECTION_Y);
     this.container.add(this.qualitySection);
     this.createQualitySection();
 
     // 素材リストセクション
-    this.materialsSection = this.scene.add.container(15, 150);
+    this.materialsSection = this.scene.add.container(PADDING, PANEL_LAYOUT.MATERIALS_SECTION_Y);
     this.container.add(this.materialsSection);
     this.createMaterialsSection();
 
     // 特性セクション
-    this.traitsSection = this.scene.add.container(15, 260);
+    this.traitsSection = this.scene.add.container(PADDING, PANEL_LAYOUT.TRAITS_SECTION_Y);
     this.container.add(this.traitsSection);
     this.createTraitsSection();
 
     // ステータスインジケーター
-    this.statusIndicator = this.scene.add.container(width / 2, height - 30);
+    this.statusIndicator = this.scene.add.container(WIDTH / 2, PANEL_LAYOUT.STATUS_INDICATOR_Y);
     this.container.add(this.statusIndicator);
     this.createStatusIndicator();
 
@@ -171,37 +158,52 @@ export class AlchemyPreviewPanel implements IAlchemyPreviewPanel {
     this.showEmptyState();
   }
 
+  /**
+   * 品質セクションを作成
+   */
   private createQualitySection(): void {
     const label = this.scene.add.text(0, 0, '予測品質', {
-      ...TextStyles.body,
+      ...TextStyles.bodySmall,
       fontSize: '12px',
       color: '#aaaaaa',
     });
     this.qualitySection.add(label);
   }
 
+  /**
+   * 素材セクションを作成
+   */
   private createMaterialsSection(): void {
     const label = this.scene.add.text(0, 0, '使用素材', {
-      ...TextStyles.body,
+      ...TextStyles.bodySmall,
       fontSize: '12px',
       color: '#aaaaaa',
     });
     this.materialsSection.add(label);
   }
 
+  /**
+   * 特性セクションを作成
+   */
   private createTraitsSection(): void {
     const label = this.scene.add.text(0, 0, '継承特性', {
-      ...TextStyles.body,
+      ...TextStyles.bodySmall,
       fontSize: '12px',
       color: '#aaaaaa',
     });
     this.traitsSection.add(label);
   }
 
+  /**
+   * ステータスインジケーターを作成
+   */
   private createStatusIndicator(): void {
-    // 調合可否インジケーター
+    // 初期状態は空（updateStatusIndicatorで更新）
   }
 
+  /**
+   * プレビューを設定
+   */
   setPreview(preview: AlchemyPreview | null): void {
     this.preview = preview;
 
@@ -226,10 +228,16 @@ export class AlchemyPreviewPanel implements IAlchemyPreviewPanel {
     this.updateStatusIndicator(preview.canCraft, preview.missingMaterials);
   }
 
+  /**
+   * 現在のプレビューを取得
+   */
   getPreview(): AlchemyPreview | null {
     return this.preview;
   }
 
+  /**
+   * 空状態を表示
+   */
   private showEmptyState(): void {
     this.recipeNameText.setText('レシピを選択してください');
 
@@ -244,8 +252,9 @@ export class AlchemyPreviewPanel implements IAlchemyPreviewPanel {
 
     // 素材セクションをクリア
     this.clearSection(this.materialsSection, 1);
+    this.clearMaterialViews();
     const emptyMaterials = this.scene.add.text(0, 20, '素材を選択してください', {
-      ...TextStyles.body,
+      ...TextStyles.bodySmall,
       fontSize: '11px',
       color: '#666666',
     });
@@ -258,19 +267,13 @@ export class AlchemyPreviewPanel implements IAlchemyPreviewPanel {
     this.updateStatusIndicator(false, []);
   }
 
+  /**
+   * 品質表示を更新
+   */
   private updateQualityDisplay(quality: string): void {
     this.clearSection(this.qualitySection, 1);
 
-    const qualityColors: Record<string, string> = {
-      'legendary': '#ffd700',
-      'epic': '#a335ee',
-      'rare': '#0070dd',
-      'good': '#1eff00',
-      'normal': '#ffffff',
-      'poor': '#9d9d9d',
-    };
-
-    const color = qualityColors[quality] ?? qualityColors['normal'];
+    const color = QUALITY_COLORS[quality] ?? QUALITY_COLORS['normal'];
     const qualityText = this.scene.add.text(0, 20, quality.toUpperCase(), {
       ...TextStyles.body,
       fontSize: '20px',
@@ -280,28 +283,28 @@ export class AlchemyPreviewPanel implements IAlchemyPreviewPanel {
     this.qualitySection.add(qualityText);
 
     // 品質ゲージ
-    const qualityLevels = ['poor', 'normal', 'good', 'rare', 'epic', 'legendary'];
-    const level = qualityLevels.indexOf(quality);
+    const level = QUALITY_LEVELS.indexOf(quality);
     const gauge = this.scene.add.graphics();
     gauge.fillStyle(0x333333, 1);
     gauge.fillRoundedRect(0, 50, 200, 8, 4);
     if (level >= 0) {
-      gauge.fillStyle(parseInt(color.replace('#', ''), 16), 1);
-      gauge.fillRoundedRect(0, 50, (level + 1) / qualityLevels.length * 200, 8, 4);
+      const colorNum = parseInt(color.replace('#', ''), 16);
+      gauge.fillStyle(colorNum, 1);
+      gauge.fillRoundedRect(0, 50, ((level + 1) / QUALITY_LEVELS.length) * 200, 8, 4);
     }
     this.qualitySection.add(gauge);
   }
 
+  /**
+   * 素材リストを更新
+   */
   private updateMaterialsList(materials: Material[]): void {
     this.clearSection(this.materialsSection, 1);
-
-    // 既存のMaterialViewを破棄
-    this.materialViews.forEach(mv => mv.destroy());
-    this.materialViews = [];
+    this.clearMaterialViews();
 
     if (materials.length === 0) {
       const emptyText = this.scene.add.text(0, 20, '素材なし', {
-        ...TextStyles.body,
+        ...TextStyles.bodySmall,
         fontSize: '11px',
         color: '#666666',
       });
@@ -309,21 +312,26 @@ export class AlchemyPreviewPanel implements IAlchemyPreviewPanel {
       return;
     }
 
-    materials.slice(0, 4).forEach((material, index) => {
+    // 最大4つまで表示
+    const displayMaterials = materials.slice(0, 4);
+    displayMaterials.forEach((material, index) => {
       const mv = new MaterialView(this.scene, {
         x: (index % 2) * 100,
         y: 20 + Math.floor(index / 2) * 45,
         material: material,
-        showQuantity: false,
-        compact: true,
+        mode: 'compact',
+        count: 1,
+        showQuality: false,
+        interactive: false,
       });
       this.materialsSection.add(mv.container);
       this.materialViews.push(mv);
     });
 
+    // 4つ以上の場合は「+N more」を表示
     if (materials.length > 4) {
       const moreText = this.scene.add.text(0, 110, `+${materials.length - 4} more`, {
-        ...TextStyles.body,
+        ...TextStyles.bodySmall,
         fontSize: '10px',
         color: '#aaaaaa',
       });
@@ -331,12 +339,15 @@ export class AlchemyPreviewPanel implements IAlchemyPreviewPanel {
     }
   }
 
+  /**
+   * 特性リストを更新
+   */
   private updateTraitsList(traits: string[]): void {
     this.clearSection(this.traitsSection, 1);
 
     if (traits.length === 0) {
       const emptyText = this.scene.add.text(0, 20, '継承特性なし', {
-        ...TextStyles.body,
+        ...TextStyles.bodySmall,
         fontSize: '11px',
         color: '#666666',
       });
@@ -344,9 +355,11 @@ export class AlchemyPreviewPanel implements IAlchemyPreviewPanel {
       return;
     }
 
-    traits.slice(0, 3).forEach((trait, index) => {
+    // 最大3つまで表示
+    const displayTraits = traits.slice(0, 3);
+    displayTraits.forEach((trait, index) => {
       const traitText = this.scene.add.text(0, 20 + index * 18, `• ${trait}`, {
-        ...TextStyles.body,
+        ...TextStyles.bodySmall,
         fontSize: '11px',
         color: '#aaaaff',
       });
@@ -354,6 +367,9 @@ export class AlchemyPreviewPanel implements IAlchemyPreviewPanel {
     });
   }
 
+  /**
+   * ステータスインジケーターを更新
+   */
   private updateStatusIndicator(canCraft: boolean, missing: string[]): void {
     // 既存をクリア
     this.statusIndicator.removeAll(true);
@@ -382,11 +398,32 @@ export class AlchemyPreviewPanel implements IAlchemyPreviewPanel {
     }
   }
 
+  /**
+   * セクション内の要素をクリア
+   * @param section 対象コンテナ
+   * @param keepFirst 保持する先頭要素数
+   */
   private clearSection(section: Phaser.GameObjects.Container, keepFirst: number): void {
-    const children = section.getAll().slice(keepFirst);
-    children.forEach(child => child.destroy());
+    const children = section.getAll();
+    for (let i = children.length - 1; i >= keepFirst; i--) {
+      const child = children[i];
+      if (child) {
+        child.destroy();
+      }
+    }
   }
 
+  /**
+   * MaterialViewをすべてクリア
+   */
+  private clearMaterialViews(): void {
+    this.materialViews.forEach(mv => mv.destroy());
+    this.materialViews = [];
+  }
+
+  /**
+   * 素材を追加（リアルタイム更新用）
+   */
   addMaterial(material: Material): void {
     if (!this.preview) return;
 
@@ -397,6 +434,9 @@ export class AlchemyPreviewPanel implements IAlchemyPreviewPanel {
     });
   }
 
+  /**
+   * 素材を削除（リアルタイム更新用）
+   */
   removeMaterial(material: Material): void {
     if (!this.preview) return;
 
@@ -407,6 +447,9 @@ export class AlchemyPreviewPanel implements IAlchemyPreviewPanel {
     });
   }
 
+  /**
+   * 全素材をクリア（リアルタイム更新用）
+   */
   clearMaterials(): void {
     if (!this.preview) return;
 
@@ -416,69 +459,25 @@ export class AlchemyPreviewPanel implements IAlchemyPreviewPanel {
     });
   }
 
+  /**
+   * 表示/非表示を設定
+   */
   setVisible(visible: boolean): void {
     this.container.setVisible(visible);
   }
 
+  /**
+   * 有効/無効を設定
+   */
   setEnabled(enabled: boolean): void {
     this.container.setAlpha(enabled ? 1 : 0.5);
   }
 
+  /**
+   * リソースを破棄
+   */
   destroy(): void {
-    this.materialViews.forEach(mv => mv.destroy());
+    this.clearMaterialViews();
     this.container.destroy();
   }
 }
-```
-
----
-
-## 単体テスト要件
-
-### テストケース1: プレビュー設定 🟡
-
-**Given**: AlchemyPreviewPanelがある
-**When**: setPreview(preview)を呼ぶ
-**Then**: プレビュー内容が表示される
-
-### テストケース2: 品質表示 🟡
-
-**Given**: 予測品質が "rare"
-**When**: 表示を確認
-**Then**: 品質レベルに応じた色とゲージが表示される
-
-### テストケース3: 素材追加・削除 🟡
-
-**Given**: プレビューが設定されている
-**When**: addMaterial/removeMaterialを呼ぶ
-**Then**: 素材リストが更新される
-
----
-
-## 実装手順
-
-1. `/tsumiki:tdd-requirements TASK-0226` - 詳細要件定義
-2. `/tsumiki:tdd-testcases` - テストケース作成
-3. `/tsumiki:tdd-red` - テスト実装（失敗）
-4. `/tsumiki:tdd-green` - 最小実装
-5. `/tsumiki:tdd-refactor` - リファクタリング
-6. `/tsumiki:tdd-verify-complete` - 品質確認
-
----
-
-## 注意事項
-
-- 品質予測ロジックの正確性
-- MaterialViewの再利用
-- リアルタイム更新のパフォーマンス
-
----
-
-## 信頼性レベルサマリー
-
-- **総項目数**: 2項目
-- 🔵 **青信号**: 0項目 (0%)
-- 🟡 **黄信号**: 2項目 (100%)
-- 🔴 **赤信号**: 0項目 (0%)
-
-**品質評価**: 中品質（実装時に詳細確認要）
