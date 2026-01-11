@@ -51,6 +51,11 @@ export class RankUpScene extends BaseGameScene {
   private sceneData!: RankUpSceneData;
   private allRequirementsMet: boolean = false;
 
+  // 試験進行用
+  private examOverlay!: Phaser.GameObjects.Container | null;
+  private isExamInProgress: boolean = false;
+  private progressSteps: Phaser.GameObjects.Container[] = [];
+
   constructor() {
     super(SceneKeys.RANK_UP);
   }
@@ -571,15 +576,8 @@ export class RankUpScene extends BaseGameScene {
   private handleChallenge(): void {
     if (!this.allRequirementsMet) return;
 
-    // 昇格試験開始イベントを発行（Application層が購読）
-    // NOTE: このイベントはEventPayloadMapに追加が必要な場合がある
-    (this.eventBus as unknown as { emit: (event: string, payload: unknown) => void }).emit(
-      'rankup:challenge:start',
-      {
-        currentRank: this.sceneData.currentRank,
-        targetRank: this.sceneData.targetRank,
-      }
-    );
+    // 試験開始
+    this.startExam();
   }
 
   private handleBack(): void {
@@ -622,5 +620,600 @@ export class RankUpScene extends BaseGameScene {
 
     // 要件判定を更新
     this.checkRequirements();
+  }
+
+  // =====================================================
+  // 試験進行機能 (TASK-0245)
+  // =====================================================
+
+  /**
+   * 試験を開始
+   */
+  async startExam(): Promise<void> {
+    if (this.isExamInProgress) return;
+    this.isExamInProgress = true;
+
+    // オーバーレイ作成
+    this.createExamOverlay();
+
+    // 開始演出
+    await this.playExamStartAnimation();
+
+    // 試験進行表示
+    await this.showExamProgress();
+
+    // 結果判定
+    this.evaluateExam();
+  }
+
+  /**
+   * 試験オーバーレイを作成
+   */
+  private createExamOverlay(): void {
+    this.examOverlay = this.add.container(0, 0);
+    this.examOverlay.setDepth(100);
+
+    // 半透明背景
+    const bg = this.add.graphics();
+    bg.fillStyle(0x000000, 0.8);
+    bg.fillRect(0, 0, RankUpSceneLayout.SCREEN_WIDTH, RankUpSceneLayout.SCREEN_HEIGHT);
+    this.examOverlay.add(bg);
+  }
+
+  /**
+   * 試験開始アニメーション
+   */
+  private async playExamStartAnimation(): Promise<void> {
+    if (!this.examOverlay) return;
+
+    return new Promise((resolve) => {
+      const centerX = RankUpSceneLayout.SCREEN_WIDTH / 2;
+      const centerY = RankUpSceneLayout.SCREEN_HEIGHT / 2;
+
+      // 試験開始テキスト
+      const startText = this.add.text(centerX, centerY, '昇格試験開始', {
+        fontSize: '48px',
+        fontStyle: 'bold',
+        color: '#ffcc00',
+      }).setOrigin(0.5).setAlpha(0).setScale(2);
+      this.examOverlay!.add(startText);
+
+      // 光彩エフェクト
+      const glow = this.add.graphics();
+      glow.fillStyle(0xffcc00, 0.3);
+      glow.fillCircle(centerX, centerY, 50);
+      this.examOverlay!.add(glow);
+
+      // 光彩拡大アニメーション
+      this.tweens.add({
+        targets: glow,
+        scaleX: 5,
+        scaleY: 5,
+        alpha: 0,
+        duration: 1000,
+        ease: 'Power2',
+      });
+
+      // テキストアニメーション
+      this.tweens.add({
+        targets: startText,
+        alpha: 1,
+        scale: 1,
+        duration: 500,
+        ease: 'Back.easeOut',
+        onComplete: () => {
+          // フェードアウト
+          this.time.delayedCall(1000, () => {
+            this.tweens.add({
+              targets: startText,
+              alpha: 0,
+              y: centerY - 50,
+              duration: 300,
+              onComplete: () => {
+                startText.destroy();
+                resolve();
+              },
+            });
+          });
+        },
+      });
+    });
+  }
+
+  /**
+   * 試験進行表示
+   */
+  private async showExamProgress(): Promise<void> {
+    if (!this.examOverlay) return;
+
+    const centerY = RankUpSceneLayout.SCREEN_HEIGHT / 2;
+
+    // 進行ステップ表示
+    const steps = [
+      { text: '依頼達成状況を確認中...', delay: 500 },
+      { text: '調合実績を確認中...', delay: 800 },
+      { text: '採取実績を確認中...', delay: 600 },
+      { text: '最終判定中...', delay: 1000 },
+    ];
+
+    for (let i = 0; i < steps.length; i++) {
+      const step = steps[i];
+      await this.showProgressStep(step.text, centerY - 50 + i * 40, step.delay);
+    }
+  }
+
+  /**
+   * 進行ステップを表示
+   */
+  private async showProgressStep(text: string, y: number, duration: number): Promise<void> {
+    if (!this.examOverlay) return;
+
+    return new Promise((resolve) => {
+      const centerX = RankUpSceneLayout.SCREEN_WIDTH / 2;
+
+      const stepContainer = this.add.container(centerX, y);
+      this.examOverlay!.add(stepContainer);
+      this.progressSteps.push(stepContainer);
+
+      // ローディングアイコン
+      const loader = this.add.graphics();
+      loader.lineStyle(3, Colors.primary);
+      loader.arc(-100, 0, 12, 0, Math.PI * 1.5);
+      loader.strokePath();
+      stepContainer.add(loader);
+
+      // 回転アニメーション
+      this.tweens.add({
+        targets: loader,
+        angle: 360,
+        duration: 800,
+        repeat: -1,
+      });
+
+      // テキスト
+      const stepText = this.add.text(-70, 0, text, {
+        ...TextStyles.body,
+        fontSize: '16px',
+      }).setOrigin(0, 0.5).setAlpha(0);
+      stepContainer.add(stepText);
+
+      // フェードイン
+      this.tweens.add({
+        targets: stepText,
+        alpha: 1,
+        duration: 200,
+      });
+
+      // 完了
+      this.time.delayedCall(duration, () => {
+        // ローディングアイコンを消す
+        loader.destroy();
+
+        // チェックマーク
+        const check = this.add.text(-100, 0, '✓', {
+          fontSize: '20px',
+          color: '#00ff00',
+        }).setOrigin(0.5);
+        stepContainer.add(check);
+
+        resolve();
+      });
+    });
+  }
+
+  /**
+   * 試験結果を判定
+   */
+  private evaluateExam(): void {
+    // 全要件が達成されているか確認
+    const passed = this.sceneData.requirements.every(
+      (req) => req.currentValue >= req.targetValue
+    );
+
+    // 結果表示
+    this.time.delayedCall(500, () => {
+      if (passed) {
+        this.showExamSuccess(this.sceneData.targetRank);
+      } else {
+        const failedReqs = this.sceneData.requirements
+          .filter((req) => req.currentValue < req.targetValue)
+          .map((req) => req.description);
+        this.showExamFailure(`未達成の条件: ${failedReqs.join(', ')}`);
+      }
+    });
+  }
+
+  /**
+   * 試験成功演出
+   */
+  async showExamSuccess(newRank: string): Promise<void> {
+    if (!this.examOverlay) return;
+
+    // 進行ステップをクリア
+    this.clearProgressSteps();
+
+    const centerX = RankUpSceneLayout.SCREEN_WIDTH / 2;
+    const centerY = RankUpSceneLayout.SCREEN_HEIGHT / 2;
+
+    // 成功パーティクル
+    await this.playSuccessParticles();
+
+    // ランクアップ表示
+    const resultContainer = this.add.container(centerX, centerY);
+    this.examOverlay.add(resultContainer);
+
+    // 成功テキスト
+    const successText = this.add.text(0, -80, '🎉 昇格成功！', {
+      fontSize: '36px',
+      fontStyle: 'bold',
+      color: '#00ff00',
+    }).setOrigin(0.5).setAlpha(0);
+    resultContainer.add(successText);
+
+    // 新ランク表示
+    const newRankContainer = this.createNewRankDisplay(newRank);
+    newRankContainer.setAlpha(0);
+    resultContainer.add(newRankContainer);
+
+    // 報酬リスト
+    const rewardsText = this.add.text(0, 100, '獲得報酬:', {
+      ...TextStyles.heading,
+      fontSize: '18px',
+    }).setOrigin(0.5).setAlpha(0);
+    resultContainer.add(rewardsText);
+
+    const rewardsList = this.createExamRewardsDisplay();
+    rewardsList.setY(140);
+    rewardsList.setAlpha(0);
+    resultContainer.add(rewardsList);
+
+    // アニメーション
+    await this.tweenPromise({
+      targets: successText,
+      alpha: 1,
+      y: successText.y - 20,
+      duration: 500,
+      ease: 'Power2',
+    });
+
+    await this.tweenPromise({
+      targets: newRankContainer,
+      alpha: 1,
+      scale: { from: 0.5, to: 1 },
+      duration: 500,
+      ease: 'Back.easeOut',
+    });
+
+    await this.delay(300);
+
+    await this.tweenPromise({
+      targets: [rewardsText, rewardsList],
+      alpha: 1,
+      duration: 300,
+    });
+
+    // 続けるボタン
+    await this.delay(500);
+    this.showContinueButton();
+  }
+
+  /**
+   * 新ランク表示を作成
+   */
+  private createNewRankDisplay(rank: string): Phaser.GameObjects.Container {
+    const container = this.add.container(0, 0);
+
+    // 光彩背景
+    const glow = this.add.graphics();
+    glow.fillStyle(0xffcc00, 0.3);
+    glow.fillCircle(0, 0, 80);
+    container.add(glow);
+
+    // ランクバッジ
+    const badge = this.add.graphics();
+    badge.fillStyle(0xffcc00, 1);
+    badge.fillCircle(0, 0, 50);
+    container.add(badge);
+
+    // ランク文字
+    const rankText = this.add.text(0, 0, rank, {
+      fontSize: '36px',
+      fontStyle: 'bold',
+      color: '#000000',
+    }).setOrigin(0.5);
+    container.add(rankText);
+
+    return container;
+  }
+
+  /**
+   * 試験報酬表示を作成
+   */
+  private createExamRewardsDisplay(): Phaser.GameObjects.Container {
+    const container = this.add.container(0, 0);
+
+    let x = -((this.sceneData.rewards.length - 1) * 100) / 2;
+    this.sceneData.rewards.forEach((reward) => {
+      const rewardItem = this.add.container(x, 0);
+
+      const icon = RewardIcons[reward.type] ?? '🎁';
+      const iconText = this.add.text(0, 0, icon, {
+        fontSize: '32px',
+      }).setOrigin(0.5);
+      rewardItem.add(iconText);
+
+      const name = this.add.text(0, 30, reward.name, {
+        ...TextStyles.body,
+        fontSize: '12px',
+      }).setOrigin(0.5);
+      rewardItem.add(name);
+
+      container.add(rewardItem);
+      x += 100;
+    });
+
+    return container;
+  }
+
+  /**
+   * 成功パーティクル
+   */
+  private async playSuccessParticles(): Promise<void> {
+    if (!this.examOverlay) return;
+
+    return new Promise((resolve) => {
+      const centerX = RankUpSceneLayout.SCREEN_WIDTH / 2;
+      const centerY = RankUpSceneLayout.SCREEN_HEIGHT / 2;
+
+      // 紙吹雪エフェクト
+      for (let i = 0; i < 50; i++) {
+        const confetti = this.add.graphics();
+        const colors = [0xffcc00, 0x00ff00, 0xff00ff, 0x00ffff];
+        confetti.fillStyle(colors[i % colors.length], 1);
+        confetti.fillRect(-5, -5, 10, 10);
+        confetti.x = centerX + Phaser.Math.Between(-100, 100);
+        confetti.y = centerY;
+        confetti.setDepth(101);
+        this.examOverlay!.add(confetti);
+
+        this.tweens.add({
+          targets: confetti,
+          x: confetti.x + Phaser.Math.Between(-200, 200),
+          y: RankUpSceneLayout.SCREEN_HEIGHT + 50,
+          angle: Phaser.Math.Between(0, 720),
+          duration: Phaser.Math.Between(1500, 2500),
+          ease: 'Power1',
+          onComplete: () => confetti.destroy(),
+        });
+      }
+
+      this.time.delayedCall(500, () => resolve());
+    });
+  }
+
+  /**
+   * 試験失敗演出
+   */
+  async showExamFailure(reason: string): Promise<void> {
+    if (!this.examOverlay) return;
+
+    // 進行ステップをクリア
+    this.clearProgressSteps();
+
+    const centerX = RankUpSceneLayout.SCREEN_WIDTH / 2;
+    const centerY = RankUpSceneLayout.SCREEN_HEIGHT / 2;
+
+    const resultContainer = this.add.container(centerX, centerY);
+    this.examOverlay.add(resultContainer);
+
+    // 失敗テキスト
+    const failText = this.add.text(0, -60, '試験不合格', {
+      fontSize: '32px',
+      fontStyle: 'bold',
+      color: '#ff4444',
+    }).setOrigin(0.5).setAlpha(0);
+    resultContainer.add(failText);
+
+    // 理由
+    const reasonText = this.add.text(0, 0, reason, {
+      ...TextStyles.body,
+      fontSize: '16px',
+      color: '#aaaaaa',
+      wordWrap: { width: 400 },
+      align: 'center',
+    }).setOrigin(0.5).setAlpha(0);
+    resultContainer.add(reasonText);
+
+    // アドバイス
+    const adviceText = this.add.text(0, 60, '条件を満たしてから再挑戦してください', {
+      ...TextStyles.body,
+      fontSize: '14px',
+      color: '#888888',
+    }).setOrigin(0.5).setAlpha(0);
+    resultContainer.add(adviceText);
+
+    // アニメーション
+    await this.tweenPromise({
+      targets: failText,
+      alpha: 1,
+      duration: 300,
+    });
+
+    // 画面揺れ
+    this.cameras.main.shake(200, 0.01);
+
+    await this.delay(200);
+
+    await this.tweenPromise({
+      targets: [reasonText, adviceText],
+      alpha: 1,
+      duration: 300,
+    });
+
+    // 戻るボタン
+    await this.delay(500);
+    this.showRetryButton();
+  }
+
+  /**
+   * 再挑戦ボタンを表示
+   */
+  private showRetryButton(): void {
+    if (!this.examOverlay) return;
+
+    const centerX = RankUpSceneLayout.SCREEN_WIDTH / 2;
+    const centerY = RankUpSceneLayout.SCREEN_HEIGHT / 2;
+
+    const retryBtn = this.createExamButton(
+      '戻る',
+      centerX,
+      centerY + 150,
+      200,
+      50,
+      () => this.closeExamOverlay()
+    );
+    retryBtn.setDepth(102);
+    this.examOverlay.add(retryBtn);
+  }
+
+  /**
+   * 続けるボタンを表示
+   */
+  private showContinueButton(): void {
+    if (!this.examOverlay) return;
+
+    const centerX = RankUpSceneLayout.SCREEN_WIDTH / 2;
+    const centerY = RankUpSceneLayout.SCREEN_HEIGHT / 2;
+
+    const continueBtn = this.createExamButton(
+      '続ける',
+      centerX,
+      centerY + 200,
+      200,
+      50,
+      () => this.onExamComplete()
+    );
+    continueBtn.setDepth(102);
+    this.examOverlay.add(continueBtn);
+  }
+
+  /**
+   * 試験用ボタンを作成
+   */
+  private createExamButton(
+    text: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    onClick: () => void
+  ): Phaser.GameObjects.Container {
+    const container = this.add.container(x, y);
+
+    // 背景
+    const bg = this.add.graphics();
+    bg.fillStyle(Colors.primary, 1);
+    bg.fillRoundedRect(-width / 2, -height / 2, width, height, 8);
+    container.add(bg);
+
+    // テキスト
+    const btnText = this.add.text(0, 0, text, {
+      ...TextStyles.button,
+      fontSize: '16px',
+    }).setOrigin(0.5);
+    container.add(btnText);
+
+    // インタラクティブ
+    container.setSize(width, height);
+    container.setInteractive({ useHandCursor: true });
+
+    container.on('pointerover', () => {
+      bg.clear();
+      bg.fillStyle(0x4488ff, 1);
+      bg.fillRoundedRect(-width / 2, -height / 2, width, height, 8);
+    });
+
+    container.on('pointerout', () => {
+      bg.clear();
+      bg.fillStyle(Colors.primary, 1);
+      bg.fillRoundedRect(-width / 2, -height / 2, width, height, 8);
+    });
+
+    container.on('pointerdown', onClick);
+
+    return container;
+  }
+
+  /**
+   * 進行ステップをクリア
+   */
+  private clearProgressSteps(): void {
+    this.progressSteps.forEach((step) => step.destroy());
+    this.progressSteps = [];
+  }
+
+  /**
+   * 試験オーバーレイを閉じる
+   */
+  private closeExamOverlay(): void {
+    if (!this.examOverlay) return;
+
+    this.tweens.add({
+      targets: this.examOverlay,
+      alpha: 0,
+      duration: 300,
+      onComplete: () => {
+        this.examOverlay?.destroy();
+        this.examOverlay = null;
+        this.isExamInProgress = false;
+      },
+    });
+  }
+
+  /**
+   * 試験完了処理
+   */
+  private onExamComplete(): void {
+    // 昇格完了イベントを発行
+    (this.eventBus as unknown as { emit: (event: string, payload: unknown) => void }).emit(
+      'rankup:exam:complete',
+      {
+        newRank: this.sceneData.targetRank,
+        rewards: this.sceneData.rewards,
+      }
+    );
+
+    // メインシーンに戻る
+    this.scene.start(SceneKeys.MAIN);
+  }
+
+  // =====================================================
+  // ユーティリティ
+  // =====================================================
+
+  /**
+   * Tweenをプロミス化
+   */
+  private tweenPromise(config: Phaser.Types.Tweens.TweenBuilderConfig): Promise<void> {
+    return new Promise((resolve) => {
+      this.tweens.add({
+        ...config,
+        onComplete: () => resolve(),
+      });
+    });
+  }
+
+  /**
+   * 遅延
+   */
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => this.time.delayedCall(ms, () => resolve()));
+  }
+
+  /**
+   * 試験が進行中かどうか
+   */
+  isExamRunning(): boolean {
+    return this.isExamInProgress;
   }
 }

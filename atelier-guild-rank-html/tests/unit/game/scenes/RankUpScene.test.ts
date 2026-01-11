@@ -60,14 +60,19 @@ vi.mock('phaser', () => {
             setInteractive: vi.fn().mockReturnThis(),
             disableInteractive: vi.fn().mockReturnThis(),
             setAlpha: vi.fn().mockReturnThis(),
+            setY: vi.fn().mockReturnThis(),
+            setDepth: vi.fn().mockReturnThis(),
             on: vi.fn().mockReturnThis(),
             destroy: vi.fn(),
           }),
           text: vi.fn().mockReturnValue({
             setOrigin: vi.fn().mockReturnThis(),
             setAlpha: vi.fn().mockReturnThis(),
+            setScale: vi.fn().mockReturnThis(),
             setText: vi.fn().mockReturnThis(),
             destroy: vi.fn(),
+            y: 0,
+            style: { color: '#ffffff' },
           }),
           image: vi.fn().mockReturnValue({
             setOrigin: vi.fn().mockReturnThis(),
@@ -477,6 +482,61 @@ describe('RankUpScene 要件達成判定', () => {
 // =====================================================
 // 進捗計算テスト
 // =====================================================
+
+// =====================================================
+// 試験進行機能テスト (TASK-0245)
+// =====================================================
+
+describe('RankUpScene 試験進行', () => {
+  let scene: RankUpScene;
+
+  beforeEach(() => {
+    scene = new RankUpScene();
+  });
+
+  it('初期状態で試験は進行中ではない', () => {
+    expect(scene.isExamRunning()).toBe(false);
+  });
+
+  it('RankUpSceneにisExamRunningメソッドがある', () => {
+    expect(typeof scene.isExamRunning).toBe('function');
+  });
+
+  it('RankUpSceneにstartExamメソッドがある', () => {
+    expect(typeof scene.startExam).toBe('function');
+  });
+
+  it('RankUpSceneにshowExamSuccessメソッドがある', () => {
+    expect(typeof scene.showExamSuccess).toBe('function');
+  });
+
+  it('RankUpSceneにshowExamFailureメソッドがある', () => {
+    expect(typeof scene.showExamFailure).toBe('function');
+  });
+
+  it('startExamがPromiseを返す', () => {
+    const result = scene.startExam();
+    expect(result).toBeInstanceOf(Promise);
+  });
+
+  it('showExamSuccessがPromiseを返す', () => {
+    const result = scene.showExamSuccess('F');
+    expect(result).toBeInstanceOf(Promise);
+  });
+
+  it('showExamFailureがPromiseを返す', () => {
+    const result = scene.showExamFailure('テスト失敗');
+    expect(result).toBeInstanceOf(Promise);
+  });
+
+  it('isAllRequirementsMetメソッドがある', () => {
+    expect(typeof scene.isAllRequirementsMet).toBe('function');
+  });
+
+  it('updateRequirementメソッドがある', () => {
+    expect(typeof scene.updateRequirement).toBe('function');
+  });
+});
 
 describe('RankUpScene 進捗計算', () => {
   it('達成要件数から進捗率を計算できる', () => {
