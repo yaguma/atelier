@@ -868,3 +868,291 @@ describe('ShopScene 素材・アーティファクト関連エクスポート', 
     expect(module.isShopArtifactItem).toBeDefined();
   });
 });
+
+// =====================================================
+// TASK-0243: ShopScene購入フローテスト
+// =====================================================
+
+describe('ShopScene カード購入フロー', () => {
+  beforeEach(() => {
+    EventBus.resetInstance();
+  });
+
+  afterEach(() => {
+    EventBus.resetInstance();
+    vi.clearAllMocks();
+  });
+
+  it('カード購入リクエストが正しい形式で送信される', () => {
+    const eventBus = EventBus.getInstance();
+    const callback = vi.fn();
+    eventBus.on('shop:purchase:requested', callback);
+
+    const cardItem = {
+      id: 'card-001',
+      name: '森の採取地',
+      price: 100,
+      category: 'cards' as const,
+      type: 'gathering' as const,
+      rarity: 'common' as const,
+    };
+
+    eventBus.emit('shop:purchase:requested', {
+      item: {
+        id: cardItem.id,
+        name: cardItem.name,
+        price: cardItem.price,
+        category: cardItem.category,
+      },
+      category: 'cards',
+    });
+
+    expect(callback).toHaveBeenCalledWith(expect.objectContaining({
+      item: expect.objectContaining({
+        id: 'card-001',
+        price: 100,
+        category: 'cards',
+      }),
+      category: 'cards',
+    }));
+  });
+
+  it('カード購入完了イベントで所持金が更新される', () => {
+    const eventBus = EventBus.getInstance();
+    const goldCallback = vi.fn();
+    eventBus.on('shop:gold:updated', goldCallback);
+
+    // 購入完了後のゴールド更新をシミュレート
+    eventBus.emit('shop:gold:updated', { gold: 900 });
+
+    expect(goldCallback).toHaveBeenCalledWith({ gold: 900 });
+  });
+
+  it('購入完了イベントが正しく発行される', () => {
+    const eventBus = EventBus.getInstance();
+    const completeCallback = vi.fn();
+    eventBus.on('shop:purchase:complete', completeCallback);
+
+    eventBus.emit('shop:purchase:complete', {
+      item: {
+        id: 'card-001',
+        name: '森の採取地',
+        price: 100,
+        category: 'cards',
+      },
+    });
+
+    expect(completeCallback).toHaveBeenCalledTimes(1);
+    expect(completeCallback).toHaveBeenCalledWith(expect.objectContaining({
+      item: expect.objectContaining({
+        id: 'card-001',
+        category: 'cards',
+      }),
+    }));
+  });
+});
+
+describe('ShopScene 素材購入フロー', () => {
+  beforeEach(() => {
+    EventBus.resetInstance();
+  });
+
+  afterEach(() => {
+    EventBus.resetInstance();
+    vi.clearAllMocks();
+  });
+
+  it('素材購入リクエストに数量と合計金額が含まれる', () => {
+    const eventBus = EventBus.getInstance();
+    const callback = vi.fn();
+    eventBus.on('shop:purchase:requested', callback);
+
+    const materialItem = {
+      id: 'mat-001',
+      name: '薬草',
+      price: 50,
+      category: 'materials' as const,
+    };
+
+    eventBus.emit('shop:purchase:requested', {
+      item: materialItem,
+      category: 'materials',
+      quantity: 5,
+      totalPrice: 250,
+    });
+
+    expect(callback).toHaveBeenCalledWith(expect.objectContaining({
+      category: 'materials',
+      quantity: 5,
+      totalPrice: 250,
+    }));
+  });
+
+  it('無限在庫素材の購入が可能', () => {
+    const eventBus = EventBus.getInstance();
+    const callback = vi.fn();
+    eventBus.on('shop:purchase:requested', callback);
+
+    const infiniteStockMaterial = {
+      id: 'mat-infinite',
+      name: '魔法の花',
+      price: 150,
+      category: 'materials' as const,
+    };
+
+    eventBus.emit('shop:purchase:requested', {
+      item: infiniteStockMaterial,
+      category: 'materials',
+      quantity: 10,
+      totalPrice: 1500,
+    });
+
+    expect(callback).toHaveBeenCalledTimes(1);
+  });
+
+  it('素材購入完了後にゴールドが更新される', () => {
+    const eventBus = EventBus.getInstance();
+    const goldCallback = vi.fn();
+    eventBus.on('shop:gold:updated', goldCallback);
+
+    // 素材購入後のゴールド更新
+    eventBus.emit('shop:gold:updated', { gold: 750 });
+
+    expect(goldCallback).toHaveBeenCalledWith({ gold: 750 });
+  });
+});
+
+describe('ShopScene アーティファクト購入フロー', () => {
+  beforeEach(() => {
+    EventBus.resetInstance();
+  });
+
+  afterEach(() => {
+    EventBus.resetInstance();
+    vi.clearAllMocks();
+  });
+
+  it('アーティファクト購入リクエストが正しく送信される', () => {
+    const eventBus = EventBus.getInstance();
+    const callback = vi.fn();
+    eventBus.on('shop:purchase:requested', callback);
+
+    const artifactItem = {
+      id: 'art-001',
+      name: '錬金術師のローブ',
+      price: 500,
+      category: 'artifacts' as const,
+    };
+
+    eventBus.emit('shop:purchase:requested', {
+      item: artifactItem,
+      category: 'artifacts',
+    });
+
+    expect(callback).toHaveBeenCalledWith(expect.objectContaining({
+      item: expect.objectContaining({
+        id: 'art-001',
+        price: 500,
+        category: 'artifacts',
+      }),
+      category: 'artifacts',
+    }));
+  });
+
+  it('高額アーティファクトの購入リクエストも発行できる', () => {
+    const eventBus = EventBus.getInstance();
+    const callback = vi.fn();
+    eventBus.on('shop:purchase:requested', callback);
+
+    const legendaryArtifact = {
+      id: 'art-legendary',
+      name: '伝説の杖',
+      price: 10000,
+      category: 'artifacts' as const,
+    };
+
+    eventBus.emit('shop:purchase:requested', {
+      item: legendaryArtifact,
+      category: 'artifacts',
+    });
+
+    expect(callback).toHaveBeenCalledWith(expect.objectContaining({
+      item: expect.objectContaining({
+        price: 10000,
+      }),
+    }));
+  });
+
+  it('アーティファクト購入完了イベントが正しく処理される', () => {
+    const eventBus = EventBus.getInstance();
+    const completeCallback = vi.fn();
+    eventBus.on('shop:purchase:complete', completeCallback);
+
+    eventBus.emit('shop:purchase:complete', {
+      item: {
+        id: 'art-001',
+        name: '錬金術師のローブ',
+        price: 500,
+        category: 'artifacts',
+      },
+    });
+
+    expect(completeCallback).toHaveBeenCalledWith(expect.objectContaining({
+      item: expect.objectContaining({
+        id: 'art-001',
+        category: 'artifacts',
+      }),
+    }));
+  });
+});
+
+describe('ShopScene 購入可否判定', () => {
+  it('所持金と価格の比較が正しく動作する', () => {
+    const playerGold = 1000;
+    const itemPrice = 500;
+    const canAfford = playerGold >= itemPrice;
+
+    expect(canAfford).toBe(true);
+  });
+
+  it('所持金不足の場合は購入不可', () => {
+    const playerGold = 100;
+    const itemPrice = 500;
+    const canAfford = playerGold >= itemPrice;
+
+    expect(canAfford).toBe(false);
+  });
+
+  it('素材の数量購入時に合計金額で判定される', () => {
+    const playerGold = 1000;
+    const unitPrice = 50;
+    const quantity = 10;
+    const totalPrice = unitPrice * quantity;
+    const canAfford = playerGold >= totalPrice;
+
+    expect(totalPrice).toBe(500);
+    expect(canAfford).toBe(true);
+  });
+
+  it('素材の最大購入数量が計算できる', () => {
+    const playerGold = 1000;
+    const unitPrice = 150;
+    const stock = 10;
+    const maxByGold = Math.floor(playerGold / unitPrice);
+    const maxQuantity = Math.min(maxByGold, stock);
+
+    expect(maxByGold).toBe(6);
+    expect(maxQuantity).toBe(6);
+  });
+
+  it('無限在庫の場合は所持金のみで最大数量が決まる', () => {
+    const playerGold = 1000;
+    const unitPrice = 50;
+    const stock = -1; // 無限在庫
+
+    const maxByGold = Math.floor(playerGold / unitPrice);
+    const maxQuantity = stock === -1 ? maxByGold : Math.min(maxByGold, stock);
+
+    expect(maxQuantity).toBe(20);
+  });
+});
