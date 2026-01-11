@@ -97,6 +97,42 @@ export interface ShopItemPurchasedPayload {
   itemType: 'card' | 'material' | 'artifact';
 }
 
+/**
+ * ショップ購入リクエスト時のペイロード
+ */
+export interface ShopPurchaseRequestedPayload {
+  item: {
+    id: string;
+    name: string;
+    price: number;
+    description?: string;
+    category: 'cards' | 'materials' | 'artifacts';
+    data?: unknown;
+  };
+  category: 'cards' | 'materials' | 'artifacts';
+}
+
+/**
+ * ショップ購入完了時のペイロード
+ */
+export interface ShopPurchaseCompletePayload {
+  item: {
+    id: string;
+    name: string;
+    price: number;
+    description?: string;
+    category: 'cards' | 'materials' | 'artifacts';
+    data?: unknown;
+  };
+}
+
+/**
+ * ショップゴールド更新時のペイロード
+ */
+export interface ShopGoldUpdatedPayload {
+  gold: number;
+}
+
 // =====================================================
 // 状態更新ペイロード（Application → UI）
 // =====================================================
@@ -289,6 +325,9 @@ export interface EventPayloadMap {
   // ショップ
   'ui:shopItem:purchased': ShopItemPurchasedPayload;
   'ui:shop:closed': undefined;
+  'shop:purchase:requested': ShopPurchaseRequestedPayload;
+  'shop:purchase:complete': ShopPurchaseCompletePayload;
+  'shop:gold:updated': ShopGoldUpdatedPayload;
 
   // 日終了
   'ui:dayEnd:confirmed': undefined;
