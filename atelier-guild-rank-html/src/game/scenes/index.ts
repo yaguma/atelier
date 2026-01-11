@@ -9,3 +9,4 @@ export * from './MainSceneConstants';
 export * from './MainSceneEvents';
 export * from './TestScene';
 export * from './AlchemyTestScene';
+export * from './Phase3TestScene';
