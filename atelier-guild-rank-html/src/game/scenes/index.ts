@@ -19,3 +19,6 @@ export * from './RankUpTestScene';
 export * from './GameOverScene';
 export * from './GameOverSceneConstants';
 export * from './GameOverTestScene';
+export * from './GameClearScene';
+export * from './GameClearSceneConstants';
+export * from './GameClearTestScene';
