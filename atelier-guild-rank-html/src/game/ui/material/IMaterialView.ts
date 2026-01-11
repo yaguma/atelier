@@ -6,8 +6,12 @@
  */
 
 import Phaser from 'phaser';
-import { Material, IMaterialInstance } from '@domain/material/Material';
+import { IMaterial, IMaterialInstance } from '@domain/material/Material';
+import { Material } from '@domain/material/MaterialEntity';
 import { MaterialViewMode } from './MaterialConstants';
+
+// Material型をre-export（下位互換のため）
+export { Material };
 
 /**
  * MaterialView作成オプション

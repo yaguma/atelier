@@ -150,7 +150,7 @@ describe('HeaderUI', () => {
       const textCalls = mockScene.add.text.mock.results;
       // ランクテキストを探す
       const rankTextMock = textCalls.find((r: any) => {
-        const callArgs = mockScene.add.text.mock.calls[textCalls.indexOf(r)];
+        const callArgs = mockScene.add.text.mock.calls[textCalls.indexOf(r)] as unknown[];
         // 'F'で初期化されているものがランクテキスト
         return callArgs[2] === 'F';
       });

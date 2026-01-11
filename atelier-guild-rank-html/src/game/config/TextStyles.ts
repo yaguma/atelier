@@ -182,6 +182,14 @@ export const TextStyles = {
     fontStyle: 'bold',
     color: '#90ee90',
   } as Phaser.Types.GameObjects.Text.TextStyle,
+
+  /** 見出し - セクション見出し等 */
+  heading: {
+    fontFamily: BASE_FONT,
+    fontSize: '20px',
+    fontStyle: 'bold',
+    color: '#ffffff',
+  } as Phaser.Types.GameObjects.Text.TextStyle,
 } as const;
 
 /**

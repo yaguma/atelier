@@ -346,7 +346,7 @@ export class HeaderUI implements IHeaderUI {
     const fillWidth = (gaugeWidth - 4) * ratio;
 
     // AP残量に応じた色を決定
-    let gaugeColor = HeaderColors.GAUGE_AP;
+    let gaugeColor: number = HeaderColors.GAUGE_AP;
     if (current === 0) {
       gaugeColor = HeaderColors.GAUGE_AP_EMPTY;
     } else if (current <= max * 0.33) {

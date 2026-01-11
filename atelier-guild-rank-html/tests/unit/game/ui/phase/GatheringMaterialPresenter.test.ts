@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Quality } from '../../../../../src/domain/common/types';
+import { Attribute, Quality } from '../../../../../src/domain/common/types';
 import { Material } from '../../../../../src/domain/material/MaterialEntity';
 import { GatheringMaterialPresenter } from '../../../../../src/game/ui/phase/GatheringMaterialPresenter';
 import type { MaterialOption } from '../../../../../src/game/ui/material/IMaterialOptionView';
@@ -124,7 +124,7 @@ function createMockScene(): Phaser.Scene {
 function createTestMaterial(
   id: string,
   name: string,
-  attributes: string[] = []
+  attributes: Attribute[] = []
 ): Material {
   return new Material({
     id,
@@ -165,8 +165,8 @@ describe('GatheringMaterialPresenter', () => {
   describe('presentMaterials', () => {
     it('素材選択肢を表示し、完了コールバックが呼ばれる', async () => {
       const materials = [
-        createTestMaterialOption(createTestMaterial('mat-1', '薬草', ['plant'])),
-        createTestMaterialOption(createTestMaterial('mat-2', '鉱石', ['mineral'])),
+        createTestMaterialOption(createTestMaterial('mat-1', '薬草', [Attribute.GRASS])),
+        createTestMaterialOption(createTestMaterial('mat-2', '鉱石', [Attribute.EARTH])),
       ];
       const onComplete = vi.fn();
 
@@ -238,7 +238,7 @@ describe('GatheringMaterialPresenter', () => {
   describe('素材絵文字', () => {
     it('fire属性の素材は🔥絵文字で表示される', async () => {
       const fireMaterial = createTestMaterialOption(
-        createTestMaterial('mat-fire', '炎素材', ['fire'])
+        createTestMaterial('mat-fire', '炎素材', [Attribute.FIRE])
       );
 
       await presenter.presentMaterials([fireMaterial], vi.fn());
@@ -251,7 +251,7 @@ describe('GatheringMaterialPresenter', () => {
 
     it('water属性の素材は💧絵文字で表示される', async () => {
       const waterMaterial = createTestMaterialOption(
-        createTestMaterial('mat-water', '水素材', ['water'])
+        createTestMaterial('mat-water', '水素材', [Attribute.WATER])
       );
 
       await presenter.presentMaterials([waterMaterial], vi.fn());

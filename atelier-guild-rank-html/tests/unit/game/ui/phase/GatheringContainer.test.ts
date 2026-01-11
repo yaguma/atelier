@@ -5,7 +5,7 @@
  * 採取フェーズコンテナの基本機能をテストする
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   GamePhase,
   CardType,
@@ -185,7 +185,12 @@ describe('GatheringContainer', () => {
 
   beforeEach(() => {
     mockScene = createMockScene();
-    eventBus = new EventBus();
+    EventBus.resetInstance();
+    eventBus = EventBus.getInstance();
+  });
+
+  afterEach(() => {
+    EventBus.resetInstance();
   });
 
   describe('コンストラクタ', () => {

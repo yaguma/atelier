@@ -49,15 +49,15 @@ class TestPhaseContainer extends BasePhaseContainer {
   readonly phase = GamePhase.GATHERING;
 
   // テスト用フラグ（コンストラクタ前に初期化されるようにdeclareを使わない）
-  public createContentCalled: boolean;
-  public onEnterCalled: boolean;
-  public onExitCalled: boolean;
-  public onUpdateCalled: boolean;
-  public onEnabledChangeCalled: boolean;
-  public lastEnabledState: boolean | null;
-  public lastUpdateDelta: number | null;
-  public completionResult: unknown;
-  public canCompleteValue: boolean;
+  public createContentCalled!: boolean;
+  public onEnterCalled!: boolean;
+  public onExitCalled!: boolean;
+  public onUpdateCalled!: boolean;
+  public onEnabledChangeCalled!: boolean;
+  public lastEnabledState!: boolean | null;
+  public lastUpdateDelta!: number | null;
+  public completionResult!: unknown;
+  public canCompleteValue!: boolean;
 
   constructor(config: PhaseContainerConfig) {
     // フラグをsuper()の前に初期化できないため、

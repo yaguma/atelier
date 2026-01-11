@@ -15,7 +15,9 @@ import type { PhaseContainerConfig } from '../phase/IPhaseContainer';
 import { QuestPanel } from './QuestPanel';
 import { Colors } from '../../config/ColorPalette';
 import { TextStyles } from '../../config/TextStyles';
-import { QuestDifficulty } from '../../../domain/quest/QuestEntity';
+
+/** 難易度型 */
+type QuestDifficulty = 'easy' | 'normal' | 'hard' | 'extreme';
 
 /**
  * ソート種別
@@ -494,7 +496,7 @@ export class QuestAcceptContainer extends BasePhaseContainer {
       easy: 0,
       normal: 1,
       hard: 2,
-      expert: 3,
+      extreme: 3,
     };
 
     switch (this.currentSort) {

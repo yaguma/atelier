@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { GamePhase } from '../../../../../src/domain/common/types';
+import { GamePhase, QuestType } from '../../../../../src/domain/common/types';
 import { Quest } from '../../../../../src/domain/quest/QuestEntity';
 import { QuestAcceptContainer } from '../../../../../src/game/ui/quest/QuestAcceptContainer';
 import type { QuestAcceptContainerConfig } from '../../../../../src/game/ui/quest/QuestAcceptContainer';
@@ -138,6 +138,7 @@ function createMockQuest(overrides: Partial<Quest> = {}): Quest {
     id: 'quest-1',
     clientId: 'client-1',
     condition: {
+      type: QuestType.SPECIFIC,
       itemId: 'item-1',
       quantity: 1,
     },
@@ -379,7 +380,7 @@ describe('QuestAcceptContainer', () => {
       const quests = [
         createMockQuest({ id: 'quest-1', difficulty: 'hard' }),
         createMockQuest({ id: 'quest-2', difficulty: 'easy' }),
-        createMockQuest({ id: 'quest-3', difficulty: 'expert' }),
+        createMockQuest({ id: 'quest-3', difficulty: 'extreme' }),
         createMockQuest({ id: 'quest-4', difficulty: 'normal' }),
       ];
 

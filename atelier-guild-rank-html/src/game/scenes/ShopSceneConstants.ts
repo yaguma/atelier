@@ -225,3 +225,162 @@ export const PurchaseAnimationConfig = {
   END_ALPHA: 0,
   DEPTH: 100,
 } as const;
+
+/**
+ * 素材品質の型
+ */
+export type MaterialQuality = 'low' | 'medium' | 'high';
+
+/**
+ * 素材品質の閾値
+ */
+export const MaterialQualityThresholds = {
+  HIGH_MIN: 80,
+  MEDIUM_MIN: 50,
+} as const;
+
+/**
+ * 素材品質のカラー定義（数値形式 - Phaser用）
+ */
+export const MaterialQualityColors: Record<MaterialQuality, number> = {
+  low: 0xaaaaaa,
+  medium: 0x00aaff,
+  high: 0xffaa00,
+} as const;
+
+/**
+ * 素材品質のカラー定義（文字列形式 - CSS用）
+ */
+export const MaterialQualityColorStrings: Record<MaterialQuality, string> = {
+  low: '#aaaaaa',
+  medium: '#00aaff',
+  high: '#ffaa00',
+} as const;
+
+/**
+ * 素材品質のラベル定義
+ */
+export const MaterialQualityLabels: Record<MaterialQuality, string> = {
+  low: '低品質',
+  medium: '中品質',
+  high: '高品質',
+} as const;
+
+/**
+ * 素材商品行のレイアウト
+ */
+export const MaterialItemRowLayout = {
+  WIDTH: 560,
+  HEIGHT: 70,
+  ICON_BG_X: 10,
+  ICON_BG_Y: 10,
+  ICON_BG_SIZE: 50,
+  NAME_X: 75,
+  NAME_Y: 15,
+  CATEGORY_X: 75,
+  CATEGORY_Y: 40,
+  UNIT_PRICE_X: 350,
+  UNIT_PRICE_Y: 25,
+  STOCK_X: 480,
+  STOCK_Y: 25,
+} as const;
+
+/**
+ * 素材詳細パネルのレイアウト
+ */
+export const MaterialDetailPanelLayout = {
+  NAME_Y: 30,
+  QUALITY_Y: 60,
+  CATEGORY_Y: 85,
+  DESCRIPTION_X: 20,
+  DESCRIPTION_Y: 120,
+  QUANTITY_SELECTOR_Y: 220,
+  TOTAL_Y: 300,
+} as const;
+
+/**
+ * 数量セレクタのレイアウト
+ */
+export const QuantitySelectorLayout = {
+  LABEL_OFFSET_Y: -30,
+  BUTTON_RADIUS: 20,
+  MINUS_X: -60,
+  PLUS_X: 60,
+  MAX_BUTTON_Y: 50,
+  MAX_BUTTON_WIDTH: 80,
+  MAX_BUTTON_HEIGHT: 30,
+  QUANTITY_FONT_SIZE: 24,
+} as const;
+
+/**
+ * 数量セレクタの設定
+ */
+export const QuantitySelectorConfig = {
+  MIN_QUANTITY: 1,
+  MAX_QUANTITY: 99,
+  INFINITE_STOCK: -1,
+} as const;
+
+/**
+ * アーティファクト商品行のレイアウト
+ */
+export const ArtifactItemRowLayout = {
+  WIDTH: 560,
+  HEIGHT: 90,
+  ICON_BG_X: 10,
+  ICON_BG_Y: 10,
+  ICON_BG_WIDTH: 70,
+  ICON_BG_HEIGHT: 70,
+  ICON_CENTER_X: 45,
+  ICON_CENTER_Y: 45,
+  NAME_X: 95,
+  NAME_Y: 15,
+  RARITY_X: 95,
+  RARITY_Y: 40,
+  EFFECT_X: 95,
+  EFFECT_Y: 60,
+  PRICE_X: 480,
+  PRICE_Y: 35,
+} as const;
+
+/**
+ * アーティファクト詳細パネルのレイアウト
+ */
+export const ArtifactDetailPanelLayout = {
+  NAME_Y: 30,
+  RARITY_Y: 60,
+  EFFECTS_LABEL_X: 20,
+  EFFECTS_LABEL_Y: 100,
+  EFFECTS_ITEM_X: 30,
+  EFFECTS_START_Y: 125,
+  EFFECTS_LINE_HEIGHT: 5,
+  REQUIREMENT_LABEL_OFFSET_Y: 10,
+  REQUIREMENT_TEXT_OFFSET_Y: 25,
+  PRICE_Y: 350,
+} as const;
+
+/**
+ * アーティファクトレアリティのラベル定義（星付き）
+ */
+export const ArtifactRarityLabels: Record<CardRarity, string> = {
+  common: '★ コモン',
+  uncommon: '★★ アンコモン',
+  rare: '★★★ レア',
+  epic: '★★★★ エピック',
+  legendary: '★★★★★ レジェンダリー',
+} as const;
+
+/**
+ * アーティファクトのアイコン
+ */
+export const ArtifactIcon = '🏆' as const;
+
+/**
+ * 在庫表示の設定
+ */
+export const StockDisplayConfig = {
+  INFINITE_SYMBOL: '∞',
+  STOCK_PREFIX: '残',
+  OUT_OF_STOCK_COLOR: '#ff4444',
+  IN_STOCK_COLOR: '#aaaaaa',
+} as const;

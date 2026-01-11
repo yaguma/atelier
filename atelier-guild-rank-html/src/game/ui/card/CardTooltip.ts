@@ -32,6 +32,7 @@ const EFFECT_TYPE_NAMES: Record<EffectType, string> = {
   [EffectType.STORAGE_EXPANSION]: '保管拡張',
   [EffectType.ACTION_POINT_BONUS]: 'AP追加',
   [EffectType.ALCHEMY_COST_REDUCTION]: '調合コスト軽減',
+  [EffectType.ALL_BONUS]: '全体ボーナス',
 };
 
 /**

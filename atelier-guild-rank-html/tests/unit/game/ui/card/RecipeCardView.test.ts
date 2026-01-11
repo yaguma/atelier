@@ -92,7 +92,7 @@ const createTestRecipeCard = (overrides?: Partial<IRecipeCard>): IRecipeCard => 
     { materialId: 'mat-002', quantity: 1, minQuality: Quality.C },
   ],
   outputItemId: 'item-001',
-  category: ItemCategory.POTION,
+  category: ItemCategory.MEDICINE,
   ...overrides,
 });
 
@@ -523,7 +523,7 @@ describe('RecipeCardView', () => {
 
     it('カテゴリが表示される', () => {
       const card = createTestRecipeCard({
-        category: ItemCategory.POTION,
+        category: ItemCategory.MEDICINE,
       });
 
       new RecipeCardView(mockScene as any, {

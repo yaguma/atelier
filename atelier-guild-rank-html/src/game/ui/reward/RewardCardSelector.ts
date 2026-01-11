@@ -9,7 +9,7 @@
  */
 
 import Phaser from 'phaser';
-import type { Card } from '@domain/card/CardEntity';
+import type { Card } from '@domain/card/Card';
 import {
   IRewardCardSelector,
   RewardCardSelectorOptions,

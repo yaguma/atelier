@@ -107,6 +107,10 @@ const createMockScene = () => {
     },
     input: {
       setDraggable: vi.fn(),
+      keyboard: {
+        on: vi.fn().mockReturnThis(),
+        off: vi.fn().mockReturnThis(),
+      },
     },
   };
 };

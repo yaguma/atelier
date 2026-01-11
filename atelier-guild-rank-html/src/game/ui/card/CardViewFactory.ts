@@ -15,11 +15,10 @@ import { EnhancementCardView } from './EnhancementCardView';
 
 /**
  * CardViewクラスの型定義
+ * 各カードビューは固有のオプション型を受け取るため、anyを使用
  */
-type CardViewConstructor = new (
-  scene: Phaser.Scene,
-  options: CardViewOptions
-) => ICardView;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type CardViewConstructor = new (scene: Phaser.Scene, options: any) => ICardView;
 
 /**
  * カード種別に対応するCardViewクラスを取得する

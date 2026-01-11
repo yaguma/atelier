@@ -116,7 +116,7 @@ function createTestQuest(overrides: Partial<Quest> = {}): Quest {
     id: 'quest-001',
     clientId: 'client-001',
     condition: {
-      type: QuestType.SPECIFIC_ITEM,
+      type: QuestType.SPECIFIC,
       itemId: 'item-001',
       quantity: 3,
     },

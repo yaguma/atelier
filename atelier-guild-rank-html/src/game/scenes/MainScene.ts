@@ -28,6 +28,7 @@ import { SceneKeys } from '../config/SceneKeys';
 import { Colors } from '../config/ColorPalette';
 import { TextStyles } from '../config/TextStyles';
 import type { IPhaseContainer } from '../ui/phase/IPhaseContainer';
+import { CardType } from '@domain/common/types';
 import { QuestAcceptContainer } from '../ui/quest/QuestAcceptContainer';
 import { GatheringContainer } from '../ui/phase/GatheringContainer';
 import { AlchemyContainer } from '../ui/phase/AlchemyContainer';
@@ -921,13 +922,17 @@ export class MainScene extends BaseGameScene {
       case 'gathering':
         // 採取フェーズでは手札表示（採取地カードのみフィルタ）
         this.handContainer.setVisible(true);
-        this.handContainer.setSelectableFilter((card) => card.type === 'gathering');
+        this.handContainer.setSelectableFilter(
+          (card) => card.type === CardType.GATHERING
+        );
         break;
 
       case 'alchemy':
         // 調合フェーズでは手札表示（レシピカードのみフィルタ）
         this.handContainer.setVisible(true);
-        this.handContainer.setSelectableFilter((card) => card.type === 'recipe');
+        this.handContainer.setSelectableFilter(
+          (card) => card.type === CardType.RECIPE
+        );
         break;
 
       case 'delivery':

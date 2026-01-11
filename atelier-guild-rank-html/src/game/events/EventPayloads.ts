@@ -110,6 +110,10 @@ export interface ShopPurchaseRequestedPayload {
     data?: unknown;
   };
   category: 'cards' | 'materials' | 'artifacts';
+  /** 素材購入時の数量（1以上、素材以外は未設定） */
+  quantity?: number;
+  /** 素材購入時の合計金額（素材以外は未設定） */
+  totalPrice?: number;
 }
 
 /**
@@ -357,6 +361,7 @@ export interface EventPayloadMap {
   // 依頼
   'state:quests:updated': QuestsUpdatedPayload;
   'state:activeQuests:updated': ActiveQuestsUpdatedPayload;
+  'quest:accept': { quest: unknown };
 
   // ダイアログ
   'ui:dialog:opened': DialogOpenedPayload;

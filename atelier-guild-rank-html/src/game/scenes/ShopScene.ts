@@ -17,11 +17,26 @@ import {
   CardTypeIcons,
   CardTypeLabels,
   RarityColors,
+  RarityColorStrings,
   CardItemRowLayout,
   CardDetailPanelLayout,
   CardPreviewSize,
   LoadingOverlayConfig,
   PurchaseAnimationConfig,
+  MaterialQuality,
+  MaterialQualityThresholds,
+  MaterialQualityColors,
+  MaterialQualityColorStrings,
+  MaterialQualityLabels,
+  MaterialItemRowLayout,
+  MaterialDetailPanelLayout,
+  QuantitySelectorLayout,
+  QuantitySelectorConfig,
+  ArtifactItemRowLayout,
+  ArtifactDetailPanelLayout,
+  ArtifactRarityLabels,
+  ArtifactIcon,
+  StockDisplayConfig,
 } from './ShopSceneConstants';
 import { SceneKeys } from '../config/SceneKeys';
 import { UIFactory } from '../ui/UIFactory';
@@ -85,9 +100,46 @@ export interface ShopItem {
 }
 
 /**
- * ショップ商品の統合型（カードまたは一般商品）
+ * ショップ素材商品の型
  */
-export type ShopItemUnion = ShopItem | ShopCardItem;
+export interface ShopMaterialItem {
+  id: string;
+  name: string;
+  price: number;
+  description?: string;
+  category: 'materials';
+  quality: number;
+  materialCategory?: string;
+  stock: number; // -1 = 無限
+  data?: unknown;
+}
+
+/**
+ * アーティファクト効果の型
+ */
+export interface ArtifactEffect {
+  description: string;
+}
+
+/**
+ * ショップアーティファクト商品の型
+ */
+export interface ShopArtifactItem {
+  id: string;
+  name: string;
+  price: number;
+  description?: string;
+  category: 'artifacts';
+  rarity: CardRarity;
+  effects?: ArtifactEffect[];
+  requirement?: string;
+  data?: unknown;
+}
+
+/**
+ * ショップ商品の統合型
+ */
+export type ShopItemUnion = ShopItem | ShopCardItem | ShopMaterialItem | ShopArtifactItem;
 
 /**
  * 型ガード: ShopCardItemかどうか判定
@@ -97,13 +149,39 @@ export function isShopCardItem(item: ShopItemUnion): item is ShopCardItem {
 }
 
 /**
+ * 型ガード: ShopMaterialItemかどうか判定
+ */
+export function isShopMaterialItem(item: ShopItemUnion): item is ShopMaterialItem {
+  return item.category === 'materials' && 'quality' in item && 'stock' in item;
+}
+
+/**
+ * 型ガード: ShopArtifactItemかどうか判定
+ */
+export function isShopArtifactItem(item: ShopItemUnion): item is ShopArtifactItem {
+  return item.category === 'artifacts' && 'rarity' in item;
+}
+
+/**
+ * 数量セレクタの状態
+ */
+export interface QuantitySelectorState {
+  container: Phaser.GameObjects.Container;
+  quantity: number;
+  minusButton: Phaser.GameObjects.Container;
+  plusButton: Phaser.GameObjects.Container;
+  quantityText: Phaser.GameObjects.Text;
+  totalText: Phaser.GameObjects.Text | null;
+}
+
+/**
  * ショップシーン初期化データ
  */
 export interface ShopSceneData extends SceneInitData {
   playerGold: number;
   availableCards?: ShopCardItem[];
-  availableMaterials?: ShopItem[];
-  availableArtifacts?: ShopItem[];
+  availableMaterials?: ShopMaterialItem[];
+  availableArtifacts?: ShopArtifactItem[];
   returnScene?: string;
 }
 
@@ -133,6 +211,7 @@ export class ShopScene extends BaseGameScene {
   private shopData: ShopSceneData = {} as ShopSceneData;
   private currentLoadingOverlay: Phaser.GameObjects.Container | null = null;
   private confirmDialog: Phaser.GameObjects.Container | null = null;
+  private quantitySelector: QuantitySelectorState | null = null;
 
   constructor() {
     super(SceneKeys.SHOP);
@@ -372,6 +451,14 @@ export class ShopScene extends BaseGameScene {
     if (isShopCardItem(item)) {
       return this.createCardItemRow(item);
     }
+    // 素材商品の場合は汎用の行を作成
+    if (isShopMaterialItem(item)) {
+      return this.createGenericItemRow(item);
+    }
+    // アーティファクト商品の場合は汎用の行を作成
+    if (isShopArtifactItem(item)) {
+      return this.createGenericItemRow(item);
+    }
     // それ以外は通常の商品行
     return this.createGenericItemRow(item);
   }
@@ -528,6 +615,261 @@ export class ShopScene extends BaseGameScene {
   }
 
   /**
+   * 素材商品行を作成
+   */
+  private createMaterialItemRow(material: ShopMaterialItem): Phaser.GameObjects.Container {
+    const container = this.add.container(0, 0);
+    const { WIDTH, HEIGHT } = MaterialItemRowLayout;
+
+    // 背景
+    const bg = this.add.graphics();
+    bg.fillStyle(Colors.backgroundLight, 1);
+    bg.fillRoundedRect(0, 0, WIDTH, HEIGHT, 8);
+    bg.setName('bg');
+    container.add(bg);
+
+    // 素材アイコン（品質カラー）
+    const qualityColor = this.getQualityColor(material.quality);
+    const iconBg = this.add.graphics();
+    iconBg.fillStyle(qualityColor, 0.3);
+    iconBg.fillRoundedRect(
+      MaterialItemRowLayout.ICON_BG_X,
+      MaterialItemRowLayout.ICON_BG_Y,
+      MaterialItemRowLayout.ICON_BG_SIZE,
+      MaterialItemRowLayout.ICON_BG_SIZE,
+      8
+    );
+    iconBg.lineStyle(2, qualityColor);
+    iconBg.strokeRoundedRect(
+      MaterialItemRowLayout.ICON_BG_X,
+      MaterialItemRowLayout.ICON_BG_Y,
+      MaterialItemRowLayout.ICON_BG_SIZE,
+      MaterialItemRowLayout.ICON_BG_SIZE,
+      8
+    );
+    container.add(iconBg);
+
+    // 素材名
+    const name = this.add.text(MaterialItemRowLayout.NAME_X, MaterialItemRowLayout.NAME_Y, material.name, {
+      ...TextStyles.body,
+      fontSize: '16px',
+      fontStyle: 'bold',
+    });
+    container.add(name);
+
+    // カテゴリ
+    const category = this.add.text(
+      MaterialItemRowLayout.CATEGORY_X,
+      MaterialItemRowLayout.CATEGORY_Y,
+      material.materialCategory ?? '素材',
+      {
+        ...TextStyles.body,
+        fontSize: '12px',
+        color: '#888888',
+      }
+    );
+    container.add(category);
+
+    // 単価
+    const unitPrice = this.add.text(
+      MaterialItemRowLayout.UNIT_PRICE_X,
+      MaterialItemRowLayout.UNIT_PRICE_Y,
+      `${material.price} G / 個`,
+      {
+        ...TextStyles.body,
+        fontSize: '14px',
+        color: '#ffcc00',
+      }
+    );
+    container.add(unitPrice);
+
+    // 在庫
+    const stockText = material.stock === QuantitySelectorConfig.INFINITE_STOCK
+      ? StockDisplayConfig.INFINITE_SYMBOL
+      : `${StockDisplayConfig.STOCK_PREFIX} ${material.stock}`;
+    const stock = this.add.text(
+      MaterialItemRowLayout.STOCK_X,
+      MaterialItemRowLayout.STOCK_Y,
+      stockText,
+      {
+        ...TextStyles.body,
+        fontSize: '14px',
+        color: material.stock === 0 ? StockDisplayConfig.OUT_OF_STOCK_COLOR : StockDisplayConfig.IN_STOCK_COLOR,
+      }
+    );
+    container.add(stock);
+
+    // インタラクション
+    container.setSize(WIDTH, HEIGHT);
+    container.setInteractive({ useHandCursor: material.stock !== 0 });
+
+    container.on('pointerover', () => {
+      bg.clear();
+      bg.fillStyle(Colors.panelBackgroundLight, 1);
+      bg.fillRoundedRect(0, 0, WIDTH, HEIGHT, 8);
+    });
+
+    container.on('pointerout', () => {
+      bg.clear();
+      bg.fillStyle(Colors.backgroundLight, 1);
+      bg.fillRoundedRect(0, 0, WIDTH, HEIGHT, 8);
+    });
+
+    container.on('pointerdown', () => {
+      if (material.stock !== 0) {
+        this.selectMaterial(material);
+      }
+    });
+
+    return container;
+  }
+
+  /**
+   * 品質に応じた色を取得
+   */
+  private getQualityColor(quality: number): number {
+    if (quality >= MaterialQualityThresholds.HIGH_MIN) {
+      return MaterialQualityColors.high;
+    }
+    if (quality >= MaterialQualityThresholds.MEDIUM_MIN) {
+      return MaterialQualityColors.medium;
+    }
+    return MaterialQualityColors.low;
+  }
+
+  /**
+   * 品質レベルを取得
+   */
+  private getQualityLevel(quality: number): MaterialQuality {
+    if (quality >= MaterialQualityThresholds.HIGH_MIN) {
+      return 'high';
+    }
+    if (quality >= MaterialQualityThresholds.MEDIUM_MIN) {
+      return 'medium';
+    }
+    return 'low';
+  }
+
+  /**
+   * 素材を選択
+   */
+  private selectMaterial(material: ShopMaterialItem): void {
+    this.selectedItem = material;
+    this.updateMaterialDetailPanel(material);
+    this.purchaseButton.setVisible(true);
+  }
+
+  /**
+   * アーティファクト商品行を作成
+   */
+  private createArtifactItemRow(artifact: ShopArtifactItem): Phaser.GameObjects.Container {
+    const container = this.add.container(0, 0);
+    const { WIDTH, HEIGHT } = ArtifactItemRowLayout;
+
+    // 背景（レア度に応じた装飾）
+    const rarityColor = RarityColors[artifact.rarity] ?? RarityColors.common;
+    const bg = this.add.graphics();
+    bg.fillStyle(Colors.backgroundLight, 1);
+    bg.fillRoundedRect(0, 0, WIDTH, HEIGHT, 8);
+    bg.lineStyle(2, rarityColor, 0.5);
+    bg.strokeRoundedRect(0, 0, WIDTH, HEIGHT, 8);
+    bg.setName('bg');
+    container.add(bg);
+
+    // アイコン
+    const iconBg = this.add.graphics();
+    iconBg.fillStyle(rarityColor, 0.3);
+    iconBg.fillRoundedRect(
+      ArtifactItemRowLayout.ICON_BG_X,
+      ArtifactItemRowLayout.ICON_BG_Y,
+      ArtifactItemRowLayout.ICON_BG_WIDTH,
+      ArtifactItemRowLayout.ICON_BG_HEIGHT,
+      8
+    );
+    container.add(iconBg);
+
+    const icon = this.add.text(
+      ArtifactItemRowLayout.ICON_CENTER_X,
+      ArtifactItemRowLayout.ICON_CENTER_Y,
+      ArtifactIcon,
+      { fontSize: '32px' }
+    ).setOrigin(0.5);
+    container.add(icon);
+
+    // 名前
+    const name = this.add.text(ArtifactItemRowLayout.NAME_X, ArtifactItemRowLayout.NAME_Y, artifact.name, {
+      ...TextStyles.body,
+      fontSize: '16px',
+      fontStyle: 'bold',
+    });
+    container.add(name);
+
+    // レアリティ
+    const rarityLabel = ArtifactRarityLabels[artifact.rarity] ?? ArtifactRarityLabels.common;
+    const rarity = this.add.text(ArtifactItemRowLayout.RARITY_X, ArtifactItemRowLayout.RARITY_Y, rarityLabel, {
+      ...TextStyles.body,
+      fontSize: '12px',
+      color: `#${rarityColor.toString(16).padStart(6, '0')}`,
+    });
+    container.add(rarity);
+
+    // 効果概要
+    const effectSummary = artifact.effects?.[0]?.description ?? '特殊効果';
+    const truncatedEffect = effectSummary.length > 30 ? effectSummary.slice(0, 27) + '...' : effectSummary;
+    const effect = this.add.text(ArtifactItemRowLayout.EFFECT_X, ArtifactItemRowLayout.EFFECT_Y, truncatedEffect, {
+      ...TextStyles.body,
+      fontSize: '11px',
+      color: '#aaaaaa',
+    });
+    container.add(effect);
+
+    // 価格
+    const canAfford = artifact.price <= this.playerGold;
+    const price = this.add.text(ArtifactItemRowLayout.PRICE_X, ArtifactItemRowLayout.PRICE_Y, `${artifact.price} G`, {
+      ...TextStyles.body,
+      fontSize: '18px',
+      fontStyle: 'bold',
+      color: canAfford ? '#ffcc00' : ShopColors.priceCannotAfford,
+    });
+    container.add(price);
+
+    // インタラクション
+    container.setSize(WIDTH, HEIGHT);
+    container.setInteractive({ useHandCursor: true });
+
+    container.on('pointerover', () => {
+      bg.clear();
+      bg.fillStyle(Colors.panelBackgroundLight, 1);
+      bg.fillRoundedRect(0, 0, WIDTH, HEIGHT, 8);
+      bg.lineStyle(2, rarityColor, 0.7);
+      bg.strokeRoundedRect(0, 0, WIDTH, HEIGHT, 8);
+    });
+
+    container.on('pointerout', () => {
+      bg.clear();
+      bg.fillStyle(Colors.backgroundLight, 1);
+      bg.fillRoundedRect(0, 0, WIDTH, HEIGHT, 8);
+      bg.lineStyle(2, rarityColor, 0.5);
+      bg.strokeRoundedRect(0, 0, WIDTH, HEIGHT, 8);
+    });
+
+    container.on('pointerdown', () => {
+      this.selectArtifact(artifact);
+    });
+
+    return container;
+  }
+
+  /**
+   * アーティファクトを選択
+   */
+  private selectArtifact(artifact: ShopArtifactItem): void {
+    this.selectedItem = artifact;
+    this.updateArtifactDetailPanel(artifact);
+    this.purchaseButton.setVisible(true);
+  }
+
+  /**
    * 詳細パネルを作成
    */
   private createDetailPanel(): void {
@@ -676,15 +1018,33 @@ export class ShopScene extends BaseGameScene {
       placeholder.setVisible(false);
     }
 
-    // カード商品の場合はカード専用詳細を表示
+    // 数量セレクタをクリア
+    this.quantitySelector = null;
+
+    // 価格を先に取得（型ガードの前）
+    const itemPrice = this.selectedItem.price;
+
+    // カテゴリに応じた詳細表示
     if (isShopCardItem(this.selectedItem)) {
       this.updateCardDetailPanel(this.selectedItem);
+    } else if (isShopMaterialItem(this.selectedItem)) {
+      this.updateMaterialDetailPanel(this.selectedItem);
+    } else if (isShopArtifactItem(this.selectedItem)) {
+      this.updateArtifactDetailPanel(this.selectedItem);
     } else {
       this.updateGenericDetailPanel(this.selectedItem);
     }
 
-    // 購入ボタンの有効/無効
-    const canAfford = this.selectedItem.price <= this.playerGold;
+    // 購入ボタンの有効/無効（素材は数量に応じて計算）
+    let canAfford = itemPrice <= this.playerGold;
+    // 注: updateMaterialDetailPanel内でquantitySelectorが再設定される
+    // TypeScriptの制御フロー分析では追跡できないため、明示的な型キャストを使用
+    const qsAfterUpdate = this.quantitySelector as QuantitySelectorState | null;
+    if (this.currentCategory === 'materials' && qsAfterUpdate !== null) {
+      const qty = qsAfterUpdate.quantity;
+      const total = itemPrice * qty;
+      canAfford = total <= this.playerGold;
+    }
     this.uiFactory.setButtonEnabled(this.purchaseButton, canAfford);
   }
 
@@ -865,10 +1225,348 @@ export class ShopScene extends BaseGameScene {
   }
 
   /**
+   * 素材詳細パネルを更新
+   */
+  private updateMaterialDetailPanel(material: ShopMaterialItem): void {
+    const { DETAIL_AREA } = ShopSceneLayout;
+
+    // 素材名
+    const nameText = this.add.text(DETAIL_AREA.WIDTH / 2, MaterialDetailPanelLayout.NAME_Y, material.name, {
+      ...TextStyles.titleSmall,
+    }).setOrigin(0.5);
+    this.detailPanel.add(nameText);
+
+    // 品質
+    const qualityLevel = this.getQualityLevel(material.quality);
+    const qualityColor = MaterialQualityColorStrings[qualityLevel];
+    const qualityLabel = MaterialQualityLabels[qualityLevel];
+    const qualityText = this.add.text(
+      DETAIL_AREA.WIDTH / 2,
+      MaterialDetailPanelLayout.QUALITY_Y,
+      `品質: ${material.quality} (${qualityLabel})`,
+      {
+        ...TextStyles.body,
+        color: qualityColor,
+      }
+    ).setOrigin(0.5);
+    this.detailPanel.add(qualityText);
+
+    // カテゴリ
+    const categoryText = this.add.text(
+      DETAIL_AREA.WIDTH / 2,
+      MaterialDetailPanelLayout.CATEGORY_Y,
+      material.materialCategory ?? '素材',
+      {
+        ...TextStyles.body,
+        fontSize: '14px',
+        color: '#888888',
+      }
+    ).setOrigin(0.5);
+    this.detailPanel.add(categoryText);
+
+    // 説明
+    if (material.description) {
+      const descText = this.add.text(
+        MaterialDetailPanelLayout.DESCRIPTION_X,
+        MaterialDetailPanelLayout.DESCRIPTION_Y,
+        material.description,
+        {
+          ...TextStyles.body,
+          fontSize: '13px',
+          wordWrap: { width: DETAIL_AREA.WIDTH - 40 },
+        }
+      );
+      this.detailPanel.add(descText);
+    }
+
+    // 数量選択UI
+    this.createQuantitySelector(material, DETAIL_AREA.WIDTH / 2, MaterialDetailPanelLayout.QUANTITY_SELECTOR_Y);
+
+    // 合計金額コンテナ
+    const totalContainer = this.add.container(DETAIL_AREA.WIDTH / 2, MaterialDetailPanelLayout.TOTAL_Y);
+    this.detailPanel.add(totalContainer);
+
+    const totalLabel = this.add.text(-50, 0, '合計:', {
+      ...TextStyles.body,
+      fontSize: '16px',
+    });
+    totalContainer.add(totalLabel);
+
+    const totalValue = this.add.text(50, 0, `${material.price} G`, {
+      ...TextStyles.titleSmall,
+      fontSize: '20px',
+      color: '#ffcc00',
+    }).setOrigin(0.5);
+    totalValue.setName('totalValue');
+    totalContainer.add(totalValue);
+
+    // 数量セレクタの合計テキストを設定
+    if (this.quantitySelector) {
+      this.quantitySelector.totalText = totalValue;
+    }
+  }
+
+  /**
+   * 数量セレクタを作成
+   */
+  private createQuantitySelector(material: ShopMaterialItem, x: number, y: number): void {
+    const container = this.add.container(x, y);
+    this.detailPanel.add(container);
+
+    // ラベル
+    const label = this.add.text(0, QuantitySelectorLayout.LABEL_OFFSET_Y, '購入数量', {
+      ...TextStyles.body,
+      fontSize: '14px',
+    }).setOrigin(0.5);
+    container.add(label);
+
+    // マイナスボタン
+    const minusBtn = this.createQuantityButton('-', QuantitySelectorLayout.MINUS_X, 0, () => {
+      this.changeQuantity(-1, material);
+    });
+    container.add(minusBtn);
+
+    // 数量テキスト
+    const quantityText = this.add.text(0, 0, '1', {
+      ...TextStyles.titleSmall,
+      fontSize: `${QuantitySelectorLayout.QUANTITY_FONT_SIZE}px`,
+    }).setOrigin(0.5);
+    container.add(quantityText);
+
+    // プラスボタン
+    const plusBtn = this.createQuantityButton('+', QuantitySelectorLayout.PLUS_X, 0, () => {
+      this.changeQuantity(1, material);
+    });
+    container.add(plusBtn);
+
+    // 最大購入ボタン
+    const maxBtn = this.uiFactory.createSecondaryButton({
+      x: 0,
+      y: QuantitySelectorLayout.MAX_BUTTON_Y,
+      width: QuantitySelectorLayout.MAX_BUTTON_WIDTH,
+      height: QuantitySelectorLayout.MAX_BUTTON_HEIGHT,
+      text: 'MAX',
+      onClick: () => this.setMaxQuantity(material),
+    });
+    container.add(maxBtn);
+
+    this.quantitySelector = {
+      container,
+      quantity: 1,
+      minusButton: minusBtn,
+      plusButton: plusBtn,
+      quantityText,
+      totalText: null,
+    };
+  }
+
+  /**
+   * 数量ボタンを作成
+   */
+  private createQuantityButton(
+    label: string,
+    x: number,
+    y: number,
+    onClick: () => void
+  ): Phaser.GameObjects.Container {
+    const btn = this.add.container(x, y);
+
+    const bg = this.add.graphics();
+    bg.fillStyle(Colors.primary, 1);
+    bg.fillCircle(0, 0, QuantitySelectorLayout.BUTTON_RADIUS);
+    bg.setName('bg');
+    btn.add(bg);
+
+    const text = this.add.text(0, 0, label, {
+      fontSize: '20px',
+      fontStyle: 'bold',
+    }).setOrigin(0.5);
+    btn.add(text);
+
+    btn.setSize(QuantitySelectorLayout.BUTTON_RADIUS * 2, QuantitySelectorLayout.BUTTON_RADIUS * 2);
+    btn.setInteractive({ useHandCursor: true });
+
+    btn.on('pointerover', () => {
+      bg.clear();
+      bg.fillStyle(Colors.primaryHover, 1);
+      bg.fillCircle(0, 0, QuantitySelectorLayout.BUTTON_RADIUS);
+    });
+
+    btn.on('pointerout', () => {
+      bg.clear();
+      bg.fillStyle(Colors.primary, 1);
+      bg.fillCircle(0, 0, QuantitySelectorLayout.BUTTON_RADIUS);
+    });
+
+    btn.on('pointerdown', onClick);
+
+    return btn;
+  }
+
+  /**
+   * 数量を変更
+   */
+  private changeQuantity(delta: number, material: ShopMaterialItem): void {
+    if (!this.quantitySelector) return;
+
+    const maxQuantity = this.calculateMaxQuantity(material);
+    let newQuantity = this.quantitySelector.quantity + delta;
+    newQuantity = Phaser.Math.Clamp(newQuantity, QuantitySelectorConfig.MIN_QUANTITY, maxQuantity);
+
+    this.quantitySelector.quantity = newQuantity;
+    this.quantitySelector.quantityText.setText(newQuantity.toString());
+
+    // 合計金額更新
+    const total = newQuantity * material.price;
+    const canAfford = total <= this.playerGold;
+    if (this.quantitySelector.totalText) {
+      this.quantitySelector.totalText.setText(`${total} G`);
+      this.quantitySelector.totalText.setColor(canAfford ? '#ffcc00' : ShopColors.priceCannotAfford);
+    }
+
+    // 購入ボタンの有効/無効
+    this.uiFactory.setButtonEnabled(this.purchaseButton, canAfford);
+  }
+
+  /**
+   * 最大数量を設定
+   */
+  private setMaxQuantity(material: ShopMaterialItem): void {
+    if (!this.quantitySelector) return;
+
+    const maxQuantity = this.calculateMaxQuantity(material);
+    this.quantitySelector.quantity = maxQuantity;
+    this.quantitySelector.quantityText.setText(maxQuantity.toString());
+
+    const total = maxQuantity * material.price;
+    const canAfford = total <= this.playerGold;
+    if (this.quantitySelector.totalText) {
+      this.quantitySelector.totalText.setText(`${total} G`);
+      this.quantitySelector.totalText.setColor(canAfford ? '#ffcc00' : ShopColors.priceCannotAfford);
+    }
+
+    // 購入ボタンの有効/無効
+    this.uiFactory.setButtonEnabled(this.purchaseButton, canAfford);
+  }
+
+  /**
+   * 最大購入可能数を計算
+   */
+  private calculateMaxQuantity(material: ShopMaterialItem): number {
+    // 所持金で買える最大数
+    const maxByGold = Math.floor(this.playerGold / material.price);
+
+    // 在庫制限
+    const maxByStock = material.stock === QuantitySelectorConfig.INFINITE_STOCK
+      ? QuantitySelectorConfig.MAX_QUANTITY
+      : material.stock;
+
+    return Math.min(maxByGold, maxByStock, QuantitySelectorConfig.MAX_QUANTITY);
+  }
+
+  /**
+   * アーティファクト詳細パネルを更新
+   */
+  private updateArtifactDetailPanel(artifact: ShopArtifactItem): void {
+    const { DETAIL_AREA } = ShopSceneLayout;
+
+    // 名前
+    const nameText = this.add.text(DETAIL_AREA.WIDTH / 2, ArtifactDetailPanelLayout.NAME_Y, artifact.name, {
+      ...TextStyles.titleSmall,
+    }).setOrigin(0.5);
+    this.detailPanel.add(nameText);
+
+    // レアリティ
+    const rarityColor = RarityColors[artifact.rarity] ?? RarityColors.common;
+    const rarityLabel = ArtifactRarityLabels[artifact.rarity] ?? ArtifactRarityLabels.common;
+    const rarityText = this.add.text(DETAIL_AREA.WIDTH / 2, ArtifactDetailPanelLayout.RARITY_Y, rarityLabel, {
+      ...TextStyles.body,
+      color: `#${rarityColor.toString(16).padStart(6, '0')}`,
+    }).setOrigin(0.5);
+    this.detailPanel.add(rarityText);
+
+    // 効果一覧
+    let y: number = ArtifactDetailPanelLayout.EFFECTS_LABEL_Y;
+    const effectsLabel = this.add.text(ArtifactDetailPanelLayout.EFFECTS_LABEL_X, y, '【効果】', {
+      ...TextStyles.body,
+      fontStyle: 'bold',
+    });
+    this.detailPanel.add(effectsLabel);
+    y = ArtifactDetailPanelLayout.EFFECTS_START_Y;
+
+    if (artifact.effects && artifact.effects.length > 0) {
+      artifact.effects.forEach((effect) => {
+        const effectText = this.add.text(ArtifactDetailPanelLayout.EFFECTS_ITEM_X, y, `• ${effect.description}`, {
+          ...TextStyles.body,
+          fontSize: '13px',
+          wordWrap: { width: DETAIL_AREA.WIDTH - 60 },
+        });
+        this.detailPanel.add(effectText);
+        y += effectText.height + ArtifactDetailPanelLayout.EFFECTS_LINE_HEIGHT;
+      });
+    } else {
+      const noEffectText = this.add.text(ArtifactDetailPanelLayout.EFFECTS_ITEM_X, y, '• 特殊効果', {
+        ...TextStyles.body,
+        fontSize: '13px',
+      });
+      this.detailPanel.add(noEffectText);
+      y += noEffectText.height + ArtifactDetailPanelLayout.EFFECTS_LINE_HEIGHT;
+    }
+
+    // 装備条件（あれば）
+    if (artifact.requirement) {
+      y += ArtifactDetailPanelLayout.REQUIREMENT_LABEL_OFFSET_Y;
+      const reqLabel = this.add.text(ArtifactDetailPanelLayout.EFFECTS_LABEL_X, y, '【装備条件】', {
+        ...TextStyles.body,
+        fontStyle: 'bold',
+      });
+      this.detailPanel.add(reqLabel);
+      y += ArtifactDetailPanelLayout.REQUIREMENT_TEXT_OFFSET_Y;
+
+      const reqText = this.add.text(ArtifactDetailPanelLayout.EFFECTS_ITEM_X, y, artifact.requirement, {
+        ...TextStyles.body,
+        fontSize: '13px',
+      });
+      this.detailPanel.add(reqText);
+    }
+
+    // 価格
+    const canAfford = artifact.price <= this.playerGold;
+    const priceText = this.add.text(DETAIL_AREA.WIDTH / 2, ArtifactDetailPanelLayout.PRICE_Y, `${artifact.price} G`, {
+      ...TextStyles.titleSmall,
+      fontSize: '24px',
+      color: canAfford ? '#ffcc00' : ShopColors.priceCannotAfford,
+    }).setOrigin(0.5);
+    this.detailPanel.add(priceText);
+
+    // 購入不可メッセージ
+    if (!canAfford) {
+      const warningText = this.add.text(DETAIL_AREA.WIDTH / 2, ArtifactDetailPanelLayout.PRICE_Y + 30, 'ゴールドが足りません', {
+        ...TextStyles.body,
+        fontSize: '12px',
+        color: ShopColors.priceCannotAfford,
+      }).setOrigin(0.5);
+      this.detailPanel.add(warningText);
+    }
+  }
+
+  /**
    * 購入処理（購入確認ダイアログを表示）
    */
   private handlePurchase(): void {
     if (!this.selectedItem) return;
+
+    // 素材の場合は数量を考慮
+    if (isShopMaterialItem(this.selectedItem) && this.quantitySelector) {
+      const totalPrice = this.selectedItem.price * this.quantitySelector.quantity;
+      if (totalPrice > this.playerGold) {
+        this.showPurchaseError('ゴールドが足りません');
+        return;
+      }
+      this.showMaterialPurchaseConfirmDialog(this.selectedItem, this.quantitySelector.quantity);
+      return;
+    }
+
     if (this.selectedItem.price > this.playerGold) {
       this.showPurchaseError('ゴールドが足りません');
       return;
@@ -876,6 +1574,113 @@ export class ShopScene extends BaseGameScene {
 
     // 購入確認ダイアログを表示
     this.showPurchaseConfirmDialog(this.selectedItem);
+  }
+
+  /**
+   * 素材購入確認ダイアログを表示
+   */
+  private showMaterialPurchaseConfirmDialog(material: ShopMaterialItem, quantity: number): void {
+    // 既存ダイアログがあれば破棄
+    if (this.confirmDialog) {
+      this.confirmDialog.destroy();
+      this.confirmDialog = null;
+    }
+
+    const totalPrice = material.price * quantity;
+
+    const dialog = this.add.container(0, 0);
+    dialog.setDepth(150);
+
+    // オーバーレイ背景
+    const overlay = this.add.graphics();
+    overlay.fillStyle(0x000000, 0.7);
+    overlay.fillRect(0, 0, ShopSceneLayout.SCREEN_WIDTH, ShopSceneLayout.SCREEN_HEIGHT);
+    overlay.setInteractive(
+      new Phaser.Geom.Rectangle(0, 0, ShopSceneLayout.SCREEN_WIDTH, ShopSceneLayout.SCREEN_HEIGHT),
+      Phaser.Geom.Rectangle.Contains
+    );
+    dialog.add(overlay);
+
+    // ダイアログボックス
+    const boxWidth = 400;
+    const boxHeight = 220;
+    const boxX = (ShopSceneLayout.SCREEN_WIDTH - boxWidth) / 2;
+    const boxY = (ShopSceneLayout.SCREEN_HEIGHT - boxHeight) / 2;
+
+    const box = this.add.graphics();
+    box.fillStyle(Colors.panelBackground, 1);
+    box.fillRoundedRect(boxX, boxY, boxWidth, boxHeight, 12);
+    box.lineStyle(2, Colors.panelBorder);
+    box.strokeRoundedRect(boxX, boxY, boxWidth, boxHeight, 12);
+    dialog.add(box);
+
+    // タイトル
+    const title = this.add.text(ShopSceneLayout.SCREEN_WIDTH / 2, boxY + 30, '購入確認', {
+      ...TextStyles.titleSmall,
+    }).setOrigin(0.5);
+    dialog.add(title);
+
+    // メッセージ
+    const message = this.add.text(
+      ShopSceneLayout.SCREEN_WIDTH / 2,
+      boxY + 90,
+      `「${material.name}」× ${quantity}\n合計 ${totalPrice} G で購入しますか？`,
+      {
+        ...TextStyles.body,
+        align: 'center',
+      }
+    ).setOrigin(0.5);
+    dialog.add(message);
+
+    // ボタン
+    const buttonY = boxY + boxHeight - 50;
+    const cancelBtn = this.uiFactory.createSecondaryButton({
+      x: boxX + 60,
+      y: buttonY,
+      width: 120,
+      height: 40,
+      text: 'キャンセル',
+      onClick: () => this.closePurchaseConfirmDialog(),
+    });
+    dialog.add(cancelBtn);
+
+    const confirmBtn = this.uiFactory.createPrimaryButton({
+      x: boxX + boxWidth - 180,
+      y: buttonY,
+      width: 120,
+      height: 40,
+      text: '購入',
+      onClick: () => this.executeMaterialPurchase(material, quantity),
+    });
+    dialog.add(confirmBtn);
+
+    this.confirmDialog = dialog;
+  }
+
+  /**
+   * 素材購入を実行
+   */
+  private executeMaterialPurchase(material: ShopMaterialItem, quantity: number): void {
+    // ダイアログを閉じる
+    this.closePurchaseConfirmDialog();
+
+    // ローディングオーバーレイを表示
+    this.showLoadingOverlay('購入中...');
+
+    // イベント発火
+    this.eventBus.emit('shop:purchase:requested', {
+      item: {
+        id: material.id,
+        name: material.name,
+        price: material.price,
+        description: material.description,
+        category: 'materials' as const,
+        data: material.data,
+      },
+      category: 'materials',
+      quantity: quantity,
+      totalPrice: material.price * quantity,
+    });
   }
 
   /**
@@ -1073,30 +1878,94 @@ export class ShopScene extends BaseGameScene {
   /**
    * 購入完了通知
    */
-  onPurchaseComplete(item: ShopItemUnion): void {
+  onPurchaseComplete(item: ShopItemUnion & { _purchaseQuantity?: number }): void {
     // ローディングオーバーレイを非表示
     this.hideLoadingOverlay();
 
-    // 購入アニメーションを再生（カードの場合）
+    // カテゴリに応じた処理
     if (isShopCardItem(item)) {
+      // カードの場合はアニメーションを再生
       this.playPurchaseAnimation(item);
+      // 商品リストから除外
+      if (this.shopData.availableCards) {
+        this.shopData.availableCards = this.shopData.availableCards.filter(
+          c => c.id !== item.id
+        );
+      }
+      this.showPurchaseSuccess(`${item.name}を購入しました！`);
+    } else if (isShopMaterialItem(item)) {
+      // 素材の場合は在庫を更新
+      const quantity = item._purchaseQuantity ?? 1;
+      const material = this.shopData.availableMaterials?.find(m => m.id === item.id);
+      if (material && material.stock !== QuantitySelectorConfig.INFINITE_STOCK) {
+        material.stock -= quantity;
+      }
+      this.showPurchaseSuccess(`${item.name} × ${quantity} を購入しました！`);
+    } else if (isShopArtifactItem(item)) {
+      // アーティファクトの場合は商品リストから除外
+      if (this.shopData.availableArtifacts) {
+        this.shopData.availableArtifacts = this.shopData.availableArtifacts.filter(
+          a => a.id !== item.id
+        );
+      }
+      this.showPurchaseSuccess(`${item.name}を購入しました！`);
+    } else {
+      this.showPurchaseSuccess(`${item.name}を購入しました！`);
     }
 
-    // 商品リスト更新（購入済みを除外）
-    if (this.currentCategory === 'cards' && this.shopData.availableCards) {
-      this.shopData.availableCards = this.shopData.availableCards.filter(
-        c => c.id !== item.id
+    this.updateItemList();
+
+    // 選択解除
+    this.selectedItem = null;
+    this.quantitySelector = null;
+    this.updateDetailPanel();
+    this.purchaseButton.setVisible(false);
+  }
+
+  /**
+   * 素材購入完了通知（Application層から呼び出し）
+   */
+  onMaterialPurchaseComplete(result: { material: ShopMaterialItem; quantity: number; newGold: number }): void {
+    this.updateGold(result.newGold);
+
+    // 在庫更新
+    const material = this.shopData.availableMaterials?.find(m => m.id === result.material.id);
+    if (material && material.stock !== QuantitySelectorConfig.INFINITE_STOCK) {
+      material.stock -= result.quantity;
+    }
+
+    this.hideLoadingOverlay();
+    this.updateItemList();
+    this.showPurchaseSuccess(`${result.material.name} × ${result.quantity} を購入しました！`);
+
+    // 選択解除
+    this.selectedItem = null;
+    this.quantitySelector = null;
+    this.updateDetailPanel();
+    this.purchaseButton.setVisible(false);
+  }
+
+  /**
+   * アーティファクト購入完了通知（Application層から呼び出し）
+   */
+  onArtifactPurchaseComplete(result: { artifact: ShopArtifactItem; newGold: number }): void {
+    this.updateGold(result.newGold);
+
+    // 購入済みアーティファクトを除外
+    if (this.shopData.availableArtifacts) {
+      this.shopData.availableArtifacts = this.shopData.availableArtifacts.filter(
+        a => a.id !== result.artifact.id
       );
     }
+
+    this.hideLoadingOverlay();
     this.updateItemList();
+    this.showPurchaseSuccess(`${result.artifact.name} を購入しました！`);
 
     // 選択解除
     this.selectedItem = null;
     this.updateDetailPanel();
     this.purchaseButton.setVisible(false);
-
-    // 成功トースト
-    this.showPurchaseSuccess(`${item.name}を購入しました！`);
   }
 
   /**

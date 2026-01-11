@@ -247,34 +247,33 @@ export class DeckView implements IDeckView {
       const { SHUFFLE_DURATION, STACK_OFFSET } = DeckViewLayout;
 
       // シャッフルアニメーション（カードが散らばって戻る）
-      const timeline = this.scene.tweens.createTimeline();
+      // Phaser 3.60+ではcreateTimelineは廃止、chainを使用
 
-      // 散らばる
-      this.stackCards.forEach((card) => {
-        timeline.add({
-          targets: card,
-          x: Phaser.Math.Between(-20, 20),
-          y: Phaser.Math.Between(-20, 20),
-          rotation: Phaser.Math.DegToRad(Phaser.Math.Between(-15, 15)),
-          duration: SHUFFLE_DURATION / 3,
-          ease: 'Power2.easeOut',
-        });
+      // 散らばるアニメーション設定
+      const scatterTweens = this.stackCards.map((card) => ({
+        targets: card,
+        x: Phaser.Math.Between(-20, 20),
+        y: Phaser.Math.Between(-20, 20),
+        rotation: Phaser.Math.DegToRad(Phaser.Math.Between(-15, 15)),
+        duration: SHUFFLE_DURATION / 3,
+        ease: 'Power2.easeOut',
+      }));
+
+      // 戻るアニメーション設定
+      const returnTweens = this.stackCards.map((card, index) => ({
+        targets: card,
+        x: -index * STACK_OFFSET,
+        y: -index * STACK_OFFSET,
+        rotation: 0,
+        duration: SHUFFLE_DURATION / 3,
+        ease: 'Back.easeOut',
+      }));
+
+      // chainで順次実行
+      this.scene.tweens.chain({
+        tweens: [...scatterTweens, ...returnTweens],
+        onComplete: () => resolve(),
       });
-
-      // 戻る
-      this.stackCards.forEach((card, index) => {
-        timeline.add({
-          targets: card,
-          x: -index * STACK_OFFSET,
-          y: -index * STACK_OFFSET,
-          rotation: 0,
-          duration: SHUFFLE_DURATION / 3,
-          ease: 'Back.easeOut',
-        });
-      });
-
-      timeline.on('complete', resolve);
-      timeline.play();
     });
   }
 

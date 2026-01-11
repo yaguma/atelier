@@ -21,7 +21,8 @@ const createMockCard = (): Card => ({
   unlockRank: GuildRank.G,
   description: 'テスト用カード',
   cost: 1,
-});
+  materials: [],
+} as Card);
 
 describe('IHandContainer', () => {
   describe('HandContainerOptions', () => {
@@ -86,6 +87,11 @@ describe('IHandContainer', () => {
           selectedIndex = -1;
         }),
         setSelectable: vi.fn(),
+        setSelectableFilter: vi.fn(),
+        clearSelectableFilter: vi.fn(),
+        isCardSelectable: vi.fn(() => true),
+        enableKeyboardNavigation: vi.fn(),
+        disableKeyboardNavigation: vi.fn(),
 
         setLayoutType: vi.fn((type: 'horizontal' | 'fan') => {
           layoutType = type;
@@ -137,8 +143,13 @@ describe('IHandContainer', () => {
         selectCard: vi.fn(),
         deselectCard: vi.fn(),
         setSelectable: vi.fn(),
+        setSelectableFilter: vi.fn(),
+        clearSelectableFilter: vi.fn(),
+        isCardSelectable: vi.fn(() => true),
+        enableKeyboardNavigation: vi.fn(),
+        disableKeyboardNavigation: vi.fn(),
         setLayoutType: vi.fn(),
-        getLayoutType: vi.fn(() => 'horizontal'),
+        getLayoutType: vi.fn(() => 'horizontal' as const),
         refresh: vi.fn(),
         setVisible: vi.fn(),
         setPosition: vi.fn(),

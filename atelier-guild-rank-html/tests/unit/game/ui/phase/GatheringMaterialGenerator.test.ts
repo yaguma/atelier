@@ -7,6 +7,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
+  Attribute,
   CardType,
   GuildRank,
   Quality,
@@ -28,7 +29,7 @@ function createMaterialMaster(): Map<string, Material> {
       id: 'mat-herb',
       name: '薬草',
       baseQuality: Quality.C,
-      attributes: ['plant'],
+      attributes: [Attribute.GRASS],
       isRare: false,
       description: '一般的な薬草',
     })
@@ -40,7 +41,7 @@ function createMaterialMaster(): Map<string, Material> {
       id: 'mat-ore',
       name: '鉄鉱石',
       baseQuality: Quality.C,
-      attributes: ['mineral'],
+      attributes: [Attribute.EARTH],
       isRare: false,
       description: '一般的な鉱石',
     })
@@ -52,7 +53,7 @@ function createMaterialMaster(): Map<string, Material> {
       id: 'mat-rare-crystal',
       name: '輝石',
       baseQuality: Quality.A,
-      attributes: ['mineral', 'light'],
+      attributes: [Attribute.EARTH, Attribute.FIRE],
       isRare: true,
       description: 'レアな輝く結晶',
     })
