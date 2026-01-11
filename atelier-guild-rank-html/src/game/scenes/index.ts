@@ -15,3 +15,4 @@ export * from './ShopSceneConstants';
 export * from './ShopTestScene';
 export * from './RankUpScene';
 export * from './RankUpSceneConstants';
+export * from './RankUpTestScene';

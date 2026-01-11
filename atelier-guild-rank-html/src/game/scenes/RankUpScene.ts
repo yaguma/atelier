@@ -1216,4 +1216,90 @@ export class RankUpScene extends BaseGameScene {
   isExamRunning(): boolean {
     return this.isExamInProgress;
   }
+
+  // =====================================================
+  // テスト用アクセサ (TASK-0246)
+  // =====================================================
+
+  /**
+   * 現在ランクを取得
+   */
+  getCurrentRank(): string {
+    return this.sceneData.currentRank;
+  }
+
+  /**
+   * 目標ランクを取得
+   */
+  getTargetRank(): string {
+    return this.sceneData.targetRank;
+  }
+
+  /**
+   * 表示中の要件リストを取得
+   */
+  getDisplayedRequirements(): RankExamRequirement[] {
+    return [...this.sceneData.requirements];
+  }
+
+  /**
+   * 表示中の報酬リストを取得
+   */
+  getDisplayedRewards(): RankUpReward[] {
+    return [...this.sceneData.rewards];
+  }
+
+  /**
+   * すべての要件が達成されているか（isAllRequirementsMetのエイリアス）
+   */
+  areAllRequirementsMet(): boolean {
+    return this.allRequirementsMet;
+  }
+
+  /**
+   * 挑戦ボタンが有効かどうか
+   */
+  isChallengeButtonEnabled(): boolean {
+    return this.allRequirementsMet;
+  }
+
+  /**
+   * 総合進捗率を取得（0〜1）
+   */
+  getOverallProgress(): number {
+    const total = this.sceneData.requirements.length;
+    if (total === 0) return 0;
+
+    const met = this.sceneData.requirements.filter(
+      (req) => req.currentValue >= req.targetValue
+    ).length;
+
+    return met / total;
+  }
+
+  /**
+   * 個別要件の進捗率を取得（0〜1）
+   */
+  getRequirementProgress(index: number): number {
+    const req = this.sceneData.requirements[index];
+    if (!req) return 0;
+
+    return Math.min(req.currentValue / req.targetValue, 1);
+  }
+
+  /**
+   * 達成した要件数を取得
+   */
+  getMetRequirementsCount(): number {
+    return this.sceneData.requirements.filter(
+      (req) => req.currentValue >= req.targetValue
+    ).length;
+  }
+
+  /**
+   * 試験完了処理（公開版）
+   */
+  completeExam(): void {
+    this.onExamComplete();
+  }
 }

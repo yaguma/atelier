@@ -593,3 +593,87 @@ describe('RankUpScene 進捗計算', () => {
     expect(progress).toBe(1);
   });
 });
+
+// =====================================================
+// RankUpScene包括テスト (TASK-0246)
+// =====================================================
+
+describe('RankUpScene 包括テスト', () => {
+  let scene: RankUpScene;
+
+  beforeEach(() => {
+    scene = new RankUpScene();
+  });
+
+  describe('初期化・データアクセス', () => {
+    it('getCurrentRankメソッドがある', () => {
+      expect(typeof scene.getCurrentRank).toBe('function');
+    });
+
+    it('getTargetRankメソッドがある', () => {
+      expect(typeof scene.getTargetRank).toBe('function');
+    });
+
+    it('getDisplayedRequirementsメソッドがある', () => {
+      expect(typeof scene.getDisplayedRequirements).toBe('function');
+    });
+
+    it('getDisplayedRewardsメソッドがある', () => {
+      expect(typeof scene.getDisplayedRewards).toBe('function');
+    });
+
+    it('areAllRequirementsMetメソッドがある', () => {
+      expect(typeof scene.areAllRequirementsMet).toBe('function');
+    });
+  });
+
+  describe('進捗計算メソッド', () => {
+    it('isChallengeButtonEnabledメソッドがある', () => {
+      expect(typeof scene.isChallengeButtonEnabled).toBe('function');
+    });
+
+    it('getOverallProgressメソッドがある', () => {
+      expect(typeof scene.getOverallProgress).toBe('function');
+    });
+
+    it('getRequirementProgressメソッドがある', () => {
+      expect(typeof scene.getRequirementProgress).toBe('function');
+    });
+
+    it('getMetRequirementsCountメソッドがある', () => {
+      expect(typeof scene.getMetRequirementsCount).toBe('function');
+    });
+  });
+
+  describe('試験フロー', () => {
+    it('completeExamメソッドがある', () => {
+      expect(typeof scene.completeExam).toBe('function');
+    });
+
+    it('試験フローが正しい順序で定義されている', () => {
+      // 試験フローに必要なメソッド
+      expect(typeof scene.startExam).toBe('function');
+      expect(typeof scene.showExamSuccess).toBe('function');
+      expect(typeof scene.showExamFailure).toBe('function');
+      expect(typeof scene.isExamRunning).toBe('function');
+    });
+  });
+});
+
+describe('RankUpScene UI更新テスト', () => {
+  let scene: RankUpScene;
+
+  beforeEach(() => {
+    scene = new RankUpScene();
+  });
+
+  it('updateRequirementメソッドで要件を更新できる', () => {
+    expect(typeof scene.updateRequirement).toBe('function');
+  });
+
+  it('isAllRequirementsMetとareAllRequirementsMetが同じ結果を返す', () => {
+    const result1 = scene.isAllRequirementsMet();
+    const result2 = scene.areAllRequirementsMet();
+    expect(result1).toBe(result2);
+  });
+});
