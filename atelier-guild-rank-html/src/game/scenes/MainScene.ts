@@ -2,7 +2,9 @@
  * MainScene - メインゲーム画面シーン
  *
  * TASK-0235: MainScene基本レイアウト実装
+ * TASK-0236: MainSceneフェーズ切替機能実装
  * ヘッダー、サイドバー、メインエリア、フッターの配置を行う。
+ * フェーズコンテナの生成・表示・非表示・破棄を管理する。
  *
  * 設計文書: docs/design/atelier-guild-rank-phaser/architecture.md
  */
@@ -17,6 +19,11 @@ import {
 import { SceneKeys } from '../config/SceneKeys';
 import { Colors } from '../config/ColorPalette';
 import { TextStyles } from '../config/TextStyles';
+import type { IPhaseContainer } from '../ui/phase/IPhaseContainer';
+import { QuestAcceptContainer } from '../ui/quest/QuestAcceptContainer';
+import { GatheringContainer } from '../ui/phase/GatheringContainer';
+import { AlchemyContainer } from '../ui/phase/AlchemyContainer';
+import { DeliveryContainer } from '../ui/phase/DeliveryContainer';
 
 /**
  * MainScene初期化データ
@@ -52,6 +59,15 @@ export interface GameState {
 }
 
 /**
+ * フェーズコンテナ情報
+ */
+interface PhaseContainerInfo {
+  type: MainScenePhase;
+  container: IPhaseContainer | null;
+  isActive: boolean;
+}
+
+/**
  * MainScene
  *
  * ゲームのメイン画面を構成する。
@@ -63,6 +79,11 @@ export interface GameState {
 export class MainScene extends BaseGameScene {
   // 現在のフェーズ
   private currentPhase: MainScenePhase = 'quest-accept';
+
+  // フェーズコンテナ管理
+  private phaseContainers: Map<MainScenePhase, PhaseContainerInfo> = new Map();
+  private activePhaseContainer: IPhaseContainer | null = null;
+  private isTransitioning: boolean = false;
 
   // プレースホルダーUI（後続タスクでHeaderUI等に置き換え）
   private headerContainer!: Phaser.GameObjects.Container;
@@ -82,6 +103,9 @@ export class MainScene extends BaseGameScene {
   // フェーズインジケーター（プレースホルダー）
   private phaseIndicators: Phaser.GameObjects.Text[] = [];
 
+  // フェーズインジケーター背景（更新用）
+  private phaseIndicatorBgs: Phaser.GameObjects.Graphics[] = [];
+
   constructor() {
     super(SceneKeys.MAIN);
   }
@@ -100,6 +124,12 @@ export class MainScene extends BaseGameScene {
     this.createHeader();
     this.createSidebar();
     this.createFooter();
+
+    // フェーズコンテナ管理を初期化
+    this.initPhaseContainers();
+
+    // フェーズナビゲーションリスナーを設定
+    this.setupPhaseNavigationListeners();
 
     // 初期データ設定
     if (data?.playerData) {
@@ -250,6 +280,7 @@ export class MainScene extends BaseGameScene {
     const { FOOTER } = MainSceneLayout;
 
     this.footerContainer = this.add.container(FOOTER.X, FOOTER.Y);
+    this.phaseIndicatorBgs = [];
 
     // フェーズインジケーター
     const indicatorWidth = 150;
@@ -273,7 +304,12 @@ export class MainScene extends BaseGameScene {
       bg.fillRoundedRect(x, y - 15, indicatorWidth, 30, 5);
       bg.lineStyle(1, Colors.panelBorder);
       bg.strokeRoundedRect(x, y - 15, indicatorWidth, 30, 5);
+      bg.setData('x', x);
+      bg.setData('y', y);
+      bg.setData('width', indicatorWidth);
+      bg.setData('phase', phase);
       this.footerContainer.add(bg);
+      this.phaseIndicatorBgs.push(bg);
 
       // フェーズ名
       const label = this.add.text(
@@ -359,8 +395,276 @@ export class MainScene extends BaseGameScene {
    * フェーズインジケーターを更新
    */
   private updatePhaseIndicators(): void {
-    // 背景の更新が必要だが、プレースホルダー実装では省略
-    // 将来的にはPhaseIndicatorコンポーネントで実装
+    this.phaseIndicatorBgs.forEach((bg) => {
+      const phase = bg.getData('phase') as MainScenePhase;
+      const x = bg.getData('x') as number;
+      const y = bg.getData('y') as number;
+      const width = bg.getData('width') as number;
+
+      bg.clear();
+      bg.fillStyle(
+        phase === this.currentPhase ? Colors.primary : Colors.panelBackground,
+        1
+      );
+      bg.fillRoundedRect(x, y - 15, width, 30, 5);
+      bg.lineStyle(1, Colors.panelBorder);
+      bg.strokeRoundedRect(x, y - 15, width, 30, 5);
+    });
+  }
+
+  // =====================================================
+  // フェーズコンテナ管理
+  // =====================================================
+
+  /**
+   * フェーズコンテナ管理を初期化
+   */
+  private initPhaseContainers(): void {
+    MainScenePhases.forEach((phase) => {
+      this.phaseContainers.set(phase, {
+        type: phase,
+        container: null,
+        isActive: false,
+      });
+    });
+  }
+
+  /**
+   * フェーズコンテナを作成
+   */
+  private createPhaseContainer(phase: MainScenePhase): IPhaseContainer {
+    const bounds = this.getMainAreaBounds();
+    const baseOptions = {
+      scene: this,
+      eventBus: this.eventBus,
+      x: bounds.x,
+      y: bounds.y,
+      width: bounds.width,
+      height: bounds.height,
+    };
+
+    switch (phase) {
+      case 'quest-accept':
+        return new QuestAcceptContainer({
+          ...baseOptions,
+          onQuestAccepted: (quest) => this.handleQuestAccepted(quest),
+          onSkip: () => this.handlePhaseComplete('quest-accept'),
+        });
+
+      case 'gathering':
+        return new GatheringContainer({
+          ...baseOptions,
+          onGatheringComplete: (result) => this.handleGatheringComplete(result),
+          onSkip: () => this.handlePhaseComplete('gathering'),
+        });
+
+      case 'alchemy':
+        return new AlchemyContainer({
+          ...baseOptions,
+          onAlchemyComplete: (result) => this.handleAlchemyComplete(result),
+          onSkip: () => this.handlePhaseComplete('alchemy'),
+        });
+
+      case 'delivery':
+        return new DeliveryContainer({
+          ...baseOptions,
+          onDeliveryComplete: (result) => this.handleDeliveryComplete(result),
+          onSkip: () => this.handlePhaseComplete('delivery'),
+        });
+
+      default:
+        throw new Error(`Unknown phase: ${phase}`);
+    }
+  }
+
+  /**
+   * フェーズを切り替える
+   */
+  async switchToPhase(newPhase: MainScenePhase): Promise<void> {
+    if (this.currentPhase === newPhase) return;
+    if (this.isTransitioning) return;
+
+    this.isTransitioning = true;
+    const previousPhase = this.currentPhase;
+
+    try {
+      // 前のフェーズを退出
+      if (this.activePhaseContainer) {
+        await this.exitPhase(previousPhase);
+      }
+
+      // フェーズを更新
+      this.currentPhase = newPhase;
+
+      // 新しいフェーズに入る
+      await this.enterPhase(newPhase);
+
+      // インジケーター更新
+      this.updatePhaseIndicators();
+
+      // イベント発火
+      this.eventBus.emit('phase:changed' as any, {
+        previousPhase,
+        newPhase,
+      });
+    } finally {
+      this.isTransitioning = false;
+    }
+  }
+
+  /**
+   * フェーズを退出
+   */
+  private async exitPhase(phase: MainScenePhase): Promise<void> {
+    const info = this.phaseContainers.get(phase);
+    if (!info || !info.container) return;
+
+    // 退出処理
+    await info.container.exit();
+
+    // 退出アニメーション
+    await this.playPhaseExitAnimation(info.container);
+
+    // コンテナ破棄
+    info.container.destroy();
+    info.container = null;
+    info.isActive = false;
+    this.activePhaseContainer = null;
+  }
+
+  /**
+   * フェーズに入る
+   */
+  private async enterPhase(phase: MainScenePhase): Promise<void> {
+    // コンテナ作成
+    const container = this.createPhaseContainer(phase);
+
+    // 情報更新
+    const info = this.phaseContainers.get(phase)!;
+    info.container = container;
+    info.isActive = true;
+    this.activePhaseContainer = container;
+
+    // 入場アニメーション
+    await this.playPhaseEnterAnimation(container);
+
+    // 入場処理
+    await container.enter();
+  }
+
+  /**
+   * フェーズ退出アニメーション
+   */
+  private async playPhaseExitAnimation(container: IPhaseContainer): Promise<void> {
+    return new Promise((resolve) => {
+      this.tweens.add({
+        targets: container.container,
+        alpha: 0,
+        x: container.container.x - 50,
+        duration: 250,
+        ease: 'Power2.easeIn',
+        onComplete: () => resolve(),
+      });
+    });
+  }
+
+  /**
+   * フェーズ入場アニメーション
+   */
+  private async playPhaseEnterAnimation(container: IPhaseContainer): Promise<void> {
+    return new Promise((resolve) => {
+      // 初期状態
+      container.container.setAlpha(0);
+      const targetX = container.container.x;
+      container.container.setX(targetX + 50);
+
+      // フェードイン + 右からスライド
+      this.tweens.add({
+        targets: container.container,
+        alpha: 1,
+        x: targetX,
+        duration: 300,
+        ease: 'Power2.easeOut',
+        onComplete: () => resolve(),
+      });
+    });
+  }
+
+  // =====================================================
+  // フェーズ完了ハンドラ
+  // =====================================================
+
+  /**
+   * 依頼受注完了時の処理
+   */
+  private handleQuestAccepted(quest: unknown): void {
+    this.eventBus.emit('game:quest:accepted' as any, { quest });
+  }
+
+  /**
+   * 採取完了時の処理
+   */
+  private handleGatheringComplete(result: unknown): void {
+    this.eventBus.emit('game:gathering:complete' as any, result);
+  }
+
+  /**
+   * 調合完了時の処理
+   */
+  private handleAlchemyComplete(result: unknown): void {
+    this.eventBus.emit('game:alchemy:complete' as any, result);
+  }
+
+  /**
+   * 納品完了時の処理
+   */
+  private handleDeliveryComplete(result: unknown): void {
+    this.eventBus.emit('game:delivery:complete' as any, result);
+  }
+
+  /**
+   * フェーズ完了時の処理（スキップ含む）
+   */
+  private handlePhaseComplete(phase: MainScenePhase): void {
+    this.eventBus.emit('game:phase:complete' as any, { phase });
+  }
+
+  /**
+   * フェーズナビゲーションリスナーを設定
+   */
+  private setupPhaseNavigationListeners(): void {
+    this.eventBus.on('navigate:phase' as any, (data: { phase: MainScenePhase }) => {
+      this.switchToPhase(data.phase);
+    });
+
+    this.eventBus.on('navigate:next-phase' as any, () => {
+      const nextPhase = this.getNextPhase(this.currentPhase);
+      if (nextPhase) {
+        this.switchToPhase(nextPhase);
+      }
+    });
+  }
+
+  /**
+   * 次のフェーズを取得
+   */
+  getNextPhase(current: MainScenePhase): MainScenePhase | null {
+    const index = MainScenePhases.indexOf(current);
+    return index < MainScenePhases.length - 1 ? MainScenePhases[index + 1] : null;
+  }
+
+  /**
+   * 遷移中かどうかを取得
+   */
+  isPhaseTransitioning(): boolean {
+    return this.isTransitioning;
+  }
+
+  /**
+   * アクティブなフェーズコンテナを取得
+   */
+  getActivePhaseContainer(): IPhaseContainer | null {
+    return this.activePhaseContainer;
   }
 
   // =====================================================

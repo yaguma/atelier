@@ -2,7 +2,8 @@
  * MainScene単体テスト
  *
  * TASK-0235: MainScene基本レイアウト実装のテスト
- * メインシーンの基本レイアウトとデータ設定をテストする。
+ * TASK-0236: MainSceneフェーズ切替機能のテスト
+ * メインシーンの基本レイアウト、データ設定、フェーズ切替をテストする。
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -47,10 +48,11 @@ vi.mock('phaser', () => {
 });
 
 /**
- * モックPhaserシーン作成
+ * モックGraphicsオブジェクト作成
  */
-function createMockScene(): Phaser.Scene {
-  const mockGraphics = {
+function createMockGraphics() {
+  const data: Map<string, unknown> = new Map();
+  return {
     fillStyle: vi.fn().mockReturnThis(),
     fillRoundedRect: vi.fn().mockReturnThis(),
     fillRect: vi.fn().mockReturnThis(),
@@ -59,8 +61,18 @@ function createMockScene(): Phaser.Scene {
     strokeRect: vi.fn().mockReturnThis(),
     clear: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
+    setData: vi.fn().mockImplementation(function (this: any, key: string, value: unknown) {
+      data.set(key, value);
+      return this;
+    }),
+    getData: vi.fn().mockImplementation((key: string) => data.get(key)),
   };
+}
 
+/**
+ * モックPhaserシーン作成
+ */
+function createMockScene(): Phaser.Scene {
   const createMockContainer = () => {
     const children: unknown[] = [];
     const container: any = {
@@ -100,7 +112,7 @@ function createMockScene(): Phaser.Scene {
   return {
     add: {
       container: vi.fn().mockImplementation((_x, _y) => createMockContainer()),
-      graphics: vi.fn().mockReturnValue(mockGraphics),
+      graphics: vi.fn().mockImplementation(() => createMockGraphics()),
       text: vi.fn().mockImplementation(() => createMockText()),
       rectangle: vi.fn().mockImplementation(() => createMockRectangle()),
     },
@@ -124,6 +136,15 @@ function createMockScene(): Phaser.Scene {
         height: 768,
       },
     },
+    tweens: {
+      add: vi.fn().mockImplementation((config) => {
+        // 即座にonCompleteを呼び出す
+        if (config.onComplete) {
+          config.onComplete();
+        }
+        return { stop: vi.fn() };
+      }),
+    },
   } as unknown as Phaser.Scene;
 }
 
@@ -141,6 +162,7 @@ function createMainScene(): MainScene {
     scene: mockScene.scene,
     registry: mockScene.registry,
     cameras: mockScene.cameras,
+    tweens: (mockScene as any).tweens,
   });
 
   return scene;
@@ -341,6 +363,63 @@ describe('MainScene', () => {
       (scene as any).create({ gameState });
 
       expect(scene.getCurrentPhase()).toBe('delivery');
+    });
+  });
+
+  describe('フェーズ切替機能（TASK-0236）', () => {
+    let scene: MainScene;
+
+    beforeEach(() => {
+      scene = createMainScene();
+      (scene as any).init({});
+      (scene as any).preload();
+      (scene as any).create({});
+    });
+
+    describe('getNextPhase', () => {
+      it('quest-acceptの次はgathering', () => {
+        expect(scene.getNextPhase('quest-accept')).toBe('gathering');
+      });
+
+      it('gatheringの次はalchemy', () => {
+        expect(scene.getNextPhase('gathering')).toBe('alchemy');
+      });
+
+      it('alchemyの次はdelivery', () => {
+        expect(scene.getNextPhase('alchemy')).toBe('delivery');
+      });
+
+      it('deliveryの次はnull（最後のフェーズ）', () => {
+        expect(scene.getNextPhase('delivery')).toBeNull();
+      });
+    });
+
+    describe('isPhaseTransitioning', () => {
+      it('初期状態では遷移中ではない', () => {
+        expect(scene.isPhaseTransitioning()).toBe(false);
+      });
+    });
+
+    describe('getActivePhaseContainer', () => {
+      it('初期状態ではアクティブなコンテナはない', () => {
+        expect(scene.getActivePhaseContainer()).toBeNull();
+      });
+    });
+
+    describe('フェーズインジケーター更新', () => {
+      it('setCurrentPhaseでインジケーターが更新される', () => {
+        // setCurrentPhaseを呼び出しても例外が発生しない
+        expect(() => scene.setCurrentPhase('gathering')).not.toThrow();
+        expect(scene.getCurrentPhase()).toBe('gathering');
+      });
+
+      it('setGameStateでフェーズが変わるとインジケーターが更新される', () => {
+        const gameState: GameState = {
+          currentPhase: 'alchemy',
+        };
+        expect(() => scene.setGameState(gameState)).not.toThrow();
+        expect(scene.getCurrentPhase()).toBe('alchemy');
+      });
     });
   });
 });
