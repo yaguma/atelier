@@ -17,6 +17,20 @@ import type { PlayerData, GameState } from '../../../../src/game/scenes/MainScen
 
 // Phaserをモック
 vi.mock('phaser', () => {
+  class MockRectangle {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    constructor(x: number, y: number, width: number, height: number) {
+      this.x = x;
+      this.y = y;
+      this.width = width;
+      this.height = height;
+    }
+    static Contains = vi.fn().mockReturnValue(true);
+  }
+
   return {
     default: {
       Scene: class MockScene {
@@ -31,6 +45,13 @@ vi.mock('phaser', () => {
           this.key = config.key;
         }
       },
+      Geom: {
+        Rectangle: MockRectangle,
+      },
+      Math: {
+        Between: vi.fn().mockReturnValue(0),
+        DegToRad: vi.fn((deg: number) => (deg * Math.PI) / 180),
+      },
     },
     Scene: class MockScene {
       key: string;
@@ -44,6 +65,13 @@ vi.mock('phaser', () => {
         this.key = config.key;
       }
     },
+    Geom: {
+      Rectangle: MockRectangle,
+    },
+    Math: {
+      Between: vi.fn().mockReturnValue(0),
+      DegToRad: vi.fn((deg: number) => (deg * Math.PI) / 180),
+    },
   };
 });
 
@@ -56,9 +84,11 @@ function createMockGraphics() {
     fillStyle: vi.fn().mockReturnThis(),
     fillRoundedRect: vi.fn().mockReturnThis(),
     fillRect: vi.fn().mockReturnThis(),
+    fillCircle: vi.fn().mockReturnThis(),
     lineStyle: vi.fn().mockReturnThis(),
     strokeRoundedRect: vi.fn().mockReturnThis(),
     strokeRect: vi.fn().mockReturnThis(),
+    strokeCircle: vi.fn().mockReturnThis(),
     clear: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
     setData: vi.fn().mockImplementation(function (this: any, key: string, value: unknown) {
@@ -86,6 +116,11 @@ function createMockScene(): Phaser.Scene {
       destroy: vi.fn(),
       setData: vi.fn().mockReturnThis(),
       getData: vi.fn(),
+      setInteractive: vi.fn().mockReturnThis(),
+      disableInteractive: vi.fn().mockReturnThis(),
+      on: vi.fn().mockReturnThis(),
+      setPosition: vi.fn().mockReturnThis(),
+      setScale: vi.fn().mockReturnThis(),
       x: 0,
       y: 0,
     };
@@ -419,6 +454,85 @@ describe('MainScene', () => {
         };
         expect(() => scene.setGameState(gameState)).not.toThrow();
         expect(scene.getCurrentPhase()).toBe('alchemy');
+      });
+    });
+  });
+
+  describe('手札・デッキ統合機能（TASK-0237）', () => {
+    let scene: MainScene;
+
+    beforeEach(() => {
+      scene = createMainScene();
+      (scene as any).init({});
+      (scene as any).preload();
+      (scene as any).create({});
+    });
+
+    describe('getHandContainer', () => {
+      it('HandContainerを取得できる', () => {
+        expect(scene.getHandContainer()).toBeDefined();
+      });
+    });
+
+    describe('getDeckView', () => {
+      it('DeckViewを取得できる', () => {
+        expect(scene.getDeckView()).toBeDefined();
+      });
+    });
+
+    describe('手札管理', () => {
+      it('getHandで手札を取得できる（初期状態は空）', () => {
+        expect(scene.getHand()).toEqual([]);
+      });
+
+      it('getHandContainerのsetCardsメソッドが存在する', () => {
+        expect(typeof scene.getHandContainer().setCards).toBe('function');
+      });
+    });
+
+    describe('デッキ管理', () => {
+      it('setDeckでデッキを設定できる', () => {
+        const mockCards = [
+          { id: 'card1', type: 'gathering', name: 'Test Card 1' },
+          { id: 'card2', type: 'recipe', name: 'Test Card 2' },
+          { id: 'card3', type: 'gathering', name: 'Test Card 3' },
+        ] as any[];
+
+        expect(() => scene.setDeck(mockCards)).not.toThrow();
+        expect(scene.getDeck()).toHaveLength(3);
+      });
+
+      it('getDeckでデッキを取得できる（初期状態は空）', () => {
+        expect(scene.getDeck()).toEqual([]);
+      });
+    });
+
+    describe('drawCards', () => {
+      it('drawCardsメソッドが存在する', () => {
+        expect(typeof scene.drawCards).toBe('function');
+      });
+
+      it('デッキが空でもエラーにならない', async () => {
+        const drawnCards = await scene.drawCards(1);
+        expect(drawnCards).toHaveLength(0);
+      });
+    });
+
+    describe('MainSceneLayout定数（TASK-0237追加分）', () => {
+      it('手札エリアが定義されている', () => {
+        expect(MainSceneLayout.HAND_AREA).toBeDefined();
+        expect(MainSceneLayout.HAND_AREA.X).toBe(50);
+        expect(MainSceneLayout.HAND_AREA.Y).toBe(580);
+        expect(MainSceneLayout.HAND_AREA.WIDTH).toBe(700);
+        expect(MainSceneLayout.HAND_AREA.HEIGHT).toBe(180);
+      });
+
+      it('デッキエリアが定義されている', () => {
+        expect(MainSceneLayout.DECK_AREA).toBeDefined();
+        expect(MainSceneLayout.DECK_AREA.X).toBe(850);
+        expect(MainSceneLayout.DECK_AREA.Y).toBe(550);
+        expect(MainSceneLayout.DECK_AREA.WIDTH).toBe(150);
+        expect(MainSceneLayout.DECK_AREA.HEIGHT).toBe(100);
       });
     });
   });

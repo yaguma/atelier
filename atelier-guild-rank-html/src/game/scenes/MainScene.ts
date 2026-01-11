@@ -24,6 +24,9 @@ import { QuestAcceptContainer } from '../ui/quest/QuestAcceptContainer';
 import { GatheringContainer } from '../ui/phase/GatheringContainer';
 import { AlchemyContainer } from '../ui/phase/AlchemyContainer';
 import { DeliveryContainer } from '../ui/phase/DeliveryContainer';
+import { HandContainer } from '../ui/hand/HandContainer';
+import { DeckView } from '../ui/deck/DeckView';
+import { Card } from '@domain/card/Card';
 
 /**
  * MainScene初期化データ
@@ -106,6 +109,13 @@ export class MainScene extends BaseGameScene {
   // フェーズインジケーター背景（更新用）
   private phaseIndicatorBgs: Phaser.GameObjects.Graphics[] = [];
 
+  // 手札・デッキ管理
+  private handContainer!: HandContainer;
+  private deckView!: DeckView;
+  private currentHand: Card[] = [];
+  private deckCards: Card[] = [];
+  private discardCount: number = 0;
+
   constructor() {
     super(SceneKeys.MAIN);
   }
@@ -124,6 +134,7 @@ export class MainScene extends BaseGameScene {
     this.createHeader();
     this.createSidebar();
     this.createFooter();
+    this.createHandAndDeck();
 
     // フェーズコンテナ管理を初期化
     this.initPhaseContainers();
@@ -545,6 +556,9 @@ export class MainScene extends BaseGameScene {
     info.isActive = true;
     this.activePhaseContainer = container;
 
+    // 手札表示を更新
+    this.updateHandVisibilityForPhase(phase);
+
     // 入場アニメーション
     await this.playPhaseEnterAnimation(container);
 
@@ -676,6 +690,247 @@ export class MainScene extends BaseGameScene {
    */
   private handlePhaseClick(phase: MainScenePhase): void {
     this.eventBus.emit('phase:indicator:clicked' as any, { phase });
+  }
+
+  // =====================================================
+  // 手札・デッキ管理
+  // =====================================================
+
+  /**
+   * 手札とデッキを作成する
+   */
+  private createHandAndDeck(): void {
+    const { HAND_AREA, DECK_AREA } = MainSceneLayout;
+
+    // 手札コンテナ
+    this.handContainer = new HandContainer(this, {
+      x: HAND_AREA.X + HAND_AREA.WIDTH / 2,
+      y: HAND_AREA.Y + HAND_AREA.HEIGHT / 2,
+      layoutType: 'horizontal',
+      onCardSelect: (card, index) => this.handleHandCardSelect(card, index),
+      onCardDeselect: (card, index) => this.handleHandCardDeselect(card, index),
+      onCardConfirm: (card, index) => this.handleHandCardConfirm(card, index),
+    });
+
+    // 初期状態では非表示（依頼受注フェーズでは不要）
+    this.handContainer.setVisible(false);
+
+    // デッキビュー
+    this.deckView = new DeckView(this, {
+      x: DECK_AREA.X + DECK_AREA.WIDTH / 2,
+      y: DECK_AREA.Y + DECK_AREA.HEIGHT / 2,
+      onClick: () => this.handleDeckClick(),
+    });
+  }
+
+  /**
+   * 手札を設定する
+   */
+  setHand(cards: Card[]): void {
+    this.currentHand = [...cards];
+    this.handContainer.setCards(cards);
+  }
+
+  /**
+   * 現在の手札を取得する
+   */
+  getHand(): Card[] {
+    return [...this.currentHand];
+  }
+
+  /**
+   * デッキを設定する
+   */
+  setDeck(cards: Card[], discardCount: number = 0): void {
+    this.deckCards = [...cards];
+    this.discardCount = discardCount;
+    this.deckView.setCount(cards.length);
+  }
+
+  /**
+   * 現在のデッキを取得する
+   */
+  getDeck(): Card[] {
+    return [...this.deckCards];
+  }
+
+  /**
+   * カードをドローする
+   */
+  async drawCards(count: number): Promise<Card[]> {
+    const drawnCards: Card[] = [];
+
+    for (let i = 0; i < count && this.deckCards.length > 0; i++) {
+      const card = this.deckCards.shift()!;
+      drawnCards.push(card);
+
+      // ドローアニメーション
+      await this.playDrawAnimation(card, i);
+    }
+
+    // 手札に追加
+    this.currentHand.push(...drawnCards);
+    this.handContainer.setCards(this.currentHand);
+
+    // デッキ表示更新
+    this.deckView.setCount(this.deckCards.length);
+
+    this.eventBus.emit('cards:drawn' as any, { cards: drawnCards });
+
+    return drawnCards;
+  }
+
+  /**
+   * ドローアニメーションを再生
+   */
+  private async playDrawAnimation(_card: Card, index: number): Promise<void> {
+    return new Promise((resolve) => {
+      const { DECK_AREA, HAND_AREA } = MainSceneLayout;
+
+      // 仮のカードオブジェクト
+      const tempCard = this.add.graphics();
+      tempCard.fillStyle(0x4a4a8a, 1);
+      tempCard.fillRoundedRect(0, 0, 80, 120, 8);
+      tempCard.x = DECK_AREA.X + DECK_AREA.WIDTH / 2;
+      tempCard.y = DECK_AREA.Y + DECK_AREA.HEIGHT / 2;
+
+      // 手札位置へ移動
+      const targetX = HAND_AREA.X + 100 + (this.currentHand.length + index) * 110;
+      const targetY = HAND_AREA.Y + 75;
+
+      this.tweens.add({
+        targets: tempCard,
+        x: targetX,
+        y: targetY,
+        duration: 300,
+        delay: index * 100,
+        ease: 'Power2.easeOut',
+        onComplete: () => {
+          tempCard.destroy();
+          resolve();
+        },
+      });
+    });
+  }
+
+  /**
+   * 捨て札をデッキにシャッフルする
+   */
+  async shuffleDiscardIntoDeck(): Promise<void> {
+    // シャッフルアニメーション
+    await this.deckView.animateShuffle();
+
+    // 捨て札をデッキに戻す（ロジックはApplication層で管理）
+    this.eventBus.emit('deck:shuffle:requested' as any, {});
+  }
+
+  /**
+   * カードを使用する
+   */
+  async useCard(card: Card): Promise<void> {
+    const index = this.currentHand.findIndex((c) => c === card);
+    if (index < 0) return;
+
+    // 手札から削除
+    this.currentHand.splice(index, 1);
+    this.handContainer.removeCard(index, true);
+
+    // 捨て札に追加
+    this.discardCount++;
+
+    this.eventBus.emit('card:used' as any, { card });
+  }
+
+  /**
+   * 手札カード選択ハンドラ
+   */
+  private handleHandCardSelect(card: Card, _index: number): void {
+    // フェーズコンテナにカード選択を通知
+    this.notifyPhaseContainerCardSelect(card);
+
+    this.eventBus.emit('hand:card:selected' as any, { card });
+  }
+
+  /**
+   * 手札カード選択解除ハンドラ
+   */
+  private handleHandCardDeselect(card: Card, _index: number): void {
+    this.eventBus.emit('hand:card:deselected' as any, { card });
+  }
+
+  /**
+   * 手札カード確定ハンドラ
+   */
+  private handleHandCardConfirm(card: Card, _index: number): void {
+    this.eventBus.emit('hand:card:confirmed' as any, { card });
+  }
+
+  /**
+   * デッキクリックハンドラ
+   */
+  private handleDeckClick(): void {
+    // AP消費確認などを経てドロー
+    this.eventBus.emit('deck:draw:requested' as any, { count: 1 });
+  }
+
+  /**
+   * フェーズコンテナにカード選択を通知
+   */
+  private notifyPhaseContainerCardSelect(card: Card): void {
+    if (!this.activePhaseContainer) return;
+
+    const info = this.phaseContainers.get(this.currentPhase);
+    if (!info || !info.container) return;
+
+    // フェーズコンテナにカードを渡す
+    // 各フェーズコンテナが独自のカード選択処理を持つ場合に拡張
+    this.eventBus.emit('phase:card:selected' as any, {
+      phase: this.currentPhase,
+      card,
+    });
+  }
+
+  /**
+   * フェーズに応じた手札表示制御
+   */
+  private updateHandVisibilityForPhase(phase: MainScenePhase): void {
+    switch (phase) {
+      case 'quest-accept':
+        // 依頼受注フェーズでは手札非表示
+        this.handContainer.setVisible(false);
+        break;
+
+      case 'gathering':
+        // 採取フェーズでは手札表示（採取地カードのみフィルタ）
+        this.handContainer.setVisible(true);
+        this.handContainer.setSelectableFilter((card) => card.type === 'gathering');
+        break;
+
+      case 'alchemy':
+        // 調合フェーズでは手札表示（レシピカードのみフィルタ）
+        this.handContainer.setVisible(true);
+        this.handContainer.setSelectableFilter((card) => card.type === 'recipe');
+        break;
+
+      case 'delivery':
+        // 納品フェーズでは手札非表示
+        this.handContainer.setVisible(false);
+        break;
+    }
+  }
+
+  /**
+   * HandContainerを取得
+   */
+  getHandContainer(): HandContainer {
+    return this.handContainer;
+  }
+
+  /**
+   * DeckViewを取得
+   */
+  getDeckView(): DeckView {
+    return this.deckView;
   }
 
   // =====================================================

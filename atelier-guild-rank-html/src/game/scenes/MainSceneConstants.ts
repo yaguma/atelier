@@ -54,6 +54,22 @@ export const MainSceneLayout = {
     WIDTH: 800,
     HEIGHT: 500,
   },
+
+  // 手札エリア（メインエリア下部）
+  HAND_AREA: {
+    X: 50,
+    Y: 580,
+    WIDTH: 700,
+    HEIGHT: 180,
+  },
+
+  // デッキ表示（サイドバー内）
+  DECK_AREA: {
+    X: 850,
+    Y: 550,
+    WIDTH: 150,
+    HEIGHT: 100,
+  },
 } as const;
 
 /**
