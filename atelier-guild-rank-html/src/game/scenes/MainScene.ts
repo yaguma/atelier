@@ -3,6 +3,7 @@
  *
  * TASK-0235: MainScene基本レイアウト実装
  * TASK-0236: MainSceneフェーズ切替機能実装
+ * TASK-0238: MainScene EventBus統合
  * ヘッダー、サイドバー、メインエリア、フッターの配置を行う。
  * フェーズコンテナの生成・表示・非表示・破棄を管理する。
  *
@@ -16,6 +17,13 @@ import {
   MainScenePhaseLabels,
   type MainScenePhase,
 } from './MainSceneConstants';
+import {
+  MainSceneEvents,
+  type PlayerDataUpdatePayload,
+  type NotificationData,
+  type NotificationType,
+  type DeckUpdatePayload,
+} from './MainSceneEvents';
 import { SceneKeys } from '../config/SceneKeys';
 import { Colors } from '../config/ColorPalette';
 import { TextStyles } from '../config/TextStyles';
@@ -116,6 +124,13 @@ export class MainScene extends BaseGameScene {
   private deckCards: Card[] = [];
   private discardCount: number = 0;
 
+  // 通知管理
+  private notificationQueue: NotificationData[] = [];
+  private isShowingNotification: boolean = false;
+
+  // イベントリスナー登録状態
+  private eventListenersSetup: boolean = false;
+
   constructor() {
     super(SceneKeys.MAIN);
   }
@@ -141,6 +156,9 @@ export class MainScene extends BaseGameScene {
 
     // フェーズナビゲーションリスナーを設定
     this.setupPhaseNavigationListeners();
+
+    // EventBusイベントリスナーを設定
+    this.setupEventListeners();
 
     // 初期データ設定
     if (data?.playerData) {
@@ -975,7 +993,395 @@ export class MainScene extends BaseGameScene {
     return this.footerContainer;
   }
 
+  // =====================================================
+  // EventBus連携
+  // =====================================================
+
   protected setupEventListeners(): void {
-    // EventBusのグローバルイベントリスナー（後続タスクで実装）
+    if (this.eventListenersSetup) return;
+
+    this.setupApplicationEventListeners();
+    this.setupUIEventForwarding();
+    this.eventListenersSetup = true;
+  }
+
+  /**
+   * Application層からのイベントリスナーを設定
+   */
+  private setupApplicationEventListeners(): void {
+    const { APP_TO_UI } = MainSceneEvents;
+
+    // ゲーム状態更新
+    this.eventBus.on(APP_TO_UI.GAME_STATE_UPDATED as any, (data: any) => {
+      this.handleGameStateUpdate(data);
+    });
+
+    // プレイヤーデータ更新
+    this.eventBus.on(
+      APP_TO_UI.PLAYER_DATA_UPDATED as any,
+      (data: PlayerDataUpdatePayload) => {
+        this.handlePlayerDataUpdate(data);
+      }
+    );
+
+    // フェーズ変更
+    this.eventBus.on(
+      APP_TO_UI.PHASE_CHANGED as any,
+      (data: { phase: string }) => {
+        this.switchToPhase(data.phase as MainScenePhase);
+      }
+    );
+
+    // フェーズデータロード
+    this.eventBus.on(APP_TO_UI.PHASE_DATA_LOADED as any, (data: any) => {
+      this.handlePhaseDataLoaded(data);
+    });
+
+    // 依頼リスト更新
+    this.eventBus.on(
+      APP_TO_UI.AVAILABLE_QUESTS_UPDATED as any,
+      (data: { quests: any[] }) => {
+        this.handleAvailableQuestsUpdate(data.quests);
+      }
+    );
+
+    this.eventBus.on(
+      APP_TO_UI.ACCEPTED_QUESTS_UPDATED as any,
+      (data: { quests: any[] }) => {
+        this.handleAcceptedQuestsUpdate(data.quests);
+      }
+    );
+
+    // インベントリ更新
+    this.eventBus.on(
+      APP_TO_UI.INVENTORY_UPDATED as any,
+      (data: { items: any[] }) => {
+        this.handleInventoryUpdate(data.items);
+      }
+    );
+
+    // 手札・デッキ更新
+    this.eventBus.on(
+      APP_TO_UI.HAND_UPDATED as any,
+      (data: { cards: Card[] }) => {
+        this.setHand(data.cards);
+      }
+    );
+
+    this.eventBus.on(
+      APP_TO_UI.DECK_UPDATED as any,
+      (data: DeckUpdatePayload) => {
+        this.deckView.setCount(data.deckCount);
+        this.discardCount = data.discardCount;
+      }
+    );
+
+    // 通知
+    this.eventBus.on(APP_TO_UI.NOTIFICATION_SHOW as any, (data: NotificationData) => {
+      this.showNotification(data.message, data.type);
+    });
+
+    // エラー
+    this.eventBus.on(
+      APP_TO_UI.ERROR_OCCURRED as any,
+      (data: { message: string }) => {
+        this.showError(data.message);
+      }
+    );
+  }
+
+  /**
+   * UI層からのイベントを転送
+   */
+  private setupUIEventForwarding(): void {
+    // フェーズコンテナからのイベントをApplication層向けに変換
+    // フェーズ完了イベント
+    this.eventBus.on('phase:complete' as any, (data: { phase: string }) => {
+      this.eventBus.emit(MainSceneEvents.UI_TO_APP.PHASE_COMPLETE as any, data);
+    });
+
+    // フェーズスキップイベント
+    this.eventBus.on('phase:skip' as any, (data: { phase: string }) => {
+      this.eventBus.emit(MainSceneEvents.UI_TO_APP.PHASE_SKIP_REQUESTED as any, data);
+    });
+  }
+
+  /**
+   * イベントリスナーを解除
+   */
+  protected removeEventListeners(): void {
+    const { APP_TO_UI } = MainSceneEvents;
+
+    // すべてのイベントリスナーを解除
+    Object.values(APP_TO_UI).forEach((event) => {
+      this.eventBus.off(event as any);
+    });
+
+    // ローカルイベントも解除
+    this.eventBus.off('phase:complete' as any);
+    this.eventBus.off('phase:skip' as any);
+
+    this.eventListenersSetup = false;
+  }
+
+  // =====================================================
+  // イベントハンドラ
+  // =====================================================
+
+  /**
+   * ゲーム状態更新ハンドラ
+   */
+  private handleGameStateUpdate(data: any): void {
+    if (data.currentPhase) {
+      this.currentPhase = data.currentPhase;
+      this.updatePhaseIndicators();
+    }
+
+    if (data.playerData) {
+      this.setPlayerData(data.playerData);
+    }
+  }
+
+  /**
+   * プレイヤーデータ更新ハンドラ
+   */
+  private handlePlayerDataUpdate(data: PlayerDataUpdatePayload): void {
+    if (data.rank !== undefined && this.headerTexts.rank) {
+      this.headerTexts.rank.setText(`Rank: ${data.rank}`);
+    }
+    if (data.exp !== undefined && data.maxExp !== undefined && this.headerTexts.exp) {
+      this.headerTexts.exp.setText(`EXP: ${data.exp}/${data.maxExp}`);
+    }
+    if (data.day !== undefined && data.maxDay !== undefined && this.headerTexts.day) {
+      this.headerTexts.day.setText(`Day: ${data.day}/${data.maxDay}`);
+    }
+    if (data.gold !== undefined && this.headerTexts.gold) {
+      this.headerTexts.gold.setText(`Gold: ${data.gold}`);
+    }
+    if (data.ap !== undefined && data.maxAP !== undefined && this.headerTexts.ap) {
+      this.headerTexts.ap.setText(`AP: ${data.ap}/${data.maxAP}`);
+    }
+  }
+
+  /**
+   * フェーズデータロードハンドラ
+   */
+  private handlePhaseDataLoaded(data: any): void {
+    const info = this.phaseContainers.get(this.currentPhase);
+    if (!info || !info.container) return;
+
+    // フェーズコンテナにデータを設定
+    switch (this.currentPhase) {
+      case 'quest-accept':
+        if (data.availableQuests) {
+          const questContainer = info.container as QuestAcceptContainer;
+          questContainer.setAvailableQuests(data.availableQuests);
+        }
+        break;
+
+      case 'gathering':
+        if (data.ap) {
+          const gatheringContainer = info.container as GatheringContainer;
+          gatheringContainer.setCurrentAP(data.ap.current, data.ap.max);
+        }
+        break;
+
+      case 'alchemy':
+        const alchemyContainer = info.container as AlchemyContainer;
+        if (data.recipeCards) {
+          alchemyContainer.setRecipeCards(data.recipeCards);
+        }
+        if (data.materials) {
+          alchemyContainer.setAvailableMaterials(data.materials);
+        }
+        break;
+
+      case 'delivery':
+        const deliveryContainer = info.container as DeliveryContainer;
+        if (data.acceptedQuests) {
+          deliveryContainer.setAcceptedQuests(data.acceptedQuests);
+        }
+        if (data.inventory) {
+          deliveryContainer.setInventory(data.inventory);
+        }
+        break;
+    }
+  }
+
+  /**
+   * 利用可能依頼更新ハンドラ
+   */
+  private handleAvailableQuestsUpdate(quests: any[]): void {
+    if (this.currentPhase === 'quest-accept') {
+      const info = this.phaseContainers.get('quest-accept');
+      if (info?.container) {
+        (info.container as QuestAcceptContainer).setAvailableQuests(quests);
+      }
+    }
+  }
+
+  /**
+   * 受注済み依頼更新ハンドラ
+   */
+  private handleAcceptedQuestsUpdate(quests: any[]): void {
+    // 納品フェーズの場合はコンテナも更新
+    if (this.currentPhase === 'delivery') {
+      const info = this.phaseContainers.get('delivery');
+      if (info?.container) {
+        (info.container as DeliveryContainer).setAcceptedQuests(quests);
+      }
+    }
+  }
+
+  /**
+   * インベントリ更新ハンドラ
+   */
+  private handleInventoryUpdate(items: any[]): void {
+    // 調合フェーズの場合はコンテナも更新
+    if (this.currentPhase === 'alchemy') {
+      const info = this.phaseContainers.get('alchemy');
+      if (info?.container) {
+        const materials = items.filter((i) => i.type === 'material');
+        (info.container as AlchemyContainer).setAvailableMaterials(materials as any);
+      }
+    }
+
+    // 納品フェーズの場合はコンテナも更新
+    if (this.currentPhase === 'delivery') {
+      const info = this.phaseContainers.get('delivery');
+      if (info?.container) {
+        (info.container as DeliveryContainer).setInventory(items);
+      }
+    }
+  }
+
+  // =====================================================
+  // 通知・エラー表示
+  // =====================================================
+
+  /**
+   * 通知を表示
+   */
+  showNotification(message: string, type: NotificationType): void {
+    this.notificationQueue.push({ message, type });
+
+    if (!this.isShowingNotification) {
+      this.displayNextNotification();
+    }
+  }
+
+  /**
+   * 次の通知を表示
+   */
+  private async displayNextNotification(): Promise<void> {
+    if (this.notificationQueue.length === 0) {
+      this.isShowingNotification = false;
+      return;
+    }
+
+    this.isShowingNotification = true;
+    const { message, type } = this.notificationQueue.shift()!;
+
+    const colors: Record<NotificationType, number> = {
+      success: 0x00aa00,
+      info: 0x0088ff,
+      warning: 0xffaa00,
+      error: 0xff4444,
+    };
+
+    const notification = this.add.container(
+      MainSceneLayout.SCREEN_WIDTH / 2,
+      MainSceneLayout.HEADER.HEIGHT + 20
+    );
+
+    const bg = this.add.graphics();
+    bg.fillStyle(colors[type] ?? colors.info, 0.9);
+    bg.fillRoundedRect(-200, -20, 400, 40, 8);
+    notification.add(bg);
+
+    const text = this.add.text(0, 0, message, {
+      ...TextStyles.body,
+      fontSize: '14px',
+    });
+    text.setOrigin(0.5);
+    notification.add(text);
+
+    notification.setAlpha(0);
+    notification.setY(notification.y - 20);
+    notification.setDepth(500);
+
+    // 入場アニメーション
+    await this.tweenPromise({
+      targets: notification,
+      alpha: 1,
+      y: notification.y + 20,
+      duration: 200,
+      ease: 'Power2.easeOut',
+    });
+
+    // 表示維持
+    await this.delay(2000);
+
+    // 退場アニメーション
+    await this.tweenPromise({
+      targets: notification,
+      alpha: 0,
+      y: notification.y - 20,
+      duration: 200,
+      ease: 'Power2.easeIn',
+    });
+
+    notification.destroy();
+
+    // 次の通知を表示
+    this.displayNextNotification();
+  }
+
+  /**
+   * エラーを表示
+   */
+  showError(message: string): void {
+    this.showNotification(message, 'error');
+  }
+
+  /**
+   * Tween完了をPromiseで待機
+   */
+  private tweenPromise(config: Phaser.Types.Tweens.TweenBuilderConfig): Promise<void> {
+    return new Promise((resolve) => {
+      this.tweens.add({
+        ...config,
+        onComplete: () => resolve(),
+      });
+    });
+  }
+
+  /**
+   * 遅延待機
+   */
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => this.time.delayedCall(ms, resolve));
+  }
+
+  // =====================================================
+  // シャットダウン
+  // =====================================================
+
+  /**
+   * シーンシャットダウン処理
+   */
+  shutdown(): void {
+    this.removeEventListeners();
+    this.notificationQueue = [];
+
+    // フェーズコンテナのクリーンアップ
+    this.phaseContainers.forEach((info) => {
+      if (info.container) {
+        info.container.destroy();
+      }
+    });
+    this.phaseContainers.clear();
+
+    super.shutdown();
   }
 }

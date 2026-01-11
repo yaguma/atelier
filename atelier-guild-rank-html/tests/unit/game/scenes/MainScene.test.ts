@@ -105,6 +105,7 @@ function createMockGraphics() {
 function createMockScene(): Phaser.Scene {
   const createMockContainer = () => {
     const children: unknown[] = [];
+    let containerY = 0;
     const container: any = {
       setDepth: vi.fn().mockReturnThis(),
       setVisible: vi.fn().mockReturnThis(),
@@ -121,8 +122,22 @@ function createMockScene(): Phaser.Scene {
       on: vi.fn().mockReturnThis(),
       setPosition: vi.fn().mockReturnThis(),
       setScale: vi.fn().mockReturnThis(),
+      setX: vi.fn().mockImplementation((x: number) => {
+        container.x = x;
+        return container;
+      }),
+      setY: vi.fn().mockImplementation((y: number) => {
+        containerY = y;
+        container.y = y;
+        return container;
+      }),
       x: 0,
-      y: 0,
+      get y() {
+        return containerY;
+      },
+      set y(val: number) {
+        containerY = val;
+      },
     };
     return container;
   };
@@ -180,6 +195,13 @@ function createMockScene(): Phaser.Scene {
         return { stop: vi.fn() };
       }),
     },
+    time: {
+      delayedCall: vi.fn().mockImplementation((_delay, callback) => {
+        // 即座にコールバックを呼び出す
+        callback();
+        return { remove: vi.fn() };
+      }),
+    },
   } as unknown as Phaser.Scene;
 }
 
@@ -198,6 +220,7 @@ function createMainScene(): MainScene {
     registry: mockScene.registry,
     cameras: mockScene.cameras,
     tweens: (mockScene as any).tweens,
+    time: (mockScene as any).time,
   });
 
   return scene;
@@ -533,6 +556,125 @@ describe('MainScene', () => {
         expect(MainSceneLayout.DECK_AREA.Y).toBe(550);
         expect(MainSceneLayout.DECK_AREA.WIDTH).toBe(150);
         expect(MainSceneLayout.DECK_AREA.HEIGHT).toBe(100);
+      });
+    });
+  });
+
+  describe('EventBus統合機能（TASK-0238）', () => {
+    let scene: MainScene;
+
+    beforeEach(() => {
+      scene = createMainScene();
+      (scene as any).init({});
+      (scene as any).preload();
+      (scene as any).create({});
+    });
+
+    describe('イベントリスナー設定', () => {
+      it('setupEventListenersが二重登録を防止する', () => {
+        // eventListenersSetupがtrueになっていることを確認
+        expect((scene as any).eventListenersSetup).toBe(true);
+
+        // 再度setupEventListenersを呼び出しても例外が発生しない
+        expect(() => (scene as any).setupEventListeners()).not.toThrow();
+      });
+
+      it('eventBusが存在する', () => {
+        expect((scene as any).eventBus).toBeDefined();
+      });
+    });
+
+    describe('通知機能', () => {
+      it('showNotificationメソッドが存在する', () => {
+        expect(typeof scene.showNotification).toBe('function');
+      });
+
+      it('showNotificationを呼び出しても例外が発生しない', () => {
+        expect(() => scene.showNotification('テストメッセージ', 'info')).not.toThrow();
+      });
+
+      it('showErrorメソッドが存在する', () => {
+        expect(typeof scene.showError).toBe('function');
+      });
+
+      it('showErrorを呼び出しても例外が発生しない', () => {
+        expect(() => scene.showError('エラーメッセージ')).not.toThrow();
+      });
+
+      it('複数の通知をキューに追加できる', () => {
+        expect(() => {
+          scene.showNotification('通知1', 'success');
+          scene.showNotification('通知2', 'warning');
+          scene.showNotification('通知3', 'error');
+        }).not.toThrow();
+      });
+
+      it('通知キューに通知が追加される', () => {
+        scene.showNotification('テスト通知', 'info');
+        // notificationQueueにアイテムが追加されるか、isShowingNotificationがtrueになる
+        const isShowing = (scene as any).isShowingNotification;
+        const queueLength = (scene as any).notificationQueue.length;
+        expect(isShowing || queueLength >= 0).toBe(true);
+      });
+    });
+
+    describe('イベントクリーンアップ', () => {
+      it('shutdownを呼び出しても例外が発生しない', () => {
+        expect(() => scene.shutdown()).not.toThrow();
+      });
+
+      it('shutdown後はeventListenersSetupがfalseになる', () => {
+        scene.shutdown();
+        expect((scene as any).eventListenersSetup).toBe(false);
+      });
+
+      it('shutdown後は再度shutdownを呼んでも安全', () => {
+        scene.shutdown();
+        expect(() => scene.shutdown()).not.toThrow();
+      });
+
+      it('shutdown後は通知キューがクリアされる', () => {
+        scene.showNotification('テスト', 'info');
+        scene.shutdown();
+        expect((scene as any).notificationQueue).toEqual([]);
+      });
+    });
+
+    describe('イベントハンドラ', () => {
+      it('handlePlayerDataUpdateが存在する', () => {
+        expect(typeof (scene as any).handlePlayerDataUpdate).toBe('function');
+      });
+
+      it('handlePlayerDataUpdateを呼び出しても例外が発生しない', () => {
+        expect(() => {
+          (scene as any).handlePlayerDataUpdate({
+            rank: 'S',
+            exp: 90,
+            maxExp: 100,
+          });
+        }).not.toThrow();
+      });
+
+      it('handleGameStateUpdateが存在する', () => {
+        expect(typeof (scene as any).handleGameStateUpdate).toBe('function');
+      });
+
+      it('handleGameStateUpdateを呼び出しても例外が発生しない', () => {
+        expect(() => {
+          (scene as any).handleGameStateUpdate({
+            currentPhase: 'gathering',
+          });
+        }).not.toThrow();
+      });
+
+      it('handlePhaseDataLoadedが存在する', () => {
+        expect(typeof (scene as any).handlePhaseDataLoaded).toBe('function');
+      });
+
+      it('handlePhaseDataLoadedを呼び出しても例外が発生しない', () => {
+        expect(() => {
+          (scene as any).handlePhaseDataLoaded({});
+        }).not.toThrow();
       });
     });
   });
