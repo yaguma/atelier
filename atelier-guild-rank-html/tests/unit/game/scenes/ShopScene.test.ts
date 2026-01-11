@@ -486,3 +486,141 @@ describe('ShopScene EventBusイベント', () => {
     expect(callback).toHaveBeenCalledWith({ gold: 500 });
   });
 });
+
+// TASK-0241: カード購入機能関連テスト
+describe('ShopScene カード関連定数', () => {
+  it('CardTypeIconsが定義されている', async () => {
+    const { CardTypeIcons } = await import('@game/scenes/ShopSceneConstants');
+    expect(CardTypeIcons).toBeDefined();
+    expect(CardTypeIcons.gathering).toBe('🌿');
+    expect(CardTypeIcons.recipe).toBe('📜');
+    expect(CardTypeIcons.enhance).toBe('⚡');
+  });
+
+  it('CardTypeLabelsが定義されている', async () => {
+    const { CardTypeLabels } = await import('@game/scenes/ShopSceneConstants');
+    expect(CardTypeLabels).toBeDefined();
+    expect(CardTypeLabels.gathering).toBe('採取地カード');
+    expect(CardTypeLabels.recipe).toBe('レシピカード');
+    expect(CardTypeLabels.enhance).toBe('強化カード');
+  });
+
+  it('RarityColorsが5種類のレアリティを持つ', async () => {
+    const { RarityColors } = await import('@game/scenes/ShopSceneConstants');
+    expect(RarityColors).toBeDefined();
+    expect(RarityColors.common).toBeDefined();
+    expect(RarityColors.uncommon).toBeDefined();
+    expect(RarityColors.rare).toBeDefined();
+    expect(RarityColors.epic).toBeDefined();
+    expect(RarityColors.legendary).toBeDefined();
+  });
+
+  it('RarityLabelsが日本語ラベルを持つ', async () => {
+    const { RarityLabels } = await import('@game/scenes/ShopSceneConstants');
+    expect(RarityLabels).toBeDefined();
+    expect(RarityLabels.common).toBe('コモン');
+    expect(RarityLabels.uncommon).toBe('アンコモン');
+    expect(RarityLabels.rare).toBe('レア');
+    expect(RarityLabels.epic).toBe('エピック');
+    expect(RarityLabels.legendary).toBe('レジェンダリー');
+  });
+
+  it('CardItemRowLayoutが定義されている', async () => {
+    const { CardItemRowLayout } = await import('@game/scenes/ShopSceneConstants');
+    expect(CardItemRowLayout).toBeDefined();
+    expect(CardItemRowLayout.WIDTH).toBe(560);
+    expect(CardItemRowLayout.HEIGHT).toBe(80);
+  });
+
+  it('CardDetailPanelLayoutが定義されている', async () => {
+    const { CardDetailPanelLayout } = await import('@game/scenes/ShopSceneConstants');
+    expect(CardDetailPanelLayout).toBeDefined();
+    expect(CardDetailPanelLayout.PREVIEW_Y).toBe(100);
+    expect(CardDetailPanelLayout.NAME_Y).toBe(200);
+  });
+
+  it('CardPreviewSizeが定義されている', async () => {
+    const { CardPreviewSize } = await import('@game/scenes/ShopSceneConstants');
+    expect(CardPreviewSize).toBeDefined();
+    expect(CardPreviewSize.WIDTH).toBe(100);
+    expect(CardPreviewSize.HEIGHT).toBe(140);
+  });
+
+  it('LoadingOverlayConfigが定義されている', async () => {
+    const { LoadingOverlayConfig } = await import('@game/scenes/ShopSceneConstants');
+    expect(LoadingOverlayConfig).toBeDefined();
+    expect(LoadingOverlayConfig.SPINNER_RADIUS).toBe(30);
+    expect(LoadingOverlayConfig.DEPTH).toBe(200);
+  });
+
+  it('PurchaseAnimationConfigが定義されている', async () => {
+    const { PurchaseAnimationConfig } = await import('@game/scenes/ShopSceneConstants');
+    expect(PurchaseAnimationConfig).toBeDefined();
+    expect(PurchaseAnimationConfig.DURATION).toBe(500);
+    expect(PurchaseAnimationConfig.DEPTH).toBe(100);
+  });
+});
+
+describe('ShopScene カード商品型', () => {
+  it('ShopCardItemインターフェースが使用できる', async () => {
+    const module = await import('@game/scenes/ShopScene');
+    expect(module).toBeDefined();
+    // 型のテストなのでモジュールがインポートできることを確認
+  });
+
+  it('isShopCardItem型ガードが正しく動作する', async () => {
+    const { isShopCardItem } = await import('@game/scenes/ShopScene');
+
+    const cardItem = {
+      id: 'card-1',
+      name: 'テストカード',
+      price: 100,
+      category: 'cards' as const,
+      type: 'gathering' as const,
+      rarity: 'common' as const,
+    };
+
+    const normalItem = {
+      id: 'item-1',
+      name: '通常アイテム',
+      price: 50,
+      category: 'materials' as const,
+    };
+
+    expect(isShopCardItem(cardItem)).toBe(true);
+    expect(isShopCardItem(normalItem)).toBe(false);
+  });
+
+  it('ShopItemUnion型がエクスポートされている', async () => {
+    const module = await import('@game/scenes/ShopScene');
+    // 型なのでランタイムチェックできないが、モジュールが存在することを確認
+    expect(module).toBeDefined();
+  });
+});
+
+describe('ShopScene scenesインデックス追加エクスポート', () => {
+  it('CardTypeIconsがエクスポートされている', async () => {
+    const module = await import('@game/scenes');
+    expect(module.CardTypeIcons).toBeDefined();
+  });
+
+  it('CardTypeLabelsがエクスポートされている', async () => {
+    const module = await import('@game/scenes');
+    expect(module.CardTypeLabels).toBeDefined();
+  });
+
+  it('RarityColorsがエクスポートされている', async () => {
+    const module = await import('@game/scenes');
+    expect(module.RarityColors).toBeDefined();
+  });
+
+  it('CardItemRowLayoutがエクスポートされている', async () => {
+    const module = await import('@game/scenes');
+    expect(module.CardItemRowLayout).toBeDefined();
+  });
+
+  it('isShopCardItemがエクスポートされている', async () => {
+    const module = await import('@game/scenes');
+    expect(module.isShopCardItem).toBeDefined();
+  });
+});

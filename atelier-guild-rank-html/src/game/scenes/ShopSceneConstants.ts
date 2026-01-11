@@ -96,3 +96,132 @@ export const ShopColors = {
   priceCannotAfford: '#ff4444',
   priceAffordable: '#00ff00',
 } as const;
+
+/**
+ * カードタイプ
+ */
+export type CardType = 'gathering' | 'recipe' | 'enhance';
+
+/**
+ * カードタイプのアイコン定義
+ */
+export const CardTypeIcons: Record<CardType, string> = {
+  gathering: '🌿',
+  recipe: '📜',
+  enhance: '⚡',
+} as const;
+
+/**
+ * カードタイプのラベル定義
+ */
+export const CardTypeLabels: Record<CardType, string> = {
+  gathering: '採取地カード',
+  recipe: 'レシピカード',
+  enhance: '強化カード',
+} as const;
+
+/**
+ * カードレアリティ
+ */
+export type CardRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+
+/**
+ * レアリティのカラー定義（数値形式 - Phaser用）
+ */
+export const RarityColors: Record<CardRarity, number> = {
+  common: 0xaaaaaa,
+  uncommon: 0x00aa00,
+  rare: 0x0088ff,
+  epic: 0xaa00ff,
+  legendary: 0xffaa00,
+} as const;
+
+/**
+ * レアリティのカラー定義（文字列形式 - CSS用）
+ */
+export const RarityColorStrings: Record<CardRarity, string> = {
+  common: '#aaaaaa',
+  uncommon: '#00aa00',
+  rare: '#0088ff',
+  epic: '#aa00ff',
+  legendary: '#ffaa00',
+} as const;
+
+/**
+ * レアリティのラベル定義
+ */
+export const RarityLabels: Record<CardRarity, string> = {
+  common: 'コモン',
+  uncommon: 'アンコモン',
+  rare: 'レア',
+  epic: 'エピック',
+  legendary: 'レジェンダリー',
+} as const;
+
+/**
+ * カード商品行のレイアウト
+ */
+export const CardItemRowLayout = {
+  WIDTH: 560,
+  HEIGHT: 80,
+  ICON_X: 15,
+  ICON_Y: 40,
+  NAME_X: 50,
+  NAME_Y: 20,
+  EFFECT_X: 50,
+  EFFECT_Y: 45,
+  RARITY_X: 540,
+  RARITY_Y: 25,
+  RARITY_RADIUS: 8,
+  PRICE_X: 480,
+  PRICE_Y: 50,
+} as const;
+
+/**
+ * カード詳細パネルのレイアウト
+ */
+export const CardDetailPanelLayout = {
+  PREVIEW_Y: 100,
+  NAME_Y: 200,
+  TYPE_Y: 230,
+  DESCRIPTION_Y: 260,
+  DESCRIPTION_LINE_SPACING: 4,
+  PRICE_Y: 360,
+  WARNING_Y: 385,
+} as const;
+
+/**
+ * カードプレビューのサイズ
+ */
+export const CardPreviewSize = {
+  WIDTH: 100,
+  HEIGHT: 140,
+  BORDER_RADIUS: 8,
+  ICON_SIZE: 32,
+  NAME_MAX_LENGTH: 8,
+} as const;
+
+/**
+ * ローディングオーバーレイの設定
+ */
+export const LoadingOverlayConfig = {
+  SPINNER_RADIUS: 30,
+  SPINNER_LINE_WIDTH: 4,
+  SPINNER_ANGLE: 0.75,
+  MESSAGE_OFFSET_Y: 60,
+  ROTATION_DURATION: 1000,
+  DEPTH: 200,
+} as const;
+
+/**
+ * 購入アニメーションの設定
+ */
+export const PurchaseAnimationConfig = {
+  DURATION: 500,
+  EASE: 'Power2.easeIn',
+  END_X_OFFSET: 100,
+  END_Y: 100,
+  END_SCALE: 0.5,
+  END_ALPHA: 0,
+  DEPTH: 100,
+} as const;
