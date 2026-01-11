@@ -13,3 +13,5 @@ export * from './Phase3TestScene';
 export * from './ShopScene';
 export * from './ShopSceneConstants';
 export * from './ShopTestScene';
+export * from './RankUpScene';
+export * from './RankUpSceneConstants';
