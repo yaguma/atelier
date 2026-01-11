@@ -16,3 +16,6 @@ export * from './ShopTestScene';
 export * from './RankUpScene';
 export * from './RankUpSceneConstants';
 export * from './RankUpTestScene';
+export * from './GameOverScene';
+export * from './GameOverSceneConstants';
+export * from './GameOverTestScene';

@@ -377,6 +377,9 @@ export interface EventPayloadMap {
   'scene:transition:complete': SceneTransitionCompletePayload;
   'scene:overlay:opened': SceneOverlayOpenedPayload;
   'scene:overlay:closed': SceneOverlayClosedPayload;
+
+  // ゲーム制御
+  'game:restart': undefined;
 }
 
 /**
