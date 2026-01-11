@@ -71,6 +71,7 @@ function createMockScene(): Phaser.Scene {
       setDepth: vi.fn().mockReturnThis(),
       setVisible: vi.fn().mockReturnThis(),
       setAlpha: vi.fn().mockReturnThis(),
+      setScale: vi.fn().mockReturnThis(),
       setY: vi.fn().mockReturnThis(),
       add: vi.fn().mockImplementation((child: unknown) => {
         children.push(child);
@@ -113,7 +114,12 @@ function createMockScene(): Phaser.Scene {
     setAlpha: vi.fn().mockReturnThis(),
     setText: vi.fn().mockReturnThis(),
     setColor: vi.fn().mockReturnThis(),
+    setScale: vi.fn().mockReturnThis(),
+    setInteractive: vi.fn().mockReturnThis(),
+    on: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
+    x: 0,
+    y: 0,
   });
 
   const mockTime = {
@@ -514,41 +520,7 @@ describe('DeliveryContainer', () => {
   // ========================================
 
   describe('納品実行', () => {
-    it('納品可能な状態でdeliver()を呼ぶと完了コールバックが呼ばれる', async () => {
-      const onComplete = vi.fn();
-      const container = new DeliveryContainer({
-        scene: mockScene,
-        eventBus,
-        onDeliveryComplete: onComplete,
-      });
-      const quest = createMockActiveQuest({
-        quest: {
-          id: 'quest-1',
-          clientId: 'client-1',
-          condition: {
-            type: QuestType.SPECIFIC,
-            itemId: 'item-potion',
-            quantity: 1,
-          },
-          contribution: 10,
-          gold: 100,
-          deadline: 7,
-          difficulty: 'normal',
-          flavorText: 'テスト依頼',
-        },
-      });
-      const item = createMockCraftedItem({ itemId: 'item-potion' });
-
-      container.setAcceptedQuests([quest]);
-      container.setInventory([item]);
-      container.selectQuest(quest);
-
-      await container.deliver();
-
-      expect(onComplete).toHaveBeenCalled();
-    });
-
-    it('納品時にdelivery:completeイベントが発火する', async () => {
+    it('納品可能な状態でdeliver()を呼ぶとdelivery:completeイベントが発火する', async () => {
       const deliverHandler = vi.fn();
       eventBus.on('delivery:complete' as any, deliverHandler);
 
@@ -578,22 +550,76 @@ describe('DeliveryContainer', () => {
       container.setInventory([item]);
       container.selectQuest(quest);
 
-      await container.deliver();
+      // deliverを呼び出し、マイクロタスクをフラッシュ
+      const deliverPromise = container.deliver();
 
+      // マイクロタスクを処理するため少し待つ
+      await new Promise(resolve => setImmediate(resolve));
+
+      // イベントは納品アニメーション後に発火される
       expect(deliverHandler).toHaveBeenCalled();
     });
 
-    it('納品不可能な状態ではdeliver()が何もしない', async () => {
-      const onComplete = vi.fn();
+    it('納品時のイベントペイロードに依頼情報と報酬が含まれる', async () => {
+      const deliverHandler = vi.fn();
+      eventBus.on('delivery:complete' as any, deliverHandler);
+
       const container = new DeliveryContainer({
         scene: mockScene,
         eventBus,
-        onDeliveryComplete: onComplete,
+      });
+      const quest = createMockActiveQuest({
+        quest: {
+          id: 'quest-1',
+          clientId: 'client-1',
+          condition: {
+            type: QuestType.SPECIFIC,
+            itemId: 'item-potion',
+            quantity: 1,
+          },
+          contribution: 15,
+          gold: 200,
+          deadline: 7,
+          difficulty: 'normal',
+          flavorText: 'テスト依頼',
+        },
+      });
+      const item = createMockCraftedItem({ itemId: 'item-potion' });
+
+      container.setAcceptedQuests([quest]);
+      container.setInventory([item]);
+      container.selectQuest(quest);
+
+      const deliverPromise = container.deliver();
+
+      // マイクロタスクを処理するため少し待つ
+      await new Promise(resolve => setImmediate(resolve));
+
+      expect(deliverHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          quest: expect.objectContaining({
+            quest: expect.objectContaining({ id: 'quest-1' }),
+          }),
+          rewards: expect.objectContaining({
+            gold: 200,
+            contribution: 15,
+          }),
+        })
+      );
+    });
+
+    it('納品不可能な状態ではdeliver()が何もしない', async () => {
+      const deliverHandler = vi.fn();
+      eventBus.on('delivery:complete' as any, deliverHandler);
+
+      const container = new DeliveryContainer({
+        scene: mockScene,
+        eventBus,
       });
 
       await container.deliver();
 
-      expect(onComplete).not.toHaveBeenCalled();
+      expect(deliverHandler).not.toHaveBeenCalled();
     });
   });
 
