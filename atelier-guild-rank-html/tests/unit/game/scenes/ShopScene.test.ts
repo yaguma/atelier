@@ -624,3 +624,247 @@ describe('ShopScene scenesインデックス追加エクスポート', () => {
     expect(module.isShopCardItem).toBeDefined();
   });
 });
+
+// =====================================================
+// TASK-0242: 素材・アーティファクト購入関連テスト
+// =====================================================
+
+describe('ShopScene 素材関連定数', () => {
+  it('MaterialQualityThresholdsが定義されている', async () => {
+    const { MaterialQualityThresholds } = await import('@game/scenes/ShopSceneConstants');
+    expect(MaterialQualityThresholds).toBeDefined();
+    expect(MaterialQualityThresholds.HIGH_MIN).toBe(80);
+    expect(MaterialQualityThresholds.MEDIUM_MIN).toBe(50);
+  });
+
+  it('MaterialQualityColorsが3種類の品質色を持つ', async () => {
+    const { MaterialQualityColors } = await import('@game/scenes/ShopSceneConstants');
+    expect(MaterialQualityColors).toBeDefined();
+    expect(MaterialQualityColors.low).toBe(0xaaaaaa);
+    expect(MaterialQualityColors.medium).toBe(0x00aaff);
+    expect(MaterialQualityColors.high).toBe(0xffaa00);
+  });
+
+  it('MaterialQualityColorStringsがCSS用カラー文字列を持つ', async () => {
+    const { MaterialQualityColorStrings } = await import('@game/scenes/ShopSceneConstants');
+    expect(MaterialQualityColorStrings).toBeDefined();
+    expect(MaterialQualityColorStrings.low).toBe('#aaaaaa');
+    expect(MaterialQualityColorStrings.medium).toBe('#00aaff');
+    expect(MaterialQualityColorStrings.high).toBe('#ffaa00');
+  });
+
+  it('MaterialQualityLabelsが日本語ラベルを持つ', async () => {
+    const { MaterialQualityLabels } = await import('@game/scenes/ShopSceneConstants');
+    expect(MaterialQualityLabels).toBeDefined();
+    expect(MaterialQualityLabels.low).toBe('低品質');
+    expect(MaterialQualityLabels.medium).toBe('中品質');
+    expect(MaterialQualityLabels.high).toBe('高品質');
+  });
+
+  it('MaterialItemRowLayoutが定義されている', async () => {
+    const { MaterialItemRowLayout } = await import('@game/scenes/ShopSceneConstants');
+    expect(MaterialItemRowLayout).toBeDefined();
+    expect(MaterialItemRowLayout.WIDTH).toBe(560);
+    expect(MaterialItemRowLayout.HEIGHT).toBe(70);
+    expect(MaterialItemRowLayout.NAME_X).toBe(75);
+    expect(MaterialItemRowLayout.STOCK_X).toBe(480);
+  });
+
+  it('MaterialDetailPanelLayoutが定義されている', async () => {
+    const { MaterialDetailPanelLayout } = await import('@game/scenes/ShopSceneConstants');
+    expect(MaterialDetailPanelLayout).toBeDefined();
+    expect(MaterialDetailPanelLayout.NAME_Y).toBe(30);
+    expect(MaterialDetailPanelLayout.QUANTITY_SELECTOR_Y).toBe(220);
+  });
+});
+
+describe('ShopScene 数量セレクタ定数', () => {
+  it('QuantitySelectorLayoutが定義されている', async () => {
+    const { QuantitySelectorLayout } = await import('@game/scenes/ShopSceneConstants');
+    expect(QuantitySelectorLayout).toBeDefined();
+    expect(QuantitySelectorLayout.BUTTON_RADIUS).toBe(20);
+    expect(QuantitySelectorLayout.MINUS_X).toBe(-60);
+    expect(QuantitySelectorLayout.PLUS_X).toBe(60);
+    expect(QuantitySelectorLayout.MAX_BUTTON_WIDTH).toBe(80);
+  });
+
+  it('QuantitySelectorConfigが定義されている', async () => {
+    const { QuantitySelectorConfig } = await import('@game/scenes/ShopSceneConstants');
+    expect(QuantitySelectorConfig).toBeDefined();
+    expect(QuantitySelectorConfig.MIN_QUANTITY).toBe(1);
+    expect(QuantitySelectorConfig.MAX_QUANTITY).toBe(99);
+    expect(QuantitySelectorConfig.INFINITE_STOCK).toBe(-1);
+  });
+
+  it('StockDisplayConfigが定義されている', async () => {
+    const { StockDisplayConfig } = await import('@game/scenes/ShopSceneConstants');
+    expect(StockDisplayConfig).toBeDefined();
+    expect(StockDisplayConfig.INFINITE_SYMBOL).toBe('∞');
+    expect(StockDisplayConfig.STOCK_PREFIX).toBe('残');
+    expect(StockDisplayConfig.OUT_OF_STOCK_COLOR).toBe('#ff4444');
+  });
+});
+
+describe('ShopScene アーティファクト関連定数', () => {
+  it('ArtifactItemRowLayoutが定義されている', async () => {
+    const { ArtifactItemRowLayout } = await import('@game/scenes/ShopSceneConstants');
+    expect(ArtifactItemRowLayout).toBeDefined();
+    expect(ArtifactItemRowLayout.WIDTH).toBe(560);
+    expect(ArtifactItemRowLayout.HEIGHT).toBe(90);
+    expect(ArtifactItemRowLayout.ICON_BG_WIDTH).toBe(70);
+    expect(ArtifactItemRowLayout.ICON_BG_HEIGHT).toBe(70);
+  });
+
+  it('ArtifactDetailPanelLayoutが定義されている', async () => {
+    const { ArtifactDetailPanelLayout } = await import('@game/scenes/ShopSceneConstants');
+    expect(ArtifactDetailPanelLayout).toBeDefined();
+    expect(ArtifactDetailPanelLayout.NAME_Y).toBe(30);
+    expect(ArtifactDetailPanelLayout.EFFECTS_LABEL_Y).toBe(100);
+    expect(ArtifactDetailPanelLayout.PRICE_Y).toBe(350);
+  });
+
+  it('ArtifactRarityLabelsが星付きラベルを持つ', async () => {
+    const { ArtifactRarityLabels } = await import('@game/scenes/ShopSceneConstants');
+    expect(ArtifactRarityLabels).toBeDefined();
+    expect(ArtifactRarityLabels.common).toBe('★ コモン');
+    expect(ArtifactRarityLabels.uncommon).toBe('★★ アンコモン');
+    expect(ArtifactRarityLabels.rare).toBe('★★★ レア');
+    expect(ArtifactRarityLabels.epic).toBe('★★★★ エピック');
+    expect(ArtifactRarityLabels.legendary).toBe('★★★★★ レジェンダリー');
+  });
+
+  it('ArtifactIconが定義されている', async () => {
+    const { ArtifactIcon } = await import('@game/scenes/ShopSceneConstants');
+    expect(ArtifactIcon).toBe('🏆');
+  });
+});
+
+describe('ShopScene 素材商品型', () => {
+  it('isShopMaterialItem型ガードが正しく動作する', async () => {
+    const { isShopMaterialItem } = await import('@game/scenes/ShopScene');
+
+    const materialItem = {
+      id: 'mat-1',
+      name: 'テスト素材',
+      price: 50,
+      category: 'materials' as const,
+      quality: 75,
+      stock: 10,
+    };
+
+    const cardItem = {
+      id: 'card-1',
+      name: 'テストカード',
+      price: 100,
+      category: 'cards' as const,
+      type: 'gathering' as const,
+      rarity: 'common' as const,
+    };
+
+    expect(isShopMaterialItem(materialItem)).toBe(true);
+    expect(isShopMaterialItem(cardItem)).toBe(false);
+  });
+
+  it('素材は品質とストックを持つ', async () => {
+    const { isShopMaterialItem } = await import('@game/scenes/ShopScene');
+
+    const highQualityMaterial = {
+      id: 'mat-high',
+      name: '高品質素材',
+      price: 100,
+      category: 'materials' as const,
+      quality: 90,
+      stock: 5,
+    };
+
+    expect(isShopMaterialItem(highQualityMaterial)).toBe(true);
+    expect(highQualityMaterial.quality).toBe(90);
+    expect(highQualityMaterial.stock).toBe(5);
+  });
+});
+
+describe('ShopScene アーティファクト商品型', () => {
+  it('isShopArtifactItem型ガードが正しく動作する', async () => {
+    const { isShopArtifactItem } = await import('@game/scenes/ShopScene');
+
+    const artifactItem = {
+      id: 'art-1',
+      name: 'テストアーティファクト',
+      price: 500,
+      category: 'artifacts' as const,
+      rarity: 'rare' as const,
+      effects: [{ description: '攻撃力+10' }],
+    };
+
+    const materialItem = {
+      id: 'mat-1',
+      name: 'テスト素材',
+      price: 50,
+      category: 'materials' as const,
+      quality: 75,
+      stock: 10,
+    };
+
+    expect(isShopArtifactItem(artifactItem)).toBe(true);
+    expect(isShopArtifactItem(materialItem)).toBe(false);
+  });
+
+  it('アーティファクトはレアリティとエフェクトを持つ', async () => {
+    const { isShopArtifactItem } = await import('@game/scenes/ShopScene');
+
+    const legendaryArtifact = {
+      id: 'art-legendary',
+      name: '伝説のアーティファクト',
+      price: 10000,
+      category: 'artifacts' as const,
+      rarity: 'legendary' as const,
+      effects: [
+        { description: '全能力+20%' },
+        { description: '特殊スキル発動' },
+      ],
+      requirement: 'ランクS以上',
+    };
+
+    expect(isShopArtifactItem(legendaryArtifact)).toBe(true);
+    expect(legendaryArtifact.rarity).toBe('legendary');
+    expect(legendaryArtifact.effects).toHaveLength(2);
+    expect(legendaryArtifact.requirement).toBe('ランクS以上');
+  });
+});
+
+describe('ShopScene 素材・アーティファクト関連エクスポート', () => {
+  it('MaterialQualityColorsがscenesからエクスポートされている', async () => {
+    const module = await import('@game/scenes');
+    expect(module.MaterialQualityColors).toBeDefined();
+  });
+
+  it('MaterialItemRowLayoutがscenesからエクスポートされている', async () => {
+    const module = await import('@game/scenes');
+    expect(module.MaterialItemRowLayout).toBeDefined();
+  });
+
+  it('QuantitySelectorConfigがscenesからエクスポートされている', async () => {
+    const module = await import('@game/scenes');
+    expect(module.QuantitySelectorConfig).toBeDefined();
+  });
+
+  it('ArtifactItemRowLayoutがscenesからエクスポートされている', async () => {
+    const module = await import('@game/scenes');
+    expect(module.ArtifactItemRowLayout).toBeDefined();
+  });
+
+  it('ArtifactRarityLabelsがscenesからエクスポートされている', async () => {
+    const module = await import('@game/scenes');
+    expect(module.ArtifactRarityLabels).toBeDefined();
+  });
+
+  it('isShopMaterialItemがscenesからエクスポートされている', async () => {
+    const module = await import('@game/scenes');
+    expect(module.isShopMaterialItem).toBeDefined();
+  });
+
+  it('isShopArtifactItemがscenesからエクスポートされている', async () => {
+    const module = await import('@game/scenes');
+    expect(module.isShopArtifactItem).toBeDefined();
+  });
+});
