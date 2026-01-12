@@ -59,6 +59,10 @@ declare global {
     saveLoadManager: PhaserSaveLoadManager | null;
     /** デバッグ用: シーン一覧取得 */
     getScenes: () => string[];
+    /** ローディング進捗更新（HTMLから設定される） */
+    updateLoadingProgress: (progress: number) => void;
+    /** ローディング画面非表示（HTMLから設定される） */
+    hideLoadingScreen: () => void;
   }
 }
 

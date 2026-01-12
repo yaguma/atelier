@@ -2,83 +2,343 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>アトリエ錬金術 - Phaser版</title>
-  <meta name="description" content="ギルドランク制のデッキ構築型錬金術RPG（Phaser版）。採取、調合、納品を繰り返し、Sランクを目指そう！" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#1a1a2e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <!-- SEO / OGP -->
+  <meta name="description" content="錬金術師としてギルドランクを上げていくデッキ構築RPG" />
+  <meta property="og:title" content="Atelier Guild Rank" />
+  <meta property="og:description" content="錬金術師としてギルドランクを上げていくデッキ構築RPG" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <title>Atelier Guild Rank</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
   <style>
-    * {
+    /* リセット */
+    *, *::before, *::after {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
     }
 
+    /* 基本スタイル */
     html, body {
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #1a1a2e;
+      background-color: #0d0d1a;
+      font-family: 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', sans-serif;
     }
 
-    #game-container {
-      width: 100%;
-      height: 100%;
+    body {
       display: flex;
       justify-content: center;
       align-items: center;
     }
 
+    /* ゲームコンテナ */
+    #game-container {
+      width: 100%;
+      height: 100%;
+      max-width: 1920px;
+      max-height: 1080px;
+      position: relative;
+      background-color: #1a1a2e;
+    }
+
     #game-container canvas {
-      image-rendering: auto;
-    }
-
-    /* ローディングスピナー */
-    .loading-spinner {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: #F5F5DC;
-      font-family: sans-serif;
-      text-align: center;
-    }
-
-    .loading-spinner::before {
-      content: '';
       display: block;
-      width: 50px;
-      height: 50px;
-      margin: 0 auto 16px;
-      border: 3px solid rgba(245, 245, 220, 0.3);
-      border-top-color: #F5F5DC;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ローディング画面 */
+    #loading-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      transition: opacity 0.5s ease-out;
+    }
+
+    #loading-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-title {
+      color: #e94560;
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 2rem;
+      text-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
+    }
+
+    .loading-subtitle {
+      color: #a0a0c0;
+      font-size: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(233, 69, 96, 0.2);
+      border-top-color: #e94560;
       border-radius: 50%;
       animation: spin 1s linear infinite;
+      margin-bottom: 1.5rem;
     }
 
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
 
-    /* エラー表示 */
-    .error-message {
-      color: #ff4444;
-      padding: 20px;
+    .loading-progress {
+      width: 300px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+
+    .loading-progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #e94560 0%, #ff6b6b 100%);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    .loading-percentage {
+      color: #e94560;
+      font-size: 0.875rem;
+    }
+
+    .loading-tip {
+      position: absolute;
+      bottom: 40px;
+      color: #606080;
+      font-size: 0.75rem;
       text-align: center;
-      font-family: sans-serif;
+      padding: 0 20px;
     }
 
-    .error-message h2 {
-      margin-bottom: 10px;
+    /* エラー画面 */
+    .error-screen {
+      color: #ff4444;
+      text-align: center;
+      padding: 40px;
     }
 
-    .error-message p {
-      margin-bottom: 8px;
+    .error-screen h2 {
+      margin-bottom: 1rem;
+    }
+
+    .error-screen p {
+      margin-bottom: 0.5rem;
+    }
+
+    .error-screen .error-detail {
+      font-size: 0.75rem;
+      color: #888;
+      margin-top: 1rem;
+    }
+
+    .error-screen button {
+      margin-top: 16px;
+      padding: 8px 16px;
+      cursor: pointer;
+      background: #e94560;
+      border: none;
+      color: white;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    .error-screen button:hover {
+      background: #ff6b6b;
+    }
+
+    /* フルスクリーンボタン */
+    #fullscreen-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      z-index: 100;
+      transition: background 0.2s;
+    }
+
+    #fullscreen-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* レスポンシブ */
+    @media (max-width: 768px) {
+      .loading-title {
+        font-size: 1.5rem;
+      }
+
+      .loading-progress {
+        width: 200px;
+      }
+
+      #fullscreen-btn {
+        display: none;
+      }
+    }
+
+    /* タッチデバイス対応 */
+    @media (hover: none) {
+      #fullscreen-btn {
+        display: none;
+      }
+    }
+
+    /* ダークモード対応 */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark;
+      }
     }
   </style>
 </head>
 <body>
   <div id="game-container">
-    <div class="loading-spinner">読み込み中...</div>
+    <!-- ローディング画面 -->
+    <div id="loading-screen">
+      <h1 class="loading-title">Atelier Guild Rank</h1>
+      <p class="loading-subtitle">錬金術師ギルドランク制デッキ構築RPG</p>
+      <div class="loading-spinner"></div>
+      <div class="loading-progress">
+        <div class="loading-progress-bar" id="loading-progress-bar"></div>
+      </div>
+      <p class="loading-percentage" id="loading-percentage">0%</p>
+      <p class="loading-tip">TIPS: 採取地カードと合成レシピを上手く組み合わせて、依頼をクリアしよう！</p>
+    </div>
+
+    <!-- フルスクリーンボタン -->
+    <button id="fullscreen-btn" onclick="toggleFullscreen()">フルスクリーン</button>
   </div>
+
+  <script>
+    // ローディング進捗更新関数（Phaserから呼び出される）
+    window.updateLoadingProgress = function(progress) {
+      const progressBar = document.getElementById('loading-progress-bar');
+      const percentage = document.getElementById('loading-percentage');
+
+      if (progressBar) {
+        progressBar.style.width = `${progress}%`;
+      }
+      if (percentage) {
+        percentage.textContent = `${Math.floor(progress)}%`;
+      }
+    };
+
+    // ローディング画面非表示関数
+    window.hideLoadingScreen = function() {
+      const loadingScreen = document.getElementById('loading-screen');
+      if (loadingScreen) {
+        loadingScreen.classList.add('hidden');
+        setTimeout(() => {
+          loadingScreen.style.display = 'none';
+        }, 500);
+      }
+    };
+
+    // フルスクリーン切り替え
+    function toggleFullscreen() {
+      const container = document.getElementById('game-container');
+
+      if (!document.fullscreenElement) {
+        if (container.requestFullscreen) {
+          container.requestFullscreen();
+        } else if (container.webkitRequestFullscreen) {
+          container.webkitRequestFullscreen();
+        } else if (container.msRequestFullscreen) {
+          container.msRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+      }
+    }
+
+    // フルスクリーン状態変更時のボタンテキスト更新
+    document.addEventListener('fullscreenchange', function() {
+      const btn = document.getElementById('fullscreen-btn');
+      if (document.fullscreenElement) {
+        btn.textContent = 'ウィンドウ';
+      } else {
+        btn.textContent = 'フルスクリーン';
+      }
+    });
+
+    // ブラウザ互換性チェック
+    (function checkBrowserCompatibility() {
+      const isCompatible =
+        typeof window.localStorage !== 'undefined' &&
+        typeof window.JSON !== 'undefined' &&
+        typeof document.createElement('canvas').getContext === 'function';
+
+      if (!isCompatible) {
+        const container = document.getElementById('game-container');
+        container.innerHTML = `
+          <div class="error-screen">
+            <h2>お使いのブラウザはサポートされていません</h2>
+            <p>最新のChrome、Firefox、Safari、またはEdgeをご使用ください。</p>
+          </div>
+        `;
+      }
+    })();
+
+    // ローディングTIPSのランダム表示
+    (function randomizeTip() {
+      const tips = [
+        'TIPS: 採取地カードと合成レシピを上手く組み合わせて、依頼をクリアしよう！',
+        'TIPS: ショップでカードを購入してデッキを強化しよう！',
+        'TIPS: 昇格試験に合格するとより良い依頼が受けられるようになるよ！',
+        'TIPS: 素材の品質が高いほど、合成アイテムの品質も上がるよ！',
+        'TIPS: APを効率よく使って、1日でできることを最大化しよう！',
+        'TIPS: 30日以内にSランクを目指そう！',
+      ];
+
+      const tipElement = document.querySelector('.loading-tip');
+      if (tipElement) {
+        tipElement.textContent = tips[Math.floor(Math.random() * tips.length)];
+      }
+    })();
+  </script>
+
+  <!-- メインスクリプト -->
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
