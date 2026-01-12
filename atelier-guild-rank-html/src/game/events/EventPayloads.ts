@@ -339,6 +339,14 @@ export interface EventPayloadMap {
   // セーブ・ロード
   'ui:save:requested': undefined;
   'ui:load:requested': undefined;
+  'save:complete': { slotId: number };
+  'save:failed': { slotId: number; error: unknown };
+  'save:deleted': { slotId: number };
+  'load:complete': { slotId: number };
+  'load:failed': { slotId: number; error: unknown };
+
+  // フェーズ変更（アプリケーション層からの通知）
+  'app:phase:changed': { phase: string };
 
   // ゲーム状態
   'state:game:changed': GameStateChangedPayload;
