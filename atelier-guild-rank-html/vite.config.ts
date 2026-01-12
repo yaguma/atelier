@@ -11,6 +11,12 @@ export default defineConfig({
     sourcemap: true,
     chunkSizeWarningLimit: 2000, // Phaserは大きいため警告閾値を引き上げ
     rollupOptions: {
+      input: {
+        // HTML版エントリーポイント
+        main: resolve(__dirname, 'index.html'),
+        // Phaser版エントリーポイント
+        phaser: resolve(__dirname, 'phaser.html'),
+      },
       output: {
         manualChunks: {
           phaser: ['phaser'],
