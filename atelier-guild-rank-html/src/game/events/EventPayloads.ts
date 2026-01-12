@@ -388,6 +388,15 @@ export interface EventPayloadMap {
 
   // ゲーム制御
   'game:restart': undefined;
+
+  // DayEndManager用イベント
+  'quest:delivered': { rewards?: { gold?: number; contribution?: number } };
+  'gathering:complete': { materials?: unknown[] };
+  'alchemy:crafted': Record<string, unknown>;
+  'shop:purchased': { cost?: number };
+
+  // Day End UI
+  'ui:day:end:confirmed': Record<string, unknown>;
 }
 
 /**
