@@ -22,6 +22,7 @@ import { createPlayerState } from '@domain/player/PlayerState';
 import { createDeck } from '@domain/services/DeckService';
 import { createInventory } from '@domain/services/InventoryService';
 import { EventBus } from '@game/events/EventBus';
+import { GuildRank } from '@domain/common/types';
 
 describe('StateSelectors', () => {
   let stateManager: StateManager;
@@ -270,7 +271,7 @@ describe('StateSelectors', () => {
       it('Sランクの場合trueを返す', () => {
         phaserStateManager.updatePlayerState({
           ...createPlayerState(),
-          rank: 'S',
+          rank: GuildRank.S,
         });
 
         expect(selectors.isGameClear()).toBe(true);
@@ -296,13 +297,13 @@ describe('StateSelectors', () => {
     describe('getNextRank()', () => {
       it('次のランクを返す', () => {
         // 初期ランクはG
-        expect(selectors.getNextRank()).toBe('F');
+        expect(selectors.getNextRank()).toBe(GuildRank.F);
       });
 
       it('Sランクの場合nullを返す', () => {
         phaserStateManager.updatePlayerState({
           ...createPlayerState(),
-          rank: 'S',
+          rank: GuildRank.S,
         });
 
         expect(selectors.getNextRank()).toBeNull();

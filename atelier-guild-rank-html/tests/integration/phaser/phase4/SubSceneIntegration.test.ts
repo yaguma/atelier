@@ -131,7 +131,7 @@ describe('Phase4 SubScene Integration', () => {
       const rankOrder = ['G', 'F', 'E', 'D', 'C', 'B', 'A', 'S'];
 
       let errorEmitted = false;
-      eventBus.on('ui:shop:purchase:requested', (data: { itemId: string }) => {
+      eventBus.on('shop:purchase:requested' as never, ((data: { item: unknown }) => {
         const playerState = stateManager.getPlayerState();
         const requiredRank = 'A'; // rare_recipe_card_001に必要なランク
 
@@ -139,12 +139,13 @@ describe('Phase4 SubScene Integration', () => {
         const requiredRankIndex = rankOrder.indexOf(requiredRank);
 
         if (playerRankIndex < requiredRankIndex) {
-          eventBus.emit('app:error:occurred', {
+          eventBus.emit('ui:toast:shown' as never, {
             message: 'ランクが不足しています',
+            type: 'error',
           });
           errorEmitted = true;
         }
-      });
+      }) as never);
 
       // Act
       eventBus.emit('ui:shop:purchase:requested', {

@@ -31,6 +31,7 @@ import type {
   GameLoadRequestEvent,
   RankUpChallengeRequestEvent,
 } from '@game/events/GameEvents';
+import { Quality } from '@domain/common/types';
 
 /**
  * UseCase依存性の型定義
@@ -150,29 +151,29 @@ export class GameUseCaseHandler implements IUIEventHandler {
         throw new Error('DeliverItemUseCase is not available');
       }
 
-      const result = await this.useCases.deliverItemUseCase.execute(
-        payload.questId,
-        payload.itemIds
-      );
+      const result = await this.useCases.deliverItemUseCase.execute({
+        questId: payload.questId,
+        itemInstanceId: payload.itemIds[0] ?? '',
+      });
 
       if (result.success) {
         this.eventBusAdapter.emitToUI({
           type: 'quest:delivered',
           payload: {
-            quest: result.quest,
+            quest: null,
             rewards: {
-              gold: result.rewards?.gold ?? 0,
-              exp: result.rewards?.exp ?? 0,
-              items: result.rewards?.items ?? [],
+              gold: result.reward?.gold ?? 0,
+              exp: result.reward?.contribution ?? 0,
+              items: [],
             },
-            rewardCards: result.rewardCards ?? [],
+            rewardCards: [],
           },
         });
 
         this.emitInventoryUpdate();
         this.emitGameStateUpdate();
       } else {
-        this.handleError('quest:delivery', new Error(result.error));
+        this.handleError('quest:delivery', new Error(result.error ?? 'Unknown error'));
       }
     } catch (error) {
       this.handleError('quest:delivery', error);
@@ -190,18 +191,18 @@ export class GameUseCaseHandler implements IUIEventHandler {
         throw new Error('DraftGatheringUseCase is not available');
       }
 
-      const result = await this.useCases.draftGatheringUseCase.execute(
+      const result = await this.useCases.draftGatheringUseCase.selectCard(
         payload.cardId
       );
 
       if (result.success) {
-        const gameState = this.stateManager.getGameState();
+        const playerState = this.stateManager.getPlayerState();
         this.eventBusAdapter.emitToUI({
           type: 'gathering:complete',
           payload: {
-            materials: result.materials ?? [],
-            apUsed: result.apUsed ?? 0,
-            remainingAp: gameState.ap,
+            materials: result.obtainedMaterials ?? [],
+            apUsed: 1,
+            remainingAp: playerState.actionPoints,
           },
         });
 
@@ -210,7 +211,7 @@ export class GameUseCaseHandler implements IUIEventHandler {
         this.emitDeckUpdate();
         this.emitGameStateUpdate();
       } else {
-        this.handleError('gathering', new Error(result.error));
+        this.handleError('gathering', new Error(result.error ?? 'Unknown error'));
       }
     } catch (error) {
       this.handleError('gathering', error);
@@ -228,18 +229,22 @@ export class GameUseCaseHandler implements IUIEventHandler {
         throw new Error('CraftItemUseCase is not available');
       }
 
-      const result = await this.useCases.craftItemUseCase.execute(
-        payload.recipeCardId,
-        payload.materialIds
-      );
+      const result = await this.useCases.craftItemUseCase.execute({
+        recipeCardId: payload.recipeCardId,
+        materialSelections: (payload.materialIds ?? []).map((materialId: string) => ({
+          materialId,
+          quality: Quality.C,
+          quantity: 1,
+        })),
+      });
 
       if (result.success) {
         this.eventBusAdapter.emitToUI({
           type: 'alchemy:crafted',
           payload: {
-            item: result.item,
-            quality: result.quality ?? 0,
-            traits: result.traits ?? [],
+            item: result.craftedItem ?? null,
+            quality: 0,
+            traits: [],
             success: true,
           },
         });
@@ -258,7 +263,7 @@ export class GameUseCaseHandler implements IUIEventHandler {
             success: false,
           },
         });
-        this.handleError('alchemy', new Error(result.error));
+        this.handleError('alchemy', new Error(result.error ?? 'Unknown error'));
       }
     } catch (error) {
       this.handleError('alchemy', error);
@@ -276,20 +281,18 @@ export class GameUseCaseHandler implements IUIEventHandler {
         throw new Error('PurchaseItemUseCase is not available');
       }
 
-      const result = await this.useCases.purchaseItemUseCase.execute(
-        payload.category,
-        payload.itemId,
-        payload.quantity ?? 1
-      );
+      const result = await this.useCases.purchaseItemUseCase.execute({
+        shopItemId: payload.itemId,
+      });
 
       if (result.success) {
-        const gameState = this.stateManager.getGameState();
+        const playerState = this.stateManager.getPlayerState();
         this.eventBusAdapter.emitToUI({
           type: 'shop:purchased',
           payload: {
-            item: result.item,
+            item: result.purchasedItem,
             quantity: payload.quantity ?? 1,
-            newGold: gameState.gold,
+            newGold: playerState.gold,
           },
         });
 
@@ -318,16 +321,17 @@ export class GameUseCaseHandler implements IUIEventHandler {
     try {
       // ドロー機能はStateManagerのデッキ状態を直接操作
       const deckState = this.stateManager.getDeckState();
-      const drawCount = Math.min(payload.count, deckState.deck.length);
+      const drawCount = Math.min(payload.count, deckState.cards.length);
 
       if (drawCount > 0) {
-        const drawnCards = deckState.deck.slice(0, drawCount);
+        const drawnCards = deckState.cards.slice(0, drawCount);
         const newHand = [...deckState.hand, ...drawnCards];
-        const newDeck = deckState.deck.slice(drawCount);
+        const newCards = deckState.cards.slice(drawCount);
 
         this.stateManager.updateDeckState({
           hand: newHand,
-          deck: newDeck,
+          cards: newCards,
+          discardPile: deckState.discardPile,
         });
       }
 
@@ -342,8 +346,8 @@ export class GameUseCaseHandler implements IUIEventHandler {
       this.eventBusAdapter.emitToUI({
         type: 'deck:updated',
         payload: {
-          deckCount: updatedDeckState.deck.length,
-          discardCount: updatedDeckState.discard.length,
+          deckCount: updatedDeckState.cards.length,
+          discardCount: updatedDeckState.discardPile.length,
         },
       });
 
@@ -361,20 +365,21 @@ export class GameUseCaseHandler implements IUIEventHandler {
       const deckState = this.stateManager.getDeckState();
 
       // 捨て札をデッキに戻してシャッフル
-      const combined = [...deckState.deck, ...deckState.discard];
+      const combined = [...deckState.cards, ...deckState.discardPile];
       const shuffled = this.shuffleArray(combined);
 
       this.stateManager.updateDeckState({
-        deck: shuffled,
-        discard: [],
+        cards: shuffled,
+        hand: deckState.hand,
+        discardPile: [],
       });
 
       const updatedDeckState = this.stateManager.getDeckState();
       this.eventBusAdapter.emitToUI({
         type: 'deck:updated',
         payload: {
-          deckCount: updatedDeckState.deck.length,
-          discardCount: updatedDeckState.discard.length,
+          deckCount: updatedDeckState.cards.length,
+          discardCount: updatedDeckState.discardPile.length,
         },
       });
     } catch (error) {
@@ -409,7 +414,7 @@ export class GameUseCaseHandler implements IUIEventHandler {
 
         this.emitGameStateUpdate();
       } else {
-        this.handleError('phase:skip', new Error(result.error));
+        this.handleError('phase:skip', new Error('Phase transition failed'));
       }
     } catch (error) {
       this.handleError('phase:skip', error);
@@ -432,7 +437,7 @@ export class GameUseCaseHandler implements IUIEventHandler {
           type: 'day:ended',
           payload: {
             newDay: result.newDay ?? 1,
-            summary: result.summary ?? {
+            summary: {
               questsCompleted: 0,
               itemsCrafted: 0,
               goldEarned: 0,
@@ -446,24 +451,14 @@ export class GameUseCaseHandler implements IUIEventHandler {
             type: 'game:over',
             payload: {
               reason: result.gameOverReason ?? 'Unknown',
-              stats: result.stats ?? {},
-            },
-          });
-        }
-
-        // ゲームクリア判定
-        if (result.isGameClear) {
-          this.eventBusAdapter.emitToUI({
-            type: 'game:clear',
-            payload: {
-              stats: result.stats ?? {},
+              stats: {},
             },
           });
         }
 
         this.emitGameStateUpdate();
       } else {
-        this.handleError('day:end', new Error(result.error));
+        this.handleError('day:end', new Error('Day advance failed'));
       }
     } catch (error) {
       this.handleError('day:end', error);
@@ -481,7 +476,7 @@ export class GameUseCaseHandler implements IUIEventHandler {
         throw new Error('AutoSaveUseCase is not available');
       }
 
-      await this.useCases.autoSaveUseCase.execute();
+      await this.useCases.autoSaveUseCase.execute('PHASE_END' as never);
 
       // 成功通知
       this.emitGameStateUpdate();
@@ -525,23 +520,21 @@ export class GameUseCaseHandler implements IUIEventHandler {
         throw new Error('StartPromotionTestUseCase is not available');
       }
 
-      const result = await this.useCases.startPromotionTestUseCase.execute(
-        payload.targetRank
-      );
+      const result = await this.useCases.startPromotionTestUseCase.execute();
 
       if (result.success) {
         this.eventBusAdapter.emitToUI({
           type: 'rankup:success',
           payload: {
-            newRank: result.newRank ?? payload.targetRank,
-            rewards: result.rewards ?? [],
+            newRank: result.toRank ?? payload.targetRank,
+            rewards: [],
           },
         });
       } else {
         this.eventBusAdapter.emitToUI({
           type: 'rankup:failed',
           payload: {
-            reason: result.reason ?? 'Unknown reason',
+            reason: result.error ?? 'Unknown reason',
           },
         });
       }
@@ -568,8 +561,8 @@ export class GameUseCaseHandler implements IUIEventHandler {
           currentPhase: gameState.currentPhase,
           currentDay: gameState.currentDay,
           playerRank: playerState.rank,
-          gold: gameState.gold,
-          ap: { current: gameState.ap, max: gameState.maxAp },
+          gold: playerState.gold,
+          ap: { current: playerState.actionPoints, max: playerState.actionPointsMax },
         },
       });
     } catch (error) {
@@ -616,8 +609,8 @@ export class GameUseCaseHandler implements IUIEventHandler {
       this.eventBusAdapter.emitToUI({
         type: 'deck:updated',
         payload: {
-          deckCount: deckState.deck.length,
-          discardCount: deckState.discard.length,
+          deckCount: deckState.cards.length,
+          discardCount: deckState.discardPile.length,
         },
       });
     } catch (error) {

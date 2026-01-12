@@ -94,42 +94,34 @@ export class DayEndManager {
    * イベントリスナーをセットアップする
    */
   private setupEventListeners(): void {
-    // 依頼完了イベント
-    const questDeliveredHandler = (data: {
-      rewards?: { gold?: number; contribution?: number };
-    }) => {
-      this.dayStats.questsCompleted++;
-      this.dayStats.goldEarned += data.rewards?.gold ?? 0;
-      this.dayStats.expGained += data.rewards?.contribution ?? 0;
-    };
+    // 依頼完了イベント - on()の戻り値がunsubscribe関数
+    this.unsubscribers.push(
+      this.eventBus.on('quest:delivered', (data) => {
+        this.dayStats.questsCompleted++;
+        this.dayStats.goldEarned += data.rewards?.gold ?? 0;
+        this.dayStats.expGained += data.rewards?.contribution ?? 0;
+      })
+    );
 
     // 採取完了イベント
-    const gatheringCompleteHandler = (data: { materials?: unknown[] }) => {
-      this.dayStats.materialsGathered += data.materials?.length ?? 0;
-    };
+    this.unsubscribers.push(
+      this.eventBus.on('gathering:complete', (data) => {
+        this.dayStats.materialsGathered += data.materials?.length ?? 0;
+      })
+    );
 
     // 合成完了イベント
-    const alchemyCraftedHandler = () => {
-      this.dayStats.itemsCrafted++;
-    };
+    this.unsubscribers.push(
+      this.eventBus.on('alchemy:crafted', () => {
+        this.dayStats.itemsCrafted++;
+      })
+    );
 
     // 購入イベント
-    const shopPurchasedHandler = (data: { cost?: number }) => {
-      this.dayStats.goldSpent += data.cost ?? 0;
-    };
-
-    // イベント登録
-    this.eventBus.on('quest:delivered', questDeliveredHandler);
-    this.eventBus.on('gathering:complete', gatheringCompleteHandler);
-    this.eventBus.on('alchemy:crafted', alchemyCraftedHandler);
-    this.eventBus.on('shop:purchased', shopPurchasedHandler);
-
-    // unsubscribe用に保存
     this.unsubscribers.push(
-      () => this.eventBus.off('quest:delivered', questDeliveredHandler),
-      () => this.eventBus.off('gathering:complete', gatheringCompleteHandler),
-      () => this.eventBus.off('alchemy:crafted', alchemyCraftedHandler),
-      () => this.eventBus.off('shop:purchased', shopPurchasedHandler)
+      this.eventBus.on('shop:purchased', (data) => {
+        this.dayStats.goldSpent += data.cost ?? 0;
+      })
     );
   }
 

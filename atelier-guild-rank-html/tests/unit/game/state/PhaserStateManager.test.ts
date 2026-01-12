@@ -18,6 +18,7 @@ import { createStateManager, type StateManager } from '@application/StateManager
 import { createGameState } from '@domain/game/GameState';
 import { createPlayerState } from '@domain/player/PlayerState';
 import { EventBus } from '@game/events/EventBus';
+import { GamePhase, GuildRank } from '@domain/common/types';
 
 describe('PhaserStateManager', () => {
   let stateManager: StateManager;
@@ -108,7 +109,7 @@ describe('PhaserStateManager', () => {
       const newGameState = {
         ...createGameState(),
         currentDay: 5,
-        currentPhase: 'GATHERING' as const,
+        currentPhase: GamePhase.GATHERING,
       };
 
       phaserStateManager.updateGameState(newGameState);
@@ -121,13 +122,13 @@ describe('PhaserStateManager', () => {
       const newPlayerState = {
         ...createPlayerState(),
         gold: 1000,
-        currentAP: 2,
+        actionPoints: 2,
       };
 
       phaserStateManager.updatePlayerState(newPlayerState);
 
       expect(phaserStateManager.getPlayerState().gold).toBe(1000);
-      expect(phaserStateManager.getPlayerState().currentAP).toBe(2);
+      expect(phaserStateManager.getPlayerState().actionPoints).toBe(2);
     });
   });
 
@@ -196,7 +197,7 @@ describe('PhaserStateManager', () => {
 
       const newGameState = {
         ...createGameState(),
-        currentPhase: 'GATHERING' as const,
+        currentPhase: GamePhase.GATHERING,
       };
       phaserStateManager.updateGameState(newGameState);
 
@@ -266,7 +267,7 @@ describe('PhaserStateManager', () => {
 
       const newPlayerState = {
         ...createPlayerState(),
-        rank: 'E' as const,
+        rank: GuildRank.E,
       };
       phaserStateManager.updatePlayerState(newPlayerState);
 

@@ -7,7 +7,8 @@
  */
 
 /**
- * ゲームフェーズ型（ドメイン層が実装されるまでの暫定型）
+ * ゲームフェーズ型
+ * ドメイン層のGamePhaseを拡張し、Phaser独自のフェーズを追加
  */
 export type GamePhase =
   | 'QUEST_ACCEPT'
@@ -18,7 +19,7 @@ export type GamePhase =
   | 'SHOP';
 
 /**
- * ギルドランク型（ドメイン層が実装されるまでの暫定型）
+ * ギルドランク型
  */
 export type GuildRank = 'G' | 'F' | 'E' | 'D' | 'C' | 'B' | 'A' | 'S';
 

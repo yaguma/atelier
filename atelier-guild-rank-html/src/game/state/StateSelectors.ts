@@ -8,7 +8,7 @@
  */
 
 import type { PhaserStateManager } from './PhaserStateManager';
-import type { GuildRank } from '@domain/rank/RankConfig';
+import { GuildRank } from '@domain/common/types';
 
 /**
  * 状態セレクタクラス
@@ -133,25 +133,27 @@ export class StateSelectors {
     const inventory = this.stateManager.getInventoryState();
 
     return quests.filter((activeQuest) => {
-      // 依頼の要求アイテムをすべて持っているかチェック
+      // 依頼の条件をチェック
       const quest = activeQuest.quest;
-      if (!quest.requiredItems || quest.requiredItems.length === 0) {
-        return true;
-      }
-
-      return quest.requiredItems.every((req: { itemId: string; quantity: number }) => {
+      const condition = quest.condition;
+      
+      // SPECIFIC タイプの依頼は特定アイテムが必要
+      if (condition.type === 'SPECIFIC' && condition.itemId) {
         // 素材から検索
         const material = inventory.materials.find(
-          (m) => m.material.id === req.itemId
+          (m) => m.materialId === condition.itemId
         );
-        if (material && material.quantity >= req.quantity) {
+        if (material && material.quantity >= (condition.quantity ?? 1)) {
           return true;
         }
 
         // アイテムから検索
-        const items = inventory.items.filter((i) => i.id === req.itemId);
-        return items.length >= req.quantity;
-      });
+        const items = inventory.items.filter((i) => i.itemId === condition.itemId);
+        return items.length >= (condition.quantity ?? 1);
+      }
+      
+      // その他の条件タイプは暫定的にtrue
+      return true;
     });
   }
 
@@ -173,7 +175,7 @@ export class StateSelectors {
   getMaterialCount(materialId: string): number {
     const material = this.stateManager
       .getInventoryState()
-      .materials.find((m) => m.material.id === materialId);
+      .materials.find((m) => m.materialId === materialId);
     return material?.quantity ?? 0;
   }
 
@@ -315,7 +317,7 @@ export class StateSelectors {
    */
   getNextRank(): GuildRank | null {
     const player = this.stateManager.getPlayerState();
-    const ranks: GuildRank[] = ['G', 'F', 'E', 'D', 'C', 'B', 'A', 'S'];
+    const ranks: GuildRank[] = [GuildRank.G, GuildRank.F, GuildRank.E, GuildRank.D, GuildRank.C, GuildRank.B, GuildRank.A, GuildRank.S];
     const currentIndex = ranks.indexOf(player.rank);
 
     if (currentIndex < 0 || currentIndex >= ranks.length - 1) {

@@ -40,9 +40,9 @@ const createMockStateManager = () => ({
     completedQuests: [],
   })),
   getDeckState: vi.fn(() => ({
-    deck: [],
+    cards: [],
     hand: [],
-    discard: [],
+    discardPile: [],
   })),
   getInventoryState: vi.fn(() => ({
     items: [],
@@ -67,9 +67,9 @@ const createMockUseCases = (): Partial<UseCaseDependencies> => ({
     }),
   } as any,
   draftGatheringUseCase: {
-    execute: vi.fn().mockResolvedValue({
+    selectCard: vi.fn().mockResolvedValue({
       success: true,
-      materials: [{ id: 'm1', name: 'Test Material' }],
+      obtainedMaterials: [{ id: 'm1', name: 'Test Material' }],
       apUsed: 1,
     }),
   } as any,
@@ -224,7 +224,7 @@ describe('GameUseCaseHandler', () => {
         selectedMaterialIds: [],
       });
 
-      expect(mockUseCases.draftGatheringUseCase!.execute).toHaveBeenCalledWith('c1');
+      expect(mockUseCases.draftGatheringUseCase!.selectCard).toHaveBeenCalledWith('c1');
       expect(mockListener.onGatheringComplete).toHaveBeenCalled();
       expect(mockListener.onInventoryUpdated).toHaveBeenCalled();
       expect(mockListener.onHandUpdated).toHaveBeenCalled();
@@ -312,10 +312,10 @@ describe('GameUseCaseHandler', () => {
 
   describe('handleCardDrawRequest', () => {
     it('カードドローでhand:updated/deck:updatedイベントが発火される', async () => {
-      mockStateManager.getDeckState.mockReturnValue({
-        deck: [{ id: 'c1' }, { id: 'c2' }],
+      (mockStateManager.getDeckState as ReturnType<typeof vi.fn>).mockReturnValue({
+        cards: [{ id: 'c1' }, { id: 'c2' }],
         hand: [],
-        discard: [],
+        discardPile: [],
       });
 
       await handler.handleCardDrawRequest({ count: 2 });
@@ -328,10 +328,10 @@ describe('GameUseCaseHandler', () => {
 
   describe('handleDeckShuffleRequest', () => {
     it('シャッフルでdeck:updatedイベントが発火される', async () => {
-      mockStateManager.getDeckState.mockReturnValue({
-        deck: [],
+      (mockStateManager.getDeckState as ReturnType<typeof vi.fn>).mockReturnValue({
+        cards: [],
         hand: [],
-        discard: [{ id: 'c1' }, { id: 'c2' }],
+        discardPile: [{ id: 'c1' }, { id: 'c2' }],
       });
 
       await handler.handleDeckShuffleRequest();

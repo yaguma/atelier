@@ -81,7 +81,7 @@ export interface DayEndPanelOptions {
 export class DayEndPanel extends Phaser.GameObjects.Container {
   private summary: DaySummary;
   private onContinue: () => void;
-  private animationTimeline: Phaser.Tweens.Timeline | null = null;
+  private animationTweens: Phaser.Tweens.Tween[] = [];
   private continueButton: Phaser.GameObjects.Container | null = null;
 
   constructor(options: DayEndPanelOptions) {
@@ -398,38 +398,40 @@ export class DayEndPanel extends Phaser.GameObjects.Container {
       'rank-progress',
     ];
 
-    this.animationTimeline = this.scene.tweens.timeline({
-      onComplete: () => {
-        // 全行表示後、ボタンを表示
-        this.showContinueButton();
-      },
-    });
-
     // パネル全体のフェードイン
     this.setAlpha(0);
-    this.animationTimeline.add({
-      targets: this,
-      alpha: 1,
-      duration: 300,
-      ease: 'Power2',
-    });
+    let delay = 0;
+    
+    this.animationTweens.push(
+      this.scene.tweens.add({
+        targets: this,
+        alpha: 1,
+        duration: 300,
+        ease: 'Power2',
+        delay: delay,
+      })
+    );
+    delay += 200; // 300 - 100 (overlap)
 
     // 各行を順番に表示
-    rows.forEach((rowName) => {
+    rows.forEach((rowName, index) => {
       const row = this.getByName(rowName);
       if (row) {
-        this.animationTimeline!.add({
-          targets: row,
-          alpha: 1,
-          y: `-=10`,
-          duration: 200,
-          ease: 'Power2',
-          offset: `-=100`, // 少し重ねる
-        });
+        const isLast = index === rows.length - 1;
+        this.animationTweens.push(
+          this.scene.tweens.add({
+            targets: row,
+            alpha: 1,
+            y: '-=10',
+            duration: 200,
+            ease: 'Power2',
+            delay: delay,
+            onComplete: isLast ? () => this.showContinueButton() : undefined,
+          })
+        );
+        delay += 100; // 200 - 100 (overlap)
       }
     });
-
-    this.animationTimeline.play();
   }
 
   /**
@@ -469,8 +471,8 @@ export class DayEndPanel extends Phaser.GameObjects.Container {
    * 破棄処理
    */
   destroy(fromScene?: boolean): void {
-    if (this.animationTimeline) {
-      this.animationTimeline.destroy();
+    if (this.animationTweens.length > 0) {
+      this.animationTweens.forEach(tween => tween.destroy()); this.animationTweens = [];
     }
     super.destroy(fromScene);
   }

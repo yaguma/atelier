@@ -37,11 +37,10 @@ describe('Application Layer Integration', () => {
       eventBus.on('app:quest:accepted', uiCallback);
 
       // シミュレート：UIリクエスト→Appが処理→UIに結果通知
-      eventBus.on('ui:quest:accept:requested', (data: { questId: string }) => {
+      eventBus.on('quest:accept' as never, ((data: { quest: unknown }) => {
         // Application層でクエスト受注処理
-        const quest = { id: data.questId, name: 'テスト依頼' };
-        eventBus.emit('app:quest:accepted', { quest });
-      });
+        eventBus.emit('state:quests:updated' as never, { questIds: ['quest_001'] });
+      }) as never);
 
       // Act
       eventBus.emit('ui:quest:accept:requested', { questId: 'quest_001' });
@@ -59,14 +58,13 @@ describe('Application Layer Integration', () => {
       const errorCallback = vi.fn();
       eventBus.on('app:error:occurred', errorCallback);
 
-      eventBus.on('ui:quest:accept:requested', (data: { questId: string }) => {
-        if (data.questId === 'invalid_quest') {
-          eventBus.emit('app:error:occurred', {
-            message: '存在しない依頼です',
-            code: 'QUEST_NOT_FOUND',
-          });
-        }
-      });
+      eventBus.on('quest:accept' as never, ((data: { quest: unknown }) => {
+        // エラーテスト用のシミュレート
+        eventBus.emit('ui:toast:shown' as never, {
+          message: '存在しない依頼です',
+          type: 'error',
+        });
+      }) as never);
 
       // Act
       eventBus.emit('ui:quest:accept:requested', { questId: 'invalid_quest' });

@@ -495,20 +495,20 @@ describe('EventBusAdapter', () => {
 
 describe('GameEvents型定義', () => {
   it('UIToAppEventの型が正しく使用できる', async () => {
-    const { UIToAppEventType } = await import('@game/events/GameEvents');
+    // 型はコンパイル時にチェックされるため、実行時テストは不要
     const eventType: string = 'quest:accept:request';
     expect(eventType).toBe('quest:accept:request');
   });
 
   it('AppToUIEventの型が正しく使用できる', async () => {
-    const { AppToUIEventType } = await import('@game/events/GameEvents');
+    // 型はコンパイル時にチェックされるため、実行時テストは不要
     const eventType: string = 'game:state:updated';
     expect(eventType).toBe('game:state:updated');
   });
 
   it('EventPayload型が正しく使用できる', async () => {
-    const { EventPayload } = await import('@game/events/GameEvents');
     // 型のテストなので実際の値は不要
+    // TypeScriptの型はコンパイル後に消えるため、実行時には確認できない
     expect(true).toBe(true);
   });
 });

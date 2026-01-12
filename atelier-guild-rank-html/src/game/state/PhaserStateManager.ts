@@ -403,7 +403,7 @@ export class PhaserStateManager {
    */
   private emitInventoryUpdate(inventory: Inventory): void {
     this.eventBus.emit('state:inventory:updated', {
-      materialIds: inventory.materials.map((m) => m.material.id),
+      materialIds: inventory.materials.map((m) => m.materialId),
       itemIds: inventory.items.map((i) => i.id),
     });
   }

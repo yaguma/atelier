@@ -23,7 +23,7 @@ import { createStateManager, type StateManager } from '@application/StateManager
 import { createGameState } from '@domain/game/GameState';
 import { createPlayerState } from '@domain/player/PlayerState';
 import { EventBus } from '@game/events/EventBus';
-import { GamePhase } from '@domain/common/types';
+import { GamePhase, GuildRank } from '@domain/common/types';
 import { SceneKeys } from '@game/config/SceneKeys';
 
 describe('PhaserGameFlowManager', () => {
@@ -280,7 +280,7 @@ describe('PhaserGameFlowManager', () => {
     it('Sランクでゲームクリア', async () => {
       phaserStateManager.updatePlayerState({
         ...createPlayerState(),
-        rank: 'S',
+        rank: GuildRank.S,
       });
 
       await flowManager.endTurn();
@@ -299,7 +299,7 @@ describe('PhaserGameFlowManager', () => {
 
       phaserStateManager.updatePlayerState({
         ...createPlayerState(),
-        rank: 'S',
+        rank: GuildRank.S,
       });
 
       await flowManager.endTurn();

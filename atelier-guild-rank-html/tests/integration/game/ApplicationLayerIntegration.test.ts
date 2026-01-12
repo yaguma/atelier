@@ -20,7 +20,7 @@ import {
 import { createStateManager, type StateManager } from '@application/StateManager';
 import { createGameState } from '@domain/game/GameState';
 import { createPlayerState } from '@domain/player/PlayerState';
-import { GamePhase } from '@domain/common/types';
+import { GamePhase, GuildRank } from '@domain/common/types';
 import { SceneKeys } from '@game/config/SceneKeys';
 
 describe('Application層連携 統合テスト', () => {
@@ -111,11 +111,11 @@ describe('Application層連携 統合テスト', () => {
 
         phaserStateManager.updatePlayerState({
           ...createPlayerState(),
-          rank: 'F',
+          rank: GuildRank.F,
         });
 
         expect(listener).toHaveBeenCalledWith({
-          rank: 'F',
+          rank: GuildRank.F,
           previousRank: 'G',
         });
       });
@@ -218,7 +218,7 @@ describe('Application層連携 統合テスト', () => {
 
         phaserStateManager.updatePlayerState({
           ...createPlayerState(),
-          rank: 'S',
+          rank: GuildRank.S,
         });
 
         expect(selectors.isGameClear()).toBe(true);
@@ -321,7 +321,7 @@ describe('Application層連携 統合テスト', () => {
       it('Sランクになるとゲームクリアシーンに遷移する', async () => {
         phaserStateManager.updatePlayerState({
           ...createPlayerState(),
-          rank: 'S',
+          rank: GuildRank.S,
         });
 
         await flowManager.endTurn();
@@ -408,7 +408,7 @@ describe('Application層連携 統合テスト', () => {
       phaserStateManager.updatePlayerState({
         ...createPlayerState(),
         gold: 1500,
-        rank: 'D',
+        rank: GuildRank.D,
       });
       phaserStateManager.updateGameState({
         ...createGameState(),
@@ -428,7 +428,7 @@ describe('Application層連携 統合テスト', () => {
       phaserStateManager.updatePlayerState({
         ...createPlayerState(),
         gold: 5000,
-        rank: 'C',
+        rank: GuildRank.C,
       });
       phaserStateManager.updateGameState({
         ...createGameState(),
@@ -458,7 +458,7 @@ describe('Application層連携 統合テスト', () => {
       phaserStateManager.updatePlayerState({
         ...createPlayerState(),
         gold: 3000,
-        rank: 'A',
+        rank: GuildRank.A,
       });
 
       const serialized = phaserStateManager.serialize();
@@ -584,7 +584,7 @@ describe('Application層連携 統合テスト', () => {
       // Sランクに昇格
       phaserStateManager.updatePlayerState({
         ...phaserStateManager.getPlayerState(),
-        rank: 'S',
+        rank: GuildRank.S,
       });
 
       // ターン終了でクリア判定
