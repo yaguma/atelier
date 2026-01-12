@@ -124,6 +124,9 @@ export function createMockStateManager() {
     getQuestState: vi.fn(() => ({ ...questState })),
     getDeckState: vi.fn(() => ({ ...deckState })),
     getInventoryState: vi.fn(() => ({ ...inventoryState })),
+    // エイリアス（テスト互換性のため）
+    getProgressData: vi.fn(() => ({ ...gameState })),
+    getPlayerData: vi.fn(() => ({ ...playerState })),
     getSnapshot: vi.fn(() => ({
       game: gameState,
       player: playerState,
@@ -135,6 +138,13 @@ export function createMockStateManager() {
       gameState = { ...gameState, ...state };
     }),
     updatePlayerState: vi.fn((state: Partial<typeof playerState>) => {
+      playerState = { ...playerState, ...state };
+    }),
+    // エイリアス（テスト互換性のため）
+    updateProgress: vi.fn((state: Partial<typeof gameState>) => {
+      gameState = { ...gameState, ...state };
+    }),
+    updatePlayer: vi.fn((state: Partial<typeof playerState>) => {
       playerState = { ...playerState, ...state };
     }),
     updateQuestState: vi.fn((state: Partial<typeof questState>) => {
