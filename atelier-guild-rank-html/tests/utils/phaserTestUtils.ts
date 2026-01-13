@@ -317,3 +317,75 @@ export function createMockStorage(): Storage {
     key: vi.fn((index: number) => Object.keys(store)[index] ?? null),
   };
 }
+
+/**
+ * テスト用のゲームインスタンスを作成する
+ */
+export async function createTestGame() {
+  const Phaser = (await import('phaser')).default;
+  const { EventBus } = await import('@/game/events/EventBus');
+  const { PhaserStateManager } = await import('@/game/state/PhaserStateManager');
+  const { SceneKeys } = await import('@/game/config/SceneKeys');
+
+  // 最小限のPhaser Game設定
+  const config: Phaser.Types.Core.GameConfig = {
+    type: Phaser.HEADLESS,
+    width: 1280,
+    height: 720,
+    parent: 'game-container',
+    scene: [], // テスト用に空のシーン配列
+    callbacks: {
+      postBoot: (game) => {
+        // EventBusとStateManagerをセットアップ
+        const eventBus = EventBus.getInstance();
+        const stateManager = new PhaserStateManager();
+        game.registry.set('eventBus', eventBus);
+        game.registry.set('stateManager', stateManager);
+      },
+    },
+  };
+
+  const game = new Phaser.Game(config);
+
+  // ゲームの初期化を待つ
+  await new Promise((resolve) => {
+    game.events.once('ready', resolve);
+  });
+
+  const eventBus = game.registry.get('eventBus');
+  const stateManager = game.registry.get('stateManager');
+
+  return { game, eventBus, stateManager };
+}
+
+/**
+ * 指定したシーンがアクティブになるまで待つ
+ */
+export async function waitForScene(game: Phaser.Game, sceneKey: string): Promise<void> {
+  return new Promise((resolve) => {
+    const checkScene = () => {
+      if (game.scene.isActive(sceneKey)) {
+        resolve();
+      } else {
+        setTimeout(checkScene, 50);
+      }
+    };
+    checkScene();
+  });
+}
+
+/**
+ * ショップシーンに遷移する
+ */
+export async function navigateToShop(game: Phaser.Game, eventBus: any): Promise<void> {
+  const { SceneKeys } = await import('@/game/config/SceneKeys');
+
+  // メインシーンへ遷移
+  await waitForScene(game, SceneKeys.MAIN);
+
+  // ショップを開く
+  eventBus.emit('ui:shop:open:requested');
+
+  // ショップシーンがアクティブになるまで待つ
+  await waitForScene(game, SceneKeys.SHOP);
+}
