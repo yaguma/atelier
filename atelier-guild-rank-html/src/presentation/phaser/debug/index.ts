@@ -8,3 +8,5 @@ export {
   type BottleneckInfo,
   type PerformanceThresholds,
 } from './PerformanceMonitor';
+
+export { MemoryLeakDetector } from './MemoryLeakDetector';
