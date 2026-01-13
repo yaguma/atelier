@@ -37,6 +37,9 @@ export class MainScreen extends UIComponent implements Screen {
   /** フェーズ変更コールバック */
   private _onPhaseChangeCallback: PhaseChangeCallback | null = null;
 
+  /** フェーズインジケータークリックコールバック（BUG-0002修正用） */
+  private _onPhaseIndicatorClickCallback: ((phase: GamePhase) => void) | null = null;
+
   /** ヘッダー要素 */
   private _headerElement: HTMLElement | null = null;
 
@@ -122,10 +125,18 @@ export class MainScreen extends UIComponent implements Screen {
       item.setAttribute('data-phase', phase.id);
       item.setAttribute('data-testid', `phase-${phase.id}`);
       item.textContent = phase.label;
+      item.style.cursor = 'pointer';
 
       if (phase.id === this._currentPhase) {
         item.classList.add('active');
       }
+
+      // フェーズインジケータークリックイベント追加（BUG-0002修正）
+      item.addEventListener('click', () => {
+        if (this._onPhaseIndicatorClickCallback) {
+          this._onPhaseIndicatorClickCallback(phase.id);
+        }
+      });
 
       indicator.appendChild(item);
     });
@@ -250,6 +261,14 @@ export class MainScreen extends UIComponent implements Screen {
    */
   onPhaseChange(callback: PhaseChangeCallback): void {
     this._onPhaseChangeCallback = callback;
+  }
+
+  /**
+   * フェーズインジケータークリックコールバックを設定（BUG-0002修正）
+   * @param callback コールバック関数
+   */
+  onPhaseIndicatorClick(callback: (phase: GamePhase) => void): void {
+    this._onPhaseIndicatorClickCallback = callback;
   }
 
   /**

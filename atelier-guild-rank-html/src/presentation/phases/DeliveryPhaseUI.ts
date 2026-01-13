@@ -67,6 +67,9 @@ export class DeliveryPhaseUI extends UIComponent {
   /** 1日を終えるコールバック */
   private _onEndDayCallback: (() => void) | null = null;
 
+  /** 次フェーズコールバック（BUG-0001修正） */
+  private _onNextPhaseCallback: (() => void) | null = null;
+
   /** 納品結果表示中フラグ */
   private _showingResult: boolean = false;
 
@@ -423,5 +426,13 @@ export class DeliveryPhaseUI extends UIComponent {
    */
   onEndDay(callback: () => void): void {
     this._onEndDayCallback = callback;
+  }
+
+  /**
+   * 次フェーズコールバックを設定（BUG-0001修正）
+   * 納品フェーズでは日終了と同義
+   */
+  onNextPhase(callback: () => void): void {
+    this._onNextPhaseCallback = callback;
   }
 }

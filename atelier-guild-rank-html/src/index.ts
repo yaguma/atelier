@@ -152,6 +152,182 @@ function updatePhaseUI(): void {
 }
 
 /**
+ * フェーズ遷移順序
+ */
+const PhaseOrder: GamePhase[] = [
+  GamePhase.QUEST_ACCEPT,
+  GamePhase.GATHERING,
+  GamePhase.ALCHEMY,
+  GamePhase.DELIVERY,
+];
+
+/**
+ * 次のフェーズに遷移
+ */
+function goToNextPhase(): void {
+  const gameState = stateManager.getGameState();
+  const currentIndex = PhaseOrder.indexOf(gameState.currentPhase);
+
+  if (currentIndex < PhaseOrder.length - 1) {
+    // 次のフェーズへ
+    const nextPhase = PhaseOrder[currentIndex + 1];
+    console.log(`フェーズ遷移: ${gameState.currentPhase} → ${nextPhase}`);
+    stateManager.updateGameState({
+      ...gameState,
+      currentPhase: nextPhase,
+    });
+    updatePhaseUI();
+  } else {
+    // 納品フェーズ終了 → 日終了処理
+    console.log('全フェーズ完了、日終了処理');
+    handleDayEnd();
+  }
+}
+
+/**
+ * 日終了処理
+ */
+function handleDayEnd(): void {
+  const playerState = stateManager.getPlayerState();
+  const gameState = stateManager.getGameState();
+
+  // 日数を進める
+  const newRemainingDays = playerState.rankDaysRemaining - 1;
+
+  if (newRemainingDays <= 0) {
+    // ゲームオーバー条件チェック
+    console.log('日数切れ - ゲームオーバー');
+    // TODO: ゲームオーバー画面遷移
+    return;
+  }
+
+  // プレイヤー状態を更新（AP回復、日数減少）
+  stateManager.updatePlayerState({
+    ...playerState,
+    rankDaysRemaining: newRemainingDays,
+    actionPoints: playerState.actionPointsMax,
+  });
+
+  // フェーズを依頼受注に戻す
+  stateManager.updateGameState({
+    ...gameState,
+    currentPhase: GamePhase.QUEST_ACCEPT,
+    currentDay: gameState.currentDay + 1,
+  });
+
+  // 新しい依頼を生成
+  const availableQuests = generateAvailableQuests(playerState.rank);
+  stateManager.updateQuestState({
+    ...stateManager.getQuestState(),
+    availableQuests: availableQuests,
+  });
+
+  console.log(`日終了: Day ${gameState.currentDay + 1}、残り${newRemainingDays}日`);
+
+  // UIを更新
+  updateHeaderUI();
+  updatePhaseUI();
+  updateQuestUI();
+
+  // QuestAcceptPhaseUIを再マウント
+  if (questPhaseUI && mainScreen) {
+    const dummyContainer = document.createElement('div');
+    questPhaseUI.mount(dummyContainer);
+    mainScreen.registerPhaseContent('quest', questPhaseUI.getElement());
+  }
+}
+
+/**
+ * フェーズインジケータークリック処理（BUG-0002修正）
+ */
+function handlePhaseIndicatorClick(phase: string): void {
+  // GamePhaseをstateManager用のGamePhaseに変換
+  const phaseMap: Record<string, GamePhase> = {
+    'quest': GamePhase.QUEST_ACCEPT,
+    'gathering': GamePhase.GATHERING,
+    'synthesis': GamePhase.ALCHEMY,
+    'delivery': GamePhase.DELIVERY,
+  };
+
+  const gamePhase = phaseMap[phase];
+  if (!gamePhase) {
+    console.error(`不明なフェーズ: ${phase}`);
+    return;
+  }
+
+  const gameState = stateManager.getGameState();
+  if (gameState.currentPhase === gamePhase) {
+    console.log(`既に同じフェーズ: ${phase}`);
+    return;
+  }
+
+  console.log(`フェーズインジケータークリック: ${phase} (${gamePhase})`);
+
+  // フェーズを変更
+  stateManager.updateGameState({
+    ...gameState,
+    currentPhase: gamePhase,
+  });
+
+  // UIを更新
+  updatePhaseUI();
+}
+
+/**
+ * ショップ購入処理（BUG-0003修正）
+ */
+function handleShopPurchase(itemId: string): void {
+  const playerState = stateManager.getPlayerState();
+
+  // ショップアイテムの価格を取得（現在はハードコードされている）
+  // TODO: マスターデータから取得するように変更
+  const shopPrices: Record<string, number> = {
+    'card-001': 50,
+    'card-002': 80,
+    'artifact-001': 200,
+  };
+
+  const price = shopPrices[itemId];
+  if (!price) {
+    console.error(`不明な商品ID: ${itemId}`);
+    return;
+  }
+
+  if (playerState.gold < price) {
+    console.log(`ゴールド不足: 所持${playerState.gold}G, 必要${price}G`);
+    return;
+  }
+
+  // ゴールドを減らす
+  stateManager.updatePlayerState({
+    ...playerState,
+    gold: playerState.gold - price,
+  });
+
+  // TODO: アイテムをインベントリまたはデッキに追加
+  // 現在はカード購入の場合のみサポート
+  if (itemId.startsWith('card_')) {
+    console.log(`カード購入: ${itemId}`);
+    // カードをデッキに追加する処理
+    // TODO: DeckManagerを使用してデッキに追加
+  } else if (itemId.startsWith('artifact_')) {
+    console.log(`アーティファクト購入: ${itemId}`);
+    // アーティファクトをインベントリに追加する処理
+    // TODO: InventoryManagerを使用してインベントリに追加
+  }
+
+  console.log(`購入完了: ${itemId}, 残り${playerState.gold - price}G`);
+
+  // ヘッダーUIを更新
+  updateHeaderUI();
+
+  // ショップ画面のゴールド表示を更新
+  if (shopScreen) {
+    shopScreen.setPlayerGold(playerState.gold - price);
+  }
+}
+
+/**
  * ランク順序マップ
  */
 const RankOrder: Record<GuildRank, number> = {
@@ -351,6 +527,12 @@ async function startNewGame(): Promise<void> {
         }
       });
 
+      // 次フェーズコールバックを設定（BUG-0001修正）
+      questPhaseUI!.onNextPhase(() => goToNextPhase());
+      gatheringPhaseUI!.onNextPhase(() => goToNextPhase());
+      alchemyPhaseUI!.onNextPhase(() => goToNextPhase());
+      deliveryPhaseUI!.onNextPhase(() => goToNextPhase());
+
       // フェーズUIをダミーコンテナにマウントしてビルドを完了させる
       const dummyContainer = document.createElement('div');
       questPhaseUI!.mount(dummyContainer);
@@ -406,6 +588,11 @@ async function initializeApp(): Promise<void> {
   // メイン画面の設定
   mainScreen = new MainScreen();
 
+  // フェーズインジケータークリックコールバック設定（BUG-0002修正）
+  mainScreen.onPhaseIndicatorClick((phase) => {
+    handlePhaseIndicatorClick(phase);
+  });
+
   // ヘッダーUIの作成
   headerUI = new HeaderUI();
 
@@ -419,6 +606,11 @@ async function initializeApp(): Promise<void> {
   shopScreen = new ShopScreen();
   shopScreen.onBack(async () => {
     await screenManager?.goTo('main', 'fade');
+  });
+
+  // ショップ購入コールバック設定（BUG-0003修正）
+  shopScreen.onPurchase((itemId: string) => {
+    handleShopPurchase(itemId);
   });
 
   // 画面の登録
