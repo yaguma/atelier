@@ -27,6 +27,7 @@ import {
 import { SceneKeys } from '../config/SceneKeys';
 import { Colors } from '../config/ColorPalette';
 import { TextStyles } from '../config/TextStyles';
+import { UIFactory } from '../ui/UIFactory';
 import type { IPhaseContainer } from '../ui/phase/IPhaseContainer';
 import { CardType } from '@domain/common/types';
 import { QuestAcceptContainer } from '../ui/quest/QuestAcceptContainer';
@@ -36,6 +37,9 @@ import { DeliveryContainer } from '../ui/phase/DeliveryContainer';
 import { HandContainer } from '../ui/hand/HandContainer';
 import { DeckView } from '../ui/deck/DeckView';
 import { Card } from '@domain/card/Card';
+import { GatheringCard } from '@domain/card/CardEntity';
+import { Material } from '@domain/material/MaterialEntity';
+import type { ShopSceneData, ShopCardItem, ShopMaterialItem, ShopArtifactItem } from './ShopScene';
 
 /**
  * MainScene初期化データ
@@ -132,6 +136,11 @@ export class MainScene extends BaseGameScene {
   // イベントリスナー登録状態
   private eventListenersSetup: boolean = false;
 
+  // マスターデータ
+  private materialMasterData: Map<string, Material> = new Map();
+  private gatheringCardMasterData: Map<string, GatheringCard> = new Map();
+  private shopItemsData: unknown[] = [];
+
   constructor() {
     super(SceneKeys.MAIN);
   }
@@ -145,6 +154,9 @@ export class MainScene extends BaseGameScene {
   }
 
   protected onCreate(data?: MainSceneData): void {
+    // マスターデータを読み込み
+    this.loadMasterData();
+
     this.createBackground();
     this.createAreas();
     this.createHeader();
@@ -167,6 +179,39 @@ export class MainScene extends BaseGameScene {
     }
     if (data?.gameState) {
       this.setGameState(data.gameState);
+    }
+  }
+
+  /**
+   * マスターデータを読み込む
+   */
+  private loadMasterData(): void {
+    // Phaserキャッシュから素材データを取得
+    const materialsData = this.cache.json.get('materials');
+    if (materialsData && Array.isArray(materialsData)) {
+      this.materialMasterData.clear();
+      for (const mat of materialsData) {
+        if (mat.id) {
+          this.materialMasterData.set(mat.id, mat as Material);
+        }
+      }
+    }
+
+    // Phaserキャッシュから採取カードデータを取得
+    const gatheringCardsData = this.cache.json.get('cards-gathering');
+    if (gatheringCardsData && Array.isArray(gatheringCardsData)) {
+      this.gatheringCardMasterData.clear();
+      for (const card of gatheringCardsData) {
+        if (card.id) {
+          this.gatheringCardMasterData.set(card.id, card as GatheringCard);
+        }
+      }
+    }
+
+    // Phaserキャッシュからショップアイテムデータを取得
+    const shopItemsData = this.cache.json.get('shop-items');
+    if (shopItemsData && Array.isArray(shopItemsData)) {
+      this.shopItemsData = shopItemsData;
     }
   }
 
@@ -214,70 +259,108 @@ export class MainScene extends BaseGameScene {
   }
 
   /**
-   * ヘッダーUI作成（プレースホルダー）
+   * ヘッダーUI作成（ファンタジー風装飾版）
    */
   private createHeader(): void {
     const { HEADER } = MainSceneLayout;
 
     this.headerContainer = this.add.container(HEADER.X, HEADER.Y);
 
-    // ヘッダー背景
-    const headerBg = this.add.graphics();
-    headerBg.fillStyle(Colors.backgroundLight, 1);
-    headerBg.fillRect(0, 0, HEADER.WIDTH, HEADER.HEIGHT);
-    headerBg.lineStyle(1, Colors.panelBorder);
-    headerBg.strokeRect(0, 0, HEADER.WIDTH, HEADER.HEIGHT);
+    // UIFactory経由でファンタジー風ヘッダー背景を作成
+    const uiFactory = new UIFactory(this, this.rexUI);
+    const headerBg = uiFactory.createFantasyHeader(0, 0, HEADER.WIDTH, HEADER.HEIGHT);
     this.headerContainer.add(headerBg);
 
-    // ヘッダータイトル
-    const title = this.add.text(20, 20, 'Atelier Guild', TextStyles.titleSmall);
+    // ヘッダータイトル（装飾的なスタイル）
+    const title = this.add.text(20, HEADER.HEIGHT / 2, '⚗️ Atelier Guild', {
+      ...TextStyles.titleSmall,
+      stroke: '#8b7355',
+      strokeThickness: 2,
+    });
+    title.setOrigin(0, 0.5);
     this.headerContainer.add(title);
 
-    // ステータス表示（プレースホルダー）
-    const statusX = 200;
-    const statusY = 20;
-    const statusSpacing = 120;
+    // ステータス表示（アイコン付き）
+    const statusX = 220;
+    const statusY = HEADER.HEIGHT / 2;
+    const statusSpacing = 130;
 
+    // ランク表示
     this.headerTexts.rank = this.add.text(
       statusX,
       statusY,
-      'Rank: G',
-      TextStyles.bodySmall
+      '🏅 Rank: G',
+      { ...TextStyles.body, fontSize: '15px' }
     );
+    this.headerTexts.rank.setOrigin(0, 0.5);
     this.headerContainer.add(this.headerTexts.rank);
 
+    // 経験値表示
     this.headerTexts.exp = this.add.text(
       statusX + statusSpacing,
       statusY,
-      'EXP: 0/100',
-      TextStyles.bodySmall
+      '📈 EXP: 0/100',
+      { ...TextStyles.body, fontSize: '15px' }
     );
+    this.headerTexts.exp.setOrigin(0, 0.5);
     this.headerContainer.add(this.headerTexts.exp);
 
+    // 日数表示
     this.headerTexts.day = this.add.text(
       statusX + statusSpacing * 2,
       statusY,
-      'Day: 1/30',
-      TextStyles.bodySmall
+      '📅 Day: 1/30',
+      { ...TextStyles.body, fontSize: '15px' }
     );
+    this.headerTexts.day.setOrigin(0, 0.5);
     this.headerContainer.add(this.headerTexts.day);
 
+    // ゴールド表示
     this.headerTexts.gold = this.add.text(
       statusX + statusSpacing * 3,
       statusY,
-      'Gold: 0',
-      TextStyles.bodySmall
+      '💰 Gold: 0',
+      { ...TextStyles.body, fontSize: '15px', color: '#ffd700' }
     );
-    this.headerTexts.gold.setColor('#ffd700');
+    this.headerTexts.gold.setOrigin(0, 0.5);
     this.headerContainer.add(this.headerTexts.gold);
 
+    // AP表示
     this.headerTexts.ap = this.add.text(
       statusX + statusSpacing * 4,
       statusY,
-      'AP: 3/3',
-      TextStyles.bodySmall
+      '⚡ AP: 3/3',
+      { ...TextStyles.body, fontSize: '15px', color: '#66ccff' }
     );
+    this.headerTexts.ap.setOrigin(0, 0.5);
     this.headerContainer.add(this.headerTexts.ap);
+
+    // ショップボタン（ファンタジー風）
+    this.createShopButton(HEADER.WIDTH - 100, HEADER.HEIGHT / 2);
+  }
+
+  /**
+   * ショップボタンを作成（ファンタジー風）
+   */
+  private createShopButton(x: number, y: number): void {
+    const uiFactory = new UIFactory(this, this.rexUI);
+
+    // UIFactory経由でファンタジー風ボタンを作成（中心基準）
+    const shopButton = uiFactory.createFantasyButton(
+      x,
+      y,
+      90,
+      34,
+      '🛒 ショップ',
+      () => this.openShop(),
+      {
+        baseColor: Colors.secondary,
+        hoverColor: 0x8c959d,
+        pressColor: 0x5c656d,
+        textStyle: { ...TextStyles.bodySmall, fontSize: '13px', color: '#ffffff' },
+      }
+    );
+    this.headerContainer.add(shopButton);
   }
 
   /**
@@ -575,6 +658,9 @@ export class MainScene extends BaseGameScene {
     info.isActive = true;
     this.activePhaseContainer = container;
 
+    // フェーズ固有の初期化
+    this.initializePhaseContainer(phase, container);
+
     // 手札表示を更新
     this.updateHandVisibilityForPhase(phase);
 
@@ -583,6 +669,21 @@ export class MainScene extends BaseGameScene {
 
     // 入場処理
     await container.enter();
+  }
+
+  /**
+   * フェーズコンテナの固有初期化
+   */
+  private initializePhaseContainer(phase: MainScenePhase, container: IPhaseContainer): void {
+    switch (phase) {
+      case 'gathering': {
+        const gatheringContainer = container as GatheringContainer;
+        // 素材マスターデータを設定
+        gatheringContainer.setMaterialMasterData(this.materialMasterData);
+        break;
+      }
+      // 他のフェーズは必要に応じて追加
+    }
   }
 
   /**
@@ -882,6 +983,101 @@ export class MainScene extends BaseGameScene {
    */
   private handleHandCardConfirm(card: Card, _index: number): void {
     this.eventBus.emit('hand:card:confirmed' as any, { card });
+
+    // 採取フェーズで採取カードが確定された場合
+    if (this.currentPhase === 'gathering' && card.type === CardType.GATHERING) {
+      this.startGathering(card as GatheringCard);
+    }
+  }
+
+  /**
+   * 採取を開始
+   */
+  private async startGathering(card: GatheringCard): Promise<void> {
+    const info = this.phaseContainers.get('gathering');
+    if (!info || !info.container) return;
+
+    const gatheringContainer = info.container as GatheringContainer;
+
+    // 採取カードから素材を生成して提示
+    await gatheringContainer.generateAndPresentMaterials(card);
+  }
+
+  /**
+   * ショップを開く
+   */
+  private openShop(): void {
+    // ショップデータを準備
+    const shopData: ShopSceneData = {
+      playerGold: this.getPlayerGold(),
+      availableCards: this.convertToShopCards(),
+      availableMaterials: this.convertToShopMaterials(),
+      availableArtifacts: this.convertToShopArtifacts(),
+      returnScene: SceneKeys.MAIN,
+    };
+
+    // ShopSceneをオーバーレイとして起動
+    this.scene.launch(SceneKeys.SHOP, shopData);
+
+    // 現在のシーンを一時停止（オプション）
+    this.scene.pause();
+  }
+
+  /**
+   * プレイヤーのゴールドを取得
+   */
+  private getPlayerGold(): number {
+    // TODO: 実際のプレイヤー状態から取得
+    return 1000;
+  }
+
+  /**
+   * ショップ用カードアイテムに変換
+   */
+  private convertToShopCards(): ShopCardItem[] {
+    return this.shopItemsData
+      .filter((item: any) => item.category === 'cards')
+      .map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        category: 'cards' as const,
+        type: item.cardType || 'gathering',
+        rarity: item.rarity || 'common',
+        effect: { description: item.description || '' },
+      }));
+  }
+
+  /**
+   * ショップ用素材アイテムに変換
+   */
+  private convertToShopMaterials(): ShopMaterialItem[] {
+    return this.shopItemsData
+      .filter((item: any) => item.category === 'materials')
+      .map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        category: 'materials' as const,
+        quality: item.quality || 50,
+        stock: item.stock ?? -1,
+      }));
+  }
+
+  /**
+   * ショップ用アーティファクトアイテムに変換
+   */
+  private convertToShopArtifacts(): ShopArtifactItem[] {
+    return this.shopItemsData
+      .filter((item: any) => item.category === 'artifacts')
+      .map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        category: 'artifacts' as const,
+        rarity: item.rarity || 'common',
+        effects: item.effects || [],
+      }));
   }
 
   /**

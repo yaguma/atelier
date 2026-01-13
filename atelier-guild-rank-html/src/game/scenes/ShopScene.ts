@@ -1853,7 +1853,10 @@ export class ShopScene extends BaseGameScene {
    */
   private handleBack(): void {
     const returnScene = this.shopData.returnScene ?? SceneKeys.MAIN;
-    this.goToScene(returnScene);
+    // 戻り先シーンを再開
+    this.scene.resume(returnScene);
+    // このシーンを停止
+    this.scene.stop();
   }
 
   // =====================================================

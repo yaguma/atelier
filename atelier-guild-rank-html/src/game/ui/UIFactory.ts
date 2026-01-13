@@ -1422,4 +1422,357 @@ export class UIFactory {
   getScene(): Phaser.Scene {
     return this.scene;
   }
+
+  // =====================================================
+  // ゲームらしい装飾的UIコンポーネント
+  // =====================================================
+
+  /**
+   * ファンタジー風の装飾パネルを作成
+   * 二重の枠線とグラデーション風の背景を持つゲームらしいパネル
+   *
+   * @param x X座標（左上基準）
+   * @param y Y座標（左上基準）
+   * @param width 幅
+   * @param height 高さ
+   * @param options オプション
+   * @returns Graphics オブジェクト
+   */
+  createFantasyPanel(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    options: {
+      cornerRadius?: number;
+      outerBorderWidth?: number;
+      innerBorderWidth?: number;
+      hasGlow?: boolean;
+    } = {}
+  ): Phaser.GameObjects.Graphics {
+    const {
+      cornerRadius = 12,
+      outerBorderWidth = 4,
+      innerBorderWidth = 2,
+      hasGlow = false,
+    } = options;
+
+    const graphics = this.scene.add.graphics();
+    const fantasy = Colors.fantasy;
+
+    // 影（オプション）
+    if (hasGlow) {
+      graphics.fillStyle(fantasy.shadow, 0.5);
+      graphics.fillRoundedRect(x + 4, y + 4, width, height, cornerRadius);
+    }
+
+    // 外枠（ブロンズ風）
+    graphics.fillStyle(fantasy.frameOuter, 1);
+    graphics.fillRoundedRect(x, y, width, height, cornerRadius);
+
+    // 内側背景（暗い部分）
+    graphics.fillStyle(fantasy.panelDark, 1);
+    graphics.fillRoundedRect(
+      x + outerBorderWidth,
+      y + outerBorderWidth,
+      width - outerBorderWidth * 2,
+      height - outerBorderWidth * 2,
+      Math.max(0, cornerRadius - 2)
+    );
+
+    // 内枠（ゴールド風のハイライト）
+    graphics.lineStyle(innerBorderWidth, fantasy.frameInner, 0.8);
+    graphics.strokeRoundedRect(
+      x + outerBorderWidth,
+      y + outerBorderWidth,
+      width - outerBorderWidth * 2,
+      height - outerBorderWidth * 2,
+      Math.max(0, cornerRadius - 2)
+    );
+
+    // 上部のハイライト（光沢感）
+    graphics.fillStyle(fantasy.frameHighlight, 0.1);
+    graphics.fillRoundedRect(
+      x + outerBorderWidth + 2,
+      y + outerBorderWidth + 2,
+      width - outerBorderWidth * 2 - 4,
+      (height - outerBorderWidth * 2) * 0.3,
+      { tl: Math.max(0, cornerRadius - 4), tr: Math.max(0, cornerRadius - 4), bl: 0, br: 0 }
+    );
+
+    return graphics;
+  }
+
+  /**
+   * ファンタジー風のボタンを作成
+   * 光沢感と立体感のあるゲームらしいボタン
+   *
+   * @param x X座標（中心基準）
+   * @param y Y座標（中心基準）
+   * @param width 幅
+   * @param height 高さ
+   * @param options オプション
+   * @returns コンテナ（背景とインタラクション付き）
+   */
+  createFantasyButton(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    text: string,
+    onClick: () => void,
+    options: {
+      cornerRadius?: number;
+      baseColor?: number;
+      hoverColor?: number;
+      pressColor?: number;
+      textStyle?: Phaser.Types.GameObjects.Text.TextStyle;
+    } = {}
+  ): Phaser.GameObjects.Container {
+    const {
+      cornerRadius = 8,
+      baseColor = Colors.primary,
+      hoverColor = Colors.primaryHover,
+      pressColor = Colors.primaryActive,
+      textStyle = TextStyles.button,
+    } = options;
+
+    const container = this.scene.add.container(x, y);
+
+    // ボタン背景
+    const bg = this.scene.add.graphics();
+    const fantasy = Colors.fantasy;
+
+    const drawButton = (color: number, pressed: boolean = false): void => {
+      bg.clear();
+
+      // 影
+      if (!pressed) {
+        bg.fillStyle(fantasy.shadow, 0.4);
+        bg.fillRoundedRect(-width / 2 + 2, -height / 2 + 3, width, height, cornerRadius);
+      }
+
+      // 外枠
+      bg.fillStyle(fantasy.frameOuter, 1);
+      bg.fillRoundedRect(-width / 2, -height / 2 + (pressed ? 2 : 0), width, height, cornerRadius);
+
+      // メイン背景
+      bg.fillStyle(color, 1);
+      bg.fillRoundedRect(
+        -width / 2 + 2,
+        -height / 2 + 2 + (pressed ? 2 : 0),
+        width - 4,
+        height - 4,
+        Math.max(0, cornerRadius - 2)
+      );
+
+      // 上部ハイライト（光沢）
+      bg.fillStyle(0xffffff, 0.2);
+      bg.fillRoundedRect(
+        -width / 2 + 4,
+        -height / 2 + 4 + (pressed ? 2 : 0),
+        width - 8,
+        (height - 8) * 0.4,
+        { tl: Math.max(0, cornerRadius - 4), tr: Math.max(0, cornerRadius - 4), bl: 0, br: 0 }
+      );
+
+      // 内枠ハイライト
+      bg.lineStyle(1, fantasy.frameInner, 0.5);
+      bg.strokeRoundedRect(
+        -width / 2 + 2,
+        -height / 2 + 2 + (pressed ? 2 : 0),
+        width - 4,
+        height - 4,
+        Math.max(0, cornerRadius - 2)
+      );
+    };
+
+    drawButton(baseColor);
+    container.add(bg);
+
+    // テキスト
+    const textObj = this.scene.add.text(0, 0, text, textStyle);
+    textObj.setOrigin(0.5);
+    container.add(textObj);
+
+    // インタラクション
+    const hitArea = this.scene.add.rectangle(0, 0, width, height, 0x000000, 0);
+    hitArea.setInteractive({ useHandCursor: true });
+    container.add(hitArea);
+
+    hitArea.on('pointerover', () => {
+      drawButton(hoverColor);
+    });
+
+    hitArea.on('pointerout', () => {
+      drawButton(baseColor);
+    });
+
+    hitArea.on('pointerdown', () => {
+      drawButton(pressColor, true);
+      textObj.setY(2);
+    });
+
+    hitArea.on('pointerup', () => {
+      drawButton(hoverColor);
+      textObj.setY(0);
+      onClick();
+    });
+
+    return container;
+  }
+
+  /**
+   * ファンタジー風のヘッダーバーを作成
+   * グラデーション風の背景と装飾的な枠線を持つヘッダー
+   *
+   * @param x X座標（左上基準）
+   * @param y Y座標（左上基準）
+   * @param width 幅
+   * @param height 高さ
+   * @returns Graphics オブジェクト
+   */
+  createFantasyHeader(
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ): Phaser.GameObjects.Graphics {
+    const graphics = this.scene.add.graphics();
+    const fantasy = Colors.fantasy;
+
+    // 影
+    graphics.fillStyle(fantasy.shadow, 0.5);
+    graphics.fillRect(x + 2, y + height, width - 4, 4);
+
+    // メイン背景（暗いグラデーション風）
+    graphics.fillStyle(fantasy.panelMid, 1);
+    graphics.fillRect(x, y, width, height);
+
+    // 上部のハイライト（光沢）
+    graphics.fillStyle(fantasy.panelLight, 0.5);
+    graphics.fillRect(x, y, width, height * 0.4);
+
+    // 下部の暗い部分
+    graphics.fillStyle(fantasy.panelDark, 0.5);
+    graphics.fillRect(x, y + height * 0.7, width, height * 0.3);
+
+    // 上枠（ゴールドライン）
+    graphics.lineStyle(2, fantasy.frameInner, 0.8);
+    graphics.beginPath();
+    graphics.moveTo(x, y + 1);
+    graphics.lineTo(x + width, y + 1);
+    graphics.strokePath();
+
+    // 下枠（ブロンズライン）
+    graphics.lineStyle(3, fantasy.frameOuter, 1);
+    graphics.beginPath();
+    graphics.moveTo(x, y + height);
+    graphics.lineTo(x + width, y + height);
+    graphics.strokePath();
+
+    // 下枠のハイライト
+    graphics.lineStyle(1, fantasy.frameHighlight, 0.3);
+    graphics.beginPath();
+    graphics.moveTo(x, y + height - 1);
+    graphics.lineTo(x + width, y + height - 1);
+    graphics.strokePath();
+
+    return graphics;
+  }
+
+  /**
+   * 装飾的なセパレーターラインを作成
+   *
+   * @param x X座標（左端基準）
+   * @param y Y座標
+   * @param width 幅
+   * @returns Graphics オブジェクト
+   */
+  createDecorativeLine(
+    x: number,
+    y: number,
+    width: number
+  ): Phaser.GameObjects.Graphics {
+    const graphics = this.scene.add.graphics();
+    const fantasy = Colors.fantasy;
+
+    // メインライン
+    graphics.lineStyle(2, fantasy.frameOuter, 1);
+    graphics.beginPath();
+    graphics.moveTo(x, y);
+    graphics.lineTo(x + width, y);
+    graphics.strokePath();
+
+    // ハイライト
+    graphics.lineStyle(1, fantasy.frameHighlight, 0.3);
+    graphics.beginPath();
+    graphics.moveTo(x, y - 1);
+    graphics.lineTo(x + width, y - 1);
+    graphics.strokePath();
+
+    // 中央の装飾（オプション）
+    const centerX = x + width / 2;
+    graphics.fillStyle(fantasy.frameInner, 1);
+    graphics.fillCircle(centerX, y, 4);
+    graphics.fillStyle(fantasy.frameHighlight, 0.5);
+    graphics.fillCircle(centerX, y - 1, 2);
+
+    return graphics;
+  }
+
+  /**
+   * ステータスアイコン付きラベルを作成（装飾版）
+   *
+   * @param x X座標
+   * @param y Y座標
+   * @param icon アイコン文字（絵文字など）
+   * @param value 表示する値
+   * @param options オプション
+   * @returns コンテナ
+   */
+  createStatusLabel(
+    x: number,
+    y: number,
+    icon: string,
+    value: string,
+    options: {
+      iconColor?: string;
+      valueColor?: string;
+      fontSize?: string;
+    } = {}
+  ): Phaser.GameObjects.Container {
+    const {
+      iconColor = '#ffd700',
+      valueColor = '#ffffff',
+      fontSize = '16px',
+    } = options;
+
+    const container = this.scene.add.container(x, y);
+
+    // アイコン
+    const iconText = this.scene.add.text(0, 0, icon, {
+      fontSize: fontSize,
+      color: iconColor,
+    });
+    iconText.setOrigin(0, 0.5);
+    container.add(iconText);
+
+    // 値
+    const valueText = this.scene.add.text(iconText.width + 8, 0, value, {
+      ...TextStyles.body,
+      fontSize: fontSize,
+      color: valueColor,
+    });
+    valueText.setOrigin(0, 0.5);
+    container.add(valueText);
+
+    // 値更新用メソッドを追加
+    container.setData('valueText', valueText);
+    container.setData('updateValue', (newValue: string) => {
+      valueText.setText(newValue);
+    });
+
+    return container;
+  }
 }

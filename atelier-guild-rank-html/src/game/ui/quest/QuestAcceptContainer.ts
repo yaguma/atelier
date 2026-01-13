@@ -409,19 +409,27 @@ export class QuestAcceptContainer extends BasePhaseContainer {
 
     // 背景
     const bg = this.scene.add.graphics();
-    bg.fillStyle(0x2a2a4a, 0.9);
-    bg.fillRoundedRect(0, 0, 330, 55, 6);
+    this.drawQuestItemBackground(bg, false, false);
     itemContainer.add(bg);
 
+    // 選択インジケータ（矢印）
+    const selectIndicator = this.scene.add.text(-5, 20, '▶', {
+      fontSize: '16px',
+      color: '#4a9eff',
+    });
+    selectIndicator.setOrigin(0.5);
+    selectIndicator.setVisible(false);
+    itemContainer.add(selectIndicator);
+
     // 依頼名
-    const nameText = this.scene.add.text(10, 8, quest.flavorText || '依頼', {
+    const nameText = this.scene.add.text(15, 8, quest.flavorText || '依頼', {
       ...TextStyles.body,
       fontSize: '13px',
     });
     itemContainer.add(nameText);
 
     // 期限
-    const deadlineText = this.scene.add.text(10, 30, `期限: ${quest.deadline}日`, {
+    const deadlineText = this.scene.add.text(15, 30, `期限: ${quest.deadline}日`, {
       ...TextStyles.bodySmall,
       fontSize: '11px',
       color: '#aaaaaa',
@@ -443,20 +451,44 @@ export class QuestAcceptContainer extends BasePhaseContainer {
     );
     itemContainer.on('pointerdown', () => this.selectQuest(quest));
     itemContainer.on('pointerover', () => {
-      bg.clear();
-      bg.fillStyle(0x3a3a5a, 0.9);
-      bg.fillRoundedRect(0, 0, 330, 55, 6);
+      if (quest !== this.selectedQuest) {
+        this.drawQuestItemBackground(bg, false, true);
+      }
     });
     itemContainer.on('pointerout', () => {
-      bg.clear();
-      bg.fillStyle(quest === this.selectedQuest ? 0x4a4a8a : 0x2a2a4a, 0.9);
-      bg.fillRoundedRect(0, 0, 330, 55, 6);
+      this.drawQuestItemBackground(bg, quest === this.selectedQuest, false);
     });
 
     itemContainer.setData('quest', quest);
     itemContainer.setData('bg', bg);
+    itemContainer.setData('selectIndicator', selectIndicator);
 
     return itemContainer;
+  }
+
+  /**
+   * 依頼リストアイテムの背景を描画
+   */
+  private drawQuestItemBackground(bg: Phaser.GameObjects.Graphics, isSelected: boolean, isHover: boolean): void {
+    bg.clear();
+
+    if (isSelected) {
+      // 選択状態：明るい背景 + 目立つ境界線
+      bg.fillStyle(0x3a5a8a, 0.95);
+      bg.fillRoundedRect(0, 0, 330, 55, 6);
+      bg.lineStyle(3, 0x4a9eff, 1);
+      bg.strokeRoundedRect(0, 0, 330, 55, 6);
+    } else if (isHover) {
+      // ホバー状態：少し明るい背景
+      bg.fillStyle(0x3a3a5a, 0.9);
+      bg.fillRoundedRect(0, 0, 330, 55, 6);
+      bg.lineStyle(1, 0x5a5a7a, 0.5);
+      bg.strokeRoundedRect(0, 0, 330, 55, 6);
+    } else {
+      // 通常状態
+      bg.fillStyle(0x2a2a4a, 0.9);
+      bg.fillRoundedRect(0, 0, 330, 55, 6);
+    }
   }
 
   // =====================================================
@@ -474,11 +506,17 @@ export class QuestAcceptContainer extends BasePhaseContainer {
 
       const quest = child.getData('quest') as Quest | undefined;
       const bg = child.getData('bg') as Phaser.GameObjects.Graphics | undefined;
+      const selectIndicator = child.getData('selectIndicator') as Phaser.GameObjects.Text | undefined;
 
       if (quest && bg) {
-        bg.clear();
-        bg.fillStyle(quest === this.selectedQuest ? 0x4a4a8a : 0x2a2a4a, 0.9);
-        bg.fillRoundedRect(0, 0, 330, 55, 6);
+        const isSelected = quest === this.selectedQuest;
+        // 背景を更新（選択状態、非ホバー状態で描画）
+        this.drawQuestItemBackground(bg, isSelected, false);
+
+        // 選択インジケータの表示/非表示
+        if (selectIndicator) {
+          selectIndicator.setVisible(isSelected);
+        }
       }
     }
   }

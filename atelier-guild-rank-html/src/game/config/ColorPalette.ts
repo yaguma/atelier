@@ -55,6 +55,18 @@ export const Colors = {
 
   // アクセント（選択時など）
   accent: 0x4a90d9,
+
+  // ファンタジー装飾色
+  fantasy: {
+    frameOuter: 0x8b7355,     // 外枠（ブロンズ風）
+    frameInner: 0xc9a86c,     // 内枠（ゴールド風）
+    frameHighlight: 0xffd700, // ハイライト
+    panelDark: 0x1a1a2e,      // 暗いパネル背景
+    panelMid: 0x2a2a4e,       // 中間パネル背景
+    panelLight: 0x3a3a6e,     // 明るいパネル背景
+    glow: 0x4a90d9,           // 発光色
+    shadow: 0x0a0a1a,         // 影色
+  },
 } as const;
 
 /**
