@@ -389,3 +389,22 @@ export async function navigateToShop(game: Phaser.Game, eventBus: any): Promise<
   // ショップシーンがアクティブになるまで待つ
   await waitForScene(game, SceneKeys.SHOP);
 }
+
+/**
+ * 昇格試験シーンに遷移する
+ */
+export async function navigateToRankUp(
+  game: Phaser.Game,
+  eventBus: any
+): Promise<void> {
+  const { SceneKeys } = await import('@/game/config/SceneKeys');
+
+  // メインシーンへ遷移
+  await waitForScene(game, SceneKeys.MAIN);
+
+  // 昇格試験を開く
+  eventBus.emit('ui:rankup:open:requested');
+
+  // 昇格試験シーンがアクティブになるまで待つ
+  await waitForScene(game, SceneKeys.RANK_UP);
+}
