@@ -458,6 +458,7 @@ export class AlchemyPhaseUI extends UIComponent {
    */
   setMaterialStock(materials: MaterialStock[]): void {
     this._materialStock = [...materials];
+    this.updateUI();
   }
 
   /**

@@ -278,6 +278,11 @@ export class GatheringPhaseUI extends UIComponent {
   setDraftCards(cards: DraftCardData[]): void {
     this._draftCards = [...cards];
     this._selectedCardId = null;
+    // マウントされている場合は再描画
+    const element = this.getElement();
+    if (element.parentElement) {
+      this.buildContent();
+    }
   }
 
   /**

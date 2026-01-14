@@ -55,6 +55,61 @@ let itemsMap: Map<string, IItem> = new Map();
 /** クエストテンプレートマスターデータ */
 let questTemplates: IQuestTemplate[] = [];
 
+/** 採取地カードマスターデータ */
+interface IGatheringCard {
+  id: string;
+  name: string;
+  type: string;
+  cost: number;
+  presentationCount: number;
+  rareRate: number;
+  materials: { materialId: string; quantity: number; probability: number }[];
+  rarity: string;
+  unlockRank: string;
+  description: string;
+}
+let gatheringCards: IGatheringCard[] = [];
+
+/** 素材マスターデータマップ（ID → Material） */
+interface IMaterial {
+  id: string;
+  name: string;
+  baseQuality: string;
+  attributes: string[];
+  isRare: boolean;
+  description: string;
+}
+let materialsMap: Map<string, IMaterial> = new Map();
+
+/** レシピカードマスターデータ */
+interface IRecipeCard {
+  id: string;
+  name: string;
+  type: string;
+  cost: number;
+  requiredMaterials: { materialId: string; quantity: number }[];
+  outputItemId: string;
+  category: string;
+  rarity: string;
+  unlockRank: string;
+  description: string;
+}
+let recipeCards: IRecipeCard[] = [];
+
+/** 強化カードマスターデータ */
+interface IEnhancementCard {
+  id: string;
+  name: string;
+  type: string;
+  cost: number;
+  effect: { type: string; value: number };
+  targetAction: string;
+  rarity: string;
+  unlockRank: string;
+  description: string;
+}
+let enhancementCards: IEnhancementCard[] = [];
+
 /** HeaderUI */
 let headerUI: HeaderUI | null = null;
 
@@ -177,6 +232,13 @@ function goToNextPhase(): void {
       currentPhase: nextPhase,
     });
     updatePhaseUI();
+
+    // フェーズ別の初期化処理
+    if (nextPhase === GamePhase.GATHERING) {
+      updateGatheringUI();
+    } else if (nextPhase === GamePhase.ALCHEMY) {
+      updateAlchemyUI();
+    }
   } else {
     // 納品フェーズ終了 → 日終了処理
     console.log('全フェーズ完了、日終了処理');
@@ -355,6 +417,24 @@ async function loadMasterData(): Promise<void> {
     itemsMap.clear();
     items.forEach(item => itemsMap.set(item.id, item));
     console.log(`アイテム ${items.length} 件ロード`);
+
+    // 採取地カードをロード
+    gatheringCards = await masterDataLoader.load<IGatheringCard[]>('cards/gathering.json');
+    console.log(`採取地カード ${gatheringCards.length} 件ロード`);
+
+    // 素材データをロード
+    const materials = await masterDataLoader.load<IMaterial[]>('materials.json');
+    materialsMap.clear();
+    materials.forEach(mat => materialsMap.set(mat.id, mat));
+    console.log(`素材 ${materials.length} 件ロード`);
+
+    // レシピカードをロード
+    recipeCards = await masterDataLoader.load<IRecipeCard[]>('cards/recipe.json');
+    console.log(`レシピカード ${recipeCards.length} 件ロード`);
+
+    // 強化カードをロード
+    enhancementCards = await masterDataLoader.load<IEnhancementCard[]>('cards/enhancement.json');
+    console.log(`強化カード ${enhancementCards.length} 件ロード`);
   } catch (error) {
     console.error('マスターデータロードエラー:', error);
   }
@@ -462,6 +542,106 @@ function updateQuestUI(): void {
   // activeQuestsをQuestDataに変換
   const acceptedQuestData = questState.activeQuests.map(aq => convertQuestToQuestData(aq.quest));
   questPhaseUI.setAcceptedQuests(acceptedQuestData);
+}
+
+/**
+ * 採取フェーズUIを更新する
+ */
+function updateGatheringUI(): void {
+  if (!gatheringPhaseUI) return;
+
+  const playerState = stateManager.getPlayerState();
+  const playerRankOrder = RankOrder[playerState.rank];
+
+  // プレイヤーランクでアンロックされている採取地をフィルタ
+  const availableCards = gatheringCards.filter(card => {
+    const cardRankOrder = RankOrder[card.unlockRank as GuildRank];
+    return cardRankOrder <= playerRankOrder;
+  });
+
+  // ランダムに5枚選択（ドラフト用）
+  const shuffled = [...availableCards].sort(() => Math.random() - 0.5);
+  const selectedCards = shuffled.slice(0, Math.min(5, shuffled.length));
+
+  // DraftCardDataに変換
+  const draftCards = selectedCards.map(card => ({
+    id: card.id,
+    name: card.name,
+    materials: card.materials.map(mat => {
+      const material = materialsMap.get(mat.materialId);
+      return {
+        name: material?.name || mat.materialId,
+        quantity: mat.quantity,
+      };
+    }),
+  }));
+
+  gatheringPhaseUI.setDraftCards(draftCards);
+  console.log(`採取地カード ${draftCards.length} 枚をセット`);
+}
+
+/**
+ * 調合フェーズUIを更新する
+ */
+function updateAlchemyUI(): void {
+  if (!alchemyPhaseUI) return;
+
+  const playerState = stateManager.getPlayerState();
+  const playerRankOrder = RankOrder[playerState.rank];
+
+  // プレイヤーランクでアンロックされているレシピをフィルタ
+  const availableRecipes = recipeCards.filter(recipe => {
+    const recipeRankOrder = RankOrder[recipe.unlockRank as GuildRank];
+    return recipeRankOrder <= playerRankOrder;
+  });
+
+  // ランダムに5枚選択
+  const shuffled = [...availableRecipes].sort(() => Math.random() - 0.5);
+  const selectedRecipes = shuffled.slice(0, Math.min(5, shuffled.length));
+
+  // RecipeCardDataに変換
+  const recipes = selectedRecipes.map(recipe => ({
+    id: recipe.id,
+    name: recipe.name,
+    requiredMaterials: recipe.requiredMaterials.map(mat => {
+      const material = materialsMap.get(mat.materialId);
+      return {
+        name: material?.name || mat.materialId,
+        quantity: mat.quantity,
+      };
+    }),
+    baseQuality: 50, // デフォルト品質
+  }));
+
+  // 調合用強化カードをフィルタ
+  const alchemyEnhancements = enhancementCards.filter(
+    card => card.targetAction === 'ALCHEMY' &&
+      RankOrder[card.unlockRank as GuildRank] <= playerRankOrder
+  );
+
+  // ランダムに3枚選択
+  const shuffledEnhancements = [...alchemyEnhancements].sort(() => Math.random() - 0.5);
+  const selectedEnhancements = shuffledEnhancements.slice(0, Math.min(3, shuffledEnhancements.length));
+
+  // EnhancementCardDataに変換
+  const enhancementData = selectedEnhancements.map(card => ({
+    id: card.id,
+    name: card.name,
+    qualityBonus: card.effect.value,
+    description: card.description,
+  }));
+
+  // 所持素材を取得
+  const inventoryState = stateManager.getInventoryState();
+  const materialStock = inventoryState.materials.map(mat => ({
+    name: materialsMap.get(mat.materialId)?.name || mat.materialId,
+    quantity: mat.quantity,
+  }));
+
+  alchemyPhaseUI.setRecipes(recipes);
+  alchemyPhaseUI.setEnhancementCards(enhancementData);
+  alchemyPhaseUI.setMaterialStock(materialStock);
+  console.log(`レシピ ${recipes.length} 枚、強化カード ${enhancementData.length} 枚をセット`);
 }
 
 /**
