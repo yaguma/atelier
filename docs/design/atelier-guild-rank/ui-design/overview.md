@@ -871,7 +871,7 @@ const config: Phaser.Types.Core.GameConfig = {
 ## 関連文書
 
 - **要件定義書**: [../../spec/atelier-guild-rank-requirements.md](../../spec/atelier-guild-rank-requirements.md)
-- **アーキテクチャ設計書（HTML版）**: [../architecture.md](../architecture.md)
+- **アーキテクチャ設計書（HTML版）**: [../architecture-overview.md](../architecture-overview.md)
 - **アーキテクチャ設計書（Phaser版）**: [../atelier-guild-rank-phaser/architecture.md](../atelier-guild-rank-phaser/architecture.md)
 - **入力システム設計書**: [input-system.md](input-system.md)
 

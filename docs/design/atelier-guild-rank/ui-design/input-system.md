@@ -449,7 +449,7 @@ class FocusTrap {
 
 - **UI設計概要**: [overview.md](overview.md)
 - **各画面設計**: [screens/](screens/)
-- **アーキテクチャ設計書**: [../architecture.md](../architecture.md)
+- **アーキテクチャ設計書**: [../architecture-overview.md](../architecture-overview.md)
 
 ---
 
