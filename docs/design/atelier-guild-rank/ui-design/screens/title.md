@@ -342,7 +342,7 @@ sequenceDiagram
 
 - **UI設計概要**: [../overview.md](../overview.md)
 - **入力システム設計**: [../input-system.md](../input-system.md)
-- **アーキテクチャ設計書**: [../../architecture.md](../../architecture.md)
+- **アーキテクチャ設計書**: [../../architecture-overview.md](../../architecture-overview.md)
 
 ---
 

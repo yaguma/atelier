@@ -642,7 +642,7 @@ stateDiagram-v2
 
 - **UI設計概要**: [../overview.md](../overview.md)
 - **入力システム設計**: [../input-system.md](../input-system.md)
-- **コアシステム設計書**: [../../core-systems.md](../../core-systems.md)
+- **コアシステム設計書**: [../../core-systems-overview.md](../../core-systems-overview.md)
 - **ゲームメカニクス設計書**: [../../game-mechanics.md](../../game-mechanics.md)
 
 ---

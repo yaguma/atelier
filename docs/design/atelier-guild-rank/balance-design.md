@@ -473,8 +473,8 @@ A: すべてのスキルが必要
 
 - **要件定義書**: [../../spec/atelier-guild-rank-requirements.md](../../spec/atelier-guild-rank-requirements.md)
 - **ゲームメカニクス設計書**: [game-mechanics.md](game-mechanics.md)
-- **コアシステム設計書**: [core-systems.md](core-systems.md)
-- **データスキーマ設計書**: [data-schema.md](data-schema.md)
+- **コアシステム設計書**: [core-systems-overview.md](core-systems-overview.md) (分割版: [インフラ](core-systems-infrastructure.md) / [コアサービス](core-systems-core-services.md) / [サポート](core-systems-support-services.md))
+- **データスキーマ設計書**: [data-schema-save.md](data-schema-save.md) (分割版: [カードマスター](data-schema-master-cards.md) / [ゲームマスター](data-schema-master-game.md) / [フロー](data-schema-flow.md))
 
 ---
 

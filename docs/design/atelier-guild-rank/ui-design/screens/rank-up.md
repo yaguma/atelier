@@ -304,7 +304,7 @@ stateDiagram-v2
 
 - **UI設計概要**: [../overview.md](../overview.md)
 - **メイン画面設計**: [main.md](main.md)
-- **ランクシステム設計**: [../../core-systems.md](../../core-systems.md)
+- **ランクシステム設計**: [../../core-systems-overview.md](../../core-systems-overview.md)
 
 ---
 
