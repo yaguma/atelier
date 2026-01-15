@@ -1,4 +1,0 @@
-/**
- * プレイヤードメインモジュール
- */
-export * from './PlayerState';

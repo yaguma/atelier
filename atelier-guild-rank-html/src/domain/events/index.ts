@@ -1,4 +1,0 @@
-/**
- * イベントドメインモジュール
- */
-export * from './GameEvents';
