@@ -70,21 +70,7 @@ stateDiagram-v2
 
 コンポーネント間の疎結合な通信を実現。
 
-```typescript
-class EventBus {
-  // イベント購読
-  subscribe<T extends IGameEvent>(
-    eventType: GameEventType,
-    handler: (event: T) => void
-  ): () => void;
-
-  // イベント発行
-  publish<T extends IGameEvent>(event: T): void;
-
-  // 全購読解除
-  unsubscribeAll(eventType?: GameEventType): void;
-}
-```
+> 詳細なインターフェース定義は [architecture-overview.md セクション7](architecture-overview.md#7-通信パターン-) を参照
 
 #### StateManager 🟡
 
@@ -438,37 +424,7 @@ sequenceDiagram
 
 ---
 
-## 11. 状態管理設計
-
-### 11.1 状態の種類 🔵
-
-| 状態種別 | 説明 | 永続化 |
-|---------|------|--------|
-| GameState | ゲーム進行状態（ランク、日数等） | ○ |
-| DeckState | デッキ状態（山札、手札等） | ○ |
-| InventoryState | インベントリ状態（素材、アイテム） | ○ |
-| QuestState | 依頼状態（受注中依頼等） | ○ |
-| UIState | UI表示状態（選択中アイテム等） | × |
-
-### 11.2 状態更新フロー 🟡
-
-```
-User Action (Phaser Scene)
-    ↓
-UseCase (Application Layer)
-    ↓
-Service (Domain Layer)
-    ↓
-StateManager.update()
-    ↓
-EventBus.publish(STATE_CHANGED)
-    ↓
-Phaser Scene re-render
-```
-
----
-
-## 12. ディレクトリ構造 🔴
+## 11. ディレクトリ構造 🔴
 
 ```
 src/
@@ -582,9 +538,9 @@ src/
 
 ---
 
-## 13. アセット管理 🔴
+## 12. アセット管理 🔴
 
-### 13.1 アセットカテゴリ
+### 12.1 アセットカテゴリ
 
 | カテゴリ | 形式 | 用途 |
 |---------|------|------|
@@ -595,7 +551,7 @@ src/
 | **SFX** | MP3, OGG | 効果音 |
 | **BGM** | MP3, OGG | 背景音楽 |
 
-### 13.2 アセットロード戦略
+### 12.2 アセットロード戦略
 
 ```typescript
 class BootScene extends Phaser.Scene {
@@ -628,88 +584,9 @@ class BootScene extends Phaser.Scene {
 
 ---
 
-## 14. エラーハンドリング設計 🟡
+## 13. 拡張性設計 🟡
 
-### 14.1 エラーカテゴリ
-
-| カテゴリ | 説明 | 対応 |
-|---------|------|------|
-| ユーザーエラー | 無効な操作 | UI上でフィードバック（rexUI Toast） |
-| データエラー | データ破損 | 復旧または新規作成を促す（rexUI Dialog） |
-| システムエラー | 予期せぬエラー | エラーログ + リカバリー |
-
-### 14.2 エラー表示
-
-```typescript
-class ErrorHandler {
-  // ユーザーエラー（Toastで通知）
-  showUserError(scene: Phaser.Scene, message: string): void;
-
-  // データエラー（Dialogで復旧オプション提示）
-  showDataError(scene: Phaser.Scene, message: string, options: RecoveryOption[]): void;
-
-  // システムエラー（ログ + 通知）
-  handleSystemError(error: Error): void;
-}
-```
-
----
-
-## 15. パフォーマンス設計 🔴
-
-### 15.1 最適化ポイント
-
-| 項目 | 対策 |
-|------|------|
-| 初期ロード | アセットの遅延読み込み、テクスチャアトラス使用 |
-| テクスチャアトラス | 複数画像を1枚にまとめる |
-| オブジェクトプール | 頻繁に生成/破棄するオブジェクトを再利用 |
-| WebGLバッチング | 同一テクスチャの描画をまとめる |
-| 再レンダリング | 差分更新（変更された部分のみ更新） |
-| メモリ | 不要オブジェクトの適時解放 |
-
-### 15.2 キャッシュ戦略
-
-| データ | キャッシュ方法 |
-|--------|--------------|
-| マスターデータ | メモリキャッシュ（アプリ起動中保持） |
-| テクスチャ | Phaserテクスチャキャッシュ |
-| 計算結果 | 必要に応じてメモ化 |
-
-### 15.3 ターゲットFPS
-
-| 環境 | ターゲットFPS |
-|------|-------------|
-| デスクトップ | 60 FPS |
-| モバイル | 30 FPS |
-
----
-
-## 16. テスト設計 🟡
-
-### 16.1 テスト戦略
-
-| レイヤー | テスト種別 | 重点 |
-|---------|----------|------|
-| Domain | ユニットテスト | ビジネスロジックの正確性 |
-| Application | 統合テスト | フロー制御の正確性 |
-| Presentation | E2Eテスト | ユーザー操作の正確性 |
-
-### 16.2 重点テスト項目
-
-| 機能 | テスト内容 |
-|------|----------|
-| 貢献度計算 | 各補正の正確な適用 |
-| フェーズ遷移 | 不正遷移の防止 |
-| 依頼条件判定 | 8種類の条件の正確な判定 |
-| セーブ/ロード | データ整合性の維持 |
-| カード操作 | デッキ・手札操作の整合性 |
-
----
-
-## 17. 拡張性設計 🟡
-
-### 17.1 拡張ポイント
+### 13.1 拡張ポイント
 
 | 機能 | 拡張方法 |
 |------|---------|
@@ -719,7 +596,7 @@ class ErrorHandler {
 | 新ランク | JSONマスターデータに追加 |
 | 新UI演出 | Phaserアニメーション追加 |
 
-### 17.2 プラグイン可能な設計
+### 13.2 プラグイン可能な設計
 
 - イベントベースの設計により、新機能の追加が容易
 - インターフェース経由の依存により、実装の差し替えが可能
@@ -727,37 +604,13 @@ class ErrorHandler {
 
 ---
 
-## 18. 移行計画 🔴
-
-### 18.1 段階的移行
-
-| フェーズ | 内容 | 優先度 | 状態 |
-|---------|------|--------|------|
-| Phase 1 | Phaser基盤構築（Boot, Title） | 高 | 完了 |
-| Phase 2 | MainScene基本UI | 高 | 完了 |
-| Phase 3 | 各フェーズUI実装 | 高 | 進行中 |
-| Phase 4 | Shop/RankUp/Result画面 | 中 | 未着手 |
-| Phase 5 | アニメーション・演出追加 | 中 | 未着手 |
-| Phase 6 | 効果音・BGM追加 | 低 | 未着手 |
-
-### 18.2 既存コードの活用
-
-| 層 | 移行方針 | 状態 |
-|-----|---------|------|
-| Domain | 変更なし（そのまま利用） | 維持 |
-| Application | 変更なし（そのまま利用） | 維持 |
-| Infrastructure | 変更なし（そのまま利用） | 維持 |
-| Presentation | 完全置き換え（Phaser化） | 移行中 |
-
----
-
 ## 関連文書
 
+- **アーキテクチャ概要**: [architecture-overview.md](architecture-overview.md) - 状態管理、エラーハンドリング、パフォーマンス、テスト戦略はこちら
+- **Phaser実装設計**: [architecture-phaser.md](architecture-phaser.md)
 - **要件定義書**: [../../spec/atelier-guild-rank-requirements.md](../../spec/atelier-guild-rank-requirements.md)
-- **データスキーマ設計書**: [data-schema-save.md](data-schema-save.md) (分割版: [カードマスター](data-schema-master-cards.md) / [ゲームマスター](data-schema-master-game.md) / [フロー](data-schema-flow.md))
-- **TypeScriptインターフェース定義**: [interfaces/core.ts](interfaces/core.ts) (分割版: [cards](interfaces/cards.ts) / [materials](interfaces/materials.ts) / [quests](interfaces/quests.ts) / [game-state](interfaces/game-state.ts))
-- **UI設計（Phaser版）**: [ui-design/overview.md](ui-design/overview.md)
-- **コアシステム設計**: [core-systems-overview.md](core-systems-overview.md) (分割版: [インフラ](core-systems-infrastructure.md) / [コアサービス](core-systems-core-services.md) / [サポート](core-systems-support-services.md))
+- **データスキーマ設計書**: [data-schema-save.md](data-schema-save.md)
+- **コアシステム設計**: [core-systems-overview.md](core-systems-overview.md)
 
 ---
 
@@ -768,7 +621,8 @@ class ErrorHandler {
 | 2026-01-01 | 1.0.0 | 初版作成（HTML版） |
 | 2026-01-01 | 1.1.0 | Domain LayerにMaterialServiceを追加 |
 | 2026-01-07 | 1.5.0 | Phaser版アーキテクチャ設計書を作成 |
-| 2026-01-14 | 2.0.0 | HTML版とPhaser版を統合。Phaser版をベースとしつつ、HTML版の詳細なコンポーネント設計を保持 |
+| 2026-01-14 | 2.0.0 | HTML版とPhaser版を統合 |
+| 2026-01-16 | 2.1.0 | 重複セクション整理：状態管理/エラーハンドリング/パフォーマンス/テスト設計をarchitecture-overview.mdに統合 |
 
 ---
 

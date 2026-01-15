@@ -255,6 +255,16 @@ class MainScene extends Phaser.Scene {
 
 ## 関連文書
 
-- [← 概要](architecture-overview.md)
-- [→ コンポーネント設計](architecture-components.md)
+- [← 概要](architecture-overview.md) - 技術スタック、レイヤー構造、状態管理、通信パターン等
+- [→ コンポーネント設計](architecture-components.md) - サービス詳細、ディレクトリ構造
 - [UI設計](ui-design/)
+
+---
+
+## 変更履歴
+
+| 日付 | バージョン | 変更内容 |
+|------|----------|---------|
+| 2026-01-01 | 2.0.0 | Phaser版として初版作成 |
+| 2026-01-14 | 2.0.0 | 関連文書リンク更新 |
+| 2026-01-16 | 2.0.1 | 関連文書に説明追加 |
