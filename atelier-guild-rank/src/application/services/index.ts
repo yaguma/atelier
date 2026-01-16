@@ -4,6 +4,7 @@
  */
 
 export { DeckService } from './deck-service';
+export { GatheringService } from './gathering-service';
 export {
   INITIAL_GAME_STATE,
   MAX_ACTION_POINTS,
