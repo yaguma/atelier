@@ -1,0 +1,24 @@
+# lefthook.yml
+# Git Hooks管理設定
+# TASK-0034: Lefthook設定
+# モノレポ構成対応 - atelier-guild-rank サブディレクトリ用
+
+pre-commit:
+  parallel: true
+  commands:
+    biome-check:
+      root: atelier-guild-rank/
+      glob: "*.{ts,tsx,js,jsx,json}"
+      run: pnpm biome check --write --staged {staged_files}
+      stage_fixed: true
+    typecheck:
+      root: atelier-guild-rank/
+      glob: "*.{ts,tsx}"
+      run: pnpm tsc --noEmit
+
+# commit-msg:
+#   commands:
+#     commitlint:
+#       # Windows互換性の問題により一時的に無効化
+#       # TODO: Node.jsスクリプトまたはcommitlintパッケージで置き換え
+#       run: echo "Commit message check skipped"
