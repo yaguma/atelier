@@ -55,7 +55,7 @@ Phaser 3 + rexUI + TypeScriptによるギルドランク制デッキ構築RPGの
 | [TASK-0034](./phase-1/TASK-0034.md) | Lefthook設定 | 2h | TASK-0033 | ✅ |
 | [TASK-0035](./phase-1/TASK-0035.md) | Tailwind CSS設定 | 4h | TASK-0002 | ✅ |
 | [TASK-0036](./phase-1/TASK-0036.md) | Vitest設定強化 | 4h | TASK-0033 | ✅ |
-| [TASK-0037](./phase-1/TASK-0037.md) | Playwright E2E設定 | 4h | TASK-0033, TASK-0008 | ⬜ |
+| [TASK-0037](./phase-1/TASK-0037.md) | Playwright E2E設定 | 4h | TASK-0033, TASK-0008 | ✅ |
 
 ### Phase 1 依存関係図
 
