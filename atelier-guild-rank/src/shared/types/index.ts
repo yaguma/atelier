@@ -109,6 +109,7 @@ export type {
   ISpecialRule,
   ItemMaster,
   MaterialMaster,
+  QuestMaster,
 } from './master-data';
 export {
   isEnhancementCardMaster,

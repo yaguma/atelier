@@ -20,6 +20,8 @@ import type {
   ItemMaster,
   MaterialId,
   MaterialMaster,
+  QuestId,
+  QuestMaster,
 } from '@shared/types';
 
 /**
@@ -138,6 +140,25 @@ export interface IMasterDataRepository {
    * @returns 依頼者マスター（存在しない場合undefined）
    */
   getClientById(id: ClientId): ClientMaster | undefined;
+
+  // =============================================================================
+  // 依頼テンプレート
+  // =============================================================================
+
+  /**
+   * 全依頼テンプレートを取得する
+   *
+   * @returns 依頼テンプレートマスターの配列
+   */
+  getAllQuests(): QuestMaster[];
+
+  /**
+   * IDで依頼テンプレートを取得する
+   *
+   * @param id 依頼ID
+   * @returns 依頼テンプレートマスター（存在しない場合undefined）
+   */
+  getQuestById(id: QuestId): QuestMaster | undefined;
 
   // =============================================================================
   // アーティファクト

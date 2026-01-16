@@ -392,8 +392,9 @@ describe('AlchemyService', () => {
 
       // Assert
       expect(mockEventBus.emit).toHaveBeenCalledWith(
+        GameEventType.ALCHEMY_COMPLETED,
         expect.objectContaining({
-          type: GameEventType.ALCHEMY_COMPLETED,
+          craftedItem: expect.any(Object),
         }),
       );
     });

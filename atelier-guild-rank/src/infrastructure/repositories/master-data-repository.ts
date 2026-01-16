@@ -21,6 +21,8 @@ import type {
   ItemMaster,
   MaterialId,
   MaterialMaster,
+  QuestId,
+  QuestMaster,
 } from '@shared/types';
 import {
   ApplicationError,
@@ -33,6 +35,7 @@ import {
   toClientId,
   toItemId,
   toMaterialId,
+  toQuestId,
 } from '@shared/types';
 import type { IJsonLoader } from '../loaders/json-loader';
 import { JsonLoader } from '../loaders/json-loader';
@@ -89,6 +92,9 @@ export class MasterDataRepository implements IMasterDataRepository {
 
   private clients: ClientMaster[] = [];
   private clientIndex = new Map<ClientId, ClientMaster>();
+
+  private quests: QuestMaster[] = [];
+  private questIndex = new Map<QuestId, QuestMaster>();
 
   private artifacts: IArtifactMaster[] = [];
   private artifactIndex = new Map<ArtifactId, IArtifactMaster>();
@@ -185,6 +191,20 @@ export class MasterDataRepository implements IMasterDataRepository {
   }
 
   // =============================================================================
+  // 依頼テンプレート
+  // =============================================================================
+
+  getAllQuests(): QuestMaster[] {
+    this.ensureLoaded();
+    return [...this.quests];
+  }
+
+  getQuestById(id: QuestId): QuestMaster | undefined {
+    this.ensureLoaded();
+    return this.questIndex.get(id);
+  }
+
+  // =============================================================================
   // アーティファクト
   // =============================================================================
 
@@ -218,6 +238,7 @@ export class MasterDataRepository implements IMasterDataRepository {
         items,
         ranks,
         clients,
+        quests,
         artifacts,
       ] = await Promise.all([
         this.loader.load<IGatheringCardMaster[]>(
@@ -231,6 +252,7 @@ export class MasterDataRepository implements IMasterDataRepository {
         this.loader.load<ItemMaster[]>(`${this.config.basePath}/items/items.json`),
         this.loader.load<IGuildRankMaster[]>(`${this.config.basePath}/ranks/guild_ranks.json`),
         this.loader.load<ClientMaster[]>(`${this.config.basePath}/quests/clients.json`),
+        this.loader.load<QuestMaster[]>(`${this.config.basePath}/quests/quest_templates.json`),
         this.loader.load<IArtifactMaster[]>(`${this.config.basePath}/artifacts/artifacts.json`),
       ]);
 
@@ -266,6 +288,13 @@ export class MasterDataRepository implements IMasterDataRepository {
         id: toClientId(c.id as string),
       }));
       this.buildClientIndex();
+
+      // 依頼テンプレートのインデックス構築
+      this.quests = quests.map((q) => ({
+        ...q,
+        id: toQuestId(q.id as string),
+      }));
+      this.buildQuestIndex();
 
       // アーティファクトのインデックス構築
       this.artifacts = artifacts.map((a) => ({
@@ -355,6 +384,16 @@ export class MasterDataRepository implements IMasterDataRepository {
     this.clientIndex.clear();
     for (const client of this.clients) {
       this.clientIndex.set(client.id, client);
+    }
+  }
+
+  /**
+   * 依頼テンプレートインデックスを構築する
+   */
+  private buildQuestIndex(): void {
+    this.questIndex.clear();
+    for (const quest of this.quests) {
+      this.questIndex.set(quest.id, quest);
     }
   }
 

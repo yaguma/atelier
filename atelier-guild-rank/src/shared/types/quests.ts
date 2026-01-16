@@ -96,6 +96,8 @@ export interface IQuest {
 export interface IActiveQuest {
   /** 依頼情報 */
   quest: IQuest;
+  /** 依頼者情報 */
+  client: IClient;
   /** 残り日数 */
   remainingDays: number;
   /** 受注した日 */

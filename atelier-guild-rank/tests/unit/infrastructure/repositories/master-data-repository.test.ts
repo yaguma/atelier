@@ -141,6 +141,19 @@ const mockClients = [
   },
 ];
 
+const mockQuests = [
+  {
+    id: 'quest_potion_01',
+    clientId: 'villager',
+    condition: { type: 'SPECIFIC', itemId: 'potion' },
+    contribution: 100,
+    gold: 50,
+    deadline: 5,
+    difficulty: 'normal',
+    flavorText: 'ポーションが必要です',
+  },
+];
+
 const mockArtifacts = [
   {
     id: 'artifact_alchemist_glasses',
@@ -180,6 +193,9 @@ class MockJsonLoader implements IJsonLoader {
     }
     if (path.includes('clients.json')) {
       return mockClients as T;
+    }
+    if (path.includes('quest_templates.json')) {
+      return mockQuests as T;
     }
     if (path.includes('artifacts.json')) {
       return mockArtifacts as T;
