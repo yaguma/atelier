@@ -3,5 +3,4 @@
  * ユーティリティの公開エクスポート
  */
 
-// プレースホルダー（実装時に置き換え）
-export const _sharedUtilsPlaceholder = undefined;
+export { generateUniqueId } from './id-generator';

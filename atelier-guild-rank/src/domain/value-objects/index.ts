@@ -3,5 +3,4 @@
  * 値オブジェクトの公開エクスポート
  */
 
-// プレースホルダー（実装時に置き換え）
-export const _domainValueObjectsPlaceholder = undefined;
+export { compareQuality, getHigherQuality, getLowerQuality, QUALITY_ORDER } from './Quality';
