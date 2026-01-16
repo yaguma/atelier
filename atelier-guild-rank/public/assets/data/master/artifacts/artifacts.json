@@ -1,0 +1,16 @@
+[
+  {
+    "id": "artifact_alchemist_glasses",
+    "name": "錬金術師の眼鏡",
+    "effect": { "type": "QUALITY_UP", "value": 1 },
+    "rarity": "COMMON",
+    "description": "調合品質+1"
+  },
+  {
+    "id": "artifact_storage_bag",
+    "name": "採取袋の拡張",
+    "effect": { "type": "STORAGE_EXPANSION", "value": 5 },
+    "rarity": "COMMON",
+    "description": "素材保管+5枠"
+  }
+]

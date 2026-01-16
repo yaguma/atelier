@@ -1,0 +1,16 @@
+[
+  {
+    "id": "healing_potion",
+    "name": "回復薬",
+    "category": "MEDICINE",
+    "effects": [{ "type": "HP_RECOVERY", "baseValue": 30 }],
+    "description": "HPを回復する薬"
+  },
+  {
+    "id": "antidote",
+    "name": "解毒剤",
+    "category": "MEDICINE",
+    "effects": [{ "type": "CURE_POISON", "baseValue": 1 }],
+    "description": "毒を治療する薬"
+  }
+]

@@ -1,0 +1,24 @@
+[
+  {
+    "id": "enhance_sage_catalyst",
+    "name": "賢者の触媒",
+    "type": "ENHANCEMENT",
+    "cost": 0,
+    "effect": { "type": "QUALITY_UP", "value": 1 },
+    "targetAction": "ALCHEMY",
+    "rarity": "COMMON",
+    "unlockRank": "G",
+    "description": "調合品質+1ランク"
+  },
+  {
+    "id": "enhance_spirit_guide",
+    "name": "精霊の導き",
+    "type": "ENHANCEMENT",
+    "cost": 0,
+    "effect": { "type": "PRESENTATION_BONUS", "value": 1 },
+    "targetAction": "GATHERING",
+    "rarity": "COMMON",
+    "unlockRank": "G",
+    "description": "提示回数+1回"
+  }
+]

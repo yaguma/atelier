@@ -74,34 +74,35 @@ describe('errors.ts', () => {
 
     // TC-ERR-009
     it('ApplicationErrorがErrorを継承している', () => {
-      const error = new ApplicationError('user-facing message');
+      const error = new ApplicationError('TEST_CODE', 'user-facing message');
       expect(error instanceof Error).toBe(true);
     });
 
     // TC-ERR-010
     it('ApplicationError.userMessageプロパティがアクセス可能', () => {
-      const error = new ApplicationError('user-facing message');
+      const error = new ApplicationError('TEST_CODE', 'user-facing message');
       expect(error.userMessage).toBe('user-facing message');
     });
 
     // TC-ERR-011
     it('ApplicationError.originalErrorプロパティがアクセス可能', () => {
       const originalError = new Error('original error');
-      const error = new ApplicationError('user-facing message', originalError);
+      const error = new ApplicationError('TEST_CODE', 'user-facing message', originalError);
       expect(error.originalError).toBe(originalError);
     });
 
     // TC-ERR-012
-    it("new ApplicationError('userMessage')でインスタンス生成可能", () => {
-      const error = new ApplicationError('userMessage');
+    it("new ApplicationError('code', 'userMessage')でインスタンス生成可能", () => {
+      const error = new ApplicationError('TEST_CODE', 'userMessage');
       expect(error).toBeInstanceOf(ApplicationError);
+      expect(error.code).toBe('TEST_CODE');
       expect(error.userMessage).toBe('userMessage');
     });
 
     // TC-ERR-013
-    it("new ApplicationError('userMessage', originalError)でoriginalError付きインスタンス生成可能", () => {
+    it("new ApplicationError('code', 'userMessage', originalError)でoriginalError付きインスタンス生成可能", () => {
       const originalError = new Error('original');
-      const error = new ApplicationError('userMessage', originalError);
+      const error = new ApplicationError('TEST_CODE', 'userMessage', originalError);
       expect(error.originalError).toBe(originalError);
     });
   });

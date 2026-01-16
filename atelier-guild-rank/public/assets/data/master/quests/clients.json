@@ -1,0 +1,32 @@
+[
+  {
+    "id": "villager",
+    "name": "村人",
+    "type": "VILLAGER",
+    "contributionMultiplier": 0.8,
+    "goldMultiplier": 0.8,
+    "deadlineModifier": 1,
+    "preferredQuestTypes": ["CATEGORY", "QUANTITY"],
+    "unlockRank": "G",
+    "dialoguePatterns": [
+      "何か薬が欲しいんだ",
+      "薬を{quantity}個欲しいんだ",
+      "{item}が欲しいんだけど..."
+    ]
+  },
+  {
+    "id": "adventurer",
+    "name": "冒険者",
+    "type": "ADVENTURER",
+    "contributionMultiplier": 1.0,
+    "goldMultiplier": 1.0,
+    "deadlineModifier": 0,
+    "preferredQuestTypes": ["ATTRIBUTE", "EFFECT"],
+    "unlockRank": "G",
+    "dialoguePatterns": [
+      "{item}が欲しい！",
+      "火属性{value}以上の武器を頼む",
+      "HP{value}回復できるものをくれ"
+    ]
+  }
+]

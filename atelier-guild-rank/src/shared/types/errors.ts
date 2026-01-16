@@ -30,6 +30,7 @@ export class DomainError extends Error {
  */
 export class ApplicationError extends Error {
   constructor(
+    public readonly code: string,
     public readonly userMessage: string,
     public readonly originalError?: Error,
   ) {
@@ -74,6 +75,10 @@ export const ErrorCodes = {
   // 状態関連
   INVALID_PHASE_TRANSITION: 'INVALID_PHASE_TRANSITION',
   INVALID_STATE: 'INVALID_STATE',
+
+  // データ読み込み関連
+  DATA_LOAD_FAILED: 'DATA_LOAD_FAILED',
+  DATA_NOT_LOADED: 'DATA_NOT_LOADED',
 } as const;
 
 /** エラーコード型 */

@@ -3,5 +3,5 @@
  * リポジトリ実装の公開エクスポート
  */
 
-// プレースホルダー（実装時に置き換え）
-export const _infrastructureRepositoriesPlaceholder = undefined;
+export type { IMasterDataRepositoryConfig } from './master-data-repository';
+export { MasterDataRepository } from './master-data-repository';

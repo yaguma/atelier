@@ -1,0 +1,43 @@
+[
+  {
+    "id": "G",
+    "name": "見習い",
+    "requiredContribution": 100,
+    "dayLimit": 30,
+    "specialRules": [],
+    "promotionTest": {
+      "requirements": [{ "itemId": "healing_potion", "quantity": 2 }],
+      "dayLimit": 5
+    },
+    "unlockedGatheringCards": ["gathering_backyard", "gathering_nearby_forest"],
+    "unlockedRecipeCards": ["recipe_healing_potion", "recipe_nutrition"]
+  },
+  {
+    "id": "F",
+    "name": "新人",
+    "requiredContribution": 200,
+    "dayLimit": 30,
+    "specialRules": [
+      { "type": "QUEST_LIMIT", "value": 2, "description": "同時受注2件まで" }
+    ],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "healing_potion", "quantity": 3, "minQuality": "B" },
+        { "itemId": "antidote", "quantity": 2 }
+      ],
+      "dayLimit": 5
+    },
+    "unlockedGatheringCards": ["gathering_riverside"],
+    "unlockedRecipeCards": ["recipe_antidote"]
+  },
+  {
+    "id": "S",
+    "name": "伝説",
+    "requiredContribution": 0,
+    "dayLimit": 0,
+    "specialRules": [],
+    "promotionTest": null,
+    "unlockedGatheringCards": [],
+    "unlockedRecipeCards": []
+  }
+]

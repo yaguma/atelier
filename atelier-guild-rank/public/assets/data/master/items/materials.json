@@ -1,0 +1,30 @@
+[
+  {
+    "id": "weed",
+    "name": "雑草",
+    "baseQuality": "D",
+    "attributes": ["GRASS"],
+    "description": "どこにでもある草"
+  },
+  {
+    "id": "water",
+    "name": "水",
+    "baseQuality": "D",
+    "attributes": ["WATER"],
+    "description": "普通の水"
+  },
+  {
+    "id": "herb",
+    "name": "薬草",
+    "baseQuality": "C",
+    "attributes": ["GRASS", "WATER"],
+    "description": "薬の基本素材"
+  },
+  {
+    "id": "pure_water",
+    "name": "清水",
+    "baseQuality": "C",
+    "attributes": ["WATER"],
+    "description": "澄んだ水"
+  }
+]

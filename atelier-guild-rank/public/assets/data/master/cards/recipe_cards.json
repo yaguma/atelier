@@ -1,0 +1,32 @@
+[
+  {
+    "id": "recipe_healing_potion",
+    "name": "回復薬",
+    "type": "RECIPE",
+    "cost": 1,
+    "requiredMaterials": [
+      { "materialId": "herb", "quantity": 2 },
+      { "materialId": "pure_water", "quantity": 1 }
+    ],
+    "outputItemId": "healing_potion",
+    "category": "MEDICINE",
+    "rarity": "COMMON",
+    "unlockRank": "G",
+    "description": "医療系の基本"
+  },
+  {
+    "id": "recipe_antidote",
+    "name": "解毒剤",
+    "type": "RECIPE",
+    "cost": 1,
+    "requiredMaterials": [
+      { "materialId": "poison_mushroom", "quantity": 1 },
+      { "materialId": "pure_water", "quantity": 2 }
+    ],
+    "outputItemId": "antidote",
+    "category": "MEDICINE",
+    "rarity": "COMMON",
+    "unlockRank": "F",
+    "description": "医療系"
+  }
+]

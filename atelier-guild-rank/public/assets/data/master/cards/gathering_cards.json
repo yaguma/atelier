@@ -1,0 +1,38 @@
+[
+  {
+    "id": "gathering_backyard",
+    "name": "裏庭",
+    "type": "GATHERING",
+    "baseCost": 0,
+    "presentationCount": 2,
+    "rareRate": 0,
+    "materialPool": ["weed", "water"],
+    "rarity": "COMMON",
+    "unlockRank": "G",
+    "description": "いつでも使える、低品質"
+  },
+  {
+    "id": "gathering_nearby_forest",
+    "name": "近くの森",
+    "type": "GATHERING",
+    "baseCost": 0,
+    "presentationCount": 3,
+    "rareRate": 10,
+    "materialPool": ["herb", "mushroom", "wood", "pure_water"],
+    "rarity": "COMMON",
+    "unlockRank": "G",
+    "description": "基本素材、安定"
+  },
+  {
+    "id": "gathering_riverside",
+    "name": "川辺",
+    "type": "GATHERING",
+    "baseCost": 0,
+    "presentationCount": 3,
+    "rareRate": 10,
+    "materialPool": ["fish", "water_grass", "sand", "pure_water"],
+    "rarity": "COMMON",
+    "unlockRank": "F",
+    "description": "水属性特化"
+  }
+]

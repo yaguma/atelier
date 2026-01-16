@@ -91,6 +91,31 @@ export {
   toRecipeId,
 } from './ids';
 // =============================================================================
+// マスターデータ型
+// =============================================================================
+export type {
+  CardMaster,
+  ClientMaster,
+  IArtifactEffect,
+  IArtifactMaster,
+  IEnhancementCardMaster,
+  IEnhancementEffect,
+  IGatheringCardMaster,
+  IGuildRankMaster,
+  IPromotionRequirement,
+  IPromotionTest,
+  IRecipeCardMaster,
+  IRecipeRequiredMaterial,
+  ISpecialRule,
+  ItemMaster,
+  MaterialMaster,
+} from './master-data';
+export {
+  isEnhancementCardMaster,
+  isGatheringCardMaster,
+  isRecipeCardMaster,
+} from './master-data';
+// =============================================================================
 // 素材・アイテム型
 // =============================================================================
 export type {
@@ -113,7 +138,6 @@ export type {
   IQuestCondition,
   QuestDifficulty,
 } from './quests';
-
 // =============================================================================
 // セーブデータ型
 // =============================================================================
