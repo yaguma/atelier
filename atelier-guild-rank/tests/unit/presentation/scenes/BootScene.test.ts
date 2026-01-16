@@ -22,11 +22,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('phaser', () => {
   return {
     default: {
-      Scene: class MockScene {
-        constructor(_config?: unknown) {
-          // モックシーンコンストラクタ
-        }
-      },
+      Scene: class MockScene {},
       GameObjects: {
         Graphics: class MockGraphics {},
         Text: class MockText {},
@@ -109,7 +105,7 @@ describe('BootScene', () => {
   function createMockCache() {
     return {
       json: {
-        get: vi.fn((key: string) => {
+        get: vi.fn((_key: string) => {
           // 【テストデータ】: 各マスターデータに対して配列を返す 🔵
           return [];
         }),
