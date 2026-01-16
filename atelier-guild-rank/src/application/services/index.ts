@@ -4,6 +4,7 @@
  */
 
 export type { IQuestService } from '@domain/interfaces/quest-service.interface';
+export type { IRankService } from '@domain/interfaces/rank-service.interface';
 export { AlchemyService } from './alchemy-service';
 export { DeckService } from './deck-service';
 export { GatheringService } from './gathering-service';
@@ -14,5 +15,6 @@ export {
 } from './initial-state';
 export { MaterialService } from './material-service';
 export { QuestService } from './quest-service';
+export { RankService } from './rank-service';
 export { StateManager } from './state-manager';
 export type { IStateManager } from './state-manager.interface';

@@ -3,5 +3,5 @@
  * ドメインサービスの公開エクスポート
  */
 
-// プレースホルダー（実装時に置き換え）
-export const _domainServicesPlaceholder = undefined;
+export type { DeliveryContext } from './contribution-calculator';
+export { ContributionCalculator } from './contribution-calculator';

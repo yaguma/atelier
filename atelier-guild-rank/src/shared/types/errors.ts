@@ -85,10 +85,14 @@ export const ErrorCodes = {
   // データ読み込み関連
   DATA_LOAD_FAILED: 'DATA_LOAD_FAILED',
   DATA_NOT_LOADED: 'DATA_NOT_LOADED',
+  DATA_NOT_FOUND: 'DATA_NOT_FOUND',
 
   // 素材関連
   INVALID_MATERIAL_ID: 'INVALID_MATERIAL_ID',
   INVALID_MATERIALS: 'INVALID_MATERIALS',
+
+  // 汎用エラー
+  INVALID_OPERATION: 'INVALID_OPERATION',
 } as const;
 
 /** エラーコード型 */
