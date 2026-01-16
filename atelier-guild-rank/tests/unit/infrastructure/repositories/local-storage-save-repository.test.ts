@@ -9,7 +9,7 @@
 import type { ISaveDataRepository } from '@domain/interfaces';
 import { LocalStorageSaveRepository } from '@infrastructure/repositories';
 import type { ISaveData } from '@shared/types';
-import { ApplicationError, ErrorCodes, GamePhase, GuildRank, toCardId } from '@shared/types';
+import { ApplicationError, GamePhase, GuildRank, toCardId } from '@shared/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // =============================================================================

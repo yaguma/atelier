@@ -210,7 +210,7 @@ export class LocalStorageSaveRepository implements ISaveDataRepository {
       // 【処理内容】: ISO8601文字列をnew Date()で変換
       // 【データ形式】: '2026-01-16T12:00:00.000Z' → Date型
       return new Date(data.lastSaved);
-    } catch (error) {
+    } catch (_error) {
       // 【エラー捕捉】: パースエラーの場合はnullを返す
       // 【セキュリティ】: 破損データでもアプリケーションは継続可能
       return null;
