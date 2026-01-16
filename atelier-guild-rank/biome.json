@@ -25,8 +25,16 @@
       "trailingCommas": "all"
     }
   },
+  "css": {
+    "parser": {
+      "cssModules": true
+    },
+    "linter": {
+      "enabled": true
+    }
+  },
   "files": {
-    "includes": ["src/**", "tests/**", "*.ts", "*.json"],
+    "includes": ["src/**/*.ts", "src/**/*.tsx", "tests/**", "*.ts", "*.json"],
     "ignoreUnknown": true
   },
   "assist": {

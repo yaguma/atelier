@@ -1,0 +1,115 @@
+@import 'tailwindcss';
+
+/* Tailwind CSS v4 テーマ定義 */
+@theme {
+  /* ゲームのカラーパレット */
+  --color-atelier-primary: #4a5568;
+  --color-atelier-secondary: #718096;
+  --color-atelier-accent: #ed8936;
+  --color-atelier-gold: #d69e2e;
+  --color-atelier-rank-g: #a0aec0;
+  --color-atelier-rank-f: #68d391;
+  --color-atelier-rank-e: #48bb78;
+  --color-atelier-rank-d: #38a169;
+  --color-atelier-rank-c: #3182ce;
+  --color-atelier-rank-b: #805ad5;
+  --color-atelier-rank-a: #d53f8c;
+  --color-atelier-rank-s: #ecc94b;
+
+  /* ゲームUI用カラー */
+  --color-game-bg: #1a202c;
+  --color-game-panel: #2d3748;
+  --color-game-border: #4a5568;
+  --color-game-text: #e2e8f0;
+  --color-game-text-muted: #a0aec0;
+
+  /* フォントファミリー */
+  --font-family-game: 'M PLUS Rounded 1c', sans-serif;
+
+  /* カスタムシャドウ */
+  --shadow-game: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-game-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
+/* ゲーム固有のベーススタイル */
+@layer base {
+  body {
+    background-color: var(--color-game-bg);
+    color: var(--color-game-text);
+    overflow: hidden;
+    font-family: var(--font-family-game);
+  }
+
+  /* Phaserキャンバスを全画面表示 */
+  #game-container {
+    width: 100%;
+    height: 100vh;
+  }
+}
+
+/* オーバーレイUI用コンポーネント */
+@layer components {
+  .overlay-panel {
+    position: absolute;
+    background-color: color-mix(in srgb, var(--color-game-panel) 90%, transparent);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: var(--shadow-game);
+    backdrop-filter: blur(4px);
+    border: 1px solid var(--color-game-border);
+  }
+
+  .game-button {
+    padding: 0.5rem 1rem;
+    background-color: var(--color-atelier-accent);
+    color: white;
+    font-family: var(--font-family-game);
+    border-radius: 0.25rem;
+    transition: background-color 0.15s;
+    box-shadow: var(--shadow-game);
+  }
+
+  .game-button:hover {
+    background-color: #f97316;
+  }
+
+  .game-button:active {
+    box-shadow: none;
+  }
+
+  .game-button-secondary {
+    padding: 0.5rem 1rem;
+    background-color: var(--color-game-panel);
+    color: var(--color-game-text);
+    font-family: var(--font-family-game);
+    border-radius: 0.25rem;
+    transition: background-color 0.15s;
+    border: 1px solid var(--color-game-border);
+  }
+
+  .game-button-secondary:hover {
+    background-color: var(--color-game-border);
+  }
+
+  .dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+  }
+
+  .dialog-content {
+    background-color: var(--color-game-panel);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-game-lg);
+    border: 1px solid var(--color-game-border);
+    max-width: 28rem;
+    width: 100%;
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+}
