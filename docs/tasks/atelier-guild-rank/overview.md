@@ -102,7 +102,7 @@ graph TD
 | [TASK-0009](./phase-2/TASK-0009.md) | カードエンティティ・DeckService | 4h | TASK-0003, TASK-0004 | ✅ |
 | [TASK-0010](./phase-2/TASK-0010.md) | 素材エンティティ・MaterialService | 4h | TASK-0003, TASK-0004 | ✅ |
 | [TASK-0011](./phase-2/TASK-0011.md) | GatheringService（ドラフト採取） | 4h | TASK-0009, TASK-0010 | ⬜ |
-| [TASK-0012](./phase-2/TASK-0012.md) | アイテムエンティティ・AlchemyService | 4h | TASK-0010 | ⬜ |
+| [TASK-0012](./phase-2/TASK-0012.md) | アイテムエンティティ・AlchemyService | 4h | TASK-0010 | ✅ |
 | [TASK-0013](./phase-2/TASK-0013.md) | 依頼エンティティ・QuestService | 4h | TASK-0003, TASK-0004 | ⬜ |
 | [TASK-0014](./phase-2/TASK-0014.md) | ContributionCalculator・RankService | 4h | TASK-0005, TASK-0013 | ⬜ |
 | [TASK-0015](./phase-2/TASK-0015.md) | InventoryService | 4h | TASK-0010, TASK-0012 | ⬜ |

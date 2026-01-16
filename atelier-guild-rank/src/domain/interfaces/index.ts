@@ -3,6 +3,10 @@
  * リポジトリインターフェースの公開エクスポート
  */
 
+export type {
+  IAlchemyService,
+  RecipeCheckResult,
+} from './alchemy-service.interface';
 export type { IDeckService } from './deck-service.interface';
 export type {
   DraftSession,

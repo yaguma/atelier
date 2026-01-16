@@ -3,6 +3,7 @@
  * アプリケーションサービスの公開エクスポート
  */
 
+export { AlchemyService } from './alchemy-service';
 export { DeckService } from './deck-service';
 export { GatheringService } from './gathering-service';
 export {
