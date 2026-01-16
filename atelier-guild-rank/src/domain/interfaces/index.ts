@@ -15,6 +15,7 @@ export type {
   IGatheringService,
   MaterialOption,
 } from './gathering-service.interface';
+export type { IInventoryService } from './inventory-service.interface';
 export type { IMasterDataRepository } from './master-data-repository.interface';
 export type { IMaterialService } from './material-service.interface';
 export type {
