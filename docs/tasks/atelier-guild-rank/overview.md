@@ -45,11 +45,11 @@ Phaser 3 + rexUI + TypeScriptによるギルドランク制デッキ構築RPGの
 |---------|---------|-----|------|------|
 | [TASK-0001](./phase-1/TASK-0001.md) | プロジェクト初期設定 | 4h | - | ✅ |
 | [TASK-0002](./phase-1/TASK-0002.md) | ディレクトリ構造作成 | 4h | TASK-0001 | ✅ |
-| [TASK-0003](./phase-1/TASK-0003.md) | 共通型定義 | 4h | TASK-0002 | ⬜ |
-| [TASK-0004](./phase-1/TASK-0004.md) | イベントバス実装 | 4h | TASK-0003 | ⬜ |
-| [TASK-0005](./phase-1/TASK-0005.md) | StateManager実装 | 4h | TASK-0004 | ⬜ |
-| [TASK-0006](./phase-1/TASK-0006.md) | マスターデータローダー実装 | 4h | TASK-0003 | ⬜ |
-| [TASK-0007](./phase-1/TASK-0007.md) | セーブデータリポジトリ実装 | 4h | TASK-0003 | ⬜ |
+| [TASK-0003](./phase-1/TASK-0003.md) | 共通型定義 | 4h | TASK-0002 | ✅ |
+| [TASK-0004](./phase-1/TASK-0004.md) | イベントバス実装 | 4h | TASK-0003 | ✅ |
+| [TASK-0005](./phase-1/TASK-0005.md) | StateManager実装 | 4h | TASK-0004 | ✅ |
+| [TASK-0006](./phase-1/TASK-0006.md) | マスターデータローダー実装 | 4h | TASK-0003 | ✅ |
+| [TASK-0007](./phase-1/TASK-0007.md) | セーブデータリポジトリ実装 | 4h | TASK-0003 | ✅ |
 | [TASK-0008](./phase-1/TASK-0008.md) | Phaser基本設定とBootScene | 4h | TASK-0002, TASK-0006 | ⬜ |
 | [TASK-0033](./phase-1/TASK-0033.md) | pnpm移行とBiome設定 | 4h | TASK-0002 | ✅ |
 | [TASK-0034](./phase-1/TASK-0034.md) | Lefthook設定 | 2h | TASK-0033 | ✅ |

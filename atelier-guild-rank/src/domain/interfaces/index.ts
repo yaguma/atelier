@@ -4,3 +4,4 @@
  */
 
 export type { IMasterDataRepository } from './master-data-repository.interface';
+export type { ISaveDataRepository } from './save-data-repository.interface';
