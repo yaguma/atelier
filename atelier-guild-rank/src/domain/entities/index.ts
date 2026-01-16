@@ -4,3 +4,4 @@
  */
 
 export { Card } from './Card';
+export { MaterialInstance } from './MaterialInstance';
