@@ -3,6 +3,7 @@
  * アプリケーションサービスの公開エクスポート
  */
 
+export { DeckService } from './deck-service';
 export {
   INITIAL_GAME_STATE,
   MAX_ACTION_POINTS,

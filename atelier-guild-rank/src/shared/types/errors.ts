@@ -48,7 +48,9 @@ export class ApplicationError extends Error {
 export const ErrorCodes = {
   // デッキ関連
   DECK_EMPTY: 'DECK_EMPTY',
+  DECK_FULL: 'DECK_FULL',
   CARD_NOT_IN_HAND: 'CARD_NOT_IN_HAND',
+  INVALID_CARD_ID: 'INVALID_CARD_ID',
 
   // 採取関連
   INSUFFICIENT_ACTION_POINTS: 'INSUFFICIENT_ACTION_POINTS',

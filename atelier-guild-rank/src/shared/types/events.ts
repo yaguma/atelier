@@ -26,6 +26,11 @@ export const GameEventType = {
   RANK_UP: 'RANK_UP',
   GAME_OVER: 'GAME_OVER',
   GAME_CLEARED: 'GAME_CLEARED',
+  // カード関連イベント
+  CARD_DRAWN: 'CARD_DRAWN',
+  CARD_PLAYED: 'CARD_PLAYED',
+  CARD_DISCARDED: 'CARD_DISCARDED',
+  HAND_REFILLED: 'HAND_REFILLED',
 } as const;
 
 export type GameEventType = (typeof GameEventType)[keyof typeof GameEventType];
