@@ -3,5 +3,6 @@
  * Phaserシーンの公開エクスポート
  */
 
-// プレースホルダー（実装時に置き換え）
-export const _presentationScenesPlaceholder = undefined;
+export { BootScene } from './BootScene';
+export { MainScene } from './MainScene';
+export { TitleScene } from './TitleScene';

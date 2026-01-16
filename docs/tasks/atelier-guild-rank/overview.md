@@ -50,7 +50,7 @@ Phaser 3 + rexUI + TypeScriptによるギルドランク制デッキ構築RPGの
 | [TASK-0005](./phase-1/TASK-0005.md) | StateManager実装 | 4h | TASK-0004 | ✅ |
 | [TASK-0006](./phase-1/TASK-0006.md) | マスターデータローダー実装 | 4h | TASK-0003 | ✅ |
 | [TASK-0007](./phase-1/TASK-0007.md) | セーブデータリポジトリ実装 | 4h | TASK-0003 | ✅ |
-| [TASK-0008](./phase-1/TASK-0008.md) | Phaser基本設定とBootScene | 4h | TASK-0002, TASK-0006 | ⬜ |
+| [TASK-0008](./phase-1/TASK-0008.md) | Phaser基本設定とBootScene | 4h | TASK-0002, TASK-0006 | ✅ |
 | [TASK-0033](./phase-1/TASK-0033.md) | pnpm移行とBiome設定 | 4h | TASK-0002 | ✅ |
 | [TASK-0034](./phase-1/TASK-0034.md) | Lefthook設定 | 2h | TASK-0033 | ✅ |
 | [TASK-0035](./phase-1/TASK-0035.md) | Tailwind CSS設定 | 4h | TASK-0002 | ✅ |
