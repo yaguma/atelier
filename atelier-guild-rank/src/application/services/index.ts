@@ -3,5 +3,10 @@
  * アプリケーションサービスの公開エクスポート
  */
 
-// プレースホルダー（実装時に置き換え）
-export const _applicationServicesPlaceholder = undefined;
+export {
+  INITIAL_GAME_STATE,
+  MAX_ACTION_POINTS,
+  VALID_PHASE_TRANSITIONS,
+} from './initial-state';
+export { StateManager } from './state-manager';
+export type { IStateManager } from './state-manager.interface';
