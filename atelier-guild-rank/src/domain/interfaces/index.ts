@@ -7,6 +7,10 @@ export type {
   IAlchemyService,
   RecipeCheckResult,
 } from './alchemy-service.interface';
+export type {
+  ArtifactEffectType,
+  IArtifactService,
+} from './artifact-service.interface';
 export type { IDeckService } from './deck-service.interface';
 export type {
   DraftSession,
@@ -32,3 +36,9 @@ export type {
   PromotionTestRequirement,
 } from './rank-service.interface';
 export type { ISaveDataRepository } from './save-data-repository.interface';
+export type {
+  IPurchaseResult,
+  IShopItem,
+  IShopService,
+  ShopItemType,
+} from './shop-service.interface';

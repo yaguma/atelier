@@ -7,6 +7,7 @@ export type { IInventoryService } from '@domain/interfaces/inventory-service.int
 export type { IQuestService } from '@domain/interfaces/quest-service.interface';
 export type { IRankService } from '@domain/interfaces/rank-service.interface';
 export { AlchemyService } from './alchemy-service';
+export { ArtifactService } from './artifact-service';
 export { DeckService } from './deck-service';
 export { GatheringService } from './gathering-service';
 export {
@@ -18,5 +19,6 @@ export { InventoryService } from './inventory-service';
 export { MaterialService } from './material-service';
 export { QuestService } from './quest-service';
 export { RankService } from './rank-service';
+export { ShopService } from './shop-service';
 export { StateManager } from './state-manager';
 export type { IStateManager } from './state-manager.interface';
