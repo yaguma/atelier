@@ -190,4 +190,95 @@ describe('BaseComponent', () => {
       expect(result).toBe(component); // 🟡
     });
   });
+
+  describe('T-0018-BASE-06: エッジケースの検証', () => {
+    // 【テスト目的】: エッジケース（境界条件・異常値）での動作を確認
+    // 【テスト内容】: rexUIがundefinedの場合、不正な座標が渡された場合の動作を検証
+    // 【期待される動作】: エッジケースで適切にエラーハンドリングされる
+    // 🟡 信頼性レベル: TDDのベストプラクティスから推測
+
+    test('rexUIがundefinedの場合でもエラーをスローしない（警告のみ）', () => {
+      // 【確認内容】: scene.rexUIがundefinedでもコンストラクタがエラーをスローしないことを確認
+      // rexUIはオプショナルなので、警告を出すがエラーはスローしない
+      // 🟡 信頼性レベル: TDDのベストプラクティスから推測
+
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const sceneWithoutRexUI = {
+        add: {
+          container: vi.fn().mockReturnValue({
+            setVisible: vi.fn().mockReturnThis(),
+            setPosition: vi.fn().mockReturnThis(),
+            x: 0,
+            y: 0,
+            visible: true,
+          }),
+        },
+        // rexUIプロパティがない
+      } as unknown as Phaser.Scene;
+
+      expect(() => new TestComponent(sceneWithoutRexUI, 100, 200)).not.toThrow(); // 🟡
+
+      const componentWithoutRexUI = new TestComponent(sceneWithoutRexUI, 100, 200);
+      // biome-ignore lint/complexity/useLiteralKeys: protectedプロパティのテストには配列アクセスが必要
+      expect(componentWithoutRexUI['rexUI']).toBeUndefined(); // 🟡
+
+      // 警告が出力されることを確認
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        'BaseComponent: rexUI plugin is not initialized. Some features may not work properly.',
+      ); // 🟡
+
+      consoleWarnSpy.mockRestore();
+    });
+
+    test('コンストラクタにNaNを渡した場合はエラーをスローする', () => {
+      // 【確認内容】: コンストラクタでNaN座標が渡された場合、エラーをスローすることを確認
+      // 入力値検証により不正な値を検出
+      // 🟡 信頼性レベル: TDDのベストプラクティスから推測
+
+      expect(() => new TestComponent(scene, NaN, NaN)).toThrow(
+        'BaseComponent: Invalid position: x=NaN, y=NaN. Position must be finite numbers.',
+      ); // 🟡
+    });
+
+    test('コンストラクタにInfinityを渡した場合はエラーをスローする', () => {
+      // 【確認内容】: コンストラクタでInfinity座標が渡された場合、エラーをスローすることを確認
+      // 入力値検証により不正な値を検出
+      // 🟡 信頼性レベル: TDDのベストプラクティスから推測
+
+      expect(() => new TestComponent(scene, Infinity, -Infinity)).toThrow(
+        'BaseComponent: Invalid position',
+      ); // 🟡
+    });
+
+    test('コンストラクタに負の座標を渡した場合でも正常に動作する', () => {
+      // 【確認内容】: 負の座標が渡された場合、正常に処理されることを確認
+      // 負の座標は画面外への配置を意味するため、有効な値として扱われる
+      // 🟡 信頼性レベル: TDDのベストプラクティスから推測
+
+      expect(() => new TestComponent(scene, -100, -200)).not.toThrow(); // 🟡
+      const negativeComponent = new TestComponent(scene, -100, -200);
+      expect(scene.add.container).toHaveBeenCalledWith(-100, -200); // 🟡
+    });
+
+    test('コンストラクタにnullのsceneを渡した場合はエラーをスローする', () => {
+      // 【確認内容】: sceneがnullの場合、エラーをスローすることを確認
+      // 入力値検証により不正な値を検出
+      // 🟡 信頼性レベル: TDDのベストプラクティスから推測
+
+      expect(() => new TestComponent(null as unknown as Phaser.Scene, 100, 200)).toThrow(
+        'BaseComponent: scene is required',
+      ); // 🟡
+    });
+
+    test('setPositionに不正な座標（NaN）を渡した場合、そのまま処理される', () => {
+      // 【確認内容】: setPositionメソッドでNaNが渡された場合の挙動を確認
+      // 注: setPositionメソッドには入力値検証がないため、NaNがそのままPhaserに渡される
+      // 🟡 信頼性レベル: TDDのベストプラクティスから推測
+
+      expect(() => component.setPosition(NaN, NaN)).not.toThrow(); // 🟡
+      // biome-ignore lint/complexity/useLiteralKeys: protectedプロパティのテストには配列アクセスが必要
+      expect(component['container'].setPosition).toHaveBeenCalledWith(NaN, NaN); // 🟡
+    });
+  });
 });

@@ -32,11 +32,49 @@ export abstract class BaseComponent {
    * @param scene - Phaserシーンインスタンス
    * @param x - X座標
    * @param y - Y座標
+   * @throws {Error} sceneがnullまたはundefinedの場合
+   * @throws {Error} scene.add.containerが利用できない場合
+   * @throws {Error} x, yが有限数でない場合（NaN、Infinityなど）
    */
   constructor(scene: Phaser.Scene, x: number, y: number) {
+    // 🟡 入力値検証: sceneの存在確認
+    // TDDのGreenフェーズでは最小実装が目標だが、コードレビューで推奨されたため追加
+    if (!scene) {
+      throw new Error('BaseComponent: scene is required');
+    }
+
+    // 🟡 入力値検証: scene.add.containerの利用可能性確認
+    // Phaserシーンが正しく初期化されていることを確認
+    if (!scene.add || !scene.add.container) {
+      throw new Error(
+        'BaseComponent: scene.add.container is not available. Ensure the scene is properly initialized.',
+      );
+    }
+
+    // 🟡 座標の検証: 有限数であることを確認
+    // NaN、Infinityなどの不正な値を検出
+    if (!Number.isFinite(x) || !Number.isFinite(y)) {
+      throw new Error(
+        `BaseComponent: Invalid position: x=${x}, y=${y}. Position must be finite numbers.`,
+      );
+    }
+
     this.scene = scene;
+
+    // 🟡 rexUIプラグインへの参照を設定
+    // rexUIはオプショナルなので、undefinedでも警告のみ
     // @ts-expect-error - rexUIはプラグインなので型定義がないため、anyで扱う
     this.rexUI = scene.rexUI;
+
+    // rexUIがundefinedの場合は警告を出力
+    if (!this.rexUI) {
+      console.warn(
+        'BaseComponent: rexUI plugin is not initialized. Some features may not work properly.',
+      );
+    }
+
+    // 🔵 コンテナの作成
+    // 指定された座標でPhaserのコンテナを作成
     this.container = scene.add.container(x, y);
   }
 
