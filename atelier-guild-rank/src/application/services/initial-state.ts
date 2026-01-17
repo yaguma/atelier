@@ -18,6 +18,8 @@ export const INITIAL_GAME_STATE: IGameState = {
   currentRank: GuildRank.G,
   /** ランクHP: 初期値3（ランクダメージ3回で降格） */
   rankHp: 3,
+  /** 昇格ゲージ: 初期値0 */
+  promotionGauge: 0,
   /** 残り日数: 30日 */
   remainingDays: 30,
   /** 現在の日数: 1日目 */

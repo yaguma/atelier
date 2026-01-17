@@ -29,6 +29,7 @@ export const GameEventType = {
   ALCHEMY_COMPLETED: 'ALCHEMY_COMPLETED',
   RANK_DAMAGED: 'RANK_DAMAGED',
   RANK_UP: 'RANK_UP',
+  CONTRIBUTION_ADDED: 'CONTRIBUTION_ADDED',
   GAME_OVER: 'GAME_OVER',
   GAME_CLEARED: 'GAME_CLEARED',
   // カード関連イベント
@@ -132,6 +133,17 @@ export interface IRankUpEvent extends IGameEvent {
   previousRank: GuildRank;
   /** 変更後のランク */
   newRank: GuildRank;
+}
+
+/**
+ * 貢献度追加イベント
+ */
+export interface IContributionAddedEvent extends IGameEvent {
+  type: typeof GameEventType.CONTRIBUTION_ADDED;
+  /** 追加された貢献度 */
+  amount: number;
+  /** 追加後の昇格ゲージ */
+  newPromotionGauge: number;
 }
 
 // =============================================================================

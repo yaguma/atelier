@@ -299,22 +299,42 @@ describe('StateManager', () => {
 
   // =============================================================================
   // 昇格ゲージ
-  // 【修正】W-004: テストケースのスキップ状態を明確化 🔵
+  // 【実装】TASK-0014: 昇格ゲージ管理を実装 🔵
   // =============================================================================
 
   describe('addContribution', () => {
-    // 【未実装】TASK-0014で昇格ゲージの詳細実装を行う予定
-    // 現時点ではNotImplementedErrorがスローされることを検証
-    it('現時点では未実装のためエラーがスローされる', () => {
-      expect(() => stateManager.addContribution(10)).toThrow(
-        'addContribution is not implemented yet',
+    it('貢献度を追加できる', () => {
+      stateManager.addContribution(10);
+      expect(stateManager.getState().promotionGauge).toBe(10);
+    });
+
+    it('複数回加算できる', () => {
+      stateManager.addContribution(10);
+      stateManager.addContribution(20);
+      expect(stateManager.getState().promotionGauge).toBe(30);
+    });
+
+    it('貢献度追加時にCONTRIBUTION_ADDEDイベントが発火する', () => {
+      const handler = vi.fn();
+      eventBus.on(GameEventType.CONTRIBUTION_ADDED, handler);
+
+      stateManager.addContribution(50);
+
+      expect(handler).toHaveBeenCalledTimes(1);
+      expect(handler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: GameEventType.CONTRIBUTION_ADDED,
+          payload: {
+            amount: 50,
+            newPromotionGauge: 50,
+          },
+        }),
       );
     });
 
-    // 【将来のテスト】TASK-0014実装後に有効化
-    it.skip('貢献度を追加できる（TASK-0014で実装予定）', () => {
-      // stateManager.addContribution(10);
-      // expect(stateManager.getState().promotionGauge).toBe(10);
+    it('0以下の値を指定するとエラーがスローされる', () => {
+      expect(() => stateManager.addContribution(0)).toThrow('Amount must be positive');
+      expect(() => stateManager.addContribution(-10)).toThrow('Amount must be positive');
     });
   });
 

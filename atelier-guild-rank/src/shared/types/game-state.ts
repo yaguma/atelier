@@ -21,6 +21,8 @@ export interface IGameState {
   currentRank: GuildRank;
   /** ランクHP（降格までの残りポイント） */
   rankHp: number;
+  /** 昇格ゲージ（0-100、100で昇格可能） */
+  promotionGauge: number;
   /** 残り日数 */
   remainingDays: number;
   /** 現在の日数 */

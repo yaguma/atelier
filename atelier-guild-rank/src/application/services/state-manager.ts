@@ -223,20 +223,31 @@ export class StateManager implements IStateManager {
   /**
    * 貢献度を追加する
    *
-   * 【修正】W-003: TODO状態を明確化 🔵
-   * 【現状】TASK-0014で詳細実装予定のため、現時点ではNotImplementedErrorをスロー
-   * 【理由】未実装のメソッドを呼び出した場合に明示的にエラーとすることで
-   *        意図しない動作を防止する
+   * 【実装】TASK-0014: 昇格ゲージ管理を実装 🔵
+   * 貢献度を追加し、昇格ゲージを更新する。
+   * 昇格ゲージは0-100のパーセンテージで表現され、100到達で昇格可能。
+   * ゲージは100を超えても蓄積される（累積貢献度として保持）。
    *
-   * @param amount 追加量
-   * @throws 現時点では未実装のため常に例外をスロー
+   * @param amount 追加量（正の整数）
+   * @throws amount が 0 以下の場合
    */
-  addContribution(_amount: number): void {
-    // 【未実装】TASK-0014で昇格ゲージの詳細実装を行う予定
-    throw new DomainError(
-      ErrorCodes.INVALID_OPERATION,
-      'addContribution is not implemented yet. Will be implemented in TASK-0014.',
-    );
+  addContribution(amount: number): void {
+    // 【入力値検証】追加量は正の値である必要がある
+    if (amount <= 0) {
+      throw new DomainError(ErrorCodes.INVALID_OPERATION, 'Amount must be positive');
+    }
+
+    // 昇格ゲージに累積貢献度を追加
+    this.state = {
+      ...this.state,
+      promotionGauge: this.state.promotionGauge + amount,
+    };
+
+    // イベント発火: 昇格ゲージ変更
+    this.eventBus.emit(GameEventType.CONTRIBUTION_ADDED, {
+      amount,
+      newPromotionGauge: this.state.promotionGauge,
+    });
   }
 
   // =============================================================================
