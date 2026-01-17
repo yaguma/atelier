@@ -257,7 +257,7 @@ describe('BaseComponent', () => {
       // 🟡 信頼性レベル: TDDのベストプラクティスから推測
 
       expect(() => new TestComponent(scene, -100, -200)).not.toThrow(); // 🟡
-      const negativeComponent = new TestComponent(scene, -100, -200);
+      new TestComponent(scene, -100, -200);
       expect(scene.add.container).toHaveBeenCalledWith(-100, -200); // 🟡
     });
 
