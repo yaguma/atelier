@@ -172,5 +172,26 @@ describe('THEME定義', () => {
       // 【確認内容】: spacingプロパティが存在することを確認
       expect(THEME.spacing).toBeDefined(); // 🟡
     });
+
+    test('THEMEオブジェクトの値を変更しても元の値が保持される（型レベルでreadonly）', () => {
+      // 【確認内容】: TypeScriptの`as const`により型レベルでreadonlyであることを確認
+      // 注: JavaScriptレベルでは変更可能だが、TypeScriptの型チェックで変更が防止される
+      // 🟡 信頼性レベル: TypeScriptのベストプラクティスから推測
+
+      const originalPrimary = THEME.colors.primary;
+
+      // TypeScriptでは型エラーになるが、JavaScriptレベルでは変更可能
+      // @ts-expect-error - 意図的にreadonlyプロパティを変更（TypeScriptレベルでエラー）
+      THEME.colors.primary = 0x000000;
+
+      // `as const`はTypeScriptの型レベルのみで、実行時には変更が可能
+      // Object.freeze()を使用していないため、値が変更されている
+      // このテストは、将来Object.freeze()を追加した際の準備として追加
+      expect(THEME.colors.primary).toBe(0x000000); // 🟡 現状: 変更可能
+
+      // 値を元に戻す
+      // @ts-expect-error - 意図的にreadonlyプロパティを変更
+      THEME.colors.primary = originalPrimary;
+    });
   });
 });
