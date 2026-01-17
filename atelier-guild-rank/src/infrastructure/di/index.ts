@@ -1,7 +1,13 @@
 /**
  * Infrastructure DI Container
  * DIコンテナの公開エクスポート
+ *
+ * TASK-0028: サービス統合・DI設定
  */
 
-// プレースホルダー（実装時に置き換え）
-export const _infrastructureDIPlaceholder = undefined;
+export { Container, type ServiceKey, ServiceKeys } from './container';
+export {
+  initializeServices,
+  resetServices,
+  type ServiceInitializationConfig,
+} from './setup';
