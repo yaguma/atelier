@@ -40,7 +40,8 @@ export interface ButtonConfig {
  */
 export class Button extends BaseComponent {
   private config: ButtonConfig;
-  private label: any; // rexUI Labelコンポーネント
+  // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelコンポーネントは複雑な型のため
+  private label: any;
   private _enabled: boolean;
 
   constructor(scene: Phaser.Scene, x: number, y: number, config: ButtonConfig) {
@@ -62,16 +63,16 @@ export class Button extends BaseComponent {
       enabled: config.enabled !== undefined ? config.enabled : true,
     };
 
-    this._enabled = this.config.enabled!;
+    this._enabled = this.config.enabled ?? true;
 
     // ボタンを生成
-    this.createButton();
+    this.create();
   }
 
   /**
-   * ボタンを生成する
+   * ボタンを生成する（BaseComponentの抽象メソッド実装）
    */
-  private createButton(): void {
+  public create(): void {
     const { text, type, width, height } = this.config;
 
     // スタイルを決定
@@ -101,7 +102,7 @@ export class Button extends BaseComponent {
     }
 
     // 背景を生成
-    const background = (this.scene as any).rexUI.add
+    const background = this.rexUI.add
       .roundRectangle({
         width: width || 120,
         height: height || 40,
@@ -116,7 +117,7 @@ export class Button extends BaseComponent {
     });
 
     // rexUI Labelを生成
-    this.label = (this.scene as any).rexUI.add.label({
+    this.label = this.rexUI.add.label({
       background: background,
       text: textObject,
       align: 'center',
@@ -167,5 +168,15 @@ export class Button extends BaseComponent {
    */
   public isEnabled(): boolean {
     return this._enabled;
+  }
+
+  /**
+   * ボタンを破棄する（BaseComponentの抽象メソッド実装）
+   */
+  public destroy(): void {
+    if (this.label) {
+      this.label.destroy();
+      this.label = null;
+    }
   }
 }

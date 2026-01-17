@@ -48,8 +48,10 @@ export interface DialogConfig {
  */
 export class Dialog extends BaseComponent {
   private config: DialogConfig;
-  private dialog: any; // rexUI Dialogコンポーネント
-  private overlay: any; // 背景オーバーレイ
+  // biome-ignore lint/suspicious/noExplicitAny: rexUI Dialogコンポーネントは複雑な型のため
+  private dialog: any;
+  // biome-ignore lint/suspicious/noExplicitAny: Phaser Rectangleオブジェクトの型が複雑なため
+  private overlay: any;
   private _visible: boolean = false;
 
   constructor(scene: Phaser.Scene, x: number, y: number, config: DialogConfig) {
@@ -74,13 +76,13 @@ export class Dialog extends BaseComponent {
     };
 
     // ダイアログを生成
-    this.createDialog();
+    this.create();
   }
 
   /**
-   * ダイアログを生成する
+   * ダイアログを生成する（BaseComponentの抽象メソッド実装）
    */
-  private createDialog(): void {
+  public create(): void {
     const { title, content, type, actions, width, height } = this.config;
 
     // オーバーレイ背景を生成
@@ -130,8 +132,8 @@ export class Dialog extends BaseComponent {
 
     // アクションボタンを生成
     const actionButtons = dialogActions.map((action) => {
-      const button = (this.scene as any).rexUI.add.label({
-        background: (this.scene as any).rexUI.add
+      const button = this.rexUI.add.label({
+        background: this.rexUI.add
           .roundRectangle({
             width: 100,
             height: 40,
@@ -156,12 +158,12 @@ export class Dialog extends BaseComponent {
     });
 
     // rexUI Dialogを生成
-    this.dialog = (this.scene as any).rexUI.add.dialog({
+    this.dialog = this.rexUI.add.dialog({
       x: sceneWidth / 2,
       y: sceneHeight / 2,
       width: width,
       height: height,
-      background: (this.scene as any).rexUI.add
+      background: this.rexUI.add
         .roundRectangle({
           width: width,
           height: height,
@@ -217,5 +219,19 @@ export class Dialog extends BaseComponent {
    */
   public isVisible(): boolean {
     return this._visible;
+  }
+
+  /**
+   * ダイアログを破棄する（BaseComponentの抽象メソッド実装）
+   */
+  public destroy(): void {
+    if (this.dialog) {
+      this.dialog.destroy();
+      this.dialog = null;
+    }
+    if (this.overlay) {
+      this.overlay.destroy();
+      this.overlay = null;
+    }
   }
 }

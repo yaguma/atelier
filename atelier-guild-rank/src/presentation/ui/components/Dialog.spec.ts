@@ -126,11 +126,11 @@ describe('Dialog', () => {
       rexUI: {
         add: {
           dialog: vi.fn().mockReturnValue(mockDialog),
-          label: vi.fn().mockReturnValue({
+          label: vi.fn().mockImplementation(() => ({
             setInteractive: vi.fn().mockReturnThis(),
             on: vi.fn().mockReturnThis(),
             layout: vi.fn().mockReturnThis(),
-          }),
+          })),
           roundRectangle: vi.fn().mockReturnValue({
             setFillStyle: vi.fn().mockReturnThis(),
           }),
