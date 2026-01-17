@@ -23,6 +23,7 @@ export abstract class BaseComponent {
   protected container: Phaser.GameObjects.Container;
 
   /** rexUIプラグインへの参照 */
+  // biome-ignore lint/suspicious/noExplicitAny: rexUIプラグインは型定義が複雑なため、anyで扱う
   protected rexUI: any;
 
   /**
