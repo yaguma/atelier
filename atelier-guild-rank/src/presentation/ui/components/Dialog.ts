@@ -48,10 +48,15 @@ export interface DialogConfig {
  */
 export class Dialog extends BaseComponent {
   private config: DialogConfig;
+  // 【修正内容】: [W-003]への対応 - 型定義の厳密化
+  // 【修正理由】: TypeScriptの型推論を正しく機能させるため
+  // 【修正前】: private dialog: any; / private overlay: any; （nullの可能性を型に含めていない）
+  // 【修正後】: any | null = null; （null許容型として明示）
+  // 🔴 信頼性レベル: TypeScriptの一般的なベストプラクティス
   // biome-ignore lint/suspicious/noExplicitAny: rexUI Dialogコンポーネントは複雑な型のため
-  private dialog: any;
+  private dialog: any | null = null;
   // biome-ignore lint/suspicious/noExplicitAny: Phaser Rectangleオブジェクトの型が複雑なため
-  private overlay: any;
+  private overlay: any | null = null;
   private _visible: boolean = false;
 
   constructor(scene: Phaser.Scene, x: number, y: number, config: DialogConfig) {
@@ -199,6 +204,12 @@ export class Dialog extends BaseComponent {
    * ダイアログを非表示にする
    * @param duration アニメーション時間（ミリ秒、デフォルト: 300）
    * @returns メソッドチェーン用に自身を返す
+   *
+   * 【修正内容】: [W-001]への対応
+   * 【修正理由】: ユーザー体験の向上（アニメーション完了後にコールバック実行）
+   * 【修正前】: scaleDownDestroy()の直後にonClose()を実行
+   * 【修正後】: アニメーション完了後にonClose()を実行
+   * 🟡 信頼性レベル: 実装から妥当な推測
    */
   public hide(duration: number = 300): this {
     this._visible = false;
@@ -206,9 +217,15 @@ export class Dialog extends BaseComponent {
     this.overlay.setVisible(false);
     this.dialog.setVisible(false);
 
-    // onCloseコールバックを実行
+    // 【修正ポイント】: W-001対応 - アニメーション完了後にコールバックを実行
+    // Phaser.Time.delayedCallを使用してアニメーション完了を待つ
+    // これにより、ダイアログが視覚的に消えた後にコールバックが実行される
     if (this.config.onClose) {
-      this.config.onClose();
+      this.scene.time.delayedCall(duration, () => {
+        if (this.config.onClose) {
+          this.config.onClose();
+        }
+      });
     }
     return this;
   }
@@ -223,15 +240,28 @@ export class Dialog extends BaseComponent {
 
   /**
    * ダイアログを破棄する（BaseComponentの抽象メソッド実装）
+   *
+   * 【修正内容】: [W-002][W-003]への対応
+   * 【修正理由】: メモリリーク防止と型安全性の向上
+   * 【修正前】: dialog/overlayのみ破棄、nullチェックがif (this.dialog)
+   * 【修正後】: dialog/overlay/containerを破棄、nullチェックがif (this.dialog !== null)
+   * 🟡 信頼性レベル: Phaserのベストプラクティスに基づく
    */
   public destroy(): void {
-    if (this.dialog) {
+    // 【修正ポイント1】: W-003対応 - 厳密なnullチェック
+    if (this.dialog !== null) {
       this.dialog.destroy();
       this.dialog = null;
     }
-    if (this.overlay) {
+    if (this.overlay !== null) {
       this.overlay.destroy();
       this.overlay = null;
+    }
+
+    // 【修正ポイント2】: W-002対応 - containerの破棄を追加
+    // BaseComponentが保持するcontainerも破棄してメモリリークを防止
+    if (this.container) {
+      this.container.destroy();
     }
   }
 }

@@ -40,8 +40,13 @@ export interface ButtonConfig {
  */
 export class Button extends BaseComponent {
   private config: ButtonConfig;
+  // 【修正内容】: [W-003]への対応 - 型定義の厳密化
+  // 【修正理由】: TypeScriptの型推論を正しく機能させるため
+  // 【修正前】: private label: any; （nullの可能性を型に含めていない）
+  // 【修正後】: private label: any | null = null; （null許容型として明示）
+  // 🔴 信頼性レベル: TypeScriptの一般的なベストプラクティス
   // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelコンポーネントは複雑な型のため
-  private label: any;
+  private label: any | null = null;
   private _enabled: boolean;
 
   constructor(scene: Phaser.Scene, x: number, y: number, config: ButtonConfig) {
@@ -172,11 +177,24 @@ export class Button extends BaseComponent {
 
   /**
    * ボタンを破棄する（BaseComponentの抽象メソッド実装）
+   *
+   * 【修正内容】: [W-002][W-003]への対応
+   * 【修正理由】: メモリリーク防止と型安全性の向上
+   * 【修正前】: labelのみ破棄、nullチェックがif (this.label)
+   * 【修正後】: labelとcontainerを破棄、nullチェックがif (this.label !== null)
+   * 🟡 信頼性レベル: Phaserのベストプラクティスに基づく
    */
   public destroy(): void {
-    if (this.label) {
+    // 【修正ポイント1】: W-003対応 - 厳密なnullチェック
+    if (this.label !== null) {
       this.label.destroy();
       this.label = null;
+    }
+
+    // 【修正ポイント2】: W-002対応 - containerの破棄を追加
+    // BaseComponentが保持するcontainerも破棄してメモリリークを防止
+    if (this.container) {
+      this.container.destroy();
     }
   }
 }
