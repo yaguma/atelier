@@ -139,10 +139,20 @@ export class StateManager implements IStateManager {
   /**
    * 行動ポイントを消費する
    *
-   * @param amount 消費量
+   * 【修正】W-001: 入力値検証を追加 🔴
+   * 【修正前】負数や0の場合のバリデーションがなかった
+   * 【修正後】amount <= 0 の場合は例外をスローする
+   *
+   * @param amount 消費量（正の整数）
    * @returns 消費に成功した場合true、APが不足している場合false
+   * @throws amount が 0 以下の場合
    */
   spendActionPoints(amount: number): boolean {
+    // 【入力値検証】消費量は正の値である必要がある
+    if (amount <= 0) {
+      throw new DomainError(ErrorCodes.INVALID_OPERATION, 'Amount must be positive');
+    }
+
     if (this.state.actionPoints < amount) {
       return false;
     }
@@ -158,9 +168,19 @@ export class StateManager implements IStateManager {
   /**
    * ゴールドを追加する
    *
-   * @param amount 追加量
+   * 【修正】W-002: 入力値検証を追加 🔴
+   * 【修正前】負数や0の場合のバリデーションがなかった
+   * 【修正後】amount <= 0 の場合は例外をスローする
+   *
+   * @param amount 追加量（正の整数）
+   * @throws amount が 0 以下の場合
    */
   addGold(amount: number): void {
+    // 【入力値検証】追加量は正の値である必要がある
+    if (amount <= 0) {
+      throw new DomainError(ErrorCodes.INVALID_OPERATION, 'Amount must be positive');
+    }
+
     this.state = {
       ...this.state,
       gold: this.state.gold + amount,
@@ -170,10 +190,20 @@ export class StateManager implements IStateManager {
   /**
    * ゴールドを消費する
    *
-   * @param amount 消費量
+   * 【修正】W-002: 入力値検証を追加 🔴
+   * 【修正前】負数や0の場合のバリデーションがなかった
+   * 【修正後】amount <= 0 の場合は例外をスローする
+   *
+   * @param amount 消費量（正の整数）
    * @returns 消費に成功した場合true、ゴールドが不足している場合false
+   * @throws amount が 0 以下の場合
    */
   spendGold(amount: number): boolean {
+    // 【入力値検証】消費量は正の値である必要がある
+    if (amount <= 0) {
+      throw new DomainError(ErrorCodes.INVALID_OPERATION, 'Amount must be positive');
+    }
+
     if (this.state.gold < amount) {
       return false;
     }
@@ -193,10 +223,20 @@ export class StateManager implements IStateManager {
   /**
    * 貢献度を追加する
    *
+   * 【修正】W-003: TODO状態を明確化 🔵
+   * 【現状】TASK-0014で詳細実装予定のため、現時点ではNotImplementedErrorをスロー
+   * 【理由】未実装のメソッドを呼び出した場合に明示的にエラーとすることで
+   *        意図しない動作を防止する
+   *
    * @param amount 追加量
+   * @throws 現時点では未実装のため常に例外をスロー
    */
   addContribution(_amount: number): void {
-    // TODO: 昇格ゲージの実装（TASK-0014で詳細実装予定）
+    // 【未実装】TASK-0014で昇格ゲージの詳細実装を行う予定
+    throw new DomainError(
+      ErrorCodes.INVALID_OPERATION,
+      'addContribution is not implemented yet. Will be implemented in TASK-0014.',
+    );
   }
 
   // =============================================================================

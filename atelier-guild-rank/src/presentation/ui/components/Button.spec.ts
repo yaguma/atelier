@@ -22,20 +22,16 @@ import type Phaser from 'phaser';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { Button, ButtonType } from './Button';
 
-// rexUIプラグインの型を拡張（テスト用）
-declare module 'phaser' {
-  namespace Scene {
-    interface Scene {
-      rexUI: {
-        add: {
-          label: ReturnType<typeof vi.fn>;
-          roundRectangle: ReturnType<typeof vi.fn>;
-          dialog?: ReturnType<typeof vi.fn>;
-          sizer?: ReturnType<typeof vi.fn>;
-        };
-      };
-    }
-  }
+// rexUIプラグイン拡張シーンインターフェース（テスト用）
+interface RexUIScene extends Phaser.Scene {
+  rexUI: {
+    add: {
+      label: ReturnType<typeof vi.fn>;
+      roundRectangle: ReturnType<typeof vi.fn>;
+      dialog?: ReturnType<typeof vi.fn>;
+      sizer?: ReturnType<typeof vi.fn>;
+    };
+  };
 }
 
 interface MockLabel {
@@ -54,8 +50,8 @@ interface MockContainer {
 }
 
 describe('Button', () => {
-  let scene: Phaser.Scene;
-  let mockCallback: ReturnType<typeof vi.fn>;
+  let scene: RexUIScene;
+  let mockCallback: () => void;
   let mockLabel: MockLabel;
   let mockContainer: MockContainer;
 
@@ -64,7 +60,7 @@ describe('Button', () => {
     // 【環境初期化】: ButtonコンポーネントがrexUIプラグインに依存するため、適切なモックを用意
     // 【前提条件確認】: scene.rexUIが存在し、add.labelメソッドが利用可能であることを前提とする
 
-    mockCallback = vi.fn();
+    mockCallback = vi.fn() as () => void;
 
     // モックのLabelコンポーネント
     mockLabel = {
@@ -99,7 +95,7 @@ describe('Button', () => {
           }),
         },
       },
-    } as unknown as Phaser.Scene;
+    } as unknown as RexUIScene;
   });
 
   describe('T-0018-BTN-01: プライマリボタンの生成と表示', () => {
@@ -398,7 +394,7 @@ describe('Button', () => {
           container: vi.fn().mockReturnValue(mockContainer),
         },
         rexUI: undefined,
-      } as unknown as Phaser.Scene;
+      } as unknown as RexUIScene;
 
       // 【実際の処理実行】: rexUI未初期化でボタン生成を試みる
       // 【結果検証】: エラーがスローされることを確認

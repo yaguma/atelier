@@ -299,13 +299,49 @@ describe('StateManager', () => {
 
   // =============================================================================
   // 昇格ゲージ
+  // 【修正】W-004: テストケースのスキップ状態を明確化 🔵
   // =============================================================================
 
   describe('addContribution', () => {
-    it('貢献度を追加できる', () => {
-      // 実装時に追加
+    // 【未実装】TASK-0014で昇格ゲージの詳細実装を行う予定
+    // 現時点ではNotImplementedErrorがスローされることを検証
+    it('現時点では未実装のためエラーがスローされる', () => {
+      expect(() => stateManager.addContribution(10)).toThrow(
+        'addContribution is not implemented yet',
+      );
+    });
+
+    // 【将来のテスト】TASK-0014実装後に有効化
+    it.skip('貢献度を追加できる（TASK-0014で実装予定）', () => {
       // stateManager.addContribution(10);
       // expect(stateManager.getState().promotionGauge).toBe(10);
+    });
+  });
+
+  // =============================================================================
+  // 入力値検証（W-001/W-002修正に伴う追加テスト）
+  // =============================================================================
+
+  describe('入力値検証', () => {
+    describe('spendActionPoints', () => {
+      it('0以下の値を指定するとエラーがスローされる', () => {
+        expect(() => stateManager.spendActionPoints(0)).toThrow('Amount must be positive');
+        expect(() => stateManager.spendActionPoints(-1)).toThrow('Amount must be positive');
+      });
+    });
+
+    describe('addGold', () => {
+      it('0以下の値を指定するとエラーがスローされる', () => {
+        expect(() => stateManager.addGold(0)).toThrow('Amount must be positive');
+        expect(() => stateManager.addGold(-50)).toThrow('Amount must be positive');
+      });
+    });
+
+    describe('spendGold', () => {
+      it('0以下の値を指定するとエラーがスローされる', () => {
+        expect(() => stateManager.spendGold(0)).toThrow('Amount must be positive');
+        expect(() => stateManager.spendGold(-30)).toThrow('Amount must be positive');
+      });
     });
   });
 });

@@ -22,21 +22,16 @@ import type Phaser from 'phaser';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { Dialog, DialogType } from './Dialog';
 
-// rexUIプラグインの型を拡張（テスト用）
-// Button.spec.tsと同じ型定義を使用して競合を回避
-declare module 'phaser' {
-  namespace Scene {
-    interface Scene {
-      rexUI: {
-        add: {
-          label: ReturnType<typeof vi.fn>;
-          roundRectangle: ReturnType<typeof vi.fn>;
-          dialog?: ReturnType<typeof vi.fn>;
-          sizer?: ReturnType<typeof vi.fn>;
-        };
-      };
-    }
-  }
+// rexUIプラグイン拡張シーンインターフェース（テスト用）
+interface RexUIScene extends Phaser.Scene {
+  rexUI: {
+    add: {
+      label: ReturnType<typeof vi.fn>;
+      roundRectangle: ReturnType<typeof vi.fn>;
+      dialog?: ReturnType<typeof vi.fn>;
+      sizer?: ReturnType<typeof vi.fn>;
+    };
+  };
 }
 
 // ButtonTypeを一時的に定義（Redフェーズでは実装ファイルが存在しないため）
@@ -71,10 +66,10 @@ interface MockOverlay {
 }
 
 describe('Dialog', () => {
-  let scene: Phaser.Scene;
-  let mockYes: ReturnType<typeof vi.fn>;
-  let mockNo: ReturnType<typeof vi.fn>;
-  let mockClose: ReturnType<typeof vi.fn>;
+  let scene: RexUIScene;
+  let mockYes: () => void;
+  let mockNo: () => void;
+  let mockClose: () => void;
   let mockDialog: MockDialog;
   let mockContainer: MockContainer;
   let mockOverlay: MockOverlay;
@@ -84,9 +79,9 @@ describe('Dialog', () => {
     // 【環境初期化】: DialogコンポーネントがrexUIプラグインに依存するため、適切なモックを用意
     // 【前提条件確認】: scene.rexUIが存在し、add.dialogメソッドが利用可能であることを前提とする
 
-    mockYes = vi.fn();
-    mockNo = vi.fn();
-    mockClose = vi.fn();
+    mockYes = vi.fn() as () => void;
+    mockNo = vi.fn() as () => void;
+    mockClose = vi.fn() as () => void;
 
     // モックのDialogコンポーネント
     mockDialog = {
@@ -140,7 +135,7 @@ describe('Dialog', () => {
           }),
         },
       },
-    } as unknown as Phaser.Scene;
+    } as unknown as RexUIScene;
   });
 
   describe('T-0018-DLG-01: 確認ダイアログの生成と表示', () => {
