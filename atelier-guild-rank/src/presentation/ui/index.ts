@@ -3,5 +3,9 @@
  * UIコンポーネントの公開エクスポート
  */
 
-// プレースホルダー（実装時に置き換え）
-export const _presentationUIPlaceholder = undefined;
+export { BaseComponent } from './components/BaseComponent';
+export { Button, type ButtonConfig, ButtonType } from './components/Button';
+export { CardUI, type CardUIConfig } from './components/CardUI';
+export { Dialog, type DialogConfig } from './components/Dialog';
+export { HandDisplay, type HandDisplayConfig } from './components/HandDisplay';
+export { THEME } from './theme';
