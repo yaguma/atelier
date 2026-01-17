@@ -22,6 +22,8 @@ export const THEME = {
     background: 0xf5f5dc, // Beige - 背景色（柔らかく温かみのある印象）
     text: 0x333333, // ダークグレー - テキスト色（高い可読性）
     textLight: 0x666666, // ミディアムグレー - ライトテキスト色（補足情報用）
+    textOnPrimary: '#FFFFFF', // 白 - プライマリボタン上のテキスト色
+    textOnSecondary: '#FFFFFF', // 白 - セカンダリボタン上のテキスト色
     success: 0x228b22, // ForestGreen - 成功状態（錬金成功、クエスト達成など）
     warning: 0xdaa520, // Goldenrod - 警告状態（注意喚起、確認ダイアログなど）
     error: 0x8b0000, // DarkRed - エラー状態（錬金失敗、エラーメッセージなど）
