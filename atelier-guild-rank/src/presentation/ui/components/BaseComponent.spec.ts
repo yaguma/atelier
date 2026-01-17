@@ -71,8 +71,8 @@ describe('BaseComponent', () => {
 
     test('rexUI プラグインへの参照が設定されている', () => {
       // 【確認内容】: シーンのrexUIプラグインへの参照が、コンポーネントのrexUIプロパティに設定されていることを確認
-      // biome-ignore lint/complexity/useLiteralKeys: protectedプロパティのテストには配列アクセスが必要
       // @ts-expect-error - rexUIはモックで追加しているプロパティのため、型定義に存在しない
+      // biome-ignore lint/complexity/useLiteralKeys: protectedプロパティのテストには配列アクセスが必要
       expect(component['rexUI']).toBe(scene.rexUI); // 🔵
     });
 
