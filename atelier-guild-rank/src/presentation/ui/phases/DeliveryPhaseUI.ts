@@ -186,10 +186,7 @@ interface IInventoryService {
  * ContributionCalculatorインターフェース
  */
 interface IContributionCalculator {
-  calculatePreview(
-    quest: Quest,
-    items: ItemInstance[],
-  ): ContributionPreview;
+  calculatePreview(quest: Quest, items: ItemInstance[]): ContributionPreview;
 }
 
 /**
@@ -483,10 +480,7 @@ export class DeliveryPhaseUI extends BaseComponent {
       return;
     }
 
-    const inventoryContainer = this.scene.add.container(
-      0,
-      UI_LAYOUT.ITEM_INVENTORY_Y,
-    );
+    const inventoryContainer = this.scene.add.container(0, UI_LAYOUT.ITEM_INVENTORY_Y);
 
     // 所持アイテムラベル
     const label = this.scene.add.text(0, 0, '所持アイテム:', UI_STYLES.LABEL);
@@ -495,16 +489,9 @@ export class DeliveryPhaseUI extends BaseComponent {
     // 所持アイテム一覧
     const items = this.inventoryService.getItems();
     const itemsText =
-      items.length > 0
-        ? items.map((i) => `[${i.name}(${i.quality})]`).join(' ')
-        : UI_TEXT.NO_ITEMS;
+      items.length > 0 ? items.map((i) => `[${i.name}(${i.quality})]`).join(' ') : UI_TEXT.NO_ITEMS;
 
-    const itemsDisplay = this.scene.add.text(
-      0,
-      25,
-      itemsText,
-      UI_STYLES.DESCRIPTION,
-    );
+    const itemsDisplay = this.scene.add.text(0, 25, itemsText, UI_STYLES.DESCRIPTION);
     itemsDisplay.setInteractive({ useHandCursor: true });
 
     // アイテムクリック処理（簡易実装）
@@ -532,12 +519,7 @@ export class DeliveryPhaseUI extends BaseComponent {
    * プレビューエリアを作成
    */
   private createPreviewArea(): void {
-    this.previewText = this.scene.add.text(
-      0,
-      350,
-      UI_TEXT.SELECT_QUEST,
-      UI_STYLES.DESCRIPTION,
-    );
+    this.previewText = this.scene.add.text(0, 350, UI_TEXT.SELECT_QUEST, UI_STYLES.DESCRIPTION);
     this.container.add(this.previewText);
   }
 
@@ -546,13 +528,7 @@ export class DeliveryPhaseUI extends BaseComponent {
    */
   private createButtons(): void {
     // 納品ボタン
-    const deliverButtonRect = this.scene.add.rectangle(
-      200,
-      400,
-      120,
-      40,
-      0x4caf50,
-    );
+    const deliverButtonRect = this.scene.add.rectangle(200, 400, 120, 40, 0x4caf50);
     deliverButtonRect.setInteractive({ useHandCursor: true });
     deliverButtonRect.on('pointerdown', () => this.onDeliver());
 
@@ -619,7 +595,9 @@ export class DeliveryPhaseUI extends BaseComponent {
     this.keyboardHandler = (event: { key: string }) => {
       this.handleKeyboardInput(event);
     };
-    this.scene.input.keyboard.on('keydown', this.keyboardHandler);
+    if (this.scene?.input?.keyboard) {
+      this.scene.input.keyboard.on('keydown', this.keyboardHandler);
+    }
   }
 
   /**
@@ -680,12 +658,12 @@ export class DeliveryPhaseUI extends BaseComponent {
     }
 
     // 貢献度プレビューを計算
-    const preview = this.contributionCalculator.calculatePreview(
-      this.selectedQuest,
-      [this.selectedItem],
-    );
+    const preview = this.contributionCalculator.calculatePreview(this.selectedQuest, [
+      this.selectedItem,
+    ]);
 
-    const previewText = `貢献度計算プレビュー:\n` +
+    const previewText =
+      `貢献度計算プレビュー:\n` +
       `  基本報酬: ${preview.baseReward}\n` +
       `  品質ボーナス(${this.selectedItem.quality}): +${preview.qualityBonus} (+${Math.round((preview.qualityModifier - 1) * 100)}%)\n` +
       `  合計: ${preview.totalContribution} 貢献度`;
@@ -720,9 +698,7 @@ export class DeliveryPhaseUI extends BaseComponent {
     });
 
     // 納品を実行
-    const result = this.questService.deliver(this.selectedQuest.id, [
-      this.selectedItem,
-    ]);
+    const result = this.questService.deliver(this.selectedQuest.id, [this.selectedItem]);
 
     if (result.success) {
       // 納品成功演出を表示
@@ -774,7 +750,8 @@ export class DeliveryPhaseUI extends BaseComponent {
       return;
     }
 
-    const resultText = `納品成功！\n` +
+    const resultText =
+      `納品成功！\n` +
       `依頼: ${this.selectedQuest?.description}\n` +
       `獲得報酬:\n` +
       `  💫 貢献度: +${result.contribution}\n` +
@@ -813,9 +790,7 @@ export class DeliveryPhaseUI extends BaseComponent {
       return false;
     }
 
-    return this.questService.canDeliver(this.selectedQuest.id, [
-      this.selectedItem,
-    ]);
+    return this.questService.canDeliver(this.selectedQuest.id, [this.selectedItem]);
   }
 
   /**
@@ -874,7 +849,7 @@ export class DeliveryPhaseUI extends BaseComponent {
    * キーボードリスナーを解除
    */
   private removeKeyboardListener(): void {
-    if (this.keyboardHandler) {
+    if (this.keyboardHandler && this.scene?.input?.keyboard) {
       this.scene.input.keyboard.off('keydown', this.keyboardHandler);
       this.keyboardHandler = null;
     }
