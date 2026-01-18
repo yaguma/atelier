@@ -9,6 +9,8 @@ export type { IRankService } from '@domain/interfaces/rank-service.interface';
 export { AlchemyService } from './alchemy-service';
 export { ArtifactService } from './artifact-service';
 export { DeckService } from './deck-service';
+export { GameFlowManager } from './game-flow-manager';
+export type { GameEndCondition, IGameFlowManager } from './game-flow-manager.interface';
 export { GatheringService } from './gathering-service';
 export {
   INITIAL_GAME_STATE,
