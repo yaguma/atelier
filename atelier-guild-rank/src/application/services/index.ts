@@ -21,6 +21,8 @@ export { InventoryService } from './inventory-service';
 export { MaterialService } from './material-service';
 export { QuestService } from './quest-service';
 export { RankService } from './rank-service';
+export type { ISaveLoadService } from './save-load-service';
+export { SaveLoadService } from './save-load-service';
 export { ShopService } from './shop-service';
 export { StateManager } from './state-manager';
 export type { IStateManager } from './state-manager.interface';

@@ -37,6 +37,9 @@ export const GameEventType = {
   CARD_PLAYED: 'CARD_PLAYED',
   CARD_DISCARDED: 'CARD_DISCARDED',
   HAND_REFILLED: 'HAND_REFILLED',
+  // セーブ/ロード関連イベント
+  GAME_SAVED: 'GAME_SAVED',
+  GAME_LOADED: 'GAME_LOADED',
 } as const;
 
 export type GameEventType = (typeof GameEventType)[keyof typeof GameEventType];
@@ -173,6 +176,24 @@ export interface IGameClearedEvent extends IGameEvent {
   totalDays: number;
   /** 最終スコア */
   finalScore: number;
+}
+
+// =============================================================================
+// セーブ/ロード関連イベント
+// =============================================================================
+
+/**
+ * ゲームセーブイベント
+ */
+export interface IGameSavedEvent extends IGameEvent {
+  type: typeof GameEventType.GAME_SAVED;
+}
+
+/**
+ * ゲームロードイベント
+ */
+export interface IGameLoadedEvent extends IGameEvent {
+  type: typeof GameEventType.GAME_LOADED;
 }
 
 // =============================================================================

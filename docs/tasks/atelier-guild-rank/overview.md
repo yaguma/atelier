@@ -164,7 +164,7 @@ graph TD
 | タスクID | タスク名 | 見積 | 依存 | 状態 |
 |---------|---------|-----|------|------|
 | [TASK-0028](./phase-4/TASK-0028.md) | サービス統合・DI設定 | 4h | TASK-0009〜TASK-0017 | ✅ |
-| [TASK-0029](./phase-4/TASK-0029.md) | セーブ/ロード機能統合 | 4h | TASK-0007, TASK-0028 | ⬜ |
+| [TASK-0029](./phase-4/TASK-0029.md) | セーブ/ロード機能統合 | 4h | TASK-0007, TASK-0028 | ✅ |
 | [TASK-0030](./phase-4/TASK-0030.md) | E2Eテスト・デバッグ | 4h | TASK-0028, TASK-0029 | ⬜ |
 | [TASK-0031](./phase-4/TASK-0031.md) | バランス調整・マスターデータ整備 | 4h | TASK-0030 | ⬜ |
 | [TASK-0032](./phase-4/TASK-0032.md) | ビルド・デプロイ設定 | 4h | TASK-0030, TASK-0031 | ⬜ |
@@ -232,3 +232,4 @@ TASK-0028 → TASK-0029 → TASK-0030 → TASK-0031 → TASK-0032
 | 2026-01-18 | 1.2.0 | タスク進捗更新: TASK-0011(GatheringService)完了、TASK-0018(共通UIコンポーネント基盤)完了、TASK-0019(TitleScene)完了、TASK-0013(QuestService)完了、TASK-0014(RankService)完了、TASK-0015(InventoryService)完了 |
 | 2026-01-18 | 1.3.0 | タスク進捗更新: TASK-0021(カードUIコンポーネント)完了 - TDD開発完了、29テストケース全通過 |
 | 2026-01-18 | 1.4.0 | タスク進捗更新: Phase 2完了（TASK-0016, TASK-0017）、Phase 3完了（TASK-0020, TASK-0022〜TASK-0027） - 全UI層実装完了 |
+| 2026-01-18 | 1.5.0 | タスク進捗更新: TASK-0029（セーブ/ロード機能統合）完了 - TDD開発完了、29テストケース全通過 |
