@@ -1,1 +1,170 @@
-[]
+[
+  {
+    "id": "weed",
+    "name": "雑草",
+    "baseQuality": "D",
+    "attributes": ["GRASS"],
+    "description": "どこにでもある草"
+  },
+  {
+    "id": "water",
+    "name": "水",
+    "baseQuality": "D",
+    "attributes": ["WATER"],
+    "description": "普通の水"
+  },
+  {
+    "id": "herb",
+    "name": "薬草",
+    "baseQuality": "C",
+    "attributes": ["GRASS", "WATER"],
+    "description": "薬の基本素材"
+  },
+  {
+    "id": "pure_water",
+    "name": "清水",
+    "baseQuality": "C",
+    "attributes": ["WATER"],
+    "description": "澄んだ水"
+  },
+  {
+    "id": "mushroom",
+    "name": "キノコ",
+    "baseQuality": "C",
+    "attributes": ["EARTH"],
+    "description": "食用キノコ"
+  },
+  {
+    "id": "poison_mushroom",
+    "name": "毒キノコ",
+    "baseQuality": "C",
+    "attributes": ["EARTH"],
+    "description": "毒を持つキノコ"
+  },
+  {
+    "id": "fish",
+    "name": "魚",
+    "baseQuality": "C",
+    "attributes": ["WATER"],
+    "description": "川で獲れる魚"
+  },
+  {
+    "id": "water_grass",
+    "name": "水草",
+    "baseQuality": "C",
+    "attributes": ["WATER", "GRASS"],
+    "description": "水辺に生える草"
+  },
+  {
+    "id": "sand",
+    "name": "砂",
+    "baseQuality": "D",
+    "attributes": ["EARTH"],
+    "description": "川辺の砂"
+  },
+  {
+    "id": "ore",
+    "name": "鉱石",
+    "baseQuality": "C",
+    "attributes": ["FIRE", "EARTH"],
+    "description": "金属の原石"
+  },
+  {
+    "id": "stone",
+    "name": "石",
+    "baseQuality": "D",
+    "attributes": ["EARTH"],
+    "description": "普通の石"
+  },
+  {
+    "id": "rare_ore",
+    "name": "レア鉱石",
+    "baseQuality": "B",
+    "attributes": ["FIRE", "EARTH"],
+    "description": "希少な鉱石"
+  },
+  {
+    "id": "rare_moss",
+    "name": "レア苔",
+    "baseQuality": "B",
+    "attributes": ["WATER", "EARTH"],
+    "description": "洞窟に生える苔"
+  },
+  {
+    "id": "volcanic_stone",
+    "name": "火山石",
+    "baseQuality": "A",
+    "attributes": ["FIRE"],
+    "description": "火山で採れる石"
+  },
+  {
+    "id": "ash",
+    "name": "灰",
+    "baseQuality": "C",
+    "attributes": ["FIRE"],
+    "description": "火山の灰"
+  },
+  {
+    "id": "lava_crystal",
+    "name": "溶岩結晶",
+    "baseQuality": "A",
+    "attributes": ["FIRE"],
+    "description": "溶岩の結晶"
+  },
+  {
+    "id": "magic_material",
+    "name": "魔法素材",
+    "baseQuality": "S",
+    "attributes": ["FIRE", "WATER", "EARTH", "WIND"],
+    "description": "全属性を持つ素材"
+  },
+  {
+    "id": "ancient_fragment",
+    "name": "古代の欠片",
+    "baseQuality": "A",
+    "attributes": ["EARTH"],
+    "description": "古代遺跡の遺物"
+  },
+  {
+    "id": "alpine_herb",
+    "name": "高山薬草",
+    "baseQuality": "A",
+    "attributes": ["GRASS", "WATER"],
+    "description": "高山に生える貴重な薬草"
+  },
+  {
+    "id": "holy_water",
+    "name": "聖水",
+    "baseQuality": "A",
+    "attributes": ["WATER"],
+    "description": "清められた水"
+  },
+  {
+    "id": "moon_drop",
+    "name": "月の雫",
+    "baseQuality": "S",
+    "attributes": ["WATER"],
+    "description": "月光を集めた雫"
+  },
+  {
+    "id": "wood",
+    "name": "木材",
+    "baseQuality": "C",
+    "attributes": ["EARTH"],
+    "description": "加工された木"
+  },
+  {
+    "id": "sulfur",
+    "name": "硫黄",
+    "baseQuality": "C",
+    "attributes": ["FIRE"],
+    "description": "火山由来の硫黄"
+  },
+  {
+    "id": "oil",
+    "name": "油",
+    "baseQuality": "C",
+    "attributes": ["FIRE"],
+    "description": "可燃性の油"
+  }
+]
