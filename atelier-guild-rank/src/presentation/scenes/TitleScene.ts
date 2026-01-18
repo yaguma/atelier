@@ -120,6 +120,10 @@ const ANIMATION = {
   DISABLED_ALPHA: 0.5,
   /** オーバーレイのアルファ値 */
   OVERLAY_ALPHA: 0.7,
+  /** フェードイン・アウトの時間（ミリ秒） */
+  FADE_DURATION: 500,
+  /** シーン遷移前の待機時間（ミリ秒） */
+  SCENE_TRANSITION_DELAY: 100,
 } as const;
 
 /**
@@ -326,6 +330,9 @@ export class TitleScene extends Phaser.Scene {
 
     // セーブデータ破損チェック（非同期）
     this.checkSaveDataIntegrity();
+
+    // フェードイン開始（TASK-0038）
+    this.fadeIn();
   }
 
   /**
@@ -489,7 +496,7 @@ export class TitleScene extends Phaser.Scene {
     if (hasSaveData) {
       this.showConfirmDialog();
     } else {
-      this.scene.start('MainScene');
+      this.fadeOutToScene('MainScene');
     }
   }
 
@@ -504,7 +511,7 @@ export class TitleScene extends Phaser.Scene {
     try {
       const saveData = await this.saveDataRepository?.load();
       if (saveData) {
-        this.scene.start('MainScene', { saveData });
+        this.fadeOutToScene('MainScene', { saveData });
       }
     } catch (_error) {
       this.showErrorDialog('エラー: セーブデータの読み込みに失敗しました');
@@ -541,7 +548,7 @@ export class TitleScene extends Phaser.Scene {
             this.saveDataRepository?.delete();
             overlay.destroy();
             dialog.destroy();
-            this.scene.start('MainScene');
+            this.fadeOutToScene('MainScene');
           },
         },
         {
@@ -727,5 +734,51 @@ export class TitleScene extends Phaser.Scene {
         this.continueButton.setAlpha(ANIMATION.DISABLED_ALPHA);
       }
     }
+  }
+
+  // ===========================================================================
+  // アニメーションメソッド（プライベート）- TASK-0038
+  // ===========================================================================
+
+  /**
+   * フェードイン処理
+   *
+   * 【機能概要】
+   * 画面全体をフェードインさせる（TASK-0038）
+   *
+   * 【実装方針】
+   * Phaserのカメラフェード機能を使用して0.5秒かけてフェードイン
+   *
+   * @信頼性レベル 🟡 設計文書（title.md）のアニメーション仕様に基づく
+   */
+  private fadeIn(): void {
+    this.cameras.main.fadeIn(ANIMATION.FADE_DURATION, 0, 0, 0);
+  }
+
+  /**
+   * フェードアウト後にシーン遷移
+   *
+   * 【機能概要】
+   * 画面全体をフェードアウトさせてから指定シーンへ遷移（TASK-0038）
+   *
+   * 【実装方針】
+   * Phaserのカメラフェード機能を使用して0.5秒かけてフェードアウト後、
+   * シーン遷移を実行
+   *
+   * @param targetScene 遷移先のシーン名
+   * @param sceneData シーンに渡すデータ（オプション）
+   *
+   * @信頼性レベル 🟡 設計文書（title.md）のアニメーション仕様に基づく
+   */
+  // biome-ignore lint/suspicious/noExplicitAny: シーンデータは任意の型を許容
+  private fadeOutToScene(targetScene: string, sceneData?: any): void {
+    this.cameras.main.fadeOut(ANIMATION.FADE_DURATION, 0, 0, 0);
+    this.cameras.main.once('camerafadeoutcomplete', () => {
+      if (sceneData !== undefined) {
+        this.scene.start(targetScene, sceneData);
+      } else {
+        this.scene.start(targetScene);
+      }
+    });
   }
 }

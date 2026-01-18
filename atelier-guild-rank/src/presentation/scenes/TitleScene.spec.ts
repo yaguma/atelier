@@ -64,7 +64,8 @@ function createMockSceneManager() {
  * createMockCameras - CameraManagerモックの作成
  *
  * 【機能概要】: Phaserのthis.camerasオブジェクトをモック化 🔵
- * 【実装方針】: main.centerX, main.centerY, width, heightを提供 🔵
+ * 【実装方針】: main.centerX, main.centerY, width, height, fadeIn, fadeOut, onceを提供 🔵
+ * 【TASK-0038対応】: once()は登録されたコールバックを即座に実行する 🟡
  */
 function createMockCameras() {
   return {
@@ -73,6 +74,14 @@ function createMockCameras() {
       centerY: 360,
       width: 1280,
       height: 720,
+      fadeIn: vi.fn(),
+      fadeOut: vi.fn(),
+      once: vi.fn((event: string, callback: () => void) => {
+        // 'camerafadeoutcomplete'イベントの場合は即座にコールバックを実行
+        if (event === 'camerafadeoutcomplete') {
+          callback();
+        }
+      }),
     },
   };
 }
