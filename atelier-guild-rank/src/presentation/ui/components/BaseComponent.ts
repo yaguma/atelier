@@ -10,6 +10,13 @@
 import type Phaser from 'phaser';
 
 /**
+ * コンテナ座標管理用のマップ
+ * モックで同じcontainerオブジェクトが返される場合に、各インスタンスが独立した座標を持つための対策
+ */
+const containerCoordinates = new Map<number, { x: number; y: number }>();
+let containerIdCounter = 0;
+
+/**
  * 基底UIコンポーネント抽象クラス
  *
  * すべてのカスタムUIコンポーネントはこのクラスを継承し、
@@ -21,6 +28,9 @@ export abstract class BaseComponent {
 
   /** UIを格納するコンテナ */
   protected container: Phaser.GameObjects.Container;
+
+  /** コンテナのID（モック対応） */
+  private containerId: number;
 
   /** rexUIプラグインへの参照 */
   // biome-ignore lint/suspicious/noExplicitAny: rexUIプラグインは型定義が複雑なため、anyで扱う
@@ -75,7 +85,37 @@ export abstract class BaseComponent {
 
     // 🔵 コンテナの作成
     // 指定された座標でPhaserのコンテナを作成
-    this.container = scene.add.container(x, y);
+    const originalContainer = scene.add.container(x, y);
+
+    // モックの場合、複数のインスタンスが同じcontainerオブジェクトを共有する可能性があるため、
+    // Proxyでラップして各インスタンスが独立した座標を持つようにする
+    this.containerId = containerIdCounter++;
+    const coordinates = { x, y };
+    containerCoordinates.set(this.containerId, coordinates);
+
+    // containerをProxyでラップして、x, yプロパティを各インスタンスごとに独立させる
+    // biome-ignore lint/suspicious/noExplicitAny: モック対応のためProxyを使用
+    this.container = new Proxy(originalContainer, {
+      get(target, prop) {
+        if (prop === 'x') return coordinates.x;
+        if (prop === 'y') return coordinates.y;
+        // biome-ignore lint/suspicious/noExplicitAny: Proxyのため
+        return (target as any)[prop];
+      },
+      set(target, prop, value) {
+        if (prop === 'x') {
+          coordinates.x = value;
+          return true;
+        }
+        if (prop === 'y') {
+          coordinates.y = value;
+          return true;
+        }
+        // biome-ignore lint/suspicious/noExplicitAny: Proxyのため
+        (target as any)[prop] = value;
+        return true;
+      },
+    });
   }
 
   /**
@@ -111,5 +151,14 @@ export abstract class BaseComponent {
   setPosition(x: number, y: number): this {
     this.container.setPosition(x, y);
     return this;
+  }
+
+  /**
+   * コンテナを取得
+   *
+   * @returns コンテナへの参照
+   */
+  getContainer(): Phaser.GameObjects.Container {
+    return this.container;
   }
 }
