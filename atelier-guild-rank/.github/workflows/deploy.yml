@@ -1,0 +1,82 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# GitHub Pagesへのデプロイ用の権限設定
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同時実行を制御（デプロイの重複を防ぐ）
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  # ビルドとテストジョブ
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run lint
+        run: pnpm run lint
+
+      - name: Run tests
+        run: pnpm run test -- --run
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Check build size
+        run: |
+          echo "Build size check:"
+          du -sh dist/
+          # 10MB以下であることを確認
+          SIZE=$(du -s dist/ | cut -f1)
+          if [ "$SIZE" -gt 10240 ]; then
+            echo "Warning: Build size exceeds 10MB"
+          else
+            echo "Build size is within acceptable limits"
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  # GitHub Pagesへのデプロイジョブ（mainブランチのみ）
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
