@@ -338,7 +338,7 @@ export class CardUI extends BaseComponent {
    *
    * @returns Phaserコンテナ
    */
-  public getContainer(): Phaser.GameObjects.Container {
+  public override getContainer(): Phaser.GameObjects.Container {
     return this.container;
   }
 }
