@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { vi } from 'vitest';
 
 // グローバルモックの設定
@@ -37,3 +39,34 @@ vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
 vi.stubGlobal('cancelAnimationFrame', (id: number) => {
   clearTimeout(id);
 });
+
+// fetchモック（ファイルシステムから直接読み込み）
+global.fetch = vi.fn((input: RequestInfo | URL, _init?: RequestInit) => {
+  const urlString = typeof input === 'string' ? input : input.toString();
+
+  // テスト環境用のファイルパス解決
+  const filePath = resolve(__dirname, '..', urlString);
+
+  try {
+    const content = readFileSync(filePath, 'utf-8');
+    const json = JSON.parse(content);
+
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      json: () => Promise.resolve(json),
+      text: () => Promise.resolve(content),
+      headers: new Headers({ 'Content-Type': 'application/json' }),
+    } as Response);
+  } catch (error) {
+    return Promise.resolve({
+      ok: false,
+      status: 404,
+      statusText: 'Not Found',
+      json: () => Promise.reject(error),
+      text: () => Promise.reject(error),
+      headers: new Headers(),
+    } as Response);
+  }
+}) as typeof fetch;

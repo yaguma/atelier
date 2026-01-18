@@ -7,12 +7,15 @@
 
 import { EventBus } from '@application/events/event-bus';
 import { AlchemyService } from '@application/services/alchemy-service';
+import { ArtifactService } from '@application/services/artifact-service';
 import { DeckService } from '@application/services/deck-service';
+import { GameFlowManager } from '@application/services/game-flow-manager';
 import { GatheringService } from '@application/services/gathering-service';
 import { InventoryService } from '@application/services/inventory-service';
 import { MaterialService } from '@application/services/material-service';
 import { QuestService } from '@application/services/quest-service';
 import { RankService } from '@application/services/rank-service';
+import { ShopService } from '@application/services/shop-service';
 import { StateManager } from '@application/services/state-manager';
 import { ContributionCalculator } from '@domain/services/contribution-calculator';
 import { ApplicationError, ErrorCodes } from '@shared/types';
@@ -159,6 +162,37 @@ export async function initializeServices(config?: ServiceInitializationConfig): 
     // =============================================================================
     const rankService = new RankService(masterDataRepo);
     container.register(ServiceKeys.RankService, rankService);
+
+    // =============================================================================
+    // 13. ArtifactService初期化（InventoryService、MasterDataRepositoryに依存）
+    // =============================================================================
+    const artifactService = new ArtifactService(inventoryService, masterDataRepo);
+    container.register(ServiceKeys.ArtifactService, artifactService);
+
+    // =============================================================================
+    // 14. ShopService初期化（DeckService、InventoryService、MasterDataRepositoryに依存）
+    // =============================================================================
+    // ShopServiceは複雑な依存関係を持つため、StateManagerから状態を取得する関数を渡す
+    const shopService = new ShopService(
+      deckService,
+      inventoryService,
+      masterDataRepo,
+      [], // shopItems - 初期化時は空配列
+      () => stateManager.getState().gold, // getGold関数
+      (amount: number) => {
+        // spendGold関数
+        const currentGold = stateManager.getState().gold;
+        stateManager.updateState({ gold: currentGold - amount });
+      },
+      () => stateManager.getState().currentRank, // getCurrentRank関数
+    );
+    container.register(ServiceKeys.ShopService, shopService);
+
+    // =============================================================================
+    // 15. GameFlowManager初期化（StateManager、DeckService、QuestService、EventBusに依存）
+    // =============================================================================
+    const gameFlowManager = new GameFlowManager(stateManager, deckService, questService, eventBus);
+    container.register(ServiceKeys.GameFlowManager, gameFlowManager);
 
     return container;
   } catch (error) {
