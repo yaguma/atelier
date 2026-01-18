@@ -38,10 +38,20 @@ export class HandDisplay extends BaseComponent {
   private selectedIndex: number | null = null;
 
   /**
-   * 手札表示の定数
+   * 【手札表示の定数】: 手札UIのレイアウトと動作を定義する定数
+   * 【設計方針】: マジックナンバーを排除し、調整可能な設定値として定義
    */
-  private static readonly CARD_SPACING = 140; // カード間のスペース
-  private static readonly MAX_HAND_SIZE = 5; // 最大手札枚数
+  private static readonly CARD_SPACING = 140; // 【カード間隔】: カードを横並びにする際の間隔
+  private static readonly MAX_HAND_SIZE = 5; // 【最大手札枚数】: ゲーム仕様による上限
+
+  /**
+   * 【アニメーション設定定数】: カード選択時のアニメーション効果の定義
+   * 【設計方針】: マジックナンバーを排除し、UX調整を容易にする
+   * 【パフォーマンス】: 150msの短時間アニメーションで軽快な操作感を実現
+   * 🔵 信頼性レベル: 既存実装のマジックナンバーを定数化
+   */
+  private static readonly HIGHLIGHT_OFFSET_Y = -20; // 【選択時の上昇距離】: カードを上に移動させて選択を強調
+  private static readonly ANIMATION_DURATION = 150; // 【アニメーション時間】: 150msで素早く滑らかな動き
 
   constructor(scene: Phaser.Scene, config: HandDisplayConfig) {
     super(scene, config.x, config.y);
@@ -133,38 +143,58 @@ export class HandDisplay extends BaseComponent {
   }
 
   /**
-   * カードを強調表示
+   * 【カードの強調表示】: 選択中のカードを視覚的に強調
+   * 【アニメーション効果】: カードを上に移動させて選択状態を明示
+   * 【UX設計】: 他のカードとの視覚的差別化により、選択意図を明確化
+   * 🔵 信頼性レベル: 実装ファイルに基づく
    *
    * @param index - 強調するカードのインデックス
    */
   private highlightCard(index: number): void {
     const cardUI = this.cardUIs[index];
+    // 【防御的プログラミング】: 無効なインデックスの場合は何もしない
     if (!cardUI) return;
 
-    // 選択中のカードを少し上に移動
+    // 【選択アニメーション】: カードを上に移動して選択状態を視覚化
+    // 【アニメーション設計】:
+    //   - Y座標: -20px上に移動（他のカードより高い位置で目立たせる）
+    //   - 時間: 150ms（素早く反応し、待ち時間を感じさせない）
+    //   - イージング: Power2（自然な加速・減速で滑らかな動き）
+    // 【UX効果】: 選択中のカードを物理的に「持ち上げる」メタファーを実現
+    // 🔵 信頼性レベル: 実装ファイルに基づく
     this.scene.tweens.add({
       targets: cardUI.getContainer(),
-      y: -20,
-      duration: 150,
-      ease: 'Power2',
+      y: HandDisplay.HIGHLIGHT_OFFSET_Y, // 【Y座標】: 定数化された上昇距離
+      duration: HandDisplay.ANIMATION_DURATION, // 【時間】: 統一されたアニメーション時間
+      ease: 'Power2', // 【イージング】: 自然な動きを実現
     });
   }
 
   /**
-   * カードの強調表示を解除
+   * 【カードの強調表示解除】: 選択を解除し、カードを元の位置に戻す
+   * 【アニメーション効果】: カードを下に移動させて通常状態に復帰
+   * 【UX設計】: 他のカードとの視覚的統一性を回復
+   * 🔵 信頼性レベル: 実装ファイルに基づく
    *
    * @param index - 強調を解除するカードのインデックス
    */
   private clearSelection(index: number): void {
     const cardUI = this.cardUIs[index];
+    // 【防御的プログラミング】: 無効なインデックスの場合は何もしない
     if (!cardUI) return;
 
-    // 元の位置に戻す
+    // 【選択解除アニメーション】: カードを元の位置に戻す
+    // 【アニメーション設計】:
+    //   - Y座標: 0（元の基準位置に復帰）
+    //   - 時間: 150ms（選択時と同じ時間で統一感を確保）
+    //   - イージング: Power2（選択時と同じイージングで自然な動き）
+    // 【UX効果】: カードを「置く」動作のメタファーで視覚的整合性を保つ
+    // 🔵 信頼性レベル: 実装ファイルに基づく
     this.scene.tweens.add({
       targets: cardUI.getContainer(),
-      y: 0,
-      duration: 150,
-      ease: 'Power2',
+      y: 0, // 【Y座標】: 元の基準位置に復帰
+      duration: HandDisplay.ANIMATION_DURATION, // 【時間】: highlightCardと統一
+      ease: 'Power2', // 【イージング】: highlightCardと統一
     });
   }
 
