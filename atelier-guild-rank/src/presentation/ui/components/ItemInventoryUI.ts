@@ -130,10 +130,7 @@ export class ItemInventoryUI {
    * インベントリを作成
    */
   public create(): void {
-    this.container = this.scene.add.container(
-      this.options.x,
-      this.options.y,
-    );
+    this.container = this.scene.add.container(this.options.x, this.options.y);
 
     // ラベルを作成
     this.createLabel();
@@ -146,12 +143,7 @@ export class ItemInventoryUI {
    * ラベルを作成
    */
   private createLabel(): void {
-    this.labelText = this.scene.add.text(
-      0,
-      UI_LAYOUT.LABEL_Y,
-      '所持アイテム:',
-      UI_STYLES.LABEL,
-    );
+    this.labelText = this.scene.add.text(0, UI_LAYOUT.LABEL_Y, '所持アイテム:', UI_STYLES.LABEL);
     this.container?.add(this.labelText);
   }
 
@@ -180,11 +172,7 @@ export class ItemInventoryUI {
    * @param y - Y座標
    * @returns アイテムカード
    */
-  private createItemCard(
-    item: ItemInstance,
-    x: number,
-    y: number,
-  ): ItemCardUI {
+  private createItemCard(item: ItemInstance, x: number, y: number): ItemCardUI {
     const cardContainer = this.scene.add.container(x, y);
 
     // カード背景
@@ -215,23 +203,13 @@ export class ItemInventoryUI {
     cardContainer.add(qualityIndicator);
 
     // アイテム名
-    const nameText = this.scene.add.text(
-      0,
-      -15,
-      item.name,
-      UI_STYLES.ITEM_NAME,
-    );
+    const nameText = this.scene.add.text(0, -15, item.name, UI_STYLES.ITEM_NAME);
     nameText.setOrigin(0.5);
     nameText.setWordWrapWidth(UI_LAYOUT.ITEM_CARD_WIDTH - 10);
     cardContainer.add(nameText);
 
     // 品質表示
-    const qualityText = this.scene.add.text(
-      0,
-      10,
-      `品質: ${item.quality}`,
-      UI_STYLES.ITEM_QUALITY,
-    );
+    const qualityText = this.scene.add.text(0, 10, `品質: ${item.quality}`, UI_STYLES.ITEM_QUALITY);
     qualityText.setOrigin(0.5);
     cardContainer.add(qualityText);
 
@@ -273,10 +251,7 @@ export class ItemInventoryUI {
    * @param background - カード背景
    * @param item - アイテムインスタンス
    */
-  private onItemOut(
-    background: Phaser.GameObjects.Rectangle,
-    item: ItemInstance,
-  ): void {
+  private onItemOut(background: Phaser.GameObjects.Rectangle, item: ItemInstance): void {
     if (this.selectedItem?.instanceId === item.instanceId) {
       background.setFillStyle(ITEM_COLORS.SELECTED_BACKGROUND, 1);
     } else {
@@ -289,8 +264,7 @@ export class ItemInventoryUI {
    */
   private updateItemCardStyles(): void {
     for (const card of this.itemCards) {
-      const isSelected =
-        this.selectedItem?.instanceId === card.item.instanceId;
+      const isSelected = this.selectedItem?.instanceId === card.item.instanceId;
 
       if (isSelected) {
         card.background.setFillStyle(ITEM_COLORS.SELECTED_BACKGROUND, 1);

@@ -122,10 +122,7 @@ interface ContributionPreview {
  * ContributionCalculatorインターフェース
  */
 interface IContributionCalculator {
-  calculatePreview(
-    quest: Quest,
-    items: ItemInstance[],
-  ): ContributionPreview;
+  calculatePreview(quest: Quest, items: ItemInstance[]): ContributionPreview;
 }
 
 /**
@@ -171,10 +168,7 @@ export class DeliveryQuestPanel {
    * パネルを作成
    */
   public create(): void {
-    this.container = this.scene.add.container(
-      this.options.x,
-      this.options.y,
-    );
+    this.container = this.scene.add.container(this.options.x, this.options.y);
 
     // パネル背景を作成
     this.createPanelBackground();
@@ -305,9 +299,7 @@ export class DeliveryQuestPanel {
       return;
     }
 
-    const borderColor = this.isSelected
-      ? PANEL_COLORS.BORDER_SELECTED
-      : this.getBorderColor();
+    const borderColor = this.isSelected ? PANEL_COLORS.BORDER_SELECTED : this.getBorderColor();
 
     this.panelBg.setStrokeStyle(this.isSelected ? 3 : 2, borderColor);
   }

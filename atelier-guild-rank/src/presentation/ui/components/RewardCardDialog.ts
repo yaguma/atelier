@@ -7,7 +7,7 @@
  * 3枚のカードから1枚を選択するか、選ばない選択が可能。
  */
 
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 
 // =============================================================================
 // 定数定義
@@ -158,7 +158,6 @@ export class RewardCardDialog extends Phaser.Events.EventEmitter {
   private overlay: Phaser.GameObjects.Rectangle | null = null;
   private dialogBg: Phaser.GameObjects.Rectangle | null = null;
   private cardUIs: RewardCardUI[] = [];
-  private selectedCard: RewardCard | null = null;
 
   /**
    * コンストラクタ
@@ -219,7 +218,10 @@ export class RewardCardDialog extends Phaser.Events.EventEmitter {
     );
     this.overlay.setOrigin(0.5);
     this.overlay.setDepth(999);
-    this.overlay.setPosition(centerX - this.scene.cameras.main.scrollX, centerY - this.scene.cameras.main.scrollY);
+    this.overlay.setPosition(
+      centerX - this.scene.cameras.main.scrollX,
+      centerY - this.scene.cameras.main.scrollY,
+    );
   }
 
   /**
@@ -242,12 +244,7 @@ export class RewardCardDialog extends Phaser.Events.EventEmitter {
    * タイトルを作成
    */
   private createTitle(): void {
-    const title = this.scene.add.text(
-      0,
-      UI_LAYOUT.TITLE_Y,
-      '報酬カードを選択',
-      UI_STYLES.TITLE,
-    );
+    const title = this.scene.add.text(0, UI_LAYOUT.TITLE_Y, '報酬カードを選択', UI_STYLES.TITLE);
     title.setOrigin(0.5);
     this.container?.add(title);
   }
@@ -273,13 +270,11 @@ export class RewardCardDialog extends Phaser.Events.EventEmitter {
     this.destroyCards();
 
     const totalWidth =
-      this.cards.length * UI_LAYOUT.CARD_WIDTH +
-      (this.cards.length - 1) * UI_LAYOUT.CARD_SPACING;
+      this.cards.length * UI_LAYOUT.CARD_WIDTH + (this.cards.length - 1) * UI_LAYOUT.CARD_SPACING;
     const startX = -totalWidth / 2 + UI_LAYOUT.CARD_WIDTH / 2;
 
     this.cards.forEach((card, index) => {
-      const cardX =
-        startX + index * (UI_LAYOUT.CARD_WIDTH + UI_LAYOUT.CARD_SPACING);
+      const cardX = startX + index * (UI_LAYOUT.CARD_WIDTH + UI_LAYOUT.CARD_SPACING);
       const cardY = UI_LAYOUT.CARD_LIST_Y;
 
       const cardUI = this.createCard(card, cardX, cardY);
@@ -295,11 +290,7 @@ export class RewardCardDialog extends Phaser.Events.EventEmitter {
    * @param y - Y座標
    * @returns カードUI
    */
-  private createCard(
-    card: RewardCard,
-    x: number,
-    y: number,
-  ): RewardCardUI {
+  private createCard(card: RewardCard, x: number, y: number): RewardCardUI {
     const cardContainer = this.scene.add.container(x, y);
 
     // カード背景
@@ -421,7 +412,6 @@ export class RewardCardDialog extends Phaser.Events.EventEmitter {
    * @param card - クリックされたカード
    */
   private onCardClick(card: RewardCard): void {
-    this.selectedCard = card;
     this.emit('card-selected', card.id);
     this.close();
   }
@@ -536,6 +526,5 @@ export class RewardCardDialog extends Phaser.Events.EventEmitter {
     }
 
     this.dialogBg = null;
-    this.selectedCard = null;
   }
 }
