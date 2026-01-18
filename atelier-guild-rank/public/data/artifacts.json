@@ -1,1 +1,72 @@
-[]
+[
+  {
+    "id": "artifact_alchemist_glasses",
+    "name": "錬金術師の眼鏡",
+    "effect": { "type": "QUALITY_UP", "value": 1 },
+    "rarity": "COMMON",
+    "description": "調合品質+1"
+  },
+  {
+    "id": "artifact_storage_bag",
+    "name": "採取袋の拡張",
+    "effect": { "type": "STORAGE_EXPANSION", "value": 5 },
+    "rarity": "COMMON",
+    "description": "素材保管+5枠"
+  },
+  {
+    "id": "artifact_merchant_ring",
+    "name": "商人の指輪",
+    "effect": { "type": "GOLD_BONUS", "value": 20 },
+    "rarity": "COMMON",
+    "description": "報酬金+20%"
+  },
+  {
+    "id": "artifact_four_leaf",
+    "name": "幸運の四つ葉",
+    "effect": { "type": "RARE_CHANCE_UP", "value": 15 },
+    "rarity": "COMMON",
+    "description": "レア素材確率+15%"
+  },
+  {
+    "id": "artifact_hourglass",
+    "name": "時の砂時計",
+    "effect": { "type": "ACTION_POINT_BONUS", "value": 1 },
+    "rarity": "RARE",
+    "description": "行動ポイント+1/日"
+  },
+  {
+    "id": "artifact_fake_stone",
+    "name": "賢者の石（偽）",
+    "effect": { "type": "QUALITY_UP", "value": 1 },
+    "rarity": "RARE",
+    "description": "全調合品質+1"
+  },
+  {
+    "id": "artifact_guildmaster_seal",
+    "name": "ギルドマスターの印",
+    "effect": { "type": "CONTRIBUTION_BONUS", "value": 20 },
+    "rarity": "RARE",
+    "description": "貢献度+20%"
+  },
+  {
+    "id": "artifact_legendary_cauldron",
+    "name": "伝説の釜",
+    "effect": { "type": "ALCHEMY_COST_REDUCTION", "value": 1 },
+    "rarity": "EPIC",
+    "description": "調合コスト-1"
+  },
+  {
+    "id": "artifact_ancient_map",
+    "name": "古代の地図",
+    "effect": { "type": "PRESENTATION_BONUS", "value": 1 },
+    "rarity": "EPIC",
+    "description": "採取の提示回数+1"
+  },
+  {
+    "id": "artifact_alchemy_crown",
+    "name": "錬金王の冠",
+    "effect": { "type": "ALL_BONUS", "value": 10 },
+    "rarity": "LEGENDARY",
+    "description": "全効果+10%"
+  }
+]

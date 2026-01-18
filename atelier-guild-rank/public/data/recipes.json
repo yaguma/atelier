@@ -1,1 +1,73 @@
-[]
+[
+  {
+    "id": "healing_potion",
+    "name": "回復薬",
+    "category": "MEDICINE",
+    "effects": [{ "type": "HP_RECOVERY", "baseValue": 30 }],
+    "basePrice": 20,
+    "description": "HPを回復する薬"
+  },
+  {
+    "id": "antidote",
+    "name": "解毒剤",
+    "category": "MEDICINE",
+    "effects": [{ "type": "CURE_POISON", "baseValue": 1 }],
+    "basePrice": 25,
+    "description": "毒を治療する薬"
+  },
+  {
+    "id": "nutrition",
+    "name": "栄養剤",
+    "category": "MEDICINE",
+    "effects": [{ "type": "HP_RECOVERY", "baseValue": 20 }],
+    "basePrice": 15,
+    "description": "栄養を補給する"
+  },
+  {
+    "id": "bomb",
+    "name": "爆弾",
+    "category": "ADVENTURE",
+    "effects": [{ "type": "EXPLOSION", "baseValue": 50 }],
+    "basePrice": 50,
+    "description": "爆発して敵にダメージ"
+  },
+  {
+    "id": "steel_sword",
+    "name": "鋼の剣",
+    "category": "WEAPON",
+    "effects": [{ "type": "ATTACK_UP", "baseValue": 10 }],
+    "basePrice": 80,
+    "description": "攻撃力を上げる剣"
+  },
+  {
+    "id": "magic_staff",
+    "name": "魔法の杖",
+    "category": "MAGIC",
+    "effects": [{ "type": "ATTACK_UP", "baseValue": 15 }],
+    "basePrice": 120,
+    "description": "魔法攻撃力を上げる杖"
+  },
+  {
+    "id": "panacea",
+    "name": "万能薬",
+    "category": "MEDICINE",
+    "effects": [
+      { "type": "HP_RECOVERY", "baseValue": 100 },
+      { "type": "CURE_POISON", "baseValue": 1 }
+    ],
+    "basePrice": 200,
+    "description": "あらゆる状態を回復する"
+  },
+  {
+    "id": "legendary_item",
+    "name": "伝説の秘薬",
+    "category": "MEDICINE",
+    "effects": [
+      { "type": "HP_RECOVERY", "baseValue": 200 },
+      { "type": "CURE_POISON", "baseValue": 1 },
+      { "type": "ALL_STATS_UP", "baseValue": 10 }
+    ],
+    "basePrice": 500,
+    "description": "伝説と呼ばれる究極の薬"
+  }
+]

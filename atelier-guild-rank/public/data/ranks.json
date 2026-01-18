@@ -1,1 +1,135 @@
-[]
+[
+  {
+    "id": "G",
+    "name": "見習い",
+    "requiredContribution": 100,
+    "dayLimit": 30,
+    "specialRules": [],
+    "promotionTest": {
+      "requirements": [{ "itemId": "healing_potion", "quantity": 2 }],
+      "dayLimit": 5
+    },
+    "unlockedGatheringCards": ["gathering_backyard", "gathering_nearby_forest"],
+    "unlockedRecipeCards": ["recipe_healing_potion", "recipe_nutrition"]
+  },
+  {
+    "id": "F",
+    "name": "新人",
+    "requiredContribution": 200,
+    "dayLimit": 30,
+    "specialRules": [
+      { "type": "QUEST_LIMIT", "value": 2, "description": "同時受注2件まで" }
+    ],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "healing_potion", "quantity": 3, "minQuality": "B" },
+        { "itemId": "antidote", "quantity": 2 }
+      ],
+      "dayLimit": 5
+    },
+    "unlockedGatheringCards": ["gathering_riverside"],
+    "unlockedRecipeCards": ["recipe_antidote"]
+  },
+  {
+    "id": "E",
+    "name": "一人前",
+    "requiredContribution": 300,
+    "dayLimit": 35,
+    "specialRules": [
+      { "type": "QUALITY_PENALTY", "condition": "D", "description": "品質D以下は貢献度半減" }
+    ],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "bomb", "quantity": 2 },
+        { "itemId": "steel_sword", "quantity": 1 }
+      ],
+      "dayLimit": 4
+    },
+    "unlockedGatheringCards": ["gathering_mountain_rocks"],
+    "unlockedRecipeCards": ["recipe_bomb", "recipe_steel_sword"]
+  },
+  {
+    "id": "D",
+    "name": "中堅",
+    "requiredContribution": 400,
+    "dayLimit": 35,
+    "specialRules": [
+      { "type": "DEADLINE_REDUCTION", "value": 1, "description": "全依頼の期限-1日" }
+    ],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "healing_potion", "quantity": 1, "minQuality": "A" },
+        { "itemId": "bomb", "quantity": 1, "minQuality": "B" },
+        { "itemId": "steel_sword", "quantity": 1, "minQuality": "B" }
+      ],
+      "dayLimit": 4
+    },
+    "unlockedGatheringCards": ["gathering_deep_cave"],
+    "unlockedRecipeCards": []
+  },
+  {
+    "id": "C",
+    "name": "熟練",
+    "requiredContribution": 500,
+    "dayLimit": 35,
+    "specialRules": [
+      { "type": "QUALITY_REQUIRED", "condition": "C", "description": "品質C以上でないと受理されない" }
+    ],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "healing_potion", "quantity": 5, "minQuality": "B" }
+      ],
+      "dayLimit": 3
+    },
+    "unlockedGatheringCards": ["gathering_volcano"],
+    "unlockedRecipeCards": ["recipe_magic_staff"]
+  },
+  {
+    "id": "B",
+    "name": "上級",
+    "requiredContribution": 600,
+    "dayLimit": 35,
+    "specialRules": [
+      { "type": "QUALITY_REQUIRED", "condition": "B", "description": "品質B以上必須" },
+      { "type": "DEADLINE_REDUCTION", "value": 1, "description": "期限-1日" }
+    ],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "panacea", "quantity": 1 },
+        { "itemId": "magic_staff", "quantity": 1, "minQuality": "A" },
+        { "itemId": "bomb", "quantity": 2, "minQuality": "A" }
+      ],
+      "dayLimit": 3
+    },
+    "unlockedGatheringCards": ["gathering_ancient_ruins", "gathering_alpine_meadow"],
+    "unlockedRecipeCards": ["recipe_panacea"]
+  },
+  {
+    "id": "A",
+    "name": "最上級",
+    "requiredContribution": 700,
+    "dayLimit": 35,
+    "specialRules": [
+      { "type": "QUALITY_REQUIRED", "condition": "A", "description": "品質A以上必須" },
+      { "type": "DEADLINE_REDUCTION", "value": 2, "description": "期限-2日" }
+    ],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "legendary_item", "quantity": 1, "minQuality": "S" }
+      ],
+      "dayLimit": 0
+    },
+    "unlockedGatheringCards": ["gathering_moonlit_spring"],
+    "unlockedRecipeCards": ["recipe_legendary_item"]
+  },
+  {
+    "id": "S",
+    "name": "伝説",
+    "requiredContribution": 0,
+    "dayLimit": 0,
+    "specialRules": [],
+    "promotionTest": null,
+    "unlockedGatheringCards": [],
+    "unlockedRecipeCards": []
+  }
+]

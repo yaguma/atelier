@@ -1,0 +1,101 @@
+{
+  "version": "1.0.0",
+  "game_balance": {
+    "initial_gold": 100,
+    "initial_days": 30,
+    "action_points_per_day": 3,
+    "hand_size": 5,
+    "daily_quest_count": 3,
+    "material_pool_size": 6,
+    "quality_variance": 1,
+    "max_concurrent_quests": 3,
+    "deck_size_initial": 15,
+    "deck_size_max": 30,
+    "hand_size_max": 7,
+    "storage_capacity": 20
+  },
+  "difficulty_curve": {
+    "G_to_F": { "required_contribution": 100, "expected_days": "3-5" },
+    "F_to_E": { "required_contribution": 200, "expected_days": "6-10" },
+    "E_to_D": { "required_contribution": 300, "expected_days": "11-15" },
+    "D_to_C": { "required_contribution": 400, "expected_days": "16-20" },
+    "C_to_B": { "required_contribution": 500, "expected_days": "21-25" },
+    "B_to_A": { "required_contribution": 600, "expected_days": "26-28" },
+    "A_to_S": { "required_contribution": 700, "expected_days": "29-30" }
+  },
+  "quality_multipliers": {
+    "D": 0.5,
+    "C": 1.0,
+    "B": 1.5,
+    "A": 2.0,
+    "S": 3.0
+  },
+  "quest_type_multipliers": {
+    "SPECIFIC": 1.0,
+    "CATEGORY": 0.8,
+    "QUALITY": 1.2,
+    "QUANTITY": 0.7,
+    "ATTRIBUTE": 1.3,
+    "EFFECT": 1.3,
+    "MATERIAL": 1.5,
+    "COMPOUND": 1.8
+  },
+  "combo_multipliers": {
+    "2": 1.1,
+    "3": 1.2,
+    "5": 1.5,
+    "10": 2.0
+  },
+  "gathering_cost": {
+    "items_0": 0,
+    "items_1_2": 1,
+    "items_3_4": 2,
+    "items_5_6": 3,
+    "items_7_plus": 3,
+    "extra_day_threshold": 7
+  },
+  "initial_deck": {
+    "gathering_cards": [
+      { "id": "gathering_backyard", "count": 2 },
+      { "id": "gathering_nearby_forest", "count": 1 }
+    ],
+    "recipe_cards": [
+      { "id": "recipe_healing_potion", "count": 1 },
+      { "id": "recipe_nutrition", "count": 1 }
+    ],
+    "enhancement_cards": [
+      { "id": "enhance_sage_catalyst", "count": 1 },
+      { "id": "enhance_spirit_guide", "count": 1 },
+      { "id": "enhance_guild_letter", "count": 1 }
+    ]
+  },
+  "shop_prices": {
+    "card_common": { "min": 50, "max": 100 },
+    "card_uncommon": { "min": 100, "max": 200 },
+    "card_rare": { "min": 200, "max": 500 },
+    "material_d": { "min": 5, "max": 10 },
+    "material_c": { "min": 10, "max": 25 },
+    "material_b": { "min": 25, "max": 50 },
+    "material_a": { "min": 50, "max": 100 },
+    "material_s": { "min": 100, "max": 200 },
+    "artifact_common": { "min": 200, "max": 300 },
+    "artifact_rare": { "min": 400, "max": 500 },
+    "artifact_epic": { "min": 700, "max": 1000 },
+    "artifact_legendary": { "min": 1500, "max": 2000 }
+  },
+  "reward_card_probabilities": {
+    "easy": { "common": 80, "uncommon": 18, "rare": 2 },
+    "normal": { "common": 60, "uncommon": 35, "rare": 5 },
+    "hard": { "common": 40, "uncommon": 45, "rare": 15 },
+    "extreme": { "common": 20, "uncommon": 50, "rare": 30 }
+  },
+  "promotion_rewards": {
+    "G_to_F": { "gold": 50, "artifact_choices": 3 },
+    "F_to_E": { "gold": 75, "artifact_choices": 3 },
+    "E_to_D": { "gold": 100, "artifact_choices": 3 },
+    "D_to_C": { "gold": 150, "artifact_choices": 3 },
+    "C_to_B": { "gold": 200, "artifact_choices": 3 },
+    "B_to_A": { "gold": 250, "artifact_choices": 3 },
+    "A_to_S": { "gold": 300, "artifact_choices": 3 }
+  }
+}
