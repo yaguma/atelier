@@ -174,3 +174,22 @@ export interface IGameClearedEvent extends IGameEvent {
   /** 最終スコア */
   finalScore: number;
 }
+
+// =============================================================================
+// ゲーム終了統計情報
+// =============================================================================
+
+/**
+ * ゲーム終了時の統計情報
+ * GameOverScene/GameClearSceneで使用される
+ */
+export interface GameEndStats {
+  /** 最終ギルドランク */
+  finalRank: GuildRank;
+  /** 経過日数 */
+  totalDays: number;
+  /** 総納品数 */
+  totalDeliveries: number;
+  /** 獲得ゴールド */
+  totalGold: number;
+}
