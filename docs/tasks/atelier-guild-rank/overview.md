@@ -147,7 +147,7 @@ graph TD
 | [TASK-0018](./phase-3/TASK-0018.md) | 共通UIコンポーネント基盤 | 4h | TASK-0008 | ✅ |
 | [TASK-0019](./phase-3/TASK-0019.md) | TitleScene | 4h | TASK-0008, TASK-0018 | ✅ |
 | [TASK-0020](./phase-3/TASK-0020.md) | MainScene共通レイアウト | 4h | TASK-0018, TASK-0017 | ⬜ |
-| [TASK-0021](./phase-3/TASK-0021.md) | カードUIコンポーネント | 4h | TASK-0018, TASK-0009 | ⬜ |
+| [TASK-0021](./phase-3/TASK-0021.md) | カードUIコンポーネント | 4h | TASK-0018, TASK-0009 | ✅ |
 | [TASK-0022](./phase-3/TASK-0022.md) | 依頼受注フェーズUI | 4h | TASK-0020, TASK-0013 | ⬜ |
 | [TASK-0023](./phase-3/TASK-0023.md) | 採取フェーズUI（ドラフト採取） | 4h | TASK-0020, TASK-0021, TASK-0011 | ⬜ |
 | [TASK-0024](./phase-3/TASK-0024.md) | 調合フェーズUI | 4h | TASK-0020, TASK-0021, TASK-0012 | ⬜ |
@@ -230,3 +230,4 @@ TASK-0028 → TASK-0029 → TASK-0030 → TASK-0031 → TASK-0032
 | 2026-01-16 | 1.0.0 | 初版作成（32タスク、4フェーズ構成） |
 | 2026-01-16 | 1.1.0 | 開発環境タスク追加（TASK-0033～0037: pnpm, Biome, Lefthook, Tailwind, Vitest, Playwright） |
 | 2026-01-18 | 1.2.0 | タスク進捗更新: TASK-0011(GatheringService)完了、TASK-0018(共通UIコンポーネント基盤)完了、TASK-0019(TitleScene)完了、TASK-0013(QuestService)完了、TASK-0014(RankService)完了、TASK-0015(InventoryService)完了 |
+| 2026-01-18 | 1.3.0 | タスク進捗更新: TASK-0021(カードUIコンポーネント)完了 - TDD開発完了、29テストケース全通過 |

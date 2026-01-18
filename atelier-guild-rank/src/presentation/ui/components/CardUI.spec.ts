@@ -301,6 +301,43 @@ describe('CardUI', () => {
 
       cardUI.destroy();
     });
+
+    test('ホバー解除時に元のサイズに戻る', () => {
+      // 【テスト目的】: ホバー解除時のアニメーション効果が正しく動作することを確認
+      // 【テスト内容】: pointeroutイベントでTweenアニメーションが開始されること
+      // 【期待される動作】: コンテナのscaleX/scaleYが1.0に、100msでアニメーションされる
+      // 🔵 信頼性レベル: 実装ファイルと要件定義書に基づく
+
+      const cardUI = new CardUI(scene, {
+        card: gatheringCard,
+        x: 0,
+        y: 0,
+        interactive: true,
+      });
+
+      // 【実際の処理実行】: pointeroutイベントのコールバックを取得して実行
+      // 【処理内容】: ホバー解除時の処理が実行される
+      const pointeroutCall = (mockRectangle.on as ReturnType<typeof vi.fn>).mock.calls.find(
+        (call) => call[0] === 'pointerout',
+      );
+
+      if (pointeroutCall) {
+        const callback = pointeroutCall[1];
+        callback();
+      }
+
+      // 【結果検証】: Tweensアニメーションが正しいパラメータで開始されたことを確認
+      // 【期待値確認】: カードが元のサイズ（1.0倍）に戻り、他のカードとの視覚的整合性を保つ
+      expect(mockTweens.add).toHaveBeenCalledWith(
+        expect.objectContaining({
+          scaleX: 1,
+          scaleY: 1,
+          duration: 100,
+        }),
+      ); // 【確認内容】: Tweenアニメーションが正しく元のサイズに戻すこと
+
+      cardUI.destroy();
+    });
   });
 
   describe('T-0021-04: カード情報表示', () => {
@@ -344,6 +381,42 @@ describe('CardUI', () => {
       });
 
       expect(cardUI.getCard()).toBe(gatheringCard);
+
+      cardUI.destroy();
+    });
+  });
+
+  describe('境界値テスト', () => {
+    test('未知のカードタイプは白色で表示される', () => {
+      // 【テスト目的】: 予期しないデータでも安全に動作することを確認
+      // 【テスト内容】: 定義されていないカードタイプに対してデフォルト色（白）が適用されること
+      // 【期待される動作】: エラーにならず、デフォルト色で表示される
+      // 🔵 信頼性レベル: 実装ファイルに基づく
+
+      // 【テストデータ準備】: 未知のカードタイプを持つカードマスターデータを用意
+      // 【初期条件設定】: TypeScriptの型チェックを回避して、存在しないカードタイプを設定
+      // @ts-expect-error - テスト用の未知のカードタイプ
+      const unknownTypeMaster: CardMaster = {
+        id: 'unknown_001',
+        name: '未知のカード',
+        type: 'UNKNOWN' as const,
+        baseCost: 1,
+        rarity: 'COMMON',
+      };
+
+      const unknownCard = new Card('card_unknown' as CardId, unknownTypeMaster as CardMaster);
+
+      // 【実際の処理実行】: 未知のカードタイプでCardUIを生成
+      // 【処理内容】: getCardTypeColor()のdefaultケースが実行される
+      const cardUI = new CardUI(scene, {
+        card: unknownCard,
+        x: 0,
+        y: 0,
+      });
+
+      // 【結果検証】: 白色（0xffffff）で背景が作成されたことを確認
+      // 【期待値確認】: switch文のdefaultケースが正しく動作すること
+      expect(scene.add.rectangle).toHaveBeenCalledWith(0, 0, 120, 160, 0xffffff); // 【確認内容】: 未知のタイプでもUIが壊れず、デフォルト色（白）で表示される
 
       cardUI.destroy();
     });
