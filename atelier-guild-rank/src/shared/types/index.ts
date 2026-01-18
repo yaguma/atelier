@@ -45,6 +45,7 @@ export type { ErrorCode } from './errors';
 // =============================================================================
 export { ApplicationError, DomainError, ErrorCodes } from './errors';
 export type {
+  GameEndStats,
   GameOverReason,
   IAlchemyCompletedEvent,
   IGameClearedEvent,

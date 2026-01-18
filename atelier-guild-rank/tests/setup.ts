@@ -1,10 +1,20 @@
 import { vi } from 'vitest';
 
 // グローバルモックの設定
-vi.mock('phaser', () => ({
+const PhaserMock = {
   Game: vi.fn(),
-  Scene: vi.fn(),
+  Scene: class Scene {
+    cameras = { main: { centerX: 640, centerY: 360 } };
+    scale = { width: 1280, height: 720 };
+    add = {};
+    scene = {};
+  },
   AUTO: 'AUTO',
+};
+
+vi.mock('phaser', () => ({
+  default: PhaserMock,
+  ...PhaserMock,
 }));
 
 // LocalStorageモック
