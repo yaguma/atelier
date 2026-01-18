@@ -106,8 +106,8 @@ graph TD
 | [TASK-0013](./phase-2/TASK-0013.md) | 依頼エンティティ・QuestService | 4h | TASK-0003, TASK-0004 | ✅ |
 | [TASK-0014](./phase-2/TASK-0014.md) | ContributionCalculator・RankService | 4h | TASK-0005, TASK-0013 | ✅ |
 | [TASK-0015](./phase-2/TASK-0015.md) | InventoryService | 4h | TASK-0010, TASK-0012 | ✅ |
-| [TASK-0016](./phase-2/TASK-0016.md) | ShopService・ArtifactService | 4h | TASK-0005, TASK-0015 | ⬜ |
-| [TASK-0017](./phase-2/TASK-0017.md) | GameFlowManager | 4h | TASK-0005, TASK-0009〜TASK-0013 | ⬜ |
+| [TASK-0016](./phase-2/TASK-0016.md) | ShopService・ArtifactService | 4h | TASK-0005, TASK-0015 | ✅ |
+| [TASK-0017](./phase-2/TASK-0017.md) | GameFlowManager | 4h | TASK-0005, TASK-0009〜TASK-0013 | ✅ |
 
 ### Phase 2 依存関係図
 
@@ -146,14 +146,14 @@ graph TD
 |---------|---------|-----|------|------|
 | [TASK-0018](./phase-3/TASK-0018.md) | 共通UIコンポーネント基盤 | 4h | TASK-0008 | ✅ |
 | [TASK-0019](./phase-3/TASK-0019.md) | TitleScene | 4h | TASK-0008, TASK-0018 | ✅ |
-| [TASK-0020](./phase-3/TASK-0020.md) | MainScene共通レイアウト | 4h | TASK-0018, TASK-0017 | ⬜ |
+| [TASK-0020](./phase-3/TASK-0020.md) | MainScene共通レイアウト | 4h | TASK-0018, TASK-0017 | ✅ |
 | [TASK-0021](./phase-3/TASK-0021.md) | カードUIコンポーネント | 4h | TASK-0018, TASK-0009 | ✅ |
-| [TASK-0022](./phase-3/TASK-0022.md) | 依頼受注フェーズUI | 4h | TASK-0020, TASK-0013 | ⬜ |
-| [TASK-0023](./phase-3/TASK-0023.md) | 採取フェーズUI（ドラフト採取） | 4h | TASK-0020, TASK-0021, TASK-0011 | ⬜ |
-| [TASK-0024](./phase-3/TASK-0024.md) | 調合フェーズUI | 4h | TASK-0020, TASK-0021, TASK-0012 | ⬜ |
-| [TASK-0025](./phase-3/TASK-0025.md) | 納品フェーズUI | 4h | TASK-0020, TASK-0013, TASK-0014 | ⬜ |
-| [TASK-0026](./phase-3/TASK-0026.md) | ショップ画面・昇格試験画面 | 4h | TASK-0018, TASK-0016 | ⬜ |
-| [TASK-0027](./phase-3/TASK-0027.md) | リザルト画面（GameOver/GameClear） | 4h | TASK-0018, TASK-0017 | ⬜ |
+| [TASK-0022](./phase-3/TASK-0022.md) | 依頼受注フェーズUI | 4h | TASK-0020, TASK-0013 | ✅ |
+| [TASK-0023](./phase-3/TASK-0023.md) | 採取フェーズUI（ドラフト採取） | 4h | TASK-0020, TASK-0021, TASK-0011 | ✅ |
+| [TASK-0024](./phase-3/TASK-0024.md) | 調合フェーズUI | 4h | TASK-0020, TASK-0021, TASK-0012 | ✅ |
+| [TASK-0025](./phase-3/TASK-0025.md) | 納品フェーズUI | 4h | TASK-0020, TASK-0013, TASK-0014 | ✅ |
+| [TASK-0026](./phase-3/TASK-0026.md) | ショップ画面・昇格試験画面 | 4h | TASK-0018, TASK-0016 | ✅ |
+| [TASK-0027](./phase-3/TASK-0027.md) | リザルト画面（GameOver/GameClear） | 4h | TASK-0018, TASK-0017 | ✅ |
 
 ---
 
@@ -231,3 +231,4 @@ TASK-0028 → TASK-0029 → TASK-0030 → TASK-0031 → TASK-0032
 | 2026-01-16 | 1.1.0 | 開発環境タスク追加（TASK-0033～0037: pnpm, Biome, Lefthook, Tailwind, Vitest, Playwright） |
 | 2026-01-18 | 1.2.0 | タスク進捗更新: TASK-0011(GatheringService)完了、TASK-0018(共通UIコンポーネント基盤)完了、TASK-0019(TitleScene)完了、TASK-0013(QuestService)完了、TASK-0014(RankService)完了、TASK-0015(InventoryService)完了 |
 | 2026-01-18 | 1.3.0 | タスク進捗更新: TASK-0021(カードUIコンポーネント)完了 - TDD開発完了、29テストケース全通過 |
+| 2026-01-18 | 1.4.0 | タスク進捗更新: Phase 2完了（TASK-0016, TASK-0017）、Phase 3完了（TASK-0020, TASK-0022〜TASK-0027） - 全UI層実装完了 |
