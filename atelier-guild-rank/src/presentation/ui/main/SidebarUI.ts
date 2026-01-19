@@ -1,10 +1,12 @@
 /**
  * SidebarUI - サイドバーUIコンポーネント
  * TASK-0020 MainScene共通レイアウト
+ * TASK-0040 サイドバー折りたたみアニメーション
  *
  * @description
  * サイドバー領域のUIコンポーネント。
  * 受注依頼リスト、素材リスト、完成品リスト、保管容量、ショップボタンを表示する。
+ * 各セクションは折りたたみ可能でアニメーション付き。
  *
  * TDD Refactorフェーズ: 定数抽出とスタイル統一
  */
@@ -32,8 +34,17 @@ const SIDEBAR_HEIGHT = 500;
 /** セクションヘッダーのY座標オフセット */
 const SECTION_HEADER_OFFSETS = {
   quest: 0,
-  material: 100,
-  item: 200,
+  material: 160,
+  item: 320,
+} as const;
+
+/** セクションコンテンツの高さ */
+const SECTION_CONTENT_HEIGHT = 120;
+
+/** アニメーション設定 */
+const ANIMATION_CONFIG = {
+  duration: 200,
+  ease: 'Power2',
 } as const;
 
 // =============================================================================
@@ -61,6 +72,28 @@ const SECTION_LABELS = {
 } as const;
 
 // =============================================================================
+// 型定義
+// =============================================================================
+
+/**
+ * サイドバーセクション構造
+ */
+interface SidebarSection {
+  /** セクションID */
+  id: string;
+  /** ヘッダーコンテナ */
+  header: Phaser.GameObjects.Container;
+  /** 折りたたみアイコン */
+  icon: Phaser.GameObjects.Text;
+  /** タイトルテキスト */
+  title: Phaser.GameObjects.Text;
+  /** コンテンツコンテナ */
+  content: Phaser.GameObjects.Container;
+  /** 元の高さ */
+  originalHeight: number;
+}
+
+// =============================================================================
 // サイドバーUIクラス
 // =============================================================================
 
@@ -77,20 +110,26 @@ export class SidebarUI extends BaseComponent {
   /** 背景Graphics */
   private background: Phaser.GameObjects.Graphics | null = null;
 
-  /** 受注依頼セクションヘッダー */
-  private questHeader: Phaser.GameObjects.Text | null = null;
+  /** 受注依頼セクション */
+  private questSection: SidebarSection | null = null;
 
-  /** 素材セクションヘッダー */
-  private materialHeader: Phaser.GameObjects.Text | null = null;
+  /** 素材セクション */
+  private materialSection: SidebarSection | null = null;
 
-  /** 完成品セクションヘッダー */
-  private itemHeader: Phaser.GameObjects.Text | null = null;
+  /** 完成品セクション */
+  private itemSection: SidebarSection | null = null;
 
   /** 保管容量テキスト */
   private storageText: Phaser.GameObjects.Text | null = null;
 
   /** ショップボタン */
   private shopButton: Phaser.GameObjects.Container | null = null;
+
+  /** 折りたたまれているセクションIDのSet */
+  private collapsedSections: Set<string> = new Set();
+
+  /** アニメーション中のセクションIDのSet */
+  private animatingSections: Set<string> = new Set();
 
   // =========================================================================
   // コンストラクタ
@@ -117,22 +156,40 @@ export class SidebarUI extends BaseComponent {
     // コンテナの深度を設定（サイドバーは depth 150）
     this.container.setDepth(150);
 
-    // セクションヘッダーテキストを作成（統一スタイルを適用）
-    this.questHeader = this.createSectionHeader(SECTION_LABELS.quest, SECTION_HEADER_OFFSETS.quest);
-    this.materialHeader = this.createSectionHeader(
+    // 折りたたみ状態を復元
+    this.loadCollapsedState();
+
+    // セクションを作成
+    this.questSection = this.createSection(
+      'quest',
+      SECTION_LABELS.quest,
+      SECTION_HEADER_OFFSETS.quest,
+    );
+    this.materialSection = this.createSection(
+      'material',
       SECTION_LABELS.material,
       SECTION_HEADER_OFFSETS.material,
     );
-    this.itemHeader = this.createSectionHeader(SECTION_LABELS.item, SECTION_HEADER_OFFSETS.item);
+    this.itemSection = this.createSection('item', SECTION_LABELS.item, SECTION_HEADER_OFFSETS.item);
 
     // コンテナに追加
-    this.container.add([this.questHeader, this.materialHeader, this.itemHeader]);
+    this.container.add([
+      this.questSection.header,
+      this.questSection.content,
+      this.materialSection.header,
+      this.materialSection.content,
+      this.itemSection.header,
+      this.itemSection.content,
+    ]);
   }
 
   /**
    * リソースを解放する
    */
   destroy(): void {
+    // 折りたたみ状態を保存
+    this.saveCollapsedState();
+
     // プライベートフィールドのGameObjectsを解放
     this.destroyGameObjects();
 
@@ -145,14 +202,184 @@ export class SidebarUI extends BaseComponent {
   // =========================================================================
 
   /**
-   * セクションヘッダーを作成する
+   * セクションを作成する
    *
+   * @param id - セクションID
    * @param label - セクションラベル
    * @param yOffset - Y座標オフセット
-   * @returns 作成されたテキストオブジェクト
+   * @returns 作成されたセクション
    */
-  private createSectionHeader(label: string, yOffset: number): Phaser.GameObjects.Text {
-    return this.scene.add.text(THEME.spacing.md, yOffset, label, SECTION_HEADER_STYLE);
+  private createSection(id: string, label: string, yOffset: number): SidebarSection {
+    // ヘッダーコンテナを作成
+    const header = this.scene.add.container(THEME.spacing.md, yOffset);
+
+    // アイコン（▼/▶）
+    const icon = this.scene.add.text(0, 0, '▼', {
+      fontFamily: THEME.fonts.primary,
+      fontSize: `${THEME.sizes.small}px`,
+      color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
+    });
+
+    // タイトル
+    const title = this.scene.add.text(20, 0, label, SECTION_HEADER_STYLE);
+
+    header.add([icon, title]);
+    header.setSize(SIDEBAR_WIDTH - THEME.spacing.md * 2, THEME.sizes.medium);
+    header.setInteractive({ useHandCursor: true });
+
+    // コンテンツコンテナを作成
+    const content = this.scene.add.container(THEME.spacing.md, yOffset + 20);
+    const contentText = this.scene.add.text(0, 0, '（コンテンツ）', {
+      fontFamily: THEME.fonts.primary,
+      fontSize: `${THEME.sizes.small}px`,
+      color: `#${THEME.colors.textLight.toString(16).padStart(6, '0')}`,
+    });
+    content.add(contentText);
+
+    // セクション構造
+    const section: SidebarSection = {
+      id,
+      header,
+      icon,
+      title,
+      content,
+      originalHeight: SECTION_CONTENT_HEIGHT,
+    };
+
+    // クリックイベント
+    header.on('pointerdown', () => this.toggleSection(section));
+
+    // 折りたたまれている場合は初期状態を設定
+    if (this.collapsedSections.has(id)) {
+      content.setVisible(false);
+      content.setAlpha(0);
+      icon.setText('▶');
+    }
+
+    return section;
+  }
+
+  /**
+   * セクションの折りたたみ/展開を切り替える
+   *
+   * @param section - 対象セクション
+   */
+  private toggleSection(section: SidebarSection): void {
+    // アニメーション中は無視
+    if (this.animatingSections.has(section.id)) {
+      return;
+    }
+
+    const isCollapsed = this.collapsedSections.has(section.id);
+
+    if (isCollapsed) {
+      this.expandSection(section);
+    } else {
+      this.collapseSection(section);
+    }
+  }
+
+  /**
+   * セクションを折りたたむ
+   *
+   * @param section - 対象セクション
+   */
+  private collapseSection(section: SidebarSection): void {
+    this.animatingSections.add(section.id);
+
+    // コンテンツのアニメーション
+    this.scene.tweens.add({
+      targets: section.content,
+      alpha: 0,
+      duration: ANIMATION_CONFIG.duration,
+      ease: ANIMATION_CONFIG.ease,
+      onComplete: () => {
+        section.content.setVisible(false);
+        this.animatingSections.delete(section.id);
+      },
+    });
+
+    // アイコン回転アニメーション
+    this.scene.tweens.add({
+      targets: section.icon,
+      angle: -90,
+      duration: ANIMATION_CONFIG.duration,
+      ease: ANIMATION_CONFIG.ease,
+      onComplete: () => {
+        section.icon.setText('▶');
+        section.icon.setAngle(0);
+      },
+    });
+
+    this.collapsedSections.add(section.id);
+    this.saveCollapsedState();
+  }
+
+  /**
+   * セクションを展開する
+   *
+   * @param section - 対象セクション
+   */
+  private expandSection(section: SidebarSection): void {
+    this.animatingSections.add(section.id);
+
+    section.content.setVisible(true);
+
+    // コンテンツのアニメーション
+    this.scene.tweens.add({
+      targets: section.content,
+      alpha: 1,
+      duration: ANIMATION_CONFIG.duration,
+      ease: ANIMATION_CONFIG.ease,
+      onComplete: () => {
+        this.animatingSections.delete(section.id);
+      },
+    });
+
+    // アイコン回転アニメーション
+    this.scene.tweens.add({
+      targets: section.icon,
+      angle: 90,
+      duration: ANIMATION_CONFIG.duration,
+      ease: ANIMATION_CONFIG.ease,
+      onComplete: () => {
+        section.icon.setText('▼');
+        section.icon.setAngle(0);
+      },
+    });
+
+    this.collapsedSections.delete(section.id);
+    this.saveCollapsedState();
+  }
+
+  /**
+   * 折りたたみ状態を保存する
+   */
+  private saveCollapsedState(): void {
+    const state = Array.from(this.collapsedSections);
+    try {
+      localStorage.setItem('sidebar-collapsed', JSON.stringify(state));
+    } catch (error) {
+      // localStorageが使えない環境では無視
+      console.warn('Failed to save collapsed state:', error);
+    }
+  }
+
+  /**
+   * 折りたたみ状態を復元する
+   */
+  private loadCollapsedState(): void {
+    try {
+      const saved = localStorage.getItem('sidebar-collapsed');
+      if (saved) {
+        const state = JSON.parse(saved) as string[];
+        this.collapsedSections = new Set(state);
+      }
+    } catch (error) {
+      // localStorageが使えない環境では無視
+      console.warn('Failed to load collapsed state:', error);
+      this.collapsedSections = new Set();
+    }
   }
 
   /**
@@ -163,17 +390,20 @@ export class SidebarUI extends BaseComponent {
       this.background.destroy();
       this.background = null;
     }
-    if (this.questHeader) {
-      this.questHeader.destroy();
-      this.questHeader = null;
+    if (this.questSection) {
+      this.questSection.header.destroy();
+      this.questSection.content.destroy();
+      this.questSection = null;
     }
-    if (this.materialHeader) {
-      this.materialHeader.destroy();
-      this.materialHeader = null;
+    if (this.materialSection) {
+      this.materialSection.header.destroy();
+      this.materialSection.content.destroy();
+      this.materialSection = null;
     }
-    if (this.itemHeader) {
-      this.itemHeader.destroy();
-      this.itemHeader = null;
+    if (this.itemSection) {
+      this.itemSection.header.destroy();
+      this.itemSection.content.destroy();
+      this.itemSection = null;
     }
     if (this.storageText) {
       this.storageText.destroy();
