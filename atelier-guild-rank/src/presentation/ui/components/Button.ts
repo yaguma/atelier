@@ -48,6 +48,11 @@ export class Button extends BaseComponent {
   // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelコンポーネントは複雑な型のため
   private label: any | null = null;
   private _enabled: boolean;
+  // TASK-0039: ホバーエフェクト用のプロパティ
+  // biome-ignore lint/suspicious/noExplicitAny: rexUI RoundRectangleコンポーネントは複雑な型のため
+  private background: any | null = null;
+  private normalColor: number = 0;
+  private hoverColor: number = 0;
 
   constructor(scene: Phaser.Scene, x: number, y: number, config: ButtonConfig) {
     super(scene, x, y);
@@ -82,32 +87,42 @@ export class Button extends BaseComponent {
 
     // スタイルを決定
     let backgroundColor: number;
+    let hoverColor: number;
     let textColor: string;
 
     switch (type) {
       case ButtonType.PRIMARY:
         backgroundColor = THEME.colors.primary;
+        hoverColor = THEME.colors.primaryHover;
         textColor = THEME.colors.textOnPrimary;
         break;
       case ButtonType.SECONDARY:
         backgroundColor = THEME.colors.secondary;
+        hoverColor = THEME.colors.secondaryHover;
         textColor = THEME.colors.textOnSecondary;
         break;
       case ButtonType.TEXT:
         backgroundColor = 0x000000;
+        hoverColor = 0x000000;
         textColor = `#${THEME.colors.primary.toString(16)}`;
         break;
       case ButtonType.ICON:
         backgroundColor = THEME.colors.secondary;
+        hoverColor = THEME.colors.secondaryHover;
         textColor = THEME.colors.textOnSecondary;
         break;
       default:
         backgroundColor = THEME.colors.primary;
+        hoverColor = THEME.colors.primaryHover;
         textColor = THEME.colors.textOnPrimary;
     }
 
+    // TASK-0039: ホバーエフェクト用に色を保存
+    this.normalColor = backgroundColor;
+    this.hoverColor = hoverColor;
+
     // 背景を生成
-    const background = this.rexUI.add
+    this.background = this.rexUI.add
       .roundRectangle({
         width: width || 120,
         height: height || 40,
@@ -123,7 +138,7 @@ export class Button extends BaseComponent {
 
     // rexUI Labelを生成
     this.label = this.rexUI.add.label({
-      background: background,
+      background: this.background,
       text: textObject,
       align: 'center',
     });
@@ -131,12 +146,11 @@ export class Button extends BaseComponent {
     // インタラクティブに設定
     this.label.setInteractive();
 
-    // クリックイベントを登録
-    this.label.on('pointerdown', () => {
-      if (this._enabled) {
-        this.config.onClick();
-      }
-    });
+    // TASK-0039: ホバーエフェクトのイベントリスナーを登録
+    this.label.on('pointerover', () => this.onPointerOver());
+    this.label.on('pointerout', () => this.onPointerOut());
+    this.label.on('pointerdown', () => this.onPointerDown());
+    this.label.on('pointerup', () => this.onPointerUp());
 
     // レイアウトを適用
     this.label.layout();
@@ -154,6 +168,90 @@ export class Button extends BaseComponent {
     } else {
       this.label.setAlpha(0.5);
     }
+  }
+
+  /**
+   * TASK-0039: マウスオーバー時の処理
+   * ボタンを拡大し、背景色を変更する
+   */
+  private onPointerOver(): void {
+    if (!this._enabled) return;
+
+    // 拡大アニメーション
+    this.scene.tweens.add({
+      targets: this.label,
+      scaleX: 1.05,
+      scaleY: 1.05,
+      duration: 100,
+      ease: 'Power2',
+    });
+
+    // 背景色変更
+    this.setHighlight(true);
+  }
+
+  /**
+   * TASK-0039: マウスアウト時の処理
+   * ボタンを元のサイズに戻し、背景色を元に戻す
+   */
+  private onPointerOut(): void {
+    // 元のサイズに戻す
+    this.scene.tweens.add({
+      targets: this.label,
+      scaleX: 1,
+      scaleY: 1,
+      duration: 100,
+      ease: 'Power2',
+    });
+
+    // 背景色を元に戻す
+    this.setHighlight(false);
+  }
+
+  /**
+   * TASK-0039: マウス押下時の処理
+   * ボタンを縮小してフィードバックを与える
+   */
+  private onPointerDown(): void {
+    if (!this._enabled) return;
+
+    // 縮小アニメーション
+    this.scene.tweens.add({
+      targets: this.label,
+      scaleX: 0.95,
+      scaleY: 0.95,
+      duration: 50,
+    });
+
+    // onClick コールバックを実行
+    this.config.onClick();
+  }
+
+  /**
+   * TASK-0039: マウスボタン解放時の処理
+   * ホバー状態のサイズに戻す
+   */
+  private onPointerUp(): void {
+    if (!this._enabled) return;
+
+    // ホバー状態のサイズに戻す
+    this.scene.tweens.add({
+      targets: this.label,
+      scaleX: 1.05,
+      scaleY: 1.05,
+      duration: 50,
+    });
+  }
+
+  /**
+   * TASK-0039: 背景色のハイライト設定
+   * @param enabled ハイライトを有効にする場合はtrue、無効にする場合はfalse
+   */
+  private setHighlight(enabled: boolean): void {
+    if (!this.background) return;
+
+    const color = enabled ? this.hoverColor : this.normalColor;
+    this.background.setFillStyle(color);
   }
 
   /**
@@ -189,6 +287,12 @@ export class Button extends BaseComponent {
     if (this.label !== null) {
       this.label.destroy();
       this.label = null;
+    }
+
+    // TASK-0039: backgroundの破棄を追加
+    if (this.background !== null) {
+      this.background.destroy();
+      this.background = null;
     }
 
     // 【修正ポイント2】: W-002対応 - containerの破棄を追加

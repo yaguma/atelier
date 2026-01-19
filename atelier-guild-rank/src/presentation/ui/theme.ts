@@ -18,7 +18,9 @@ export const THEME = {
   // 参照: docs/design/atelier-guild-rank/ui-design/overview.md セクション7.1
   colors: {
     primary: 0x8b4513, // SaddleBrown - プライマリアクション用（ボタン、重要なUI要素）
+    primaryHover: 0x9b5523, // primary より明るい色 - ホバー時のプライマリボタン
     secondary: 0xd2691e, // Chocolate - セカンダリアクション用（サブボタン、補助UI要素）
+    secondaryHover: 0xe2792e, // secondary より明るい色 - ホバー時のセカンダリボタン
     background: 0xf5f5dc, // Beige - 背景色（柔らかく温かみのある印象）
     text: 0x333333, // ダークグレー - テキスト色（高い可読性）
     textLight: 0x666666, // ミディアムグレー - ライトテキスト色（補足情報用）

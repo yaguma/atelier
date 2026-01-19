@@ -88,6 +88,9 @@ describe('Button', () => {
           setStyle: vi.fn().mockReturnThis(),
         }),
       },
+      tweens: {
+        add: vi.fn().mockReturnThis(),
+      },
       rexUI: {
         add: {
           label: vi.fn().mockReturnValue(mockLabel),
