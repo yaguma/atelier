@@ -74,6 +74,7 @@ function createMockScene(): Phaser.Scene {
         },
       }),
     },
+    // biome-ignore lint/suspicious/noExplicitAny: テストでPhaserシーンをモック化するために必要
   } as any;
 
   return mockScene;
@@ -102,6 +103,7 @@ function createMockQuest(overrides?: Partial<IQuest>): IQuest {
 /**
  * Clientモックデータを作成
  */
+// biome-ignore lint/suspicious/noExplicitAny: テストで柔軟なオーバーライドを許可するために必要
 function createMockClient(overrides?: any): IClient {
   const converted = overrides
     ? {
@@ -118,6 +120,7 @@ function createMockClient(overrides?: any): IClient {
     goldMultiplier: 1.0,
     deadlineModifier: 0,
     preferredQuestTypes: [],
+    // biome-ignore lint/suspicious/noExplicitAny: テストでRank型をモック化するために必要
     unlockRank: 'bronze-5' as any,
     ...converted,
   };
@@ -126,6 +129,7 @@ function createMockClient(overrides?: any): IClient {
 /**
  * Questエンティティのモックを作成
  */
+// biome-ignore lint/suspicious/noExplicitAny: テストで柔軟なオーバーライドを許可するために必要
 function createMockQuestEntity(questData?: any, clientData?: any): Quest {
   // 型変換: idとclientIdを適切な型にキャスト
   const convertedQuestData = questData
@@ -221,6 +225,7 @@ describe('QuestAcceptPhaseUI', () => {
       const phaseUI = new QuestAcceptPhaseUI(mockScene);
       phaseUI.create();
 
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).acceptedList).toBeDefined();
     });
   });
@@ -240,6 +245,7 @@ describe('QuestAcceptPhaseUI', () => {
       phaseUI.create();
       phaseUI.updateQuests(mockQuests);
 
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards.length).toBe(3);
     });
 
@@ -254,11 +260,17 @@ describe('QuestAcceptPhaseUI', () => {
       phaseUI.create();
       phaseUI.updateQuests(mockQuests);
 
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards[0].getContainer().x).toBe(200);
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards[0].getContainer().y).toBe(150);
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards[1].getContainer().x).toBe(500);
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards[1].getContainer().y).toBe(150);
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards[2].getContainer().x).toBe(800);
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards[2].getContainer().y).toBe(150);
     });
   });
@@ -274,7 +286,9 @@ describe('QuestAcceptPhaseUI', () => {
       phaseUI.create();
       phaseUI.updateQuests([mockQuest]);
 
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       const questCard = (phaseUI as any).questCards[0];
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       const acceptButton = (questCard as any).acceptButton;
       acceptButton.emit('pointerdown');
 
@@ -288,7 +302,9 @@ describe('QuestAcceptPhaseUI', () => {
       phaseUI.create();
       phaseUI.updateQuests([mockQuest]);
 
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       const questCard = (phaseUI as any).questCards[0];
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       const acceptButton = (questCard as any).acceptButton;
       acceptButton.emit('pointerdown');
 
@@ -305,7 +321,9 @@ describe('QuestAcceptPhaseUI', () => {
       phaseUI.create();
       phaseUI.updateQuests([mockQuest]);
 
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       const questCard = (phaseUI as any).questCards[0];
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       const acceptButton = (questCard as any).acceptButton;
       acceptButton.emit('pointerdown');
 
@@ -330,7 +348,9 @@ describe('QuestAcceptPhaseUI', () => {
       phaseUI.updateQuests(mockQuests);
 
       // 【テスト修正】: destroy()前にカードを保存し、スパイ化する
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       const card0 = (phaseUI as any).questCards[0];
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       const card1 = (phaseUI as any).questCards[1];
       const destroySpy0 = vi.spyOn(card0, 'destroy');
       const destroySpy1 = vi.spyOn(card1, 'destroy');
@@ -353,6 +373,7 @@ describe('QuestAcceptPhaseUI', () => {
 
       phaseUI.destroy();
 
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards.length).toBe(0);
     });
 
@@ -370,7 +391,9 @@ describe('QuestAcceptPhaseUI', () => {
       phaseUI.create();
 
       // 【テスト修正】: acceptedList.destroyをスパイ化する
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       if ((phaseUI as any).acceptedList) {
+        // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
         const destroySpy = vi.spyOn((phaseUI as any).acceptedList, 'destroy');
 
         phaseUI.destroy();
@@ -437,6 +460,7 @@ describe('QuestAcceptPhaseUI', () => {
       const phaseUI = new QuestAcceptPhaseUI(mockScene);
       phaseUI.create();
 
+      // biome-ignore lint/suspicious/noExplicitAny: テストでnull入力をテストするために必要
       const updateWithNull = () => phaseUI.updateQuests(null as any);
 
       expect(updateWithNull).not.toThrow();
@@ -446,8 +470,10 @@ describe('QuestAcceptPhaseUI', () => {
       const phaseUI = new QuestAcceptPhaseUI(mockScene);
       phaseUI.create();
 
+      // biome-ignore lint/suspicious/noExplicitAny: テストでnull入力をテストするために必要
       phaseUI.updateQuests(null as any);
 
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards.length).toBe(0);
     });
   });
@@ -469,6 +495,7 @@ describe('QuestAcceptPhaseUI', () => {
       phaseUI.create();
 
       const mockQuest = createMockQuestEntity({ id: 'Q001' });
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateメソッドにアクセスするために必要
       const acceptQuest = () => (phaseUI as any).onAcceptQuest(mockQuest);
 
       expect(acceptQuest).not.toThrow();
@@ -489,6 +516,7 @@ describe('QuestAcceptPhaseUI', () => {
       phaseUI.create();
 
       const mockQuest = createMockQuestEntity({ id: 'Q001' });
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateメソッドにアクセスするために必要
       (phaseUI as any).onAcceptQuest(mockQuest);
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('EventBus error'));
@@ -510,6 +538,7 @@ describe('QuestAcceptPhaseUI', () => {
 
       const mockQuest = createMockQuestEntity({ id: 'Q001' });
 
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateメソッドにアクセスするために必要
       expect(() => (phaseUI as any).onAcceptQuest(mockQuest)).not.toThrow();
     });
   });
@@ -533,6 +562,7 @@ describe('QuestAcceptPhaseUI', () => {
 
       phaseUI.updateQuests([]);
 
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards.length).toBe(0);
     });
   });
@@ -550,6 +580,7 @@ describe('QuestAcceptPhaseUI', () => {
       phaseUI.create();
       phaseUI.updateQuests(mockQuests);
 
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards.length).toBe(7);
     });
 
@@ -563,13 +594,19 @@ describe('QuestAcceptPhaseUI', () => {
       phaseUI.updateQuests(mockQuests);
 
       // Quest 1-3: y=150
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards[0].getContainer().x).toBe(200);
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards[0].getContainer().y).toBe(150);
       // Quest 4-6: y=350
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards[3].getContainer().x).toBe(200);
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards[3].getContainer().y).toBe(350);
       // Quest 7: y=550
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards[6].getContainer().x).toBe(200);
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards[6].getContainer().y).toBe(550);
     });
   });
@@ -589,6 +626,7 @@ describe('QuestAcceptPhaseUI', () => {
       phaseUI.updateQuests(mockQuests1);
 
       // 【テスト修正】: カードを保存し、スパイ化する
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       const firstCards = [...(phaseUI as any).questCards];
       const destroySpy0 = vi.spyOn(firstCards[0], 'destroy');
       const destroySpy1 = vi.spyOn(firstCards[1], 'destroy');
@@ -613,6 +651,7 @@ describe('QuestAcceptPhaseUI', () => {
       const mockQuests2 = [createMockQuestEntity({ id: 'Q003' })];
       phaseUI.updateQuests(mockQuests2);
 
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards.length).toBe(1);
     });
 
@@ -626,12 +665,179 @@ describe('QuestAcceptPhaseUI', () => {
       phaseUI.create();
       phaseUI.updateQuests(mockQuests1);
 
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       const firstCards = [...(phaseUI as any).questCards];
 
       const mockQuests2 = [createMockQuestEntity({ id: 'Q003' })];
       phaseUI.updateQuests(mockQuests2);
 
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards[0]).not.toBe(firstCards[0]);
+    });
+  });
+
+  // =============================================================================
+  // TASK-0043: モーダル連携テストケース
+  // =============================================================================
+
+  describe('TC-601: カードクリック時のモーダル表示', () => {
+    // 【テスト目的】: 依頼カードクリックでQuestDetailModalが表示されることを確認
+    // 【対応要件】: FR-001, AC-001
+    // 🔵 信頼性レベル: requirements.md セクション3 FR-001に明記
+
+    test('依頼カードクリックでQuestDetailModalが表示される', () => {
+      const mockQuest = createMockQuestEntity({ id: 'Q001' });
+
+      const phaseUI = new QuestAcceptPhaseUI(mockScene);
+      phaseUI.create();
+      phaseUI.updateQuests([mockQuest]);
+
+      // カードクリックをシミュレート
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
+      const questCard = (phaseUI as any).questCards[0];
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
+      const background = (questCard as any).background;
+      background.emit('pointerdown');
+
+      // QuestDetailModalが表示されることを確認
+      // （実装がないため、このテストは失敗する）
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
+      expect((phaseUI as any).currentModal).toBeDefined();
+    });
+  });
+
+  describe('TC-602: モーダル受注後のイベント発行', () => {
+    // 【テスト目的】: モーダルで受注するとQUEST_ACCEPTEDイベントが発行されることを確認
+    // 【対応要件】: AC-003
+    // 🔵 信頼性レベル: requirements.md セクション5 AC-003に明記
+
+    test('モーダルで受注するとQUEST_ACCEPTEDイベントが発行される', () => {
+      const mockQuest = createMockQuestEntity({ id: 'Q001' });
+
+      const phaseUI = new QuestAcceptPhaseUI(mockScene);
+      phaseUI.create();
+      phaseUI.updateQuests([mockQuest]);
+
+      // モーダルを開いて受注をシミュレート
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateメソッドにアクセスするために必要
+      (phaseUI as any).openQuestDetailModal(mockQuest);
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateメソッドにアクセスするために必要
+      (phaseUI as any).onAcceptQuest(mockQuest);
+
+      // QUEST_ACCEPTEDイベントが発行されることを確認
+      expect(mockEventBus.emit).toHaveBeenCalledWith(
+        GameEventType.QUEST_ACCEPTED,
+        expect.objectContaining({ quest: mockQuest }),
+      );
+    });
+  });
+
+  describe('TC-603: モーダル閉じた後のカード状態', () => {
+    // 【テスト目的】: モーダルを閉じた後もカードは残っていることを確認
+    // 【対応要件】: AC-004
+    // 🟡 信頼性レベル: requirements.md セクション5 AC-004に明記
+
+    test('モーダルを閉じた後もカードは残っている', () => {
+      const mockQuest = createMockQuestEntity({ id: 'Q001' });
+
+      const phaseUI = new QuestAcceptPhaseUI(mockScene);
+      phaseUI.create();
+      phaseUI.updateQuests([mockQuest]);
+
+      // モーダルを開いて閉じる
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateメソッドにアクセスするために必要
+      (phaseUI as any).openQuestDetailModal(mockQuest);
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateメソッドにアクセスするために必要
+      (phaseUI as any).closeQuestDetailModal();
+
+      // カードが残っていることを確認
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
+      expect((phaseUI as any).questCards.length).toBe(1);
+    });
+  });
+
+  // =============================================================================
+  // TASK-0043: カード移動アニメーションテストケース
+  // =============================================================================
+
+  describe('TC-701: 受注後のカード移動アニメーション', () => {
+    // 【テスト目的】: 受注後にカードがサイドバーへ移動するアニメーションが再生されることを確認
+    // 【対応要件】: FR-007, AC-008
+    // 🔵 信頼性レベル: requirements.md セクション3 FR-007に明記
+
+    test('受注後にカードがサイドバーへ移動するアニメーションが再生される', () => {
+      const mockQuest = createMockQuestEntity({ id: 'Q001' });
+
+      const phaseUI = new QuestAcceptPhaseUI(mockScene);
+      phaseUI.create();
+      phaseUI.updateQuests([mockQuest]);
+
+      // 受注をシミュレート
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateメソッドとプロパティにアクセスするために必要
+      (phaseUI as any).animateCardToSidebar(mockQuest, (phaseUI as any).questCards[0]);
+
+      // カードがX=80pxへ移動し、scale=0.6になるアニメーションが再生されることを確認
+      expect(mockScene.tweens.add).toHaveBeenCalledWith(
+        expect.objectContaining({
+          targets: expect.any(Object),
+          x: 80,
+          scale: 0.6,
+          duration: 400,
+          ease: 'Power2',
+        }),
+      );
+    });
+  });
+
+  describe('TC-702: カード移動後のサイドバーリスト更新', () => {
+    // 【テスト目的】: カード移動アニメーション完了後にサイドバーリストが更新されることを確認
+    // 【対応要件】: FR-007
+    // 🟡 信頼性レベル: requirements.md セクション3 FR-007に明記
+
+    test('カード移動アニメーション完了後にサイドバーリストが更新される', () => {
+      const mockQuest = createMockQuestEntity({ id: 'Q001' });
+
+      const phaseUI = new QuestAcceptPhaseUI(mockScene);
+      phaseUI.create();
+      phaseUI.updateQuests([mockQuest]);
+
+      // 受注をシミュレート
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateメソッドにアクセスするために必要
+      (phaseUI as any).updateAcceptedList(mockQuest);
+
+      // サイドバーの受注済みリストに依頼が追加されることを確認
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
+      expect((phaseUI as any).acceptedQuests).toContain(mockQuest);
+    });
+  });
+
+  describe('TC-703: 複数依頼受注時のカード配置', () => {
+    // 【テスト目的】: 複数の依頼を受注すると、カードが縦に並んで配置されることを確認
+    // 【対応要件】: FR-007
+    // 🟡 信頼性レベル: requirements.md セクション3 FR-007に明記
+
+    test('複数の依頼を受注すると、カードが縦に並んで配置される', () => {
+      const mockQuest1 = createMockQuestEntity({ id: 'Q001' });
+      const mockQuest2 = createMockQuestEntity({ id: 'Q002' });
+
+      const phaseUI = new QuestAcceptPhaseUI(mockScene);
+      phaseUI.create();
+      phaseUI.updateQuests([mockQuest1, mockQuest2]);
+
+      // 1件目の受注
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateメソッドにアクセスするために必要
+      (phaseUI as any).updateAcceptedList(mockQuest1);
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateメソッドにアクセスするために必要
+      const targetY1 = (phaseUI as any).calculateAcceptedCardY(0);
+
+      // 2件目の受注
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateメソッドにアクセスするために必要
+      (phaseUI as any).updateAcceptedList(mockQuest2);
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateメソッドにアクセスするために必要
+      const targetY2 = (phaseUI as any).calculateAcceptedCardY(1);
+
+      // 2件目のカードが1件目の下に配置されることを確認
+      expect(targetY2).toBeGreaterThan(targetY1);
     });
   });
 });

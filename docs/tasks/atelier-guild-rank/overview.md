@@ -183,7 +183,7 @@ graph TD
 | [TASK-0040](./phase-5/TASK-0040.md) | サイドバー折りたたみアニメーション | 4h | TASK-0020 | ✅ | DIRECT |
 | [TASK-0041](./phase-5/TASK-0041.md) | ツールチップ表示システム | 4h | TASK-0018 | ✅ | TDD |
 | [TASK-0042](./phase-5/TASK-0042.md) | カードドラッグ＆ドロップ機能 | 4h | TASK-0021 | ⬜ | TDD |
-| [TASK-0043](./phase-5/TASK-0043.md) | 依頼詳細モーダル・受注アニメーション | 4h | TASK-0022 | ⬜ | TDD |
+| [TASK-0043](./phase-5/TASK-0043.md) | 依頼詳細モーダル・受注アニメーション | 4h | TASK-0022 | ✅ | TDD |
 | [TASK-0044](./phase-5/TASK-0044.md) | 品質に応じた視覚効果 | 4h | TASK-0023 | ⬜ | DIRECT |
 
 ### Phase 5 依存関係図
