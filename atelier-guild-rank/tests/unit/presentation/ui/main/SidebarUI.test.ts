@@ -24,6 +24,8 @@ describe('SidebarUI', () => {
           on: vi.fn(),
           setVisible: vi.fn().mockReturnThis(),
           setAlpha: vi.fn().mockReturnThis(),
+          setY: vi.fn().mockReturnThis(),
+          setScale: vi.fn().mockReturnThis(),
         }),
         text: vi.fn().mockReturnValue({
           setText: vi.fn().mockReturnThis(),
@@ -70,6 +72,7 @@ describe('SidebarUI', () => {
 
     it('折りたたみ状態を復元する', () => {
       const savedState = ['material'];
+      // biome-ignore lint/suspicious/noExplicitAny: テスト用モックのため
       (localStorage.getItem as any).mockReturnValue(JSON.stringify(savedState));
 
       sidebar.create();
@@ -88,6 +91,7 @@ describe('SidebarUI', () => {
 
     it('GameObjectsを破棄する', () => {
       sidebar.create();
+      // biome-ignore lint/suspicious/noExplicitAny: テスト用モックのため
       const container = (scene.add.container as any).mock.results[0].value;
 
       sidebar.destroy();
@@ -98,9 +102,11 @@ describe('SidebarUI', () => {
 
   describe('折りたたみアニメーション', () => {
     it('localStorageエラー時も正常動作する', () => {
+      // biome-ignore lint/suspicious/noExplicitAny: テスト用モックのため
       (localStorage.getItem as any).mockImplementation(() => {
         throw new Error('localStorage error');
       });
+      // biome-ignore lint/suspicious/noExplicitAny: テスト用モックのため
       (localStorage.setItem as any).mockImplementation(() => {
         throw new Error('localStorage error');
       });

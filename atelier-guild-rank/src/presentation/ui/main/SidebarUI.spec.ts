@@ -19,6 +19,15 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { Quality } from '../../../shared/types/common';
 import { SidebarUI } from './SidebarUI';
 
+// localStorageのグローバルモック
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+};
+vi.stubGlobal('localStorage', localStorageMock);
+
 // レイアウト定数
 const SIDEBAR_WIDTH = 200;
 const SIDEBAR_X = 0;
@@ -44,6 +53,7 @@ function createMockScene(): Phaser.Scene {
     setInteractive: vi.fn().mockReturnThis(),
     on: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
+    setAngle: vi.fn().mockReturnThis(),
     text: '',
     style: { color: '' },
   };
@@ -61,6 +71,12 @@ function createMockScene(): Phaser.Scene {
     setDepth: vi.fn().mockReturnThis(),
     add: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
+    setSize: vi.fn().mockReturnThis(),
+    setInteractive: vi.fn().mockReturnThis(),
+    on: vi.fn().mockReturnThis(),
+    setY: vi.fn().mockReturnThis(),
+    setAlpha: vi.fn().mockReturnThis(),
+    setScale: vi.fn().mockReturnThis(),
     x: SIDEBAR_X,
     y: SIDEBAR_Y,
     depth: 0,
@@ -101,6 +117,15 @@ function createMockScene(): Phaser.Scene {
       on: vi.fn(),
       off: vi.fn(),
       emit: vi.fn(),
+    },
+    tweens: {
+      add: vi.fn().mockImplementation((config) => {
+        // アニメーション完了をすぐに実行
+        if (config.onComplete) {
+          config.onComplete();
+        }
+        return {};
+      }),
     },
   } as unknown as Phaser.Scene;
 }

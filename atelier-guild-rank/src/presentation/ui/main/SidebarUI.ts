@@ -6,7 +6,7 @@
  * @description
  * サイドバー領域のUIコンポーネント。
  * 受注依頼リスト、素材リスト、完成品リスト、保管容量、ショップボタンを表示する。
- * 各セクションは折りたたみ可能でアニメーション付き。
+ * 各セクションは折りたたみ可能で、アニメーション付き（高さ変化 + アルファ変化 + アイコン回転）。
  *
  * TDD Refactorフェーズ: 定数抽出とスタイル統一
  */
@@ -31,12 +31,15 @@ const SIDEBAR_WIDTH = 200;
 /** サイドバーの高さ（画面高さ - ヘッダー高さ - フッター高さ） */
 const SIDEBAR_HEIGHT = 500;
 
-/** セクションヘッダーのY座標オフセット */
+/** セクションヘッダーのY座標オフセット（初期値） */
 const SECTION_HEADER_OFFSETS = {
   quest: 0,
   material: 160,
   item: 320,
 } as const;
+
+/** セクションヘッダーの高さ */
+const SECTION_HEADER_HEIGHT = 30;
 
 /** セクションコンテンツの高さ */
 const SECTION_CONTENT_HEIGHT = 120;
@@ -91,6 +94,8 @@ interface SidebarSection {
   content: Phaser.GameObjects.Container;
   /** 元の高さ */
   originalHeight: number;
+  /** ヘッダーの初期Y座標 */
+  initialY: number;
 }
 
 // =============================================================================
@@ -181,6 +186,34 @@ export class SidebarUI extends BaseComponent {
       this.itemSection.header,
       this.itemSection.content,
     ]);
+
+    // 初期位置を折りたたみ状態に応じて設定
+    this.applySectionPositionsImmediate();
+  }
+
+  /**
+   * セクションの位置を即座に適用する（初期化用）
+   */
+  private applySectionPositionsImmediate(): void {
+    const sections = [this.questSection, this.materialSection, this.itemSection];
+    let currentY = 0;
+
+    for (const section of sections) {
+      if (!section) continue;
+
+      // 即座に位置を設定
+      section.header.setY(currentY);
+      section.content.setY(currentY + SECTION_HEADER_HEIGHT);
+
+      // 次のセクションのY位置を計算
+      if (this.collapsedSections.has(section.id)) {
+        // 折りたたまれている場合はヘッダーの高さのみ
+        currentY += SECTION_HEADER_HEIGHT + THEME.spacing.sm;
+      } else {
+        // 展開されている場合はヘッダー + コンテンツの高さ
+        currentY += SECTION_HEADER_HEIGHT + section.originalHeight + THEME.spacing.sm;
+      }
+    }
   }
 
   /**
@@ -244,6 +277,7 @@ export class SidebarUI extends BaseComponent {
       title,
       content,
       originalHeight: SECTION_CONTENT_HEIGHT,
+      initialY: yOffset,
     };
 
     // クリックイベント
@@ -253,6 +287,7 @@ export class SidebarUI extends BaseComponent {
     if (this.collapsedSections.has(id)) {
       content.setVisible(false);
       content.setAlpha(0);
+      content.setScale(1, 0);
       icon.setText('▶');
     }
 
@@ -287,10 +322,11 @@ export class SidebarUI extends BaseComponent {
   private collapseSection(section: SidebarSection): void {
     this.animatingSections.add(section.id);
 
-    // コンテンツのアニメーション
+    // コンテンツのアルファ変化 + 高さ（scaleY）変化アニメーション
     this.scene.tweens.add({
       targets: section.content,
       alpha: 0,
+      scaleY: 0,
       duration: ANIMATION_CONFIG.duration,
       ease: ANIMATION_CONFIG.ease,
       onComplete: () => {
@@ -313,6 +349,9 @@ export class SidebarUI extends BaseComponent {
 
     this.collapsedSections.add(section.id);
     this.saveCollapsedState();
+
+    // 後続セクションの位置を更新
+    this.updateSectionPositions();
   }
 
   /**
@@ -324,11 +363,13 @@ export class SidebarUI extends BaseComponent {
     this.animatingSections.add(section.id);
 
     section.content.setVisible(true);
+    section.content.setScale(1, 0); // 開始時はscaleY=0
 
-    // コンテンツのアニメーション
+    // コンテンツのアルファ変化 + 高さ（scaleY）変化アニメーション
     this.scene.tweens.add({
       targets: section.content,
       alpha: 1,
+      scaleY: 1,
       duration: ANIMATION_CONFIG.duration,
       ease: ANIMATION_CONFIG.ease,
       onComplete: () => {
@@ -350,6 +391,49 @@ export class SidebarUI extends BaseComponent {
 
     this.collapsedSections.delete(section.id);
     this.saveCollapsedState();
+
+    // 後続セクションの位置を更新
+    this.updateSectionPositions();
+  }
+
+  /**
+   * セクションの位置をアニメーションで更新する
+   * 折りたたまれたセクションの高さを考慮して後続セクションの位置を調整
+   */
+  private updateSectionPositions(): void {
+    const sections = [this.questSection, this.materialSection, this.itemSection];
+    let currentY = 0;
+
+    for (const section of sections) {
+      if (!section) continue;
+
+      const targetHeaderY = currentY;
+      const targetContentY = currentY + SECTION_HEADER_HEIGHT;
+
+      // ヘッダーと内容の位置をアニメーション
+      this.scene.tweens.add({
+        targets: section.header,
+        y: targetHeaderY,
+        duration: ANIMATION_CONFIG.duration,
+        ease: ANIMATION_CONFIG.ease,
+      });
+
+      this.scene.tweens.add({
+        targets: section.content,
+        y: targetContentY,
+        duration: ANIMATION_CONFIG.duration,
+        ease: ANIMATION_CONFIG.ease,
+      });
+
+      // 次のセクションのY位置を計算
+      if (this.collapsedSections.has(section.id)) {
+        // 折りたたまれている場合はヘッダーの高さのみ
+        currentY += SECTION_HEADER_HEIGHT + THEME.spacing.sm;
+      } else {
+        // 展開されている場合はヘッダー + コンテンツの高さ
+        currentY += SECTION_HEADER_HEIGHT + section.originalHeight + THEME.spacing.sm;
+      }
+    }
   }
 
   /**
