@@ -60,4 +60,25 @@ export const THEME = {
     lg: 24, // 大スペーシング（大きなセクション間）
     xl: 32, // 最大スペーシング（画面レベルの余白）
   },
+
+  // 🔵 品質ごとの色定義
+  // TASK-0044: 品質に応じた視覚効果
+  // 参照: docs/tasks/atelier-guild-rank/phase-5/TASK-0044.md
+  qualityColors: {
+    D: 0x808080, // グレー
+    C: 0x00ff00, // 緑
+    B: 0x0080ff, // 青
+    A: 0xffd700, // ゴールド
+    S: 0xff00ff, // マゼンタ(紫)
+  },
+
+  // 🟡 品質ごとの光彩効果設定
+  // TASK-0044: 品質に応じた視覚効果
+  qualityGlow: {
+    D: null, // なし
+    C: null, // なし
+    B: { intensity: 0.3 }, // 弱い光彩
+    A: { intensity: 0.6 }, // 中程度の光彩
+    S: { intensity: 1.0, particles: true }, // 強い光彩+パーティクル
+  },
 } as const;
