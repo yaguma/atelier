@@ -7,6 +7,7 @@
  * 【テスト対応】: T-0008-01, T-0008-02, T-0008-03のテストケースを通すための実装 🔵
  */
 
+import { initializeServices } from '@infrastructure/di/setup';
 import Phaser from 'phaser';
 
 /**
@@ -66,7 +67,7 @@ export class BootScene extends Phaser.Scene {
    * create() - シーン初期化
    *
    * 【機能概要】: サービスを初期化し、TitleSceneへ遷移する
-   * 【実装方針】: 最小限の実装でテストを通す（サービス初期化は後回し）
+   * 【実装方針】: サービス初期化を行い、完了後にTitleSceneへ遷移
    * 【テスト対応】: T-0008-02（シーン遷移）、T-0008-CACHE-1（キャッシュ取得）のテストを通す
    * 🔵 信頼性レベル: 要件定義書のcreate()処理内容に明記
    */
@@ -87,14 +88,32 @@ export class BootScene extends Phaser.Scene {
       console.warn('Some master data failed to load');
     }
 
-    // 【サービス初期化】: サービスコンテナの初期化（将来実装） 🟡
-    // 【実装内容】: 最小限の実装では省略、後続タスクで実装予定
-    // 【実装予定】: TASK-0009以降でServiceContainerの初期化を実装
-    // this.initializeServices();
+    // 【サービス初期化】: DIコンテナにサービスを登録する 🔵
+    // 【実装内容】: initializeServicesを非同期で呼び出し、完了後にシーン遷移
+    // 【エラーハンドリング】: 初期化失敗時もTitleSceneへ遷移（警告を出力）
+    this.initializeAndTransition();
+  }
+
+  /**
+   * initializeAndTransition() - サービス初期化とシーン遷移
+   *
+   * 【機能概要】: サービスを非同期で初期化し、完了後にTitleSceneへ遷移する
+   * 【実装方針】: async/awaitで初期化を待ち、エラー時も遷移は行う
+   * 🔵 信頼性レベル: 設計文書（architecture-phaser.md）に基づく
+   */
+  private async initializeAndTransition(): Promise<void> {
+    try {
+      // サービス初期化を実行
+      await initializeServices();
+      console.log('Services initialized successfully');
+    } catch (error) {
+      // 初期化失敗時は警告を出力してもシーン遷移は行う
+      console.warn('Service initialization failed:', error);
+    }
 
     // 【シーン遷移】: TitleSceneへ自動遷移 🔵
     // 【実装内容】: this.scene.start()でTitleSceneを開始
-    // 【遷移タイミング】: マスターデータの読み込み完了後に即座に遷移
+    // 【遷移タイミング】: サービス初期化完了後（または失敗後）に遷移
     this.scene.start('TitleScene');
   }
 

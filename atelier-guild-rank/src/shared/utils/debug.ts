@@ -10,6 +10,7 @@
 import type { IStateManager } from '@application/services/state-manager.interface';
 import { Container, ServiceKeys } from '@infrastructure/di/container';
 import { GuildRank } from '@shared/types';
+import type Phaser from 'phaser';
 
 // =============================================================================
 // 定数定義
@@ -229,14 +230,143 @@ export class DebugTools {
   static clearSaveData(): void {
     localStorage.removeItem(SAVE_DATA_KEY);
   }
+
+  // =============================================================================
+  // E2Eテスト用UIインタラクションメソッド
+  // =============================================================================
+
+  /**
+   * 【機能概要】: 新規ゲームを開始する（E2Eテスト用）
+   * 【実装方針】: セーブデータを削除し、MainSceneへ遷移する
+   * 【用途】: E2Eテストでタイトル画面から新規ゲームを開始する
+   *
+   * @example
+   * ```typescript
+   * window.debug?.clickNewGame(); // 新規ゲーム開始
+   * ```
+   */
+  static clickNewGame(): void {
+    // セーブデータを削除
+    localStorage.removeItem(SAVE_DATA_KEY);
+
+    // Phaserゲームインスタンス経由でシーン遷移
+    const game = (globalThis as unknown as { game?: Phaser.Game }).game;
+    if (game?.scene) {
+      game.scene.start('MainScene');
+    }
+  }
+
+  /**
+   * 【機能概要】: コンティニューを実行する（E2Eテスト用）
+   * 【実装方針】: セーブデータを読み込んでMainSceneへ遷移する
+   * 【用途】: E2Eテストでタイトル画面からコンティニューを実行する
+   *
+   * @example
+   * ```typescript
+   * window.debug?.clickContinue(); // コンティニュー
+   * ```
+   */
+  static clickContinue(): void {
+    const saveData = localStorage.getItem(SAVE_DATA_KEY);
+    if (!saveData) {
+      console.warn('No save data found for continue');
+      return;
+    }
+
+    // Phaserゲームインスタンス経由でシーン遷移
+    const game = (globalThis as unknown as { game?: Phaser.Game }).game;
+    if (game?.scene) {
+      game.scene.start('MainScene', { saveData: JSON.parse(saveData) });
+    }
+  }
+
+  /**
+   * 【機能概要】: タイトル画面に戻る（E2Eテスト用）
+   * 【実装方針】: TitleSceneへ遷移する
+   * 【用途】: E2Eテストでゲーム中からタイトル画面に戻る
+   *
+   * @example
+   * ```typescript
+   * window.debug?.returnToTitle(); // タイトルに戻る
+   * ```
+   */
+  static returnToTitle(): void {
+    const game = (globalThis as unknown as { game?: Phaser.Game }).game;
+    if (game?.scene) {
+      game.scene.start('TitleScene');
+    }
+  }
+
+  /**
+   * 【機能概要】: 現在のフェーズをスキップする（E2Eテスト用）
+   * 【実装方針】: GameFlowManager経由でフェーズを進める
+   * 【用途】: E2Eテストでフェーズを素早く進める
+   *
+   * @example
+   * ```typescript
+   * window.debug?.skipPhase(); // フェーズをスキップ
+   * ```
+   */
+  static skipPhase(): void {
+    // GameFlowManagerが初期化されている場合のみ実行
+    try {
+      const container = Container.getInstance();
+      if (container.has(ServiceKeys.GameFlowManager)) {
+        // GameFlowManagerは存在するが、skipPhaseの具体的な実装は将来のタスクで追加
+        // 現時点ではログ出力のみ
+        container.resolve(ServiceKeys.GameFlowManager);
+        console.log('skipPhase called - GameFlowManager available');
+      }
+    } catch (e) {
+      console.warn('skipPhase failed:', e);
+    }
+  }
+
+  /**
+   * 【機能概要】: 日を終了する（E2Eテスト用）
+   * 【実装方針】: StateManager経由で日を進める
+   * 【用途】: E2Eテストで日数を進める
+   *
+   * @example
+   * ```typescript
+   * window.debug?.endDay(); // 日を終了
+   * ```
+   */
+  static endDay(): void {
+    try {
+      const stateManager = DebugTools.getStateManager();
+      stateManager.advanceDay();
+    } catch (e) {
+      console.warn('endDay failed:', e);
+    }
+  }
 }
 
 /**
- * window.debug型定義のための拡張
+ * E2Eテスト用のグローバル型定義
+ *
+ * window.game, window.gameState, window.debug を提供する
  */
 declare global {
   interface Window {
+    /** Phaserゲームインスタンス（main.tsで設定） */
+    game?: Phaser.Game;
+    /** デバッグツール（開発環境のみ、main.tsで設定） */
     debug?: typeof DebugTools;
-    gameState?: () => ReturnType<IStateManager['getState']>;
+    /**
+     * 現在のゲーム状態を取得する関数（E2Eテスト用、main.tsで設定）
+     *
+     * StateManagerが初期化されている場合はゲーム状態を含む、
+     * されていない場合はシーン情報のみを返す
+     */
+    gameState?: () => {
+      currentScene?: string;
+      currentPhase?: string;
+      remainingDays?: number;
+      gold?: number;
+      currentRank?: string;
+      actionPoints?: number;
+      hasSaveData?: boolean;
+    };
   }
 }

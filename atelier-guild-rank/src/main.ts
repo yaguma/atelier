@@ -7,7 +7,11 @@
  * 【テスト対応】: T-0008-01, T-0008-03のテストケースを通すための実装 🔵
  */
 
+import type { IStateManager } from '@application/services/state-manager.interface';
+import { Container, ServiceKeys } from '@infrastructure/di/container';
 import { BootScene, MainScene, TitleScene } from '@presentation/scenes';
+// debug.ts でグローバル型 (window.game, window.gameState, window.debug) が定義されている
+import '@shared/utils/debug';
 import Phaser from 'phaser';
 import RexUIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin';
 
@@ -76,4 +80,84 @@ const config: Phaser.Types.Core.GameConfig = {
  * 【実装方針】: 設定オブジェクトを渡してゲームインスタンスを生成
  * 🔵 信頼性レベル: Phaser標準の起動方法
  */
-new Phaser.Game(config);
+const game = new Phaser.Game(config);
+
+// =============================================================================
+// E2Eテスト用グローバル公開
+// =============================================================================
+
+/**
+ * window.game - Phaserゲームインスタンスを公開
+ *
+ * 【用途】: E2Eテストでのシーン状態確認、デバッグ用途
+ * 【注意】: 本番環境でも公開されるが、直接操作は推奨しない
+ */
+window.game = game;
+
+/**
+ * window.gameState - 現在のゲーム状態を取得する関数
+ *
+ * 【用途】: E2Eテストでのゲーム状態検証
+ * 【実装方針】: Phaserシーンマネージャーから現在のシーン情報を取得し、
+ *              StateManagerが初期化されている場合はそこからゲーム状態も取得
+ * 【注意】: StateManagerが初期化されていない場合はシーン情報のみ返す
+ */
+window.gameState = () => {
+  // 現在アクティブなシーンを取得
+  const activeScene = game.scene.scenes.find(
+    (scene) => scene.sys.isActive() && scene.sys.settings.key !== 'BootScene',
+  );
+  const currentScene =
+    activeScene?.sys.settings.key ??
+    game.scene.scenes.find((s) => s.sys.isActive())?.sys.settings.key;
+
+  // LocalStorageからセーブデータの存在を確認
+  const saveDataKey = 'atelier-guild-rank-save';
+  const hasSaveData = localStorage.getItem(saveDataKey) !== null;
+
+  // StateManagerが初期化されている場合は状態を取得
+  let stateFromManager: Partial<{
+    currentPhase: string;
+    remainingDays: number;
+    gold: number;
+    currentRank: string;
+    actionPoints: number;
+  }> = {};
+
+  try {
+    const container = Container.getInstance();
+    if (container.has(ServiceKeys.StateManager)) {
+      const stateManager = container.resolve<IStateManager>(ServiceKeys.StateManager);
+      const state = stateManager.getState();
+      stateFromManager = {
+        currentPhase: state.currentPhase,
+        remainingDays: state.remainingDays,
+        gold: state.gold,
+        currentRank: state.currentRank,
+        actionPoints: state.actionPoints,
+      };
+    }
+  } catch {
+    // StateManagerが初期化されていない場合は無視
+  }
+
+  return {
+    currentScene,
+    hasSaveData,
+    currentPhase: stateFromManager.currentPhase,
+    remainingDays: stateFromManager.remainingDays,
+    gold: stateFromManager.gold,
+    currentRank: stateFromManager.currentRank,
+    actionPoints: stateFromManager.actionPoints,
+  };
+};
+
+/**
+ * window.debug - デバッグツールを公開
+ *
+ * 【用途】: 開発時のゲーム状態操作、E2Eテスト補助
+ * 【注意】: 本番ビルドでは別途削除を検討
+ */
+import('@shared/utils/debug').then(({ DebugTools }) => {
+  window.debug = DebugTools;
+});
