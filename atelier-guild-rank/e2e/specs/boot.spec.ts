@@ -65,16 +65,22 @@ test.describe('Game Boot', () => {
 	test('T-0008-02: BootSceneからTitleSceneへ遷移する', async ({ gamePage }) => {
 		// 【テスト目的】: シーン遷移が正常に動作することを確認
 		// 【テスト内容】: BootScene完了後、TitleSceneの画面が表示されることを検証
-		// 【期待される動作】: TitleSceneのタイトルテキストが表示される
+		// 【期待される動作】: TitleSceneが表示され、ゲーム状態がTitleSceneになる
 		// 🔵 信頼性レベル: タスク定義（TASK-0008.md）の受け入れ基準に明記
 
 		const game = new GamePage(gamePage);
 		await game.waitForGameLoad();
 
-		// 【検証項目】: TitleSceneの要素が表示されることを確認
-		// 注: TitleSceneが未実装のため、このテストは失敗する（Red状態）
-		// TitleScene実装後に、実際のタイトルテキストのセレクターに変更する
-		await expect(gamePage.locator('text=Atelier Guild Rank')).toBeVisible({ timeout: 5000 }); // 🔴 失敗する
+		// 【変更内容】: TitleSceneは実装済み（TASK-0019完了）
+		// PhaserゲームはCanvas上にレンダリングされるため、DOM要素としてテキストを取得できない
+		// 代わりに、window.gameState()を使用してシーン遷移を確認する
+		const isInTitleScene = await gamePage.evaluate(() => {
+			const state = (window as any).gameState?.();
+			return state?.currentScene === 'TitleScene';
+		});
+
+		// 【検証項目】: TitleSceneに遷移していることを確認
+		expect(isInTitleScene).toBe(true);
 	});
 
 	test('T-0008-03: rexUIプラグインが利用可能', async ({ gamePage }) => {
