@@ -360,6 +360,7 @@ export class TitleScene extends Phaser.Scene {
   private createTitleLogo(centerX: number): void {
     this.add
       .text(centerX, LAYOUT.TITLE_Y, TEXT.TITLE, {
+        fontFamily: THEME.fonts.primary,
         fontSize: STYLES.TITLE_FONT_SIZE,
         color: STYLES.TITLE_COLOR,
       })
@@ -373,6 +374,7 @@ export class TitleScene extends Phaser.Scene {
   private createSubtitle(centerX: number): void {
     this.add
       .text(centerX, LAYOUT.SUBTITLE_Y, TEXT.SUBTITLE, {
+        fontFamily: THEME.fonts.primary,
         fontSize: STYLES.SUBTITLE_FONT_SIZE,
         color: STYLES.SUBTITLE_COLOR,
       })
@@ -391,6 +393,7 @@ export class TitleScene extends Phaser.Scene {
         cameraHeight - LAYOUT.VERSION_OFFSET,
         TEXT.VERSION,
         {
+          fontFamily: THEME.fonts.primary,
           fontSize: STYLES.VERSION_FONT_SIZE,
           color: STYLES.VERSION_COLOR,
         },
@@ -455,23 +458,33 @@ export class TitleScene extends Phaser.Scene {
     onClick: () => void,
     // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelコンポーネントの型は複雑なため
   ): any {
+    const buttonBackground = this.rexUI.add.roundRectangle(
+      0,
+      0,
+      SIZES.BUTTON_WIDTH,
+      SIZES.BUTTON_HEIGHT,
+      SIZES.BUTTON_RADIUS,
+      backgroundColor,
+    );
+
     const buttonText = this.add.text(0, 0, text, {
+      fontFamily: THEME.fonts.primary,
       fontSize: STYLES.BUTTON_FONT_SIZE,
       color: THEME.colors.textOnPrimary,
     });
 
-    const buttonBackground = this.rexUI.add
-      .roundRectangle({
-        width: SIZES.BUTTON_WIDTH,
-        height: SIZES.BUTTON_HEIGHT,
-        radius: SIZES.BUTTON_RADIUS,
-      })
-      .setFillStyle(backgroundColor);
-
     const button = this.rexUI.add.label({
+      width: SIZES.BUTTON_WIDTH,
+      height: SIZES.BUTTON_HEIGHT,
       background: buttonBackground,
       text: buttonText,
       align: 'center',
+      space: {
+        left: 10,
+        right: 10,
+        top: 10,
+        bottom: 10,
+      },
       x,
       y,
     });
@@ -655,30 +668,58 @@ export class TitleScene extends Phaser.Scene {
    */
   // biome-ignore lint/suspicious/noExplicitAny: rexUI Dialogコンポーネントの型は複雑なため
   private createDialog(centerX: number, centerY: number, config: DialogConfig): any {
+    // 背景を先に作成（描画順序のため）
+    const dialogBackground = this.rexUI.add.roundRectangle(
+      0,
+      0,
+      config.width,
+      config.height,
+      SIZES.DIALOG_RADIUS,
+      config.backgroundColor ?? THEME.colors.secondary,
+    );
+
+    // テキストを後に作成（背景の上に描画されるように）
     const titleText = this.add.text(0, 0, config.title, {
+      fontFamily: THEME.fonts.primary,
       fontSize: STYLES.DIALOG_TITLE_FONT_SIZE,
       color: THEME.colors.textOnPrimary,
     });
 
     const contentText = this.add.text(0, 0, config.content, {
+      fontFamily: THEME.fonts.primary,
       fontSize: STYLES.DIALOG_CONTENT_FONT_SIZE,
       color: THEME.colors.textOnPrimary,
     });
 
     const actionButtons = config.actions.map((action) => {
+      // 背景を先に作成（描画順序のため）
+      const actionBg = this.rexUI.add.roundRectangle(
+        0,
+        0,
+        SIZES.DIALOG_BUTTON_WIDTH,
+        SIZES.DIALOG_BUTTON_HEIGHT,
+        SIZES.BUTTON_RADIUS,
+        action.color,
+      );
+      // テキストを後に作成（背景の上に描画されるように）
+      const actionText = this.add.text(0, 0, action.text, {
+        fontFamily: THEME.fonts.primary,
+        fontSize: STYLES.BUTTON_FONT_SIZE,
+        color: THEME.colors.textOnPrimary,
+      });
+
       const button = this.rexUI.add.label({
-        background: this.rexUI.add
-          .roundRectangle({
-            width: SIZES.DIALOG_BUTTON_WIDTH,
-            height: SIZES.DIALOG_BUTTON_HEIGHT,
-            radius: SIZES.BUTTON_RADIUS,
-          })
-          .setFillStyle(action.color),
-        text: this.add.text(0, 0, action.text, {
-          fontSize: STYLES.BUTTON_FONT_SIZE,
-          color: THEME.colors.textOnPrimary,
-        }),
+        width: SIZES.DIALOG_BUTTON_WIDTH,
+        height: SIZES.DIALOG_BUTTON_HEIGHT,
+        background: actionBg,
+        text: actionText,
         align: 'center',
+        space: {
+          left: 5,
+          right: 5,
+          top: 5,
+          bottom: 5,
+        },
       });
 
       button.setInteractive();
@@ -693,13 +734,7 @@ export class TitleScene extends Phaser.Scene {
       y: centerY,
       width: config.width,
       height: config.height,
-      background: this.rexUI.add
-        .roundRectangle({
-          width: config.width,
-          height: config.height,
-          radius: SIZES.DIALOG_RADIUS,
-        })
-        .setFillStyle(config.backgroundColor ?? THEME.colors.secondary),
+      background: dialogBackground,
       title: titleText,
       content: contentText,
       actions: actionButtons,

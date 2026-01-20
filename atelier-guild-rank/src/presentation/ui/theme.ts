@@ -33,10 +33,10 @@ export const THEME = {
   },
 
   // 🔵 フォント設定
-  // 日本語対応のNoto Sans JPをプライマリフォントとして使用
+  // 日本語対応のM PLUS Rounded 1cをプライマリフォントとして使用
   // 参照: docs/design/atelier-guild-rank/ui-design/overview.md セクション7.4
   fonts: {
-    primary: 'Noto Sans JP', // プライマリフォント（日本語対応、読みやすさ重視）
+    primary: '"M PLUS Rounded 1c", sans-serif', // プライマリフォント（日本語対応、丸ゴシック）+ フォールバック
     secondary: 'sans-serif', // フォールバック用セカンダリフォント（クロスプラットフォーム対応）
   },
 
