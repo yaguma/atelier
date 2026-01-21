@@ -147,11 +147,11 @@ graph TD
 |---------|---------|-----|------|------|
 | [TASK-0018](./phase-3/TASK-0018.md) | 共通UIコンポーネント基盤 | 4h | TASK-0008 | ✅ |
 | [TASK-0019](./phase-3/TASK-0019.md) | TitleScene | 4h | TASK-0008, TASK-0018 | ✅ |
-| [TASK-0020](./phase-3/TASK-0020.md) | MainScene共通レイアウト | 4h | TASK-0018, TASK-0017 | ⬜ |
+| [TASK-0020](./phase-3/TASK-0020.md) | MainScene共通レイアウト | 4h | TASK-0018, TASK-0017 | ✅ |
 | [TASK-0021](./phase-3/TASK-0021.md) | カードUIコンポーネント | 4h | TASK-0018, TASK-0009 | ✅ |
 | [TASK-0022](./phase-3/TASK-0022.md) | 依頼受注フェーズUI | 4h | TASK-0020, TASK-0013 | ✅ |
 | [TASK-0023](./phase-3/TASK-0023.md) | 採取フェーズUI（ドラフト採取） | 4h | TASK-0020, TASK-0021, TASK-0011 | ✅ |
-| [TASK-0024](./phase-3/TASK-0024.md) | 調合フェーズUI | 4h | TASK-0020, TASK-0021, TASK-0012 | ⬜ |
+| [TASK-0024](./phase-3/TASK-0024.md) | 調合フェーズUI | 4h | TASK-0020, TASK-0021, TASK-0012 | ✅ |
 | [TASK-0025](./phase-3/TASK-0025.md) | 納品フェーズUI | 4h | TASK-0020, TASK-0013, TASK-0014 | ✅ |
 | [TASK-0026](./phase-3/TASK-0026.md) | ショップ画面・昇格試験画面 | 4h | TASK-0018, TASK-0016 | ✅ |
 | [TASK-0027](./phase-3/TASK-0027.md) | リザルト画面（GameOver/GameClear） | 4h | TASK-0018, TASK-0017 | ✅ |
