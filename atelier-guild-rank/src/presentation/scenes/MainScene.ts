@@ -136,8 +136,7 @@ export class MainScene extends Phaser.Scene {
   /** フッターUI */
   private footerUI!: FooterUI;
 
-  /** コンテンツコンテナ（各フェーズUIの親コンテナとして将来使用予定） */
-  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: 将来のフェーズUI実装で使用予定
+  /** コンテンツコンテナ（各フェーズUIの親コンテナとして使用） */
   private _contentContainer!: Phaser.GameObjects.Container;
 
   // ===========================================================================
