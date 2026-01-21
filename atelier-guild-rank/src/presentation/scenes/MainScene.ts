@@ -9,6 +9,7 @@
  * @信頼性レベル 🔵 requirements.md セクション2.1に基づく
  */
 
+import { Container, ServiceKeys } from '@infrastructure/di/container';
 import { FooterUI } from '@presentation/ui/components/FooterUI';
 import { HeaderUI } from '@presentation/ui/components/HeaderUI';
 import { SidebarUI } from '@presentation/ui/components/SidebarUI';
@@ -177,6 +178,9 @@ export class MainScene extends Phaser.Scene {
    * @throws {Error} EventBusが未初期化の場合
    */
   create(): void {
+    // DIコンテナからサービスを取得
+    this.initializeServicesFromContainer();
+
     // サービスの検証
     this.validateServices();
 
@@ -194,6 +198,16 @@ export class MainScene extends Phaser.Scene {
   // ===========================================================================
   // プライベートメソッド - 初期化
   // ===========================================================================
+
+  /**
+   * DIコンテナからサービスを取得
+   */
+  private initializeServicesFromContainer(): void {
+    const container = Container.getInstance();
+    this.stateManager = container.resolve(ServiceKeys.StateManager);
+    this.gameFlowManager = container.resolve(ServiceKeys.GameFlowManager);
+    this.eventBus = container.resolve(ServiceKeys.EventBus);
+  }
 
   /**
    * サービスの存在を検証
