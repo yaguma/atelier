@@ -155,8 +155,8 @@ graph TD
 | [TASK-0025](./phase-3/TASK-0025.md) | 納品フェーズUI | 4h | TASK-0020, TASK-0013, TASK-0014 | ✅ |
 | [TASK-0026](./phase-3/TASK-0026.md) | ショップ画面・昇格試験画面 | 4h | TASK-0018, TASK-0016 | ✅ |
 | [TASK-0027](./phase-3/TASK-0027.md) | リザルト画面（GameOver/GameClear） | 4h | TASK-0018, TASK-0017 | ✅ |
-| [TASK-0045](./phase-3/TASK-0045.md) | 調合フェーズUI実装（再実装） | 4h | TASK-0018, TASK-0012 | ⬜ |
-| [TASK-0046](./phase-3/TASK-0046.md) | MainScene共通レイアウト実装（再実装） | 4h | TASK-0018, TASK-0017 | ⬜ |
+| [TASK-0045](./phase-3/TASK-0045.md) | 調合フェーズUI実装（再実装） | 4h | TASK-0018, TASK-0012 | ✅ |
+| [TASK-0046](./phase-3/TASK-0046.md) | MainScene共通レイアウト実装（再実装） | 4h | TASK-0018, TASK-0017 | ✅ |
 
 ---
 

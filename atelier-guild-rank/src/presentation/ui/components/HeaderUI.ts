@@ -1,0 +1,291 @@
+/**
+ * ヘッダーUIコンポーネント
+ * TASK-0046 MainScene共通レイアウト実装
+ *
+ * @description
+ * ギルドランク、昇格ゲージ、残り日数、所持金、行動ポイントを表示するヘッダー
+ *
+ * @信頼性レベル 🔵 requirements.md セクション2.2に基づく
+ */
+
+import type Phaser from 'phaser';
+import { BaseComponent } from './BaseComponent';
+
+// =============================================================================
+// カラー定数
+// =============================================================================
+
+/**
+ * ヘッダーUI用カラー定数
+ */
+const COLORS = {
+  /** 赤系（危険） - 昇格ゲージ0-29%、残り日数4-5日 */
+  RED: 0xff6b6b,
+  /** 黄系（警告） - 昇格ゲージ30-59%、残り日数6-10日 */
+  YELLOW: 0xffd93d,
+  /** 緑系（安全） - 昇格ゲージ60-99% */
+  GREEN: 0x6bcb77,
+  /** 水色（達成） - 昇格ゲージ100% */
+  CYAN: 0x4ecdc4,
+  /** 白 - 残り日数11日以上 */
+  WHITE: 0xffffff,
+  /** 明るい赤（点滅用） - 残り日数1-3日 */
+  BRIGHT_RED: 0xff0000,
+} as const;
+
+// =============================================================================
+// 型定義
+// =============================================================================
+
+/**
+ * HeaderUI更新データの型定義
+ */
+export interface IHeaderUIData {
+  currentRank: string;
+  promotionGauge: number;
+  remainingDays: number;
+  gold: number;
+  actionPoints: number;
+  maxActionPoints: number;
+}
+
+// =============================================================================
+// HeaderUIクラス
+// =============================================================================
+
+/**
+ * ヘッダーUIコンポーネント
+ *
+ * 画面上部に配置され、ゲーム状態の主要情報を表示する。
+ * - ギルドランク
+ * - 昇格ゲージ（プログレスバー）
+ * - 残り日数
+ * - 所持金
+ * - 行動ポイント
+ *
+ * @信頼性レベル 🔵 requirements.md セクション2.2に基づく
+ */
+export class HeaderUI extends BaseComponent {
+  // ===========================================================================
+  // 内部状態
+  // ===========================================================================
+
+  /** ランク表示テキスト */
+  private _rankText = '';
+
+  /** 昇格ゲージ値 */
+  private _promotionGaugeValue = 0;
+
+  /** 昇格ゲージテキスト */
+  private _promotionGaugeText = '0/100';
+
+  /** 昇格ゲージ色 */
+  private _promotionGaugeColor: number = COLORS.RED;
+
+  /** 残り日数テキスト */
+  private _remainingDaysText = '残り: 0日';
+
+  /** 残り日数の色 */
+  private _remainingDaysColor: number = COLORS.WHITE;
+
+  /** 残り日数点滅フラグ */
+  private _remainingDaysBlinking = false;
+
+  /** 所持金テキスト */
+  private _goldText = '0G';
+
+  /** 行動ポイントテキスト */
+  private _actionPointsText = '0/0 AP';
+
+  // ===========================================================================
+  // コンストラクタ
+  // ===========================================================================
+
+  /**
+   * コンストラクタ
+   *
+   * @param scene - Phaserシーンインスタンス
+   * @param x - X座標
+   * @param y - Y座標
+   * @throws {Error} sceneがnullまたはundefinedの場合
+   */
+  constructor(scene: Phaser.Scene, x: number, y: number) {
+    // BaseComponentでも検証するが、テストで期待する具体的なエラーメッセージのため
+    if (!scene) {
+      throw new Error('scene is required');
+    }
+    super(scene, x, y);
+  }
+
+  // ===========================================================================
+  // ライフサイクルメソッド
+  // ===========================================================================
+
+  /**
+   * コンポーネントの初期化処理
+   */
+  create(): void {
+    // 最小限の実装（コンテナは既にBaseComponentで作成されている）
+  }
+
+  /**
+   * コンポーネントの破棄処理
+   */
+  destroy(): void {
+    this.container.destroy();
+  }
+
+  // ===========================================================================
+  // 更新メソッド
+  // ===========================================================================
+
+  /**
+   * ヘッダー情報を更新
+   *
+   * @param data - 更新データ
+   */
+  update(data: IHeaderUIData): void {
+    // ランク表示
+    this._rankText = `ランク: ${data.currentRank}`;
+
+    // 昇格ゲージ
+    this._promotionGaugeValue = data.promotionGauge;
+    this._promotionGaugeText = `${data.promotionGauge}/100`;
+    this._promotionGaugeColor = this.calculatePromotionGaugeColor(data.promotionGauge);
+
+    // 残り日数
+    this._remainingDaysText = `残り: ${data.remainingDays}日`;
+    const daysColorInfo = this.calculateRemainingDaysColor(data.remainingDays);
+    this._remainingDaysColor = daysColorInfo.color;
+    this._remainingDaysBlinking = daysColorInfo.blinking;
+
+    // 所持金
+    this._goldText = `${data.gold}G`;
+
+    // 行動ポイント
+    this._actionPointsText = `${data.actionPoints}/${data.maxActionPoints} AP`;
+  }
+
+  // ===========================================================================
+  // ゲッターメソッド
+  // ===========================================================================
+
+  /**
+   * ランクテキストを取得
+   */
+  getRankText(): string {
+    return this._rankText;
+  }
+
+  /**
+   * 昇格ゲージ値を取得
+   */
+  getPromotionGaugeValue(): number {
+    return this._promotionGaugeValue;
+  }
+
+  /**
+   * 昇格ゲージテキストを取得
+   */
+  getPromotionGaugeText(): string {
+    return this._promotionGaugeText;
+  }
+
+  /**
+   * 昇格ゲージ色を取得
+   */
+  getPromotionGaugeColor(): number {
+    return this._promotionGaugeColor;
+  }
+
+  /**
+   * 残り日数テキストを取得
+   */
+  getRemainingDaysText(): string {
+    return this._remainingDaysText;
+  }
+
+  /**
+   * 残り日数の色を取得
+   */
+  getRemainingDaysColor(): number {
+    return this._remainingDaysColor;
+  }
+
+  /**
+   * 残り日数が点滅中かを取得
+   */
+  isRemainingDaysBlinking(): boolean {
+    return this._remainingDaysBlinking;
+  }
+
+  /**
+   * 所持金テキストを取得
+   */
+  getGoldText(): string {
+    return this._goldText;
+  }
+
+  /**
+   * 行動ポイントテキストを取得
+   */
+  getActionPointsText(): string {
+    return this._actionPointsText;
+  }
+
+  // ===========================================================================
+  // プライベートメソッド
+  // ===========================================================================
+
+  /**
+   * 昇格ゲージの値に応じた色を計算
+   *
+   * - 0-29%: 赤系色 (0xFF6B6B)
+   * - 30-59%: 黄系色 (0xFFD93D)
+   * - 60-99%: 緑系色 (0x6BCB77)
+   * - 100%: 水色 (0x4ECDC4)
+   *
+   * @param value - 昇格ゲージ値（0-100）
+   * @returns カラーコード
+   */
+  private calculatePromotionGaugeColor(value: number): number {
+    if (value >= 100) {
+      return COLORS.CYAN; // 100%: 水色
+    }
+    if (value >= 60) {
+      return COLORS.GREEN; // 60-99%: 緑系
+    }
+    if (value >= 30) {
+      return COLORS.YELLOW; // 30-59%: 黄系
+    }
+    return COLORS.RED; // 0-29%: 赤系
+  }
+
+  /**
+   * 残り日数に応じた色と点滅フラグを計算
+   *
+   * - 1-3日: 明るい赤 + 点滅 (0xFF0000)
+   * - 4-5日: 赤色 (0xFF6B6B)
+   * - 6-10日: 黄色 (0xFFD93D)
+   * - 11日以上: 白 (0xFFFFFF)
+   *
+   * @param days - 残り日数
+   * @returns 色と点滅フラグのオブジェクト
+   */
+  private calculateRemainingDaysColor(days: number): { color: number; blinking: boolean } {
+    if (days <= 3) {
+      // 1-3日: 明るい赤 + 点滅
+      return { color: COLORS.BRIGHT_RED, blinking: true };
+    }
+    if (days <= 5) {
+      // 4-5日: 赤色
+      return { color: COLORS.RED, blinking: false };
+    }
+    if (days <= 10) {
+      // 6-10日: 黄色
+      return { color: COLORS.YELLOW, blinking: false };
+    }
+    // 11日以上: 白
+    return { color: COLORS.WHITE, blinking: false };
+  }
+}

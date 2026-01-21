@@ -18,6 +18,17 @@ export const GamePhase = {
 
 export type GamePhase = (typeof GamePhase)[keyof typeof GamePhase];
 
+/**
+ * 有効なGamePhaseの配列（フェーズ順）
+ * - QUEST_ACCEPT → GATHERING → ALCHEMY → DELIVERY
+ */
+export const VALID_GAME_PHASES: readonly GamePhase[] = [
+  GamePhase.QUEST_ACCEPT,
+  GamePhase.GATHERING,
+  GamePhase.ALCHEMY,
+  GamePhase.DELIVERY,
+] as const;
+
 // =============================================================================
 // 2.2 GuildRank列挙型
 // =============================================================================
