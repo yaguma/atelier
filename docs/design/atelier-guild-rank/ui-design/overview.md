@@ -498,21 +498,21 @@ Phaserではビットマップフォントまたはウェブフォントを使�
 
 | 用途 | フォントファミリー | サイズ | スタイル |
 |------|------------------|--------|---------|
-| **見出し（大）** | 'NotoSansJP' | 24px | Bold |
-| **見出し（中）** | 'NotoSansJP' | 20px | Bold |
-| **見出し（小）** | 'NotoSansJP' | 16px | Bold |
-| **本文** | 'NotoSansJP' | 14px | Regular |
-| **キャプション** | 'NotoSansJP' | 12px | Regular |
+| **見出し（大）** | 'M PLUS Rounded 1c' | 24px | Bold |
+| **見出し（中）** | 'M PLUS Rounded 1c' | 20px | Bold |
+| **見出し（小）** | 'M PLUS Rounded 1c' | 16px | Bold |
+| **本文** | 'M PLUS Rounded 1c' | 14px | Regular |
+| **キャプション** | 'M PLUS Rounded 1c' | 12px | Regular |
 | **数値** | 'RobotoMono' | 16px | Bold |
 
 ```typescript
 // テキストスタイル定義
 const TextStyles = {
-    heading1: { fontFamily: 'NotoSansJP', fontSize: '24px', fontStyle: 'bold', color: '#333333' },
-    heading2: { fontFamily: 'NotoSansJP', fontSize: '20px', fontStyle: 'bold', color: '#333333' },
-    heading3: { fontFamily: 'NotoSansJP', fontSize: '16px', fontStyle: 'bold', color: '#333333' },
-    body: { fontFamily: 'NotoSansJP', fontSize: '14px', color: '#333333' },
-    caption: { fontFamily: 'NotoSansJP', fontSize: '12px', color: '#666666' },
+    heading1: { fontFamily: '"M PLUS Rounded 1c", sans-serif', fontSize: '24px', fontStyle: 'bold', color: '#333333' },
+    heading2: { fontFamily: '"M PLUS Rounded 1c", sans-serif', fontSize: '20px', fontStyle: 'bold', color: '#333333' },
+    heading3: { fontFamily: '"M PLUS Rounded 1c", sans-serif', fontSize: '16px', fontStyle: 'bold', color: '#333333' },
+    body: { fontFamily: '"M PLUS Rounded 1c", sans-serif', fontSize: '14px', color: '#333333' },
+    caption: { fontFamily: '"M PLUS Rounded 1c", sans-serif', fontSize: '12px', color: '#666666' },
     number: { fontFamily: 'RobotoMono', fontSize: '16px', fontStyle: 'bold', color: '#333333' }
 };
 ```
