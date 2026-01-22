@@ -17,7 +17,7 @@ import { GameEventType } from '@shared/types/events';
 import type { ICraftedItem, IMaterialInstance } from '@shared/types/materials';
 import type { IActiveQuest } from '@shared/types/quests';
 import type Phaser from 'phaser';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // =============================================================================
 // モック定義
@@ -40,6 +40,35 @@ vi.mock('phaser', () => {
   };
 });
 
+// DIコンテナのモックインスタンス（テスト時に設定を変更可能）
+// biome-ignore lint/suspicious/noExplicitAny: テスト用のモック変数
+let mockStateManagerInstance: any;
+// biome-ignore lint/suspicious/noExplicitAny: テスト用のモック変数
+let mockGameFlowManagerInstance: any;
+// biome-ignore lint/suspicious/noExplicitAny: テスト用のモック変数
+let mockEventBusInstance: any;
+
+const mockContainerInstance = {
+  resolve: vi.fn((key: string) => {
+    if (key === 'StateManager') return mockStateManagerInstance;
+    if (key === 'GameFlowManager') return mockGameFlowManagerInstance;
+    if (key === 'EventBus') return mockEventBusInstance;
+    throw new Error(`Service not found: ${key}`);
+  }),
+  register: vi.fn(),
+};
+
+vi.mock('@infrastructure/di/container', () => ({
+  Container: {
+    getInstance: vi.fn(() => mockContainerInstance),
+  },
+  ServiceKeys: {
+    StateManager: 'StateManager',
+    GameFlowManager: 'GameFlowManager',
+    EventBus: 'EventBus',
+  },
+}));
+
 // =============================================================================
 // モック作成ヘルパー
 // =============================================================================
@@ -53,6 +82,7 @@ const createMockContainer = () => ({
   setDepth: vi.fn().mockReturnThis(),
   add: vi.fn().mockReturnThis(),
   destroy: vi.fn(),
+  bringToTop: vi.fn().mockReturnThis(),
   x: 0,
   y: 0,
   visible: true,
@@ -77,8 +107,16 @@ const createMockText = () => ({
 const createMockGraphics = () => ({
   fillStyle: vi.fn().mockReturnThis(),
   fillRect: vi.fn().mockReturnThis(),
+  fillRoundedRect: vi.fn().mockReturnThis(),
   clear: vi.fn().mockReturnThis(),
   destroy: vi.fn(),
+  // 線描画用メソッド
+  lineStyle: vi.fn().mockReturnThis(),
+  beginPath: vi.fn().mockReturnThis(),
+  moveTo: vi.fn().mockReturnThis(),
+  lineTo: vi.fn().mockReturnThis(),
+  stroke: vi.fn().mockReturnThis(),
+  strokePath: vi.fn().mockReturnThis(),
 });
 
 /**
@@ -131,6 +169,7 @@ const createMockScene = () => {
         graphics: vi.fn().mockReturnValue(mockGraphics),
         rectangle: vi.fn().mockReturnValue({
           setFillStyle: vi.fn().mockReturnThis(),
+          setStrokeStyle: vi.fn().mockReturnThis(),
           setOrigin: vi.fn().mockReturnThis(),
           setInteractive: vi.fn().mockReturnThis(),
           on: vi.fn().mockReturnThis(),
@@ -138,6 +177,7 @@ const createMockScene = () => {
         }),
         circle: vi.fn().mockReturnValue({
           setFillStyle: vi.fn().mockReturnThis(),
+          setStrokeStyle: vi.fn().mockReturnThis(),
           destroy: vi.fn(),
         }),
       },
@@ -306,6 +346,13 @@ const mockCraftedItems = [
 // =============================================================================
 
 describe('MainScene共通レイアウト', () => {
+  beforeEach(() => {
+    // DIコンテナから返されるモックインスタンスを初期化
+    mockStateManagerInstance = createMockStateManager();
+    mockGameFlowManagerInstance = createMockGameFlowManager();
+    mockEventBusInstance = createMockEventBus();
+  });
+
   afterEach(() => {
     vi.clearAllMocks();
   });
@@ -487,9 +534,6 @@ describe('MainScene共通レイアウト', () => {
 
         const { MainScene } = await import('@presentation/scenes/MainScene');
         const { scene: mockScene } = createMockScene();
-        const mockStateManager = createMockStateManager();
-        const mockGameFlowManager = createMockGameFlowManager();
-        const mockEventBus = createMockEventBus();
 
         const mainScene = new MainScene();
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
@@ -498,17 +542,11 @@ describe('MainScene共通レイアウト', () => {
         mainScene.cameras = mockScene.cameras;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.rexUI = mockScene.rexUI;
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        mainScene.stateManager = mockStateManager;
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        mainScene.gameFlowManager = mockGameFlowManager;
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        mainScene.eventBus = mockEventBus;
 
         mainScene.create();
 
-        // When: EventBusでPHASE_CHANGEDを発行
-        mockEventBus.emit(GameEventType.PHASE_CHANGED, {
+        // When: グローバルなmockEventBusInstanceでPHASE_CHANGEDを発行
+        mockEventBusInstance.emit(GameEventType.PHASE_CHANGED, {
           type: GameEventType.PHASE_CHANGED,
           previousPhase: GamePhase.QUEST_ACCEPT,
           newPhase: GamePhase.GATHERING,
@@ -529,9 +567,6 @@ describe('MainScene共通レイアウト', () => {
 
         const { MainScene } = await import('@presentation/scenes/MainScene');
         const { scene: mockScene } = createMockScene();
-        const mockStateManager = createMockStateManager();
-        const mockGameFlowManager = createMockGameFlowManager();
-        const mockEventBus = createMockEventBus();
 
         const mainScene = new MainScene();
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
@@ -540,17 +575,11 @@ describe('MainScene共通レイアウト', () => {
         mainScene.cameras = mockScene.cameras;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.rexUI = mockScene.rexUI;
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        mainScene.stateManager = mockStateManager;
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        mainScene.gameFlowManager = mockGameFlowManager;
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        mainScene.eventBus = mockEventBus;
 
         mainScene.create();
 
-        // When: EventBusでDAY_STARTEDを発行
-        mockEventBus.emit(GameEventType.DAY_STARTED, {
+        // When: グローバルなmockEventBusInstanceでDAY_STARTEDを発行
+        mockEventBusInstance.emit(GameEventType.DAY_STARTED, {
           type: GameEventType.DAY_STARTED,
           day: 2,
           remainingDays: 29,
@@ -569,9 +598,6 @@ describe('MainScene共通レイアウト', () => {
 
         const { MainScene } = await import('@presentation/scenes/MainScene');
         const { scene: mockScene } = createMockScene();
-        const mockStateManager = createMockStateManager();
-        const mockGameFlowManager = createMockGameFlowManager();
-        const mockEventBus = createMockEventBus();
 
         const mainScene = new MainScene();
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
@@ -580,18 +606,12 @@ describe('MainScene共通レイアウト', () => {
         mainScene.cameras = mockScene.cameras;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.rexUI = mockScene.rexUI;
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        mainScene.stateManager = mockStateManager;
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        mainScene.gameFlowManager = mockGameFlowManager;
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        mainScene.eventBus = mockEventBus;
 
         mainScene.create();
 
-        // When: StateManagerの状態を変更
-        mockStateManager.getState.mockReturnValue({
-          ...mockStateManager.getState(),
+        // When: グローバルなmockStateManagerInstanceの状態を変更
+        mockStateManagerInstance.getState.mockReturnValue({
+          ...mockStateManagerInstance.getState(),
           gold: 1000,
         });
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
@@ -646,17 +666,25 @@ describe('MainScene共通レイアウト', () => {
         const { MainScene } = await import('@presentation/scenes/MainScene');
         const { scene: mockScene } = createMockScene();
 
-        const mainScene = new MainScene();
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        mainScene.add = mockScene.add;
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        mainScene.cameras = mockScene.cameras;
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        mainScene.rexUI = mockScene.rexUI;
-        // StateManagerを未設定
+        // DIコンテナのresolveがStateManagerにundefinedを返すように設定
+        const originalStateManager = mockStateManagerInstance;
+        mockStateManagerInstance = undefined;
 
-        // When & Then: StateManager未初期化でエラー
-        expect(() => mainScene.create()).toThrow('StateManager is required');
+        try {
+          const mainScene = new MainScene();
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.add = mockScene.add;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.cameras = mockScene.cameras;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.rexUI = mockScene.rexUI;
+
+          // When & Then: StateManager未初期化でエラー
+          expect(() => mainScene.create()).toThrow('StateManager is required');
+        } finally {
+          // 元に戻す
+          mockStateManagerInstance = originalStateManager;
+        }
       });
 
       it('TC-0046-E04: GameFlowManager未初期化時にエラー処理される', async () => {
@@ -666,21 +694,26 @@ describe('MainScene共通レイアウト', () => {
 
         const { MainScene } = await import('@presentation/scenes/MainScene');
         const { scene: mockScene } = createMockScene();
-        const mockStateManager = createMockStateManager();
 
-        const mainScene = new MainScene();
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        mainScene.add = mockScene.add;
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        mainScene.cameras = mockScene.cameras;
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        mainScene.rexUI = mockScene.rexUI;
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        mainScene.stateManager = mockStateManager;
-        // GameFlowManagerを未設定
+        // DIコンテナのresolveがGameFlowManagerにundefinedを返すように設定
+        const originalGameFlowManager = mockGameFlowManagerInstance;
+        mockGameFlowManagerInstance = undefined;
 
-        // When & Then: GameFlowManager未初期化でエラー
-        expect(() => mainScene.create()).toThrow('GameFlowManager is required');
+        try {
+          const mainScene = new MainScene();
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.add = mockScene.add;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.cameras = mockScene.cameras;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.rexUI = mockScene.rexUI;
+
+          // When & Then: GameFlowManager未初期化でエラー
+          expect(() => mainScene.create()).toThrow('GameFlowManager is required');
+        } finally {
+          // 元に戻す
+          mockGameFlowManagerInstance = originalGameFlowManager;
+        }
       });
 
       it('TC-0046-E05: EventBus未初期化時にエラー処理される', async () => {
@@ -690,24 +723,26 @@ describe('MainScene共通レイアウト', () => {
 
         const { MainScene } = await import('@presentation/scenes/MainScene');
         const { scene: mockScene } = createMockScene();
-        const mockStateManager = createMockStateManager();
-        const mockGameFlowManager = createMockGameFlowManager();
 
-        const mainScene = new MainScene();
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        mainScene.add = mockScene.add;
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        mainScene.cameras = mockScene.cameras;
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        mainScene.rexUI = mockScene.rexUI;
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        mainScene.stateManager = mockStateManager;
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        mainScene.gameFlowManager = mockGameFlowManager;
-        // EventBusを未設定
+        // DIコンテナのresolveがEventBusにundefinedを返すように設定
+        const originalEventBus = mockEventBusInstance;
+        mockEventBusInstance = undefined;
 
-        // When & Then: EventBus未初期化でエラー
-        expect(() => mainScene.create()).toThrow('EventBus is required');
+        try {
+          const mainScene = new MainScene();
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.add = mockScene.add;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.cameras = mockScene.cameras;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.rexUI = mockScene.rexUI;
+
+          // When & Then: EventBus未初期化でエラー
+          expect(() => mainScene.create()).toThrow('EventBus is required');
+        } finally {
+          // 元に戻す
+          mockEventBusInstance = originalEventBus;
+        }
       });
     });
   });

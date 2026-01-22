@@ -31,6 +31,11 @@ vi.mock('phaser', () => {
   };
 });
 
+// DIセットアップのモック（非同期関数）
+vi.mock('@infrastructure/di/setup', () => ({
+  initializeServices: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { BootScene } from '@presentation/scenes/BootScene';
 
 /**
@@ -229,7 +234,7 @@ describe('BootScene', () => {
   });
 
   describe('create() - サービス初期化とシーン遷移', () => {
-    it('T-0008-02: TitleSceneへ自動遷移する', () => {
+    it('T-0008-02: TitleSceneへ自動遷移する', async () => {
       // 【テスト目的】: シーン遷移フローが正常に動作することを確認 🔵
       // 【テスト内容】: this.scene.start('TitleScene')が呼ばれることを検証 🔵
       // 【期待される動作】: BootScene完了後、TitleSceneが開始される 🔵
@@ -237,8 +242,11 @@ describe('BootScene', () => {
       // 【実際の処理実行】: BootScene.create()を呼び出し 🔵
       bootScene.create();
 
-      // 【結果検証】: TitleSceneへの遷移が実行されたことを確認 🔵
-      expect(mockScene.start).toHaveBeenCalledWith('TitleScene');
+      // 【非同期処理待機】: initializeAndTransition()の非同期処理が完了するのを待つ
+      await vi.waitFor(() => {
+        // 【結果検証】: TitleSceneへの遷移が実行されたことを確認 🔵
+        expect(mockScene.start).toHaveBeenCalledWith('TitleScene');
+      });
     });
 
     it('マスターデータがキャッシュから取得される', () => {
