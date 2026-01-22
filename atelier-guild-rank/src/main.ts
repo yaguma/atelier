@@ -9,7 +9,13 @@
 
 import type { IStateManager } from '@application/services/state-manager.interface';
 import { Container, ServiceKeys } from '@infrastructure/di/container';
-import { BootScene, MainScene, TitleScene } from '@presentation/scenes';
+import {
+  BootScene,
+  GameClearScene,
+  GameOverScene,
+  MainScene,
+  TitleScene,
+} from '@presentation/scenes';
 // debug.ts でグローバル型 (window.game, window.gameState, window.debug) が定義されている
 import '@shared/utils/debug';
 import Phaser from 'phaser';
@@ -48,6 +54,8 @@ const config: Phaser.Types.Core.GameConfig = {
     BootScene, // アセット読み込み・初期化
     TitleScene, // タイトル画面
     MainScene, // メインゲーム
+    GameClearScene, // ゲームクリア画面
+    GameOverScene, // ゲームオーバー画面
   ],
 
   /** プラグイン設定 🔵 */
@@ -141,6 +149,10 @@ window.gameState = () => {
     // StateManagerが初期化されていない場合は無視
   }
 
+  // ゲームクリア/ゲームオーバー判定
+  const isGameClear = currentScene === 'GameClearScene';
+  const isGameOver = currentScene === 'GameOverScene';
+
   return {
     currentScene,
     hasSaveData,
@@ -149,6 +161,8 @@ window.gameState = () => {
     gold: stateFromManager.gold,
     currentRank: stateFromManager.currentRank,
     actionPoints: stateFromManager.actionPoints,
+    isGameClear,
+    isGameOver,
   };
 };
 
