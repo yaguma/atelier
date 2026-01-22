@@ -157,7 +157,7 @@ graph TD
 | [TASK-0027](./phase-3/TASK-0027.md) | リザルト画面（GameOver/GameClear） | 4h | TASK-0018, TASK-0017 | ✅ |
 | [TASK-0045](./phase-3/TASK-0045.md) | 調合フェーズUI実装（再実装） | 4h | TASK-0018, TASK-0012 | ✅ |
 | [TASK-0046](./phase-3/TASK-0046.md) | MainScene共通レイアウト実装（再実装） | 4h | TASK-0018, TASK-0017 | ✅ |
-| [TASK-0047](./phase-3/TASK-0047.md) | 共通UIコンポーネント視覚実装 | 4h | TASK-0018, TASK-0046 | ⬜ |
+| [TASK-0047](./phase-3/TASK-0047.md) | 共通UIコンポーネント視覚実装 | 4h | TASK-0018, TASK-0046 | ✅ |
 
 ---
 

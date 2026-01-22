@@ -1,6 +1,7 @@
 /**
  * サイドバーUIコンポーネント
  * TASK-0046 MainScene共通レイアウト実装
+ * TASK-0047 共通UIコンポーネント視覚実装
  *
  * @description
  * 受注依頼、素材、完成品のアコーディオンセクションと保管容量を表示するサイドバー
@@ -85,6 +86,37 @@ export class SidebarUI extends BaseComponent {
   /** 完成品セクション（ダミー） */
   private _craftedItemsSection = {};
 
+  /** 現在/最大保管容量 */
+  private _currentStorage = 0;
+  private _maxStorage = 20;
+
+  // ===========================================================================
+  // 視覚要素（Phaserオブジェクト）
+  // ===========================================================================
+
+  /** 依頼セクションヘッダー */
+  private _questsHeaderText: Phaser.GameObjects.Text | null = null;
+  /** 依頼セクションアイコン */
+  private _questsIconText: Phaser.GameObjects.Text | null = null;
+
+  /** 素材セクションヘッダー */
+  private _materialsHeaderText: Phaser.GameObjects.Text | null = null;
+  /** 素材セクションアイコン */
+  private _materialsIconText: Phaser.GameObjects.Text | null = null;
+
+  /** 完成品セクションヘッダー */
+  private _craftedItemsHeaderText: Phaser.GameObjects.Text | null = null;
+  /** 完成品セクションアイコン */
+  private _craftedItemsIconText: Phaser.GameObjects.Text | null = null;
+
+  /** 保管容量テキスト要素 */
+  private _storageTextElement: Phaser.GameObjects.Text | null = null;
+
+  /** ショップボタン背景 */
+  private _shopButtonBackground: Phaser.GameObjects.Rectangle | null = null;
+  /** ショップボタンテキスト */
+  private _shopButtonText: Phaser.GameObjects.Text | null = null;
+
   // ===========================================================================
   // コンストラクタ
   // ===========================================================================
@@ -111,11 +143,74 @@ export class SidebarUI extends BaseComponent {
 
   /**
    * コンポーネントの初期化処理
+   * TASK-0047: 視覚要素を生成
    */
   create(): void {
-    // 最小限の実装（コンテナは既にBaseComponentで作成されている）
-    // ショップボタンなどのUI要素はここで作成するが、
-    // テストを通すためにダミーオブジェクトを使用
+    // 依頼セクションヘッダーを生成
+    this._questsIconText = this.scene.add.text(10, 10, '▼', {
+      fontSize: '14px',
+      color: '#FFFFFF',
+    });
+    this.container.add(this._questsIconText);
+
+    this._questsHeaderText = this.scene.add.text(30, 10, '【受注依頼】', {
+      fontSize: '14px',
+      color: '#FFFFFF',
+    });
+    this.container.add(this._questsHeaderText);
+
+    // 素材セクションヘッダーを生成
+    this._materialsIconText = this.scene.add.text(10, 100, '▼', {
+      fontSize: '14px',
+      color: '#FFFFFF',
+    });
+    this.container.add(this._materialsIconText);
+
+    this._materialsHeaderText = this.scene.add.text(30, 100, '【素材】', {
+      fontSize: '14px',
+      color: '#FFFFFF',
+    });
+    this.container.add(this._materialsHeaderText);
+
+    // 完成品セクションヘッダーを生成
+    this._craftedItemsIconText = this.scene.add.text(10, 200, '▼', {
+      fontSize: '14px',
+      color: '#FFFFFF',
+    });
+    this.container.add(this._craftedItemsIconText);
+
+    this._craftedItemsHeaderText = this.scene.add.text(30, 200, '【完成品】', {
+      fontSize: '14px',
+      color: '#FFFFFF',
+    });
+    this.container.add(this._craftedItemsHeaderText);
+
+    // 保管容量テキストを生成
+    this._storageTextElement = this.scene.add.text(10, 300, '保管: 0/20', {
+      fontSize: '14px',
+      color: '#FFFFFF',
+    });
+    this.container.add(this._storageTextElement);
+
+    // ショップボタンを生成
+    this._shopButtonBackground = this.scene.add.rectangle(90, 350, 160, 36, 0x6366f1);
+    this._shopButtonBackground.setInteractive();
+    this.container.add(this._shopButtonBackground);
+
+    this._shopButtonText = this.scene.add.text(60, 340, 'ショップ', {
+      fontSize: '14px',
+      color: '#FFFFFF',
+    });
+    this.container.add(this._shopButtonText);
+
+    // ダミーオブジェクトを更新
+    this._questsSection = { header: this._questsHeaderText, icon: this._questsIconText };
+    this._materialsSection = { header: this._materialsHeaderText, icon: this._materialsIconText };
+    this._craftedItemsSection = {
+      header: this._craftedItemsHeaderText,
+      icon: this._craftedItemsIconText,
+    };
+    this._shopButton = this._shopButtonBackground;
   }
 
   /**
@@ -131,6 +226,7 @@ export class SidebarUI extends BaseComponent {
 
   /**
    * サイドバー情報を更新
+   * TASK-0047: 視覚要素を更新
    *
    * @param data - 更新データ
    */
@@ -145,7 +241,34 @@ export class SidebarUI extends BaseComponent {
     this._craftedItems = data.craftedItems;
 
     // 保管容量
+    this._currentStorage = data.currentStorage;
+    this._maxStorage = data.maxStorage;
     this._storageText = `保管: ${data.currentStorage}/${data.maxStorage}`;
+
+    // TASK-0047: 視覚要素の更新
+    this.updateVisualElements();
+  }
+
+  // ===========================================================================
+  // 視覚更新メソッド
+  // ===========================================================================
+
+  /**
+   * 視覚要素を更新
+   */
+  private updateVisualElements(): void {
+    // 保管容量テキスト更新
+    if (this._storageTextElement) {
+      this._storageTextElement.setText(this._storageText);
+
+      // 80%以上で警告色
+      const ratio = this._currentStorage / this._maxStorage;
+      if (ratio >= 0.8) {
+        this._storageTextElement.setColor('#FFD93D');
+      } else {
+        this._storageTextElement.setColor('#FFFFFF');
+      }
+    }
   }
 
   // ===========================================================================
@@ -224,10 +347,33 @@ export class SidebarUI extends BaseComponent {
 
   /**
    * セクションの折りたたみ状態を切り替え
+   * TASK-0047: アイコンの視覚更新を追加
    *
    * @param sectionName - セクション名
    */
   toggleSection(sectionName: SidebarSectionName): void {
     this._sectionCollapsed[sectionName] = !this._sectionCollapsed[sectionName];
+
+    // アイコンを更新
+    const isCollapsed = this._sectionCollapsed[sectionName];
+    const iconText = isCollapsed ? '▶' : '▼';
+
+    switch (sectionName) {
+      case 'quests':
+        if (this._questsIconText) {
+          this._questsIconText.setText(iconText);
+        }
+        break;
+      case 'materials':
+        if (this._materialsIconText) {
+          this._materialsIconText.setText(iconText);
+        }
+        break;
+      case 'craftedItems':
+        if (this._craftedItemsIconText) {
+          this._craftedItemsIconText.setText(iconText);
+        }
+        break;
+    }
   }
 }

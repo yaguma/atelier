@@ -132,6 +132,12 @@ const createMockScene = () => {
         rectangle: vi.fn().mockReturnValue({
           setFillStyle: vi.fn().mockReturnThis(),
           setOrigin: vi.fn().mockReturnThis(),
+          setInteractive: vi.fn().mockReturnThis(),
+          on: vi.fn().mockReturnThis(),
+          destroy: vi.fn(),
+        }),
+        circle: vi.fn().mockReturnValue({
+          setFillStyle: vi.fn().mockReturnThis(),
           destroy: vi.fn(),
         }),
       },

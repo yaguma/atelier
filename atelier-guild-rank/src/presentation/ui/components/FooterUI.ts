@@ -1,6 +1,7 @@
 /**
  * フッターUIコンポーネント
  * TASK-0046 MainScene共通レイアウト実装
+ * TASK-0047 共通UIコンポーネント視覚実装
  *
  * @description
  * フェーズインジケーター、手札表示エリア、次へボタンを表示するフッター
@@ -9,6 +10,7 @@
  */
 
 import { GamePhase, VALID_GAME_PHASES } from '@shared/types/common';
+import type Phaser from 'phaser';
 import { BaseComponent } from './BaseComponent';
 
 // =============================================================================
@@ -19,6 +21,28 @@ import { BaseComponent } from './BaseComponent';
  * 手札表示エリアの最大表示数
  */
 const HAND_DISPLAY_CAPACITY = 5;
+
+/**
+ * フェーズインジケーター用カラー定数
+ */
+const PHASE_COLORS = {
+  /** 未到達（グレー） */
+  PENDING: 0x6b7280,
+  /** 現在（プライマリ） */
+  CURRENT: 0x6366f1,
+  /** 完了（緑） */
+  COMPLETED: 0x10b981,
+} as const;
+
+/**
+ * ボタン用カラー定数
+ */
+const BUTTON_COLORS = {
+  /** プライマリ（有効時） */
+  PRIMARY: 0x6366f1,
+  /** 無効時（グレー） */
+  DISABLED: 0x4b5563,
+} as const;
 
 // =============================================================================
 // 型定義
@@ -75,15 +99,71 @@ export class FooterUI extends BaseComponent {
   private _onNextClickCallback: (() => void) | null = null;
 
   // ===========================================================================
+  // 視覚要素（Phaserオブジェクト）
+  // ===========================================================================
+
+  /** フェーズインジケーター円（視覚要素） */
+  // biome-ignore lint/suspicious/noExplicitAny: Phaser.GameObjects.Arcの型定義が複雑なためanyを使用
+  private _phaseIndicatorCircles: any[] = [];
+
+  /** 手札プレースホルダー（視覚要素） */
+  private _handPlaceholders: Phaser.GameObjects.Rectangle[] = [];
+
+  /** 次へボタンコンテナ */
+  private _nextButtonContainer: Phaser.GameObjects.Container | null = null;
+
+  /** 次へボタン背景 */
+  private _nextButtonBackground: Phaser.GameObjects.Rectangle | null = null;
+
+  /** 次へボタンテキスト */
+  private _nextButtonText: Phaser.GameObjects.Text | null = null;
+
+  // ===========================================================================
   // ライフサイクルメソッド
   // ===========================================================================
 
   /**
    * コンポーネントの初期化処理
+   * TASK-0047: 視覚要素を生成
    */
   create(): void {
-    // 4つのフェーズインジケーターを作成
-    this._phaseIndicators = VALID_GAME_PHASES.map(() => ({}));
+    // 4つのフェーズインジケーター（円）を作成
+    this._phaseIndicatorCircles = VALID_GAME_PHASES.map((_, index) => {
+      const circle = this.scene.add.circle(50 + index * 80, 20, 15, PHASE_COLORS.PENDING);
+      this.container.add(circle);
+      return circle;
+    });
+    this._phaseIndicators = this._phaseIndicatorCircles;
+
+    // 5つの手札プレースホルダー（矩形）を作成
+    this._handPlaceholders = [];
+    for (let i = 0; i < HAND_DISPLAY_CAPACITY; i++) {
+      const placeholder = this.scene.add.rectangle(400 + i * 80, 40, 60, 80, 0x374151);
+      this.container.add(placeholder);
+      this._handPlaceholders.push(placeholder);
+    }
+    this._handDisplayArea = this._handPlaceholders;
+
+    // 次へボタンコンテナを作成
+    this._nextButtonContainer = this.scene.add.container(900, 40);
+    this.container.add(this._nextButtonContainer);
+
+    // 次へボタン背景を作成
+    this._nextButtonBackground = this.scene.add.rectangle(0, 0, 120, 40, BUTTON_COLORS.PRIMARY);
+    this._nextButtonBackground.setInteractive();
+    this._nextButtonBackground.on('pointerdown', () => {
+      if (this._onNextClickCallback && this._nextButtonEnabled) {
+        this._onNextClickCallback();
+      }
+    });
+    this._nextButtonContainer.add(this._nextButtonBackground);
+
+    // 次へボタンテキストを作成
+    this._nextButtonText = this.scene.add.text(-30, -10, '', {
+      fontSize: '16px',
+      color: '#FFFFFF',
+    });
+    this._nextButtonContainer.add(this._nextButtonText);
   }
 
   /**
@@ -167,6 +247,7 @@ export class FooterUI extends BaseComponent {
 
   /**
    * フェーズインジケーターを更新
+   * TASK-0047: 視覚要素を更新
    *
    * @param currentPhase - 現在のフェーズ
    * @param completedPhases - 完了したフェーズの配列
@@ -180,20 +261,32 @@ export class FooterUI extends BaseComponent {
 
     this._currentPhase = currentPhase;
 
-    // 全フェーズの状態をリセット
-    for (const phase of VALID_GAME_PHASES) {
+    // 全フェーズの状態をリセットし、視覚要素を更新
+    for (let i = 0; i < VALID_GAME_PHASES.length; i++) {
+      const phase = VALID_GAME_PHASES[i];
+      let color: number = PHASE_COLORS.PENDING;
+
       if (completedPhases.includes(phase)) {
         this._phaseStates[phase] = 'COMPLETED';
+        color = PHASE_COLORS.COMPLETED;
       } else if (phase === currentPhase) {
         this._phaseStates[phase] = 'CURRENT';
+        color = PHASE_COLORS.CURRENT;
       } else {
         this._phaseStates[phase] = 'PENDING';
+        color = PHASE_COLORS.PENDING;
+      }
+
+      // TASK-0047: 視覚要素の色を更新
+      if (this._phaseIndicatorCircles[i]?.setFillStyle) {
+        this._phaseIndicatorCircles[i].setFillStyle(color);
       }
     }
   }
 
   /**
    * 次へボタンを更新
+   * TASK-0047: 視覚要素を更新
    *
    * @param label - ボタンラベル
    * @param enabled - 有効/無効状態
@@ -201,6 +294,18 @@ export class FooterUI extends BaseComponent {
   updateNextButton(label: string, enabled: boolean): void {
     this._nextButtonLabel = label;
     this._nextButtonEnabled = enabled;
+
+    // TASK-0047: 視覚要素の更新
+    // ボタンテキスト更新
+    if (this._nextButtonText) {
+      this._nextButtonText.setText(label);
+    }
+
+    // ボタン背景色更新
+    if (this._nextButtonBackground) {
+      const color = enabled ? BUTTON_COLORS.PRIMARY : BUTTON_COLORS.DISABLED;
+      this._nextButtonBackground.setFillStyle(color);
+    }
   }
 
   // ===========================================================================

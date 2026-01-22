@@ -1,6 +1,7 @@
 /**
  * ヘッダーUIコンポーネント
  * TASK-0046 MainScene共通レイアウト実装
+ * TASK-0047 共通UIコンポーネント視覚実装
  *
  * @description
  * ギルドランク、昇格ゲージ、残り日数、所持金、行動ポイントを表示するヘッダー
@@ -98,6 +99,37 @@ export class HeaderUI extends BaseComponent {
   private _actionPointsText = '0/0 AP';
 
   // ===========================================================================
+  // 視覚要素（Phaserオブジェクト）
+  // ===========================================================================
+
+  /** ランク表示テキストオブジェクト */
+  private _rankTextElement: Phaser.GameObjects.Text | null = null;
+
+  /** 昇格ゲージ背景グラフィックス */
+  private _gaugeBackground: Phaser.GameObjects.Graphics | null = null;
+
+  /** 昇格ゲージフィルグラフィックス */
+  private _gaugeFill: Phaser.GameObjects.Graphics | null = null;
+
+  /** 残り日数テキストオブジェクト */
+  private _daysTextElement: Phaser.GameObjects.Text | null = null;
+
+  /** 所持金テキストオブジェクト */
+  private _goldTextElement: Phaser.GameObjects.Text | null = null;
+
+  /** 行動ポイントテキストオブジェクト */
+  private _actionPointsTextElement: Phaser.GameObjects.Text | null = null;
+
+  /** 点滅Tween */
+  private _blinkingTween: Phaser.Tweens.Tween | null = null;
+
+  /** ゲージ幅 */
+  private readonly GAUGE_WIDTH = 100;
+
+  /** ゲージ高さ */
+  private readonly GAUGE_HEIGHT = 16;
+
+  // ===========================================================================
   // コンストラクタ
   // ===========================================================================
 
@@ -123,15 +155,67 @@ export class HeaderUI extends BaseComponent {
 
   /**
    * コンポーネントの初期化処理
+   * TASK-0047: 視覚要素を生成
    */
   create(): void {
-    // 最小限の実装（コンテナは既にBaseComponentで作成されている）
+    // ランクテキストを生成
+    this._rankTextElement = this.scene.add.text(10, 10, '', {
+      fontSize: '16px',
+      color: '#FFFFFF',
+    });
+    this.container.add(this._rankTextElement);
+
+    // 昇格ゲージ背景を生成
+    this._gaugeBackground = this.scene.add.graphics();
+    this._gaugeBackground.fillStyle(0x374151, 1);
+    this._gaugeBackground.fillRect(120, 10, this.GAUGE_WIDTH, this.GAUGE_HEIGHT);
+    this.container.add(this._gaugeBackground);
+
+    // 昇格ゲージフィルを生成
+    this._gaugeFill = this.scene.add.graphics();
+    this.container.add(this._gaugeFill);
+
+    // 残り日数テキストを生成
+    this._daysTextElement = this.scene.add.text(240, 10, '', {
+      fontSize: '16px',
+      color: '#FFFFFF',
+    });
+    this.container.add(this._daysTextElement);
+
+    // 所持金テキストを生成
+    this._goldTextElement = this.scene.add.text(400, 10, '', {
+      fontSize: '16px',
+      color: '#FFFFFF',
+    });
+    this.container.add(this._goldTextElement);
+
+    // 行動ポイントテキストを生成
+    this._actionPointsTextElement = this.scene.add.text(520, 10, '', {
+      fontSize: '16px',
+      color: '#FFFFFF',
+    });
+    this.container.add(this._actionPointsTextElement);
   }
 
   /**
    * コンポーネントの破棄処理
+   * TASK-0047: 視覚要素も破棄
    */
   destroy(): void {
+    // 点滅Tweenを停止
+    if (this._blinkingTween) {
+      this._blinkingTween.stop();
+      this._blinkingTween = null;
+    }
+
+    // 視覚要素の参照をクリア
+    this._rankTextElement = null;
+    this._gaugeBackground = null;
+    this._gaugeFill = null;
+    this._daysTextElement = null;
+    this._goldTextElement = null;
+    this._actionPointsTextElement = null;
+
     this.container.destroy();
   }
 
@@ -141,10 +225,14 @@ export class HeaderUI extends BaseComponent {
 
   /**
    * ヘッダー情報を更新
+   * TASK-0047: 視覚要素を更新
    *
    * @param data - 更新データ
    */
   update(data: IHeaderUIData): void {
+    // 以前の点滅状態を保持
+    const wasBlinking = this._remainingDaysBlinking;
+
     // ランク表示
     this._rankText = `ランク: ${data.currentRank}`;
 
@@ -164,6 +252,106 @@ export class HeaderUI extends BaseComponent {
 
     // 行動ポイント
     this._actionPointsText = `${data.actionPoints}/${data.maxActionPoints} AP`;
+
+    // TASK-0047: 視覚要素の更新
+    this.updateVisualElements(wasBlinking);
+  }
+
+  // ===========================================================================
+  // 視覚更新メソッド
+  // ===========================================================================
+
+  /**
+   * 視覚要素を更新
+   * @param wasBlinking - 以前の点滅状態
+   */
+  private updateVisualElements(wasBlinking: boolean): void {
+    // ランクテキスト更新
+    if (this._rankTextElement) {
+      this._rankTextElement.setText(this._rankText);
+    }
+
+    // 昇格ゲージ更新
+    this.updatePromotionGauge();
+
+    // 残り日数テキスト更新
+    if (this._daysTextElement) {
+      this._daysTextElement.setText(this._remainingDaysText);
+      // 色を16進数からCSS形式に変換
+      const colorHex = this._remainingDaysColor.toString(16).padStart(6, '0');
+      this._daysTextElement.setColor(`#${colorHex.toUpperCase()}`);
+    }
+
+    // 点滅処理
+    this.updateBlinking(wasBlinking);
+
+    // 所持金テキスト更新
+    if (this._goldTextElement) {
+      this._goldTextElement.setText(this._goldText);
+    }
+
+    // 行動ポイントテキスト更新
+    if (this._actionPointsTextElement) {
+      this._actionPointsTextElement.setText(this._actionPointsText);
+    }
+  }
+
+  /**
+   * 昇格ゲージを更新
+   */
+  private updatePromotionGauge(): void {
+    if (this._gaugeFill) {
+      this._gaugeFill.clear();
+      this._gaugeFill.fillStyle(this._promotionGaugeColor, 1);
+      const fillWidth = (this._promotionGaugeValue / 100) * this.GAUGE_WIDTH;
+      this._gaugeFill.fillRect(120, 10, fillWidth, this.GAUGE_HEIGHT);
+    }
+  }
+
+  /**
+   * 点滅Tweenを更新
+   * @param wasBlinking - 以前の点滅状態
+   */
+  private updateBlinking(wasBlinking: boolean): void {
+    if (this._remainingDaysBlinking && !wasBlinking) {
+      // 点滅開始
+      this.startBlinkingTween();
+    } else if (!this._remainingDaysBlinking && wasBlinking) {
+      // 点滅停止
+      this.stopBlinkingTween();
+    }
+  }
+
+  /**
+   * 点滅Tweenを開始
+   */
+  private startBlinkingTween(): void {
+    if (this._daysTextElement && this.scene.tweens) {
+      this._blinkingTween = this.scene.tweens.add({
+        targets: this._daysTextElement,
+        alpha: { from: 1, to: 0.3 },
+        duration: 500,
+        yoyo: true,
+        repeat: -1,
+      });
+    }
+  }
+
+  /**
+   * 点滅Tweenを停止
+   */
+  private stopBlinkingTween(): void {
+    if (this._blinkingTween) {
+      this._blinkingTween.stop();
+      this._blinkingTween = null;
+    }
+    if (this._daysTextElement) {
+      this._daysTextElement.setAlpha(1);
+    }
+    // killTweensOfも呼び出し
+    if (this._daysTextElement && this.scene.tweens) {
+      this.scene.tweens.killTweensOf(this._daysTextElement);
+    }
   }
 
   // ===========================================================================
