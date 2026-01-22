@@ -54,6 +54,7 @@ interface MockText {
 interface MockGraphics {
   fillStyle: ReturnType<typeof vi.fn>;
   fillRect: ReturnType<typeof vi.fn>;
+  fillRoundedRect: ReturnType<typeof vi.fn>;
   clear: ReturnType<typeof vi.fn>;
   destroy: ReturnType<typeof vi.fn>;
 }
@@ -127,6 +128,7 @@ const createMockScene = (): {
   const mockGraphics: MockGraphics = {
     fillStyle: vi.fn().mockReturnThis(),
     fillRect: vi.fn().mockReturnThis(),
+    fillRoundedRect: vi.fn().mockReturnThis(),
     clear: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
   };

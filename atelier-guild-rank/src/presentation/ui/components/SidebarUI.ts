@@ -15,6 +15,48 @@ import type Phaser from 'phaser';
 import { BaseComponent } from './BaseComponent';
 
 // =============================================================================
+// 定数
+// =============================================================================
+
+/**
+ * サイドバー用カラー定数
+ */
+const COLORS = {
+  /** 背景色（半透明ダークグレー） */
+  BACKGROUND: 0x1f2937,
+  /** ボーダー色 */
+  BORDER: 0x374151,
+  /** セクションヘッダー背景 */
+  SECTION_HEADER: 0x374151,
+  /** テキスト色（明るいグレー） */
+  TEXT: 0xe5e7eb,
+  /** サブテキスト色 */
+  TEXT_SECONDARY: 0x9ca3af,
+  /** アクセント色（青系） */
+  ACCENT: 0x6366f1,
+  /** アクセントホバー色 */
+  ACCENT_HOVER: 0x818cf8,
+  /** 警告色 */
+  WARNING: 0xfcd34d,
+} as const;
+
+/**
+ * サイドバーレイアウト定数
+ */
+const SIDEBAR_LAYOUT = {
+  /** サイドバー幅 */
+  WIDTH: 200,
+  /** サイドバー高さ（画面高さ - ヘッダー高さ） */
+  HEIGHT: 768 - 60,
+  /** パディング */
+  PADDING: 12,
+  /** セクション間隔 */
+  SECTION_GAP: 8,
+  /** セクションヘッダー高さ */
+  SECTION_HEADER_HEIGHT: 32,
+} as const;
+
+// =============================================================================
 // 型定義
 // =============================================================================
 
@@ -117,6 +159,9 @@ export class SidebarUI extends BaseComponent {
   /** ショップボタンテキスト */
   private _shopButtonText: Phaser.GameObjects.Text | null = null;
 
+  /** 背景パネル */
+  private _backgroundPanel: Phaser.GameObjects.Rectangle | null = null;
+
   // ===========================================================================
   // コンストラクタ
   // ===========================================================================
@@ -146,61 +191,178 @@ export class SidebarUI extends BaseComponent {
    * TASK-0047: 視覚要素を生成
    */
   create(): void {
+    // 背景パネルを生成（半透明のダークグレー）
+    this._backgroundPanel = this.scene.add.rectangle(
+      SIDEBAR_LAYOUT.WIDTH / 2,
+      SIDEBAR_LAYOUT.HEIGHT / 2,
+      SIDEBAR_LAYOUT.WIDTH,
+      SIDEBAR_LAYOUT.HEIGHT,
+      COLORS.BACKGROUND,
+      0.95,
+    );
+    this.container.add(this._backgroundPanel);
+
+    // 右側ボーダーライン
+    const borderLine = this.scene.add.rectangle(
+      SIDEBAR_LAYOUT.WIDTH - 1,
+      SIDEBAR_LAYOUT.HEIGHT / 2,
+      2,
+      SIDEBAR_LAYOUT.HEIGHT,
+      COLORS.BORDER,
+      1,
+    );
+    this.container.add(borderLine);
+
+    let currentY = SIDEBAR_LAYOUT.PADDING;
+
+    // 依頼セクションヘッダー背景
+    const questsHeaderBg = this.scene.add.rectangle(
+      SIDEBAR_LAYOUT.WIDTH / 2,
+      currentY + SIDEBAR_LAYOUT.SECTION_HEADER_HEIGHT / 2,
+      SIDEBAR_LAYOUT.WIDTH - SIDEBAR_LAYOUT.PADDING * 2,
+      SIDEBAR_LAYOUT.SECTION_HEADER_HEIGHT,
+      COLORS.SECTION_HEADER,
+      0.8,
+    );
+    questsHeaderBg.setInteractive({ useHandCursor: true });
+    questsHeaderBg.on('pointerover', () => questsHeaderBg.setFillStyle(0x4b5563, 0.9));
+    questsHeaderBg.on('pointerout', () => questsHeaderBg.setFillStyle(COLORS.SECTION_HEADER, 0.8));
+    questsHeaderBg.on('pointerdown', () => this.toggleSection('quests'));
+    this.container.add(questsHeaderBg);
+
     // 依頼セクションヘッダーを生成
-    this._questsIconText = this.scene.add.text(10, 10, '▼', {
+    this._questsIconText = this.scene.add.text(SIDEBAR_LAYOUT.PADDING, currentY + 8, '▼', {
       fontSize: '14px',
-      color: '#FFFFFF',
+      color: '#9CA3AF',
     });
     this.container.add(this._questsIconText);
 
-    this._questsHeaderText = this.scene.add.text(30, 10, '【受注依頼】', {
-      fontSize: '14px',
-      color: '#FFFFFF',
-    });
+    this._questsHeaderText = this.scene.add.text(
+      SIDEBAR_LAYOUT.PADDING + 20,
+      currentY + 6,
+      '受注依頼',
+      {
+        fontSize: '14px',
+        color: '#F9FAFB',
+        fontStyle: 'bold',
+      },
+    );
     this.container.add(this._questsHeaderText);
 
+    currentY += SIDEBAR_LAYOUT.SECTION_HEADER_HEIGHT + 80 + SIDEBAR_LAYOUT.SECTION_GAP;
+
+    // 素材セクションヘッダー背景
+    const materialsHeaderBg = this.scene.add.rectangle(
+      SIDEBAR_LAYOUT.WIDTH / 2,
+      currentY + SIDEBAR_LAYOUT.SECTION_HEADER_HEIGHT / 2,
+      SIDEBAR_LAYOUT.WIDTH - SIDEBAR_LAYOUT.PADDING * 2,
+      SIDEBAR_LAYOUT.SECTION_HEADER_HEIGHT,
+      COLORS.SECTION_HEADER,
+      0.8,
+    );
+    materialsHeaderBg.setInteractive({ useHandCursor: true });
+    materialsHeaderBg.on('pointerover', () => materialsHeaderBg.setFillStyle(0x4b5563, 0.9));
+    materialsHeaderBg.on('pointerout', () =>
+      materialsHeaderBg.setFillStyle(COLORS.SECTION_HEADER, 0.8),
+    );
+    materialsHeaderBg.on('pointerdown', () => this.toggleSection('materials'));
+    this.container.add(materialsHeaderBg);
+
     // 素材セクションヘッダーを生成
-    this._materialsIconText = this.scene.add.text(10, 100, '▼', {
+    this._materialsIconText = this.scene.add.text(SIDEBAR_LAYOUT.PADDING, currentY + 8, '▼', {
       fontSize: '14px',
-      color: '#FFFFFF',
+      color: '#9CA3AF',
     });
     this.container.add(this._materialsIconText);
 
-    this._materialsHeaderText = this.scene.add.text(30, 100, '【素材】', {
-      fontSize: '14px',
-      color: '#FFFFFF',
-    });
+    this._materialsHeaderText = this.scene.add.text(
+      SIDEBAR_LAYOUT.PADDING + 20,
+      currentY + 6,
+      '素材',
+      {
+        fontSize: '14px',
+        color: '#F9FAFB',
+        fontStyle: 'bold',
+      },
+    );
     this.container.add(this._materialsHeaderText);
 
+    currentY += SIDEBAR_LAYOUT.SECTION_HEADER_HEIGHT + 80 + SIDEBAR_LAYOUT.SECTION_GAP;
+
+    // 完成品セクションヘッダー背景
+    const craftedItemsHeaderBg = this.scene.add.rectangle(
+      SIDEBAR_LAYOUT.WIDTH / 2,
+      currentY + SIDEBAR_LAYOUT.SECTION_HEADER_HEIGHT / 2,
+      SIDEBAR_LAYOUT.WIDTH - SIDEBAR_LAYOUT.PADDING * 2,
+      SIDEBAR_LAYOUT.SECTION_HEADER_HEIGHT,
+      COLORS.SECTION_HEADER,
+      0.8,
+    );
+    craftedItemsHeaderBg.setInteractive({ useHandCursor: true });
+    craftedItemsHeaderBg.on('pointerover', () => craftedItemsHeaderBg.setFillStyle(0x4b5563, 0.9));
+    craftedItemsHeaderBg.on('pointerout', () =>
+      craftedItemsHeaderBg.setFillStyle(COLORS.SECTION_HEADER, 0.8),
+    );
+    craftedItemsHeaderBg.on('pointerdown', () => this.toggleSection('craftedItems'));
+    this.container.add(craftedItemsHeaderBg);
+
     // 完成品セクションヘッダーを生成
-    this._craftedItemsIconText = this.scene.add.text(10, 200, '▼', {
+    this._craftedItemsIconText = this.scene.add.text(SIDEBAR_LAYOUT.PADDING, currentY + 8, '▼', {
       fontSize: '14px',
-      color: '#FFFFFF',
+      color: '#9CA3AF',
     });
     this.container.add(this._craftedItemsIconText);
 
-    this._craftedItemsHeaderText = this.scene.add.text(30, 200, '【完成品】', {
-      fontSize: '14px',
-      color: '#FFFFFF',
-    });
+    this._craftedItemsHeaderText = this.scene.add.text(
+      SIDEBAR_LAYOUT.PADDING + 20,
+      currentY + 6,
+      '完成品',
+      {
+        fontSize: '14px',
+        color: '#F9FAFB',
+        fontStyle: 'bold',
+      },
+    );
     this.container.add(this._craftedItemsHeaderText);
 
+    currentY += SIDEBAR_LAYOUT.SECTION_HEADER_HEIGHT + 80 + SIDEBAR_LAYOUT.SECTION_GAP;
+
     // 保管容量テキストを生成
-    this._storageTextElement = this.scene.add.text(10, 300, '保管: 0/20', {
+    this._storageTextElement = this.scene.add.text(SIDEBAR_LAYOUT.PADDING, currentY, '保管: 0/20', {
       fontSize: '14px',
-      color: '#FFFFFF',
+      color: '#D1D5DB',
     });
     this.container.add(this._storageTextElement);
 
+    currentY += 40;
+
     // ショップボタンを生成
-    this._shopButtonBackground = this.scene.add.rectangle(90, 350, 160, 36, 0x6366f1);
-    this._shopButtonBackground.setInteractive();
+    this._shopButtonBackground = this.scene.add.rectangle(
+      SIDEBAR_LAYOUT.WIDTH / 2,
+      currentY + 18,
+      SIDEBAR_LAYOUT.WIDTH - SIDEBAR_LAYOUT.PADDING * 2,
+      36,
+      COLORS.ACCENT,
+    );
+    this._shopButtonBackground.setInteractive({ useHandCursor: true });
+    this._shopButtonBackground.on('pointerover', () => {
+      this._shopButtonBackground?.setFillStyle(COLORS.ACCENT_HOVER);
+    });
+    this._shopButtonBackground.on('pointerout', () => {
+      this._shopButtonBackground?.setFillStyle(COLORS.ACCENT);
+    });
     this.container.add(this._shopButtonBackground);
 
-    this._shopButtonText = this.scene.add.text(60, 340, 'ショップ', {
-      fontSize: '14px',
-      color: '#FFFFFF',
-    });
+    this._shopButtonText = this.scene.add.text(
+      SIDEBAR_LAYOUT.WIDTH / 2 - 30,
+      currentY + 8,
+      'ショップ',
+      {
+        fontSize: '14px',
+        color: '#FFFFFF',
+        fontStyle: 'bold',
+      },
+    );
     this.container.add(this._shopButtonText);
 
     // ダミーオブジェクトを更新

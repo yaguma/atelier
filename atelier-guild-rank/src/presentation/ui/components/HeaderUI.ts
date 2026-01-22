@@ -32,6 +32,24 @@ const COLORS = {
   WHITE: 0xffffff,
   /** 明るい赤（点滅用） - 残り日数1-3日 */
   BRIGHT_RED: 0xff0000,
+  /** 背景色（半透明ダークグレー） */
+  BACKGROUND: 0x1f2937,
+  /** ボーダー色 */
+  BORDER: 0x374151,
+  /** テキスト色（明るいグレー） */
+  TEXT: 0xe5e7eb,
+} as const;
+
+/**
+ * ヘッダーレイアウト定数
+ */
+const HEADER_LAYOUT = {
+  /** ヘッダー幅（画面幅 - サイドバー幅） */
+  WIDTH: 1024 - 200,
+  /** ヘッダー高さ */
+  HEIGHT: 60,
+  /** パディング */
+  PADDING: 16,
 } as const;
 
 // =============================================================================
@@ -123,6 +141,9 @@ export class HeaderUI extends BaseComponent {
   /** 点滅Tween */
   private _blinkingTween: Phaser.Tweens.Tween | null = null;
 
+  /** 背景パネル */
+  private _backgroundPanel: Phaser.GameObjects.Rectangle | null = null;
+
   /** ゲージ幅 */
   private readonly GAUGE_WIDTH = 100;
 
@@ -158,41 +179,96 @@ export class HeaderUI extends BaseComponent {
    * TASK-0047: 視覚要素を生成
    */
   create(): void {
+    // 背景パネルを生成（半透明のダークグレー）
+    this._backgroundPanel = this.scene.add.rectangle(
+      HEADER_LAYOUT.WIDTH / 2,
+      HEADER_LAYOUT.HEIGHT / 2,
+      HEADER_LAYOUT.WIDTH,
+      HEADER_LAYOUT.HEIGHT,
+      COLORS.BACKGROUND,
+      0.95,
+    );
+    this.container.add(this._backgroundPanel);
+
+    // 下部ボーダーライン
+    const borderLine = this.scene.add.rectangle(
+      HEADER_LAYOUT.WIDTH / 2,
+      HEADER_LAYOUT.HEIGHT - 1,
+      HEADER_LAYOUT.WIDTH,
+      2,
+      COLORS.BORDER,
+      1,
+    );
+    this.container.add(borderLine);
+
+    // ランクラベルを生成
+    const rankLabel = this.scene.add.text(HEADER_LAYOUT.PADDING, 12, 'ランク:', {
+      fontSize: '14px',
+      color: '#9CA3AF',
+    });
+    this.container.add(rankLabel);
+
     // ランクテキストを生成
-    this._rankTextElement = this.scene.add.text(10, 10, '', {
-      fontSize: '16px',
-      color: '#FFFFFF',
+    this._rankTextElement = this.scene.add.text(HEADER_LAYOUT.PADDING + 60, 10, '', {
+      fontSize: '18px',
+      color: '#F9FAFB',
+      fontStyle: 'bold',
     });
     this.container.add(this._rankTextElement);
 
     // 昇格ゲージ背景を生成
     this._gaugeBackground = this.scene.add.graphics();
     this._gaugeBackground.fillStyle(0x374151, 1);
-    this._gaugeBackground.fillRect(120, 10, this.GAUGE_WIDTH, this.GAUGE_HEIGHT);
+    this._gaugeBackground.fillRoundedRect(140, 14, this.GAUGE_WIDTH, this.GAUGE_HEIGHT, 4);
     this.container.add(this._gaugeBackground);
 
     // 昇格ゲージフィルを生成
     this._gaugeFill = this.scene.add.graphics();
     this.container.add(this._gaugeFill);
 
+    // 残り日数ラベル
+    const daysLabel = this.scene.add.text(260, 12, '残り:', {
+      fontSize: '14px',
+      color: '#9CA3AF',
+    });
+    this.container.add(daysLabel);
+
     // 残り日数テキストを生成
-    this._daysTextElement = this.scene.add.text(240, 10, '', {
-      fontSize: '16px',
-      color: '#FFFFFF',
+    this._daysTextElement = this.scene.add.text(310, 10, '', {
+      fontSize: '18px',
+      color: '#F9FAFB',
+      fontStyle: 'bold',
     });
     this.container.add(this._daysTextElement);
 
-    // 所持金テキストを生成
-    this._goldTextElement = this.scene.add.text(400, 10, '', {
+    // 所持金アイコン（コインの絵文字の代わりにGマーク）
+    const goldIcon = this.scene.add.text(420, 12, 'G', {
       fontSize: '16px',
-      color: '#FFFFFF',
+      color: '#FCD34D',
+      fontStyle: 'bold',
+    });
+    this.container.add(goldIcon);
+
+    // 所持金テキストを生成
+    this._goldTextElement = this.scene.add.text(440, 10, '', {
+      fontSize: '18px',
+      color: '#FCD34D',
+      fontStyle: 'bold',
     });
     this.container.add(this._goldTextElement);
 
+    // 行動ポイントラベル
+    const apLabel = this.scene.add.text(540, 12, 'AP:', {
+      fontSize: '14px',
+      color: '#9CA3AF',
+    });
+    this.container.add(apLabel);
+
     // 行動ポイントテキストを生成
-    this._actionPointsTextElement = this.scene.add.text(520, 10, '', {
-      fontSize: '16px',
-      color: '#FFFFFF',
+    this._actionPointsTextElement = this.scene.add.text(580, 10, '', {
+      fontSize: '18px',
+      color: '#60A5FA',
+      fontStyle: 'bold',
     });
     this.container.add(this._actionPointsTextElement);
   }

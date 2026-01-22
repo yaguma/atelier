@@ -56,6 +56,11 @@ interface MockText {
 interface MockGraphics {
   fillStyle: ReturnType<typeof vi.fn>;
   fillRect: ReturnType<typeof vi.fn>;
+  lineStyle: ReturnType<typeof vi.fn>;
+  beginPath: ReturnType<typeof vi.fn>;
+  moveTo: ReturnType<typeof vi.fn>;
+  lineTo: ReturnType<typeof vi.fn>;
+  strokePath: ReturnType<typeof vi.fn>;
   clear: ReturnType<typeof vi.fn>;
   destroy: ReturnType<typeof vi.fn>;
 }
@@ -89,6 +94,7 @@ interface MockContainer {
   setVisible: ReturnType<typeof vi.fn>;
   setDepth: ReturnType<typeof vi.fn>;
   getAt: ReturnType<typeof vi.fn>;
+  bringToTop: ReturnType<typeof vi.fn>;
   destroy: ReturnType<typeof vi.fn>;
 }
 
@@ -139,6 +145,11 @@ const createMockScene = (): {
   const mockGraphics: MockGraphics = {
     fillStyle: vi.fn().mockReturnThis(),
     fillRect: vi.fn().mockReturnThis(),
+    lineStyle: vi.fn().mockReturnThis(),
+    beginPath: vi.fn().mockReturnThis(),
+    moveTo: vi.fn().mockReturnThis(),
+    lineTo: vi.fn().mockReturnThis(),
+    strokePath: vi.fn().mockReturnThis(),
     clear: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
   };
@@ -169,6 +180,7 @@ const createMockScene = (): {
       }
       return mockText;
     }),
+    bringToTop: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
   };
 
@@ -326,8 +338,8 @@ describe('FooterUI 視覚実装テスト', () => {
         // - getHandDisplayAreaCapacity()が5を返す
         expect(footerUI.getHandDisplayAreaCapacity()).toBe(5);
         // - scene.add.rectangleが少なくとも5回呼び出される
-        //   Note: 手札プレースホルダー5回 + 次へボタン背景1回 = 6回
-        expect(scene.add.rectangle).toHaveBeenCalledTimes(6);
+        //   Note: 背景パネル1回 + ボーダーライン1回 + 手札プレースホルダー5回 + 次へボタン背景1回 = 8回
+        expect(scene.add.rectangle).toHaveBeenCalledTimes(8);
       });
     });
   });

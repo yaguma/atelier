@@ -40,9 +40,47 @@ const PHASE_COLORS = {
 const BUTTON_COLORS = {
   /** プライマリ（有効時） */
   PRIMARY: 0x6366f1,
+  /** プライマリホバー */
+  PRIMARY_HOVER: 0x818cf8,
   /** 無効時（グレー） */
   DISABLED: 0x4b5563,
 } as const;
+
+/**
+ * フッター用カラー定数
+ */
+const FOOTER_COLORS = {
+  /** 背景色（半透明ダークグレー） */
+  BACKGROUND: 0x1f2937,
+  /** ボーダー色 */
+  BORDER: 0x374151,
+  /** カードプレースホルダー */
+  CARD_PLACEHOLDER: 0x374151,
+  /** カードプレースホルダーボーダー */
+  CARD_PLACEHOLDER_BORDER: 0x4b5563,
+} as const;
+
+/**
+ * フッターレイアウト定数
+ */
+const FOOTER_LAYOUT = {
+  /** フッター幅（画面幅 - サイドバー幅） */
+  WIDTH: 1024 - 200,
+  /** フッター高さ */
+  HEIGHT: 120,
+  /** パディング */
+  PADDING: 16,
+} as const;
+
+/**
+ * フェーズ名ラベル
+ */
+const PHASE_LABELS: Record<string, string> = {
+  [GamePhase.QUEST_ACCEPT]: '依頼',
+  [GamePhase.GATHERING]: '採取',
+  [GamePhase.ALCHEMY]: '調合',
+  [GamePhase.DELIVERY]: '納品',
+};
 
 // =============================================================================
 // 型定義
@@ -118,6 +156,12 @@ export class FooterUI extends BaseComponent {
   /** 次へボタンテキスト */
   private _nextButtonText: Phaser.GameObjects.Text | null = null;
 
+  /** 背景パネル */
+  private _backgroundPanel: Phaser.GameObjects.Rectangle | null = null;
+
+  /** フェーズラベルテキスト */
+  private _phaseLabels: Phaser.GameObjects.Text[] = [];
+
   // ===========================================================================
   // ライフサイクルメソッド
   // ===========================================================================
@@ -127,30 +171,112 @@ export class FooterUI extends BaseComponent {
    * TASK-0047: 視覚要素を生成
    */
   create(): void {
+    // 背景パネルを生成（半透明のダークグレー）
+    this._backgroundPanel = this.scene.add.rectangle(
+      FOOTER_LAYOUT.WIDTH / 2,
+      FOOTER_LAYOUT.HEIGHT / 2,
+      FOOTER_LAYOUT.WIDTH,
+      FOOTER_LAYOUT.HEIGHT,
+      FOOTER_COLORS.BACKGROUND,
+      0.95,
+    );
+    this.container.add(this._backgroundPanel);
+
+    // 上部ボーダーライン
+    const borderLine = this.scene.add.rectangle(
+      FOOTER_LAYOUT.WIDTH / 2,
+      1,
+      FOOTER_LAYOUT.WIDTH,
+      2,
+      FOOTER_COLORS.BORDER,
+      1,
+    );
+    this.container.add(borderLine);
+
+    // フェーズインジケーターセクション
+    const phaseIndicatorStartX = FOOTER_LAYOUT.PADDING + 30;
+    const phaseIndicatorY = 30;
+    const phaseSpacing = 70;
+
     // 4つのフェーズインジケーター（円）を作成
-    this._phaseIndicatorCircles = VALID_GAME_PHASES.map((_, index) => {
-      const circle = this.scene.add.circle(50 + index * 80, 20, 15, PHASE_COLORS.PENDING);
+    this._phaseIndicatorCircles = VALID_GAME_PHASES.map((phase, index) => {
+      const x = phaseIndicatorStartX + index * phaseSpacing;
+
+      // 円形インジケーター
+      const circle = this.scene.add.circle(x, phaseIndicatorY, 12, PHASE_COLORS.PENDING);
+      circle.setStrokeStyle(2, 0x4b5563);
       this.container.add(circle);
+
+      // フェーズラベル
+      const label = this.scene.add.text(x - 12, phaseIndicatorY + 18, PHASE_LABELS[phase], {
+        fontSize: '11px',
+        color: '#9CA3AF',
+      });
+      this.container.add(label);
+      this._phaseLabels.push(label);
+
       return circle;
     });
     this._phaseIndicators = this._phaseIndicatorCircles;
 
+    // 接続線を描画
+    const connectionLine = this.scene.add.graphics();
+    connectionLine.lineStyle(2, 0x4b5563);
+    connectionLine.beginPath();
+    connectionLine.moveTo(phaseIndicatorStartX + 15, phaseIndicatorY);
+    connectionLine.lineTo(
+      phaseIndicatorStartX + (VALID_GAME_PHASES.length - 1) * phaseSpacing - 15,
+      phaseIndicatorY,
+    );
+    connectionLine.strokePath();
+    this.container.add(connectionLine);
+    // 円を前面に
+    for (const circle of this._phaseIndicatorCircles) {
+      this.container.bringToTop(circle);
+    }
+
     // 5つの手札プレースホルダー（矩形）を作成
+    const handStartX = 320;
+    const handY = FOOTER_LAYOUT.HEIGHT / 2;
+    const cardWidth = 50;
+    const cardHeight = 70;
+    const cardSpacing = 60;
+
     this._handPlaceholders = [];
     for (let i = 0; i < HAND_DISPLAY_CAPACITY; i++) {
-      const placeholder = this.scene.add.rectangle(400 + i * 80, 40, 60, 80, 0x374151);
+      // カードプレースホルダー背景
+      const placeholder = this.scene.add.rectangle(
+        handStartX + i * cardSpacing,
+        handY,
+        cardWidth,
+        cardHeight,
+        FOOTER_COLORS.CARD_PLACEHOLDER,
+        0.5,
+      );
+      placeholder.setStrokeStyle(2, FOOTER_COLORS.CARD_PLACEHOLDER_BORDER);
       this.container.add(placeholder);
       this._handPlaceholders.push(placeholder);
     }
     this._handDisplayArea = this._handPlaceholders;
 
     // 次へボタンコンテナを作成
-    this._nextButtonContainer = this.scene.add.container(900, 40);
+    const buttonX = FOOTER_LAYOUT.WIDTH - 80;
+    const buttonY = FOOTER_LAYOUT.HEIGHT / 2;
+    this._nextButtonContainer = this.scene.add.container(buttonX, buttonY);
     this.container.add(this._nextButtonContainer);
 
-    // 次へボタン背景を作成
-    this._nextButtonBackground = this.scene.add.rectangle(0, 0, 120, 40, BUTTON_COLORS.PRIMARY);
-    this._nextButtonBackground.setInteractive();
+    // 次へボタン背景を作成（角丸風）
+    this._nextButtonBackground = this.scene.add.rectangle(0, 0, 120, 44, BUTTON_COLORS.PRIMARY);
+    this._nextButtonBackground.setInteractive({ useHandCursor: true });
+    this._nextButtonBackground.on('pointerover', () => {
+      if (this._nextButtonEnabled) {
+        this._nextButtonBackground?.setFillStyle(BUTTON_COLORS.PRIMARY_HOVER);
+      }
+    });
+    this._nextButtonBackground.on('pointerout', () => {
+      const color = this._nextButtonEnabled ? BUTTON_COLORS.PRIMARY : BUTTON_COLORS.DISABLED;
+      this._nextButtonBackground?.setFillStyle(color);
+    });
     this._nextButtonBackground.on('pointerdown', () => {
       if (this._onNextClickCallback && this._nextButtonEnabled) {
         this._onNextClickCallback();
@@ -159,9 +285,10 @@ export class FooterUI extends BaseComponent {
     this._nextButtonContainer.add(this._nextButtonBackground);
 
     // 次へボタンテキストを作成
-    this._nextButtonText = this.scene.add.text(-30, -10, '', {
+    this._nextButtonText = this.scene.add.text(-24, -10, '', {
       fontSize: '16px',
       color: '#FFFFFF',
+      fontStyle: 'bold',
     });
     this._nextButtonContainer.add(this._nextButtonText);
   }
