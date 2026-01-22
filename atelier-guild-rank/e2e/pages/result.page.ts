@@ -5,7 +5,7 @@ import type { GameWindow } from '../types/game-window.types';
  * リザルト画面のPage Objectクラス
  *
  * @description
- * ResultSceneのUI要素とインタラクションを提供する。
+ * GameClearScene/GameOverSceneのUI要素とインタラクションを提供する。
  * ゲームクリア/ゲームオーバーの判定やタイトルへの遷移を行う。
  *
  * @example
@@ -23,11 +23,11 @@ export class ResultPage extends BasePage {
 	 * リザルト画面が表示されるまで待機
 	 *
 	 * @description
-	 * キャンバスの可視化とResultSceneの表示を待機する。
+	 * キャンバスの可視化とGameClearScene/GameOverSceneのいずれかの表示を待機する。
 	 */
 	async waitForResultScreen(): Promise<void> {
 		await this.waitForCanvasVisible();
-		await this.waitForScene('ResultScene');
+		await this.waitForResultScene();
 	}
 
 	/**
@@ -74,18 +74,17 @@ export class ResultPage extends BasePage {
 	}
 
 	/**
-	 * 指定したシーンになるまで待機
+	 * リザルトシーン（GameClearScene または GameOverScene）になるまで待機
 	 *
-	 * @param sceneName - 待機するシーン名
 	 * @param timeout - タイムアウト（ミリ秒）
 	 */
-	private async waitForScene(sceneName: string, timeout: number = BasePage.DEFAULT_TIMEOUT): Promise<void> {
+	private async waitForResultScene(timeout: number = BasePage.DEFAULT_TIMEOUT): Promise<void> {
 		await this.page.waitForFunction(
-			(name) => {
+			() => {
 				const state = (window as unknown as GameWindow).gameState?.();
-				return state?.currentScene === name;
+				const scene = state?.currentScene;
+				return scene === 'GameClearScene' || scene === 'GameOverScene';
 			},
-			sceneName,
 			{ timeout },
 		);
 	}

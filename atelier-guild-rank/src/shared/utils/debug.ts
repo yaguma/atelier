@@ -252,6 +252,8 @@ export class DebugTools {
     // Phaserゲームインスタンス経由でシーン遷移
     const game = (globalThis as unknown as { game?: Phaser.Game }).game;
     if (game?.scene) {
+      // TitleSceneを停止してMainSceneを開始
+      game.scene.stop('TitleScene');
       game.scene.start('MainScene');
     }
   }
@@ -276,6 +278,8 @@ export class DebugTools {
     // Phaserゲームインスタンス経由でシーン遷移
     const game = (globalThis as unknown as { game?: Phaser.Game }).game;
     if (game?.scene) {
+      // TitleSceneを停止してMainSceneを開始
+      game.scene.stop('TitleScene');
       game.scene.start('MainScene', { saveData: JSON.parse(saveData) });
     }
   }
@@ -293,6 +297,12 @@ export class DebugTools {
   static returnToTitle(): void {
     const game = (globalThis as unknown as { game?: Phaser.Game }).game;
     if (game?.scene) {
+      // 現在アクティブな全シーンを停止してTitleSceneを開始
+      for (const scene of game.scene.scenes) {
+        if (scene.sys.isActive() && scene.sys.settings.key !== 'TitleScene') {
+          game.scene.stop(scene.sys.settings.key);
+        }
+      }
       game.scene.start('TitleScene');
     }
   }
@@ -324,7 +334,7 @@ export class DebugTools {
 
   /**
    * 【機能概要】: 日を終了する（E2Eテスト用）
-   * 【実装方針】: StateManager経由で日を進める
+   * 【実装方針】: StateManager経由で日を進め、ゲーム終了条件をチェックしてシーン遷移
    * 【用途】: E2Eテストで日数を進める
    *
    * @example
@@ -335,9 +345,75 @@ export class DebugTools {
   static endDay(): void {
     try {
       const stateManager = DebugTools.getStateManager();
+      const stateBefore = stateManager.getState();
+
+      // Sランク到達でゲームクリア
+      if (stateBefore.currentRank === GuildRank.S) {
+        DebugTools.transitionToGameClear(stateBefore);
+        return;
+      }
+
+      // 日を進める
       stateManager.advanceDay();
+      const stateAfter = stateManager.getState();
+
+      // 残り日数0でゲームオーバー（Sランク未到達の場合）
+      if (stateAfter.remainingDays <= 0) {
+        DebugTools.transitionToGameOver(stateAfter);
+        return;
+      }
     } catch (e) {
       console.warn('endDay failed:', e);
+    }
+  }
+
+  /**
+   * 【機能概要】: ゲームクリアシーンへ遷移する
+   * 【実装方針】: 現在アクティブなシーンからシーン遷移し、統計情報を渡す
+   *
+   * @param state 現在のゲーム状態
+   */
+  private static transitionToGameClear(state: {
+    remainingDays: number;
+    gold: number;
+    currentRank: string;
+  }): void {
+    const game = (globalThis as unknown as { game?: Phaser.Game }).game;
+    if (game?.scene) {
+      const stats = {
+        finalRank: state.currentRank,
+        totalDays: 30 - state.remainingDays,
+        totalDeliveries: 0, // TODO: 実際の納品数をStateから取得
+        totalGold: state.gold,
+      };
+      // MainSceneを停止してGameClearSceneを開始
+      game.scene.stop('MainScene');
+      game.scene.start('GameClearScene', { stats });
+    }
+  }
+
+  /**
+   * 【機能概要】: ゲームオーバーシーンへ遷移する
+   * 【実装方針】: 現在アクティブなシーンからシーン遷移し、統計情報を渡す
+   *
+   * @param state 現在のゲーム状態
+   */
+  private static transitionToGameOver(state: {
+    remainingDays: number;
+    gold: number;
+    currentRank: string;
+  }): void {
+    const game = (globalThis as unknown as { game?: Phaser.Game }).game;
+    if (game?.scene) {
+      const stats = {
+        finalRank: state.currentRank,
+        totalDays: 30 - state.remainingDays,
+        totalDeliveries: 0, // TODO: 実際の納品数をStateから取得
+        totalGold: state.gold,
+      };
+      // MainSceneを停止してGameOverSceneを開始
+      game.scene.stop('MainScene');
+      game.scene.start('GameOverScene', { stats });
     }
   }
 }
@@ -367,6 +443,8 @@ declare global {
       currentRank?: string;
       actionPoints?: number;
       hasSaveData?: boolean;
+      isGameClear?: boolean;
+      isGameOver?: boolean;
     };
   }
 }
