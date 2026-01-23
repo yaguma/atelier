@@ -56,6 +56,9 @@ const mockContainerInstance = {
     throw new Error(`Service not found: ${key}`);
   }),
   register: vi.fn(),
+  has: vi.fn((key: string) => {
+    return ['StateManager', 'GameFlowManager', 'EventBus'].includes(key);
+  }),
 };
 
 vi.mock('@infrastructure/di/container', () => ({
@@ -66,6 +69,8 @@ vi.mock('@infrastructure/di/container', () => ({
     StateManager: 'StateManager',
     GameFlowManager: 'GameFlowManager',
     EventBus: 'EventBus',
+    GatheringService: 'GatheringService',
+    AlchemyService: 'AlchemyService',
   },
 }));
 
@@ -156,6 +161,18 @@ const createMockScene = () => {
   const mockGraphics = createMockGraphics();
   const mockRexUI = createMockRexUI();
 
+  // scene.data用のモック
+  const mockData = {
+    get: vi.fn().mockImplementation((key: string) => {
+      if (key === 'eventBus') return mockEventBusInstance;
+      if (key === 'questService') return null;
+      if (key === 'inventoryService') return null;
+      if (key === 'contributionCalculator') return null;
+      return null;
+    }),
+    set: vi.fn(),
+  };
+
   return {
     scene: {
       add: {
@@ -172,6 +189,7 @@ const createMockScene = () => {
           setStrokeStyle: vi.fn().mockReturnThis(),
           setOrigin: vi.fn().mockReturnThis(),
           setInteractive: vi.fn().mockReturnThis(),
+          setAlpha: vi.fn().mockReturnThis(),
           on: vi.fn().mockReturnThis(),
           destroy: vi.fn(),
         }),
@@ -187,6 +205,13 @@ const createMockScene = () => {
           centerY: 360,
           width: 1280,
           height: 720,
+        },
+      },
+      data: mockData,
+      input: {
+        keyboard: {
+          on: vi.fn(),
+          off: vi.fn(),
         },
       },
       rexUI: mockRexUI,
@@ -206,6 +231,7 @@ const createMockScene = () => {
     mockText,
     mockGraphics,
     mockRexUI,
+    mockData,
   };
 };
 
@@ -386,6 +412,14 @@ describe('MainScene共通レイアウト', () => {
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.rexUI = mockScene.rexUI;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.data = mockScene.data;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.input = mockScene.input;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.data = mockScene.data;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.input = mockScene.input;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.stateManager = mockStateManager;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.gameFlowManager = mockGameFlowManager;
@@ -428,6 +462,14 @@ describe('MainScene共通レイアウト', () => {
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.rexUI = mockScene.rexUI;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.data = mockScene.data;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.input = mockScene.input;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.data = mockScene.data;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.input = mockScene.input;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.stateManager = mockStateManager;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.gameFlowManager = mockGameFlowManager;
@@ -467,6 +509,10 @@ describe('MainScene共通レイアウト', () => {
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.rexUI = mockScene.rexUI;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.data = mockScene.data;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.input = mockScene.input;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.stateManager = mockStateManager;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.gameFlowManager = mockGameFlowManager;
@@ -501,6 +547,10 @@ describe('MainScene共通レイアウト', () => {
         mainScene.cameras = mockScene.cameras;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.rexUI = mockScene.rexUI;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.data = mockScene.data;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.input = mockScene.input;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.stateManager = mockStateManager;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
@@ -542,6 +592,10 @@ describe('MainScene共通レイアウト', () => {
         mainScene.cameras = mockScene.cameras;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.rexUI = mockScene.rexUI;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.data = mockScene.data;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.input = mockScene.input;
 
         mainScene.create();
 
@@ -575,6 +629,10 @@ describe('MainScene共通レイアウト', () => {
         mainScene.cameras = mockScene.cameras;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.rexUI = mockScene.rexUI;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.data = mockScene.data;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.input = mockScene.input;
 
         mainScene.create();
 
@@ -606,6 +664,10 @@ describe('MainScene共通レイアウト', () => {
         mainScene.cameras = mockScene.cameras;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.rexUI = mockScene.rexUI;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.data = mockScene.data;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.input = mockScene.input;
 
         mainScene.create();
 
@@ -620,6 +682,463 @@ describe('MainScene共通レイアウト', () => {
         // Then: ヘッダーの表示が更新される
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         expect(mainScene.headerUI.getGoldText()).toBe('1000G');
+      });
+    });
+
+    // =========================================================================
+    // TASK-0052: フェーズUI統合テスト
+    // =========================================================================
+
+    describe('TASK-0052: フェーズUI統合', () => {
+      describe('create()', () => {
+        it('TC-0052-001: QuestAcceptPhaseUIインスタンスが作成されること', async () => {
+          // 【テスト目的】: MainSceneでQuestAcceptPhaseUIが作成されることを確認
+          // 【対応要件】: REQ-052-01
+          // 🔵 信頼性レベル
+
+          const { MainScene } = await import('@presentation/scenes/MainScene');
+          const { scene: mockScene } = createMockScene();
+          const mockStateManager = createMockStateManager();
+          const mockGameFlowManager = createMockGameFlowManager();
+          const mockEventBus = createMockEventBus();
+
+          const mainScene = new MainScene();
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.add = mockScene.add;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.cameras = mockScene.cameras;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.rexUI = mockScene.rexUI;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.data = mockScene.data;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.input = mockScene.input;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.stateManager = mockStateManager;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.gameFlowManager = mockGameFlowManager;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.eventBus = mockEventBus;
+
+          mainScene.create();
+
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          expect(mainScene.phaseUIs.get(GamePhase.QUEST_ACCEPT)).toBeDefined();
+        });
+
+        it('TC-0052-002: GatheringPhaseUIインスタンスが作成されること', async () => {
+          // 【テスト目的】: MainSceneでGatheringPhaseUIが作成されることを確認
+          // 【対応要件】: REQ-052-01
+          // 🔵 信頼性レベル
+
+          const { MainScene } = await import('@presentation/scenes/MainScene');
+          const { scene: mockScene } = createMockScene();
+          const mockStateManager = createMockStateManager();
+          const mockGameFlowManager = createMockGameFlowManager();
+          const mockEventBus = createMockEventBus();
+
+          const mainScene = new MainScene();
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.add = mockScene.add;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.cameras = mockScene.cameras;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.rexUI = mockScene.rexUI;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.data = mockScene.data;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.input = mockScene.input;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.stateManager = mockStateManager;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.gameFlowManager = mockGameFlowManager;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.eventBus = mockEventBus;
+
+          mainScene.create();
+
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          expect(mainScene.phaseUIs.get(GamePhase.GATHERING)).toBeDefined();
+        });
+
+        it('TC-0052-003: AlchemyPhaseUIインスタンスが作成されること', async () => {
+          // 【テスト目的】: MainSceneでAlchemyPhaseUIが作成されることを確認
+          // 【対応要件】: REQ-052-01
+          // 🔵 信頼性レベル
+
+          const { MainScene } = await import('@presentation/scenes/MainScene');
+          const { scene: mockScene } = createMockScene();
+          const mockStateManager = createMockStateManager();
+          const mockGameFlowManager = createMockGameFlowManager();
+          const mockEventBus = createMockEventBus();
+
+          const mainScene = new MainScene();
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.add = mockScene.add;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.cameras = mockScene.cameras;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.rexUI = mockScene.rexUI;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.data = mockScene.data;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.input = mockScene.input;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.stateManager = mockStateManager;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.gameFlowManager = mockGameFlowManager;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.eventBus = mockEventBus;
+
+          mainScene.create();
+
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          expect(mainScene.phaseUIs.get(GamePhase.ALCHEMY)).toBeDefined();
+        });
+
+        it('TC-0052-004: DeliveryPhaseUIインスタンスが作成されること', async () => {
+          // 【テスト目的】: MainSceneでDeliveryPhaseUIが作成されることを確認
+          // 【対応要件】: REQ-052-01
+          // 🔵 信頼性レベル
+
+          const { MainScene } = await import('@presentation/scenes/MainScene');
+          const { scene: mockScene } = createMockScene();
+          const mockStateManager = createMockStateManager();
+          const mockGameFlowManager = createMockGameFlowManager();
+          const mockEventBus = createMockEventBus();
+
+          const mainScene = new MainScene();
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.add = mockScene.add;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.cameras = mockScene.cameras;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.rexUI = mockScene.rexUI;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.data = mockScene.data;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.input = mockScene.input;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.stateManager = mockStateManager;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.gameFlowManager = mockGameFlowManager;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.eventBus = mockEventBus;
+
+          mainScene.create();
+
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          expect(mainScene.phaseUIs.get(GamePhase.DELIVERY)).toBeDefined();
+        });
+
+        it('TC-0052-005: 初期フェーズ（QUEST_ACCEPT）のUIのみが表示されること', async () => {
+          // 【テスト目的】: create()後に初期フェーズのUIのみが表示されることを確認
+          // 【対応要件】: REQ-052-02
+          // 🔵 信頼性レベル
+
+          const { MainScene } = await import('@presentation/scenes/MainScene');
+          const { scene: mockScene } = createMockScene();
+          const mockStateManager = createMockStateManager();
+          const mockGameFlowManager = createMockGameFlowManager();
+          const mockEventBus = createMockEventBus();
+
+          const mainScene = new MainScene();
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.add = mockScene.add;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.cameras = mockScene.cameras;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.rexUI = mockScene.rexUI;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.data = mockScene.data;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.input = mockScene.input;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.stateManager = mockStateManager;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.gameFlowManager = mockGameFlowManager;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.eventBus = mockEventBus;
+
+          mainScene.create();
+
+          // 初期フェーズはQUEST_ACCEPT
+          expect(mainScene.isPhaseUIVisible(GamePhase.QUEST_ACCEPT)).toBe(true);
+          expect(mainScene.isPhaseUIVisible(GamePhase.GATHERING)).toBe(false);
+          expect(mainScene.isPhaseUIVisible(GamePhase.ALCHEMY)).toBe(false);
+          expect(mainScene.isPhaseUIVisible(GamePhase.DELIVERY)).toBe(false);
+        });
+      });
+
+      describe('showPhase() - 表示切り替え', () => {
+        it('TC-0052-010: QUEST_ACCEPT指定でQuestAcceptPhaseUIのみが表示されること', async () => {
+          // 【テスト目的】: showPhase(QUEST_ACCEPT)で正しいUIが表示されることを確認
+          // 【対応要件】: REQ-052-02
+          // 🔵 信頼性レベル
+
+          const { MainScene } = await import('@presentation/scenes/MainScene');
+          const { scene: mockScene } = createMockScene();
+          const mockStateManager = createMockStateManager();
+          const mockGameFlowManager = createMockGameFlowManager();
+          const mockEventBus = createMockEventBus();
+
+          const mainScene = new MainScene();
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.add = mockScene.add;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.cameras = mockScene.cameras;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.rexUI = mockScene.rexUI;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.data = mockScene.data;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.input = mockScene.input;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.stateManager = mockStateManager;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.gameFlowManager = mockGameFlowManager;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.eventBus = mockEventBus;
+
+          mainScene.create();
+          mainScene.showPhase(GamePhase.QUEST_ACCEPT);
+
+          expect(mainScene.isPhaseUIVisible(GamePhase.QUEST_ACCEPT)).toBe(true);
+          expect(mainScene.isPhaseUIVisible(GamePhase.GATHERING)).toBe(false);
+          expect(mainScene.isPhaseUIVisible(GamePhase.ALCHEMY)).toBe(false);
+          expect(mainScene.isPhaseUIVisible(GamePhase.DELIVERY)).toBe(false);
+        });
+
+        it('TC-0052-011: GATHERING指定でGatheringPhaseUIのみが表示されること', async () => {
+          // 【テスト目的】: showPhase(GATHERING)で正しいUIが表示されることを確認
+          // 【対応要件】: REQ-052-03
+          // 🔵 信頼性レベル
+
+          const { MainScene } = await import('@presentation/scenes/MainScene');
+          const { scene: mockScene } = createMockScene();
+          const mockStateManager = createMockStateManager();
+          const mockGameFlowManager = createMockGameFlowManager();
+          const mockEventBus = createMockEventBus();
+
+          const mainScene = new MainScene();
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.add = mockScene.add;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.cameras = mockScene.cameras;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.rexUI = mockScene.rexUI;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.data = mockScene.data;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.input = mockScene.input;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.stateManager = mockStateManager;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.gameFlowManager = mockGameFlowManager;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.eventBus = mockEventBus;
+
+          mainScene.create();
+          mainScene.showPhase(GamePhase.GATHERING);
+
+          expect(mainScene.isPhaseUIVisible(GamePhase.QUEST_ACCEPT)).toBe(false);
+          expect(mainScene.isPhaseUIVisible(GamePhase.GATHERING)).toBe(true);
+          expect(mainScene.isPhaseUIVisible(GamePhase.ALCHEMY)).toBe(false);
+          expect(mainScene.isPhaseUIVisible(GamePhase.DELIVERY)).toBe(false);
+        });
+
+        it('TC-0052-012: ALCHEMY指定でAlchemyPhaseUIのみが表示されること', async () => {
+          // 【テスト目的】: showPhase(ALCHEMY)で正しいUIが表示されることを確認
+          // 【対応要件】: REQ-052-04
+          // 🔵 信頼性レベル
+
+          const { MainScene } = await import('@presentation/scenes/MainScene');
+          const { scene: mockScene } = createMockScene();
+          const mockStateManager = createMockStateManager();
+          const mockGameFlowManager = createMockGameFlowManager();
+          const mockEventBus = createMockEventBus();
+
+          const mainScene = new MainScene();
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.add = mockScene.add;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.cameras = mockScene.cameras;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.rexUI = mockScene.rexUI;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.data = mockScene.data;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.input = mockScene.input;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.stateManager = mockStateManager;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.gameFlowManager = mockGameFlowManager;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.eventBus = mockEventBus;
+
+          mainScene.create();
+          mainScene.showPhase(GamePhase.ALCHEMY);
+
+          expect(mainScene.isPhaseUIVisible(GamePhase.QUEST_ACCEPT)).toBe(false);
+          expect(mainScene.isPhaseUIVisible(GamePhase.GATHERING)).toBe(false);
+          expect(mainScene.isPhaseUIVisible(GamePhase.ALCHEMY)).toBe(true);
+          expect(mainScene.isPhaseUIVisible(GamePhase.DELIVERY)).toBe(false);
+        });
+
+        it('TC-0052-013: DELIVERY指定でDeliveryPhaseUIのみが表示されること', async () => {
+          // 【テスト目的】: showPhase(DELIVERY)で正しいUIが表示されることを確認
+          // 【対応要件】: REQ-052-05
+          // 🔵 信頼性レベル
+
+          const { MainScene } = await import('@presentation/scenes/MainScene');
+          const { scene: mockScene } = createMockScene();
+          const mockStateManager = createMockStateManager();
+          const mockGameFlowManager = createMockGameFlowManager();
+          const mockEventBus = createMockEventBus();
+
+          const mainScene = new MainScene();
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.add = mockScene.add;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.cameras = mockScene.cameras;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.rexUI = mockScene.rexUI;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.data = mockScene.data;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.input = mockScene.input;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.stateManager = mockStateManager;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.gameFlowManager = mockGameFlowManager;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.eventBus = mockEventBus;
+
+          mainScene.create();
+          mainScene.showPhase(GamePhase.DELIVERY);
+
+          expect(mainScene.isPhaseUIVisible(GamePhase.QUEST_ACCEPT)).toBe(false);
+          expect(mainScene.isPhaseUIVisible(GamePhase.GATHERING)).toBe(false);
+          expect(mainScene.isPhaseUIVisible(GamePhase.ALCHEMY)).toBe(false);
+          expect(mainScene.isPhaseUIVisible(GamePhase.DELIVERY)).toBe(true);
+        });
+
+        it('TC-0052-014: フェーズ変更時に前のUIが非表示になること', async () => {
+          // 【テスト目的】: フェーズ遷移時に前のフェーズUIが非表示になることを確認
+          // 【対応要件】: REQ-052-06
+          // 🔵 信頼性レベル
+
+          const { MainScene } = await import('@presentation/scenes/MainScene');
+          const { scene: mockScene } = createMockScene();
+          const mockStateManager = createMockStateManager();
+          const mockGameFlowManager = createMockGameFlowManager();
+          const mockEventBus = createMockEventBus();
+
+          const mainScene = new MainScene();
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.add = mockScene.add;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.cameras = mockScene.cameras;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.rexUI = mockScene.rexUI;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.data = mockScene.data;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.input = mockScene.input;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.stateManager = mockStateManager;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.gameFlowManager = mockGameFlowManager;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.eventBus = mockEventBus;
+
+          mainScene.create();
+
+          // QUEST_ACCEPT → GATHERING
+          mainScene.showPhase(GamePhase.QUEST_ACCEPT);
+          expect(mainScene.isPhaseUIVisible(GamePhase.QUEST_ACCEPT)).toBe(true);
+
+          mainScene.showPhase(GamePhase.GATHERING);
+          expect(mainScene.isPhaseUIVisible(GamePhase.QUEST_ACCEPT)).toBe(false);
+          expect(mainScene.isPhaseUIVisible(GamePhase.GATHERING)).toBe(true);
+
+          // GATHERING → ALCHEMY
+          mainScene.showPhase(GamePhase.ALCHEMY);
+          expect(mainScene.isPhaseUIVisible(GamePhase.GATHERING)).toBe(false);
+          expect(mainScene.isPhaseUIVisible(GamePhase.ALCHEMY)).toBe(true);
+
+          // ALCHEMY → DELIVERY
+          mainScene.showPhase(GamePhase.DELIVERY);
+          expect(mainScene.isPhaseUIVisible(GamePhase.ALCHEMY)).toBe(false);
+          expect(mainScene.isPhaseUIVisible(GamePhase.DELIVERY)).toBe(true);
+        });
+      });
+
+      describe('フェーズ遷移', () => {
+        it('TC-0052-020: Footerの「次へ」ボタンクリックでフェーズが遷移すること', async () => {
+          // 【テスト目的】: Footerの次へボタンでフェーズ遷移が行われることを確認
+          // 【対応要件】: REQ-052-07
+          // 🔵 信頼性レベル
+
+          const { MainScene } = await import('@presentation/scenes/MainScene');
+          const { scene: mockScene } = createMockScene();
+
+          const mainScene = new MainScene();
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.add = mockScene.add;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.cameras = mockScene.cameras;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.rexUI = mockScene.rexUI;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.data = mockScene.data;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.input = mockScene.input;
+
+          mainScene.create();
+
+          // 次へボタンをシミュレート
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.footerUI.simulateNextButtonClick();
+
+          // GameFlowManager.endPhase()が呼ばれることを確認（グローバルモックを使用）
+          expect(mockGameFlowManagerInstance.endPhase).toHaveBeenCalled();
+        });
+
+        it('TC-0052-021: PHASE_CHANGEDイベントで正しいUIに切り替わること', async () => {
+          // 【テスト目的】: PHASE_CHANGEDイベントでUIが正しく切り替わることを確認
+          // 【対応要件】: REQ-052-02〜REQ-052-06
+          // 🔵 信頼性レベル
+
+          const { MainScene } = await import('@presentation/scenes/MainScene');
+          const { scene: mockScene } = createMockScene();
+
+          const mainScene = new MainScene();
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.add = mockScene.add;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.cameras = mockScene.cameras;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.rexUI = mockScene.rexUI;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.data = mockScene.data;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.input = mockScene.input;
+
+          mainScene.create();
+
+          // PHASE_CHANGEDイベントを発行
+          mockEventBusInstance.emit(GameEventType.PHASE_CHANGED, {
+            type: GameEventType.PHASE_CHANGED,
+            previousPhase: GamePhase.QUEST_ACCEPT,
+            newPhase: GamePhase.GATHERING,
+            timestamp: Date.now(),
+          });
+
+          // GatheringフェーズUIが表示されることを確認
+          expect(mainScene.isPhaseUIVisible(GamePhase.GATHERING)).toBe(true);
+          expect(mainScene.isPhaseUIVisible(GamePhase.QUEST_ACCEPT)).toBe(false);
+        });
       });
     });
 
@@ -642,6 +1161,10 @@ describe('MainScene共通レイアウト', () => {
         mainScene.cameras = mockScene.cameras;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.rexUI = mockScene.rexUI;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.data = mockScene.data;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.input = mockScene.input;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.stateManager = mockStateManager;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
@@ -678,6 +1201,10 @@ describe('MainScene共通レイアウト', () => {
           mainScene.cameras = mockScene.cameras;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.rexUI = mockScene.rexUI;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.data = mockScene.data;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.input = mockScene.input;
 
           // When & Then: StateManager未初期化でエラー
           expect(() => mainScene.create()).toThrow('StateManager is required');
@@ -707,6 +1234,10 @@ describe('MainScene共通レイアウト', () => {
           mainScene.cameras = mockScene.cameras;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.rexUI = mockScene.rexUI;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.data = mockScene.data;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.input = mockScene.input;
 
           // When & Then: GameFlowManager未初期化でエラー
           expect(() => mainScene.create()).toThrow('GameFlowManager is required');
@@ -736,6 +1267,10 @@ describe('MainScene共通レイアウト', () => {
           mainScene.cameras = mockScene.cameras;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.rexUI = mockScene.rexUI;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.data = mockScene.data;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.input = mockScene.input;
 
           // When & Then: EventBus未初期化でエラー
           expect(() => mainScene.create()).toThrow('EventBus is required');
