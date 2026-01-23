@@ -9,10 +9,16 @@
  * @信頼性レベル 🔵 requirements.md セクション2.1に基づく
  */
 
+import type { IAlchemyService } from '@domain/interfaces/alchemy-service.interface';
+import type { IGatheringService } from '@domain/interfaces/gathering-service.interface';
 import { Container, ServiceKeys } from '@infrastructure/di/container';
 import { FooterUI } from '@presentation/ui/components/FooterUI';
 import { HeaderUI } from '@presentation/ui/components/HeaderUI';
 import { SidebarUI } from '@presentation/ui/components/SidebarUI';
+import { AlchemyPhaseUI } from '@presentation/ui/phases/AlchemyPhaseUI';
+import { DeliveryPhaseUI } from '@presentation/ui/phases/DeliveryPhaseUI';
+import { GatheringPhaseUI } from '@presentation/ui/phases/GatheringPhaseUI';
+import { QuestAcceptPhaseUI } from '@presentation/ui/phases/QuestAcceptPhaseUI';
 import { GamePhase, VALID_GAME_PHASES } from '@shared/types/common';
 import type { IPhaseChangedEvent } from '@shared/types/events';
 import { GameEventType } from '@shared/types/events';
@@ -88,6 +94,14 @@ interface IGameFlowManager {
 }
 
 /**
+ * BasePhaseUI インターフェース（フェーズUIの共通インターフェース）
+ */
+interface IBasePhaseUI {
+  setVisible(visible: boolean): IBasePhaseUI;
+  destroy(): void;
+}
+
+/**
  * EventBus インターフェース（依存注入用）
  */
 interface IEventBus {
@@ -140,6 +154,9 @@ export class MainScene extends Phaser.Scene {
   /** コンテンツコンテナ（各フェーズUIの親コンテナとして使用） */
   private _contentContainer!: Phaser.GameObjects.Container;
 
+  /** フェーズUIマップ */
+  private phaseUIs: Map<GamePhase, IBasePhaseUI> = new Map();
+
   // ===========================================================================
   // 内部状態
   // ===========================================================================
@@ -187,12 +204,22 @@ export class MainScene extends Phaser.Scene {
     // UIコンポーネントの作成
     this.createLayoutComponents();
 
+    // フェーズUIの作成
+    this.createPhaseUIs();
+
     // イベント購読の設定
     this.setupEventSubscriptions();
 
+    // Footerの「次へ」ボタンにコールバック設定
+    this.setupFooterNextButtonCallback();
+
     // 初期状態の反映
     this.updateHeader();
-    this.updateFooterForPhase(this.stateManager.getState().currentPhase);
+    const initialPhase = this.stateManager.getState().currentPhase;
+    this.updateFooterForPhase(initialPhase);
+
+    // 初期フェーズUIを表示
+    this.showPhase(initialPhase);
   }
 
   // ===========================================================================
@@ -245,6 +272,104 @@ export class MainScene extends Phaser.Scene {
 
     // コンテンツコンテナ（中央エリア）
     this._contentContainer = this.add.container(LAYOUT.SIDEBAR_WIDTH, LAYOUT.HEADER_HEIGHT);
+  }
+
+  /**
+   * フェーズUIを作成
+   * TASK-0052: 各フェーズUIインスタンスを作成してphaseUIsマップに登録
+   */
+  private createPhaseUIs(): void {
+    const container = Container.getInstance();
+
+    // QuestAcceptPhaseUI
+    const questAcceptUI = new QuestAcceptPhaseUI(this);
+    this.phaseUIs.set(GamePhase.QUEST_ACCEPT, questAcceptUI);
+
+    // GatheringPhaseUI
+    // GatheringServiceを取得（オプショナル）
+    let gatheringService: IGatheringService | null = null;
+    if (container.has(ServiceKeys.GatheringService)) {
+      gatheringService = container.resolve<IGatheringService>(ServiceKeys.GatheringService);
+    }
+    if (gatheringService) {
+      const gatheringUI = new GatheringPhaseUI(this, gatheringService);
+      gatheringUI.create();
+      this.phaseUIs.set(GamePhase.GATHERING, gatheringUI);
+    } else {
+      // GatheringServiceが利用できない場合はダミーUIを作成
+      const dummyUI = this.createDummyPhaseUI('採取フェーズ');
+      this.phaseUIs.set(GamePhase.GATHERING, dummyUI);
+    }
+
+    // AlchemyPhaseUI
+    // AlchemyServiceを取得（オプショナル）
+    let alchemyService: IAlchemyService | null = null;
+    if (container.has(ServiceKeys.AlchemyService)) {
+      alchemyService = container.resolve<IAlchemyService>(ServiceKeys.AlchemyService);
+    }
+    if (alchemyService) {
+      const alchemyUI = new AlchemyPhaseUI(this, alchemyService);
+      alchemyUI.create();
+      this.phaseUIs.set(GamePhase.ALCHEMY, alchemyUI);
+    } else {
+      // AlchemyServiceが利用できない場合はダミーUIを作成
+      const dummyUI = this.createDummyPhaseUI('調合フェーズ');
+      this.phaseUIs.set(GamePhase.ALCHEMY, dummyUI);
+    }
+
+    // DeliveryPhaseUI
+    const deliveryUI = new DeliveryPhaseUI(this);
+    this.phaseUIs.set(GamePhase.DELIVERY, deliveryUI);
+
+    // 全てのフェーズUIを非表示に初期化
+    for (const ui of this.phaseUIs.values()) {
+      ui.setVisible(false);
+    }
+  }
+
+  /**
+   * ダミーフェーズUIを作成（サービスが利用できない場合の代替）
+   *
+   * @param phaseName - フェーズ名
+   * @returns ダミーフェーズUI
+   */
+  private createDummyPhaseUI(phaseName: string): IBasePhaseUI {
+    const container = this.add.container(0, 0);
+    const text = this.add.text(200, 150, phaseName, {
+      fontSize: '24px',
+      color: '#ffffff',
+    });
+    container.add(text);
+    this._contentContainer.add(container);
+
+    return {
+      setVisible: (visible: boolean) => {
+        container.setVisible(visible);
+        return this as unknown as IBasePhaseUI;
+      },
+      destroy: () => {
+        container.destroy();
+      },
+    };
+  }
+
+  /**
+   * Footerの「次へ」ボタンにコールバックを設定
+   * TASK-0052: フェーズ遷移連携
+   */
+  private setupFooterNextButtonCallback(): void {
+    this.footerUI.onNextClick(() => {
+      this.onNextPhaseButtonClick();
+    });
+  }
+
+  /**
+   * 「次へ」ボタンクリック時の処理
+   * TASK-0052: GameFlowManagerと連携してフェーズを進める
+   */
+  private onNextPhaseButtonClick(): void {
+    // GameFlowManagerでフェーズを終了
+    this.gameFlowManager.endPhase();
   }
 
   /**
@@ -346,6 +471,7 @@ export class MainScene extends Phaser.Scene {
 
   /**
    * 指定フェーズのUIを表示
+   * TASK-0052: 実際のフェーズUIの表示/非表示を切り替え
    *
    * @param phase - 表示するフェーズ
    * @throws {Error} 無効なフェーズが指定された場合
@@ -361,13 +487,22 @@ export class MainScene extends Phaser.Scene {
       return;
     }
 
-    // 全フェーズを非表示に
+    // 全フェーズUIを非表示に
     for (const p of VALID_GAME_PHASES) {
       this._phaseUIVisibility[p] = false;
+      const ui = this.phaseUIs.get(p);
+      if (ui) {
+        ui.setVisible(false);
+      }
     }
 
-    // 指定フェーズのみ表示
+    // 指定フェーズのUIのみ表示
     this._phaseUIVisibility[phase] = true;
+    const targetUI = this.phaseUIs.get(phase);
+    if (targetUI) {
+      targetUI.setVisible(true);
+    }
+
     this._currentVisiblePhase = phase;
   }
 
