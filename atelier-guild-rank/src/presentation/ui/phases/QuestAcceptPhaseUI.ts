@@ -2,6 +2,7 @@
  * QuestAcceptPhaseUIコンポーネント
  * TASK-0022 依頼受注フェーズUI
  * TASK-0043 依頼詳細モーダル・受注アニメーション
+ * TASK-0054 テーマ定数統一（カラー・アニメーション）
  *
  * @description
  * 依頼受注フェーズ全体のUI管理を担当するコンポーネント。
@@ -20,6 +21,7 @@ import { GameEventType } from '../../../shared/types/events';
 import { BaseComponent } from '../components/BaseComponent';
 import { QuestCardUI } from '../components/QuestCardUI';
 import { QuestDetailModal } from '../components/QuestDetailModal';
+import { AnimationPresets } from '../utils/AnimationPresets';
 
 /**
  * EventBusインターフェース
@@ -465,10 +467,11 @@ export class QuestAcceptPhaseUI extends BaseComponent {
 
   /**
    * 【サイドバー定数】: 受注済みカードのサイドバー表示に関する定数
+   * TASK-0054: AnimationPresets.sidebar を参照
    */
   private static readonly SIDEBAR_X = 80;
-  private static readonly SIDEBAR_SCALE = 0.6;
-  private static readonly SIDEBAR_ANIM_DURATION = 400;
+  private static readonly SIDEBAR_SCALE = AnimationPresets.sidebar.moveToSidebar.scale;
+  private static readonly SIDEBAR_ANIM_DURATION = AnimationPresets.sidebar.moveToSidebar.duration;
   private static readonly SIDEBAR_CARD_SPACING = 120;
   private static readonly SIDEBAR_START_Y = 200;
 

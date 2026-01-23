@@ -1,6 +1,7 @@
 /**
  * QuestCardUIコンポーネント
  * TASK-0022 依頼受注フェーズUI
+ * TASK-0054 テーマ定数統一（カラー・アニメーション）
  *
  * @description
  * 個別依頼をカード形式で表示し、受注操作を提供するコンポーネント。
@@ -9,6 +10,8 @@
 
 import type Phaser from 'phaser';
 import type { Quest } from '../../../domain/entities/Quest';
+import { Colors } from '../theme';
+import { AnimationPresets } from '../utils/AnimationPresets';
 import { BaseComponent } from './BaseComponent';
 
 /**
@@ -78,12 +81,13 @@ export class QuestCardUI extends BaseComponent {
 
   /**
    * 【アニメーション定数】: ホバー時の拡大エフェクトのパラメータ
-   * 【設計方針】: アニメーション設定を定数化し、統一感を持たせる
+   * TASK-0054: AnimationPresets.scale.hover を参照するため、個別定数は不要
+   * 後方互換性のために残しておくが、新しい実装ではAnimationPresetsを使用
    * 🔵 信頼性レベル: 既存実装のマジックナンバーを定数化
    */
-  private static readonly HOVER_SCALE = 1.05; // 【ホバー時のスケール】: 1.05倍で控えめな強調
-  private static readonly HOVER_DURATION = 150; // 【アニメーション時間】: 150msで瞬時にフィードバック
-  private static readonly HOVER_EASE = 'Quad.Out'; // 【イージング関数】: 自然な加速・減速曲線
+  private static readonly HOVER_SCALE = AnimationPresets.scale.hover.scale; // 【ホバー時のスケール】: 1.05倍で控えめな強調
+  private static readonly HOVER_DURATION = AnimationPresets.scale.hover.duration; // 【アニメーション時間】: 150msで瞬時にフィードバック
+  private static readonly HOVER_EASE = AnimationPresets.scale.hover.ease; // 【イージング関数】: 自然な加速・減速曲線
 
   constructor(scene: Phaser.Scene, config: QuestCardUIConfig) {
     // バリデーション: configが必須
@@ -129,6 +133,7 @@ export class QuestCardUI extends BaseComponent {
    * 【カードの背景を作成】: 依頼カードの背景矩形を生成
    * 【配置位置】: カード中央に配置
    * 【デザイン】: 黄色系の温かみのある色合いで依頼感を演出
+   * TASK-0054: Colors.background.parchment, Colors.border.quest を使用
    * 🔵 信頼性レベル: 実装ファイルに基づく
    */
   private createBackground(): void {
@@ -137,11 +142,11 @@ export class QuestCardUI extends BaseComponent {
       0,
       QuestCardUI.CARD_WIDTH,
       QuestCardUI.CARD_HEIGHT,
-      0xfffde7, // 【背景色】: 淡い黄色（Parchment風）
+      Colors.background.parchment, // 【背景色】: 淡い黄色（Parchment風）
     );
     // 【型安全性】: setStrokeStyleはテストモックで定義されていないため、存在確認してから呼び出す
     if (this.background.setStrokeStyle) {
-      this.background.setStrokeStyle(2, 0xffd54f); // 【枠線】: 濃い黄色で強調
+      this.background.setStrokeStyle(2, Colors.border.quest); // 【枠線】: 濃い黄色で強調
     }
     this.container.add(this.background);
   }
@@ -285,16 +290,17 @@ export class QuestCardUI extends BaseComponent {
     const buttonY = QuestCardUI.CARD_HEIGHT / 2 - QuestCardUI.PADDING - QuestCardUI.BUTTON_Y_OFFSET;
 
     // 【ボタン背景】: 緑色の矩形でボタン感を演出
+    // TASK-0054: Colors.ui.button.accept, Colors.ui.button.acceptBorder を使用
     this.acceptButton = this.scene.add.rectangle(
       0,
       buttonY,
       QuestCardUI.BUTTON_WIDTH,
       QuestCardUI.BUTTON_HEIGHT,
-      0x4caf50, // 【背景色】: 緑色（受注を促進）
+      Colors.ui.button.accept, // 【背景色】: 緑色（受注を促進）
     );
     // 【型安全性】: setStrokeStyleはテストモックで定義されていないため、存在確認してから呼び出す
     if (this.acceptButton.setStrokeStyle) {
-      this.acceptButton.setStrokeStyle(1, 0x388e3c); // 【枠線】: 濃い緑色で強調
+      this.acceptButton.setStrokeStyle(1, Colors.ui.button.acceptBorder); // 【枠線】: 濃い緑色で強調
     }
     this.acceptButton.setInteractive({ useHandCursor: true });
     this.container.add(this.acceptButton);

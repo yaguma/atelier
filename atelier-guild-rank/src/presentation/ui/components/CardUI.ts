@@ -1,6 +1,7 @@
 /**
  * CardUIコンポーネント
  * TASK-0021 カードUIコンポーネント
+ * TASK-0054 テーマ定数統一（カラー・アニメーション）
  *
  * @description
  * ゲーム内で使用されるカードの視覚的表現を提供するコンポーネント。
@@ -9,6 +10,8 @@
 
 import type Phaser from 'phaser';
 import type { Card } from '../../../domain/entities/Card';
+import { Colors } from '../theme';
+import { AnimationPresets } from '../utils/AnimationPresets';
 import { BaseComponent } from './BaseComponent';
 
 /**
@@ -105,19 +108,20 @@ export class CardUI extends BaseComponent {
 
   /**
    * カードタイプに応じた色を取得
+   * TASK-0054: Colors.cardType から統一カラーパレットを使用
    *
    * @returns カードタイプごとの色コード
    */
   private getCardTypeColor(): number {
     switch (this.card.type) {
       case 'GATHERING':
-        return 0x90ee90; // LightGreen
+        return Colors.cardType.gathering;
       case 'RECIPE':
-        return 0xffb6c1; // LightPink
+        return Colors.cardType.recipe;
       case 'ENHANCEMENT':
-        return 0xadd8e6; // LightBlue
+        return Colors.cardType.enhancement;
       default:
-        return 0xffffff; // White
+        return Colors.cardType.default;
     }
   }
 
@@ -255,6 +259,7 @@ export class CardUI extends BaseComponent {
     this.background.setInteractive({ useHandCursor: true });
 
     // 【ホバー時の拡大エフェクト】: カードを1.1倍に拡大してフィードバック
+    // TASK-0054: AnimationPresets.scale.hoverLarge を使用
     // 【アニメーション設計】:
     //   - スケール: 1.1倍（控えめな拡大で他のカードを邪魔しない）
     //   - 時間: 100ms（素早いレスポンスでストレスフリー）
@@ -264,14 +269,12 @@ export class CardUI extends BaseComponent {
     this.background.on('pointerover', () => {
       this.scene.tweens.add({
         targets: this.container,
-        scaleX: 1.1, // 【横方向拡大】: 1.1倍で控えめな強調
-        scaleY: 1.1, // 【縦方向拡大】: 横と同じ比率で自然な拡大
-        duration: 100, // 【アニメーション時間】: 100msで瞬時にフィードバック
-        ease: 'Power2', // 【イージング関数】: 自然な加速・減速曲線
+        ...AnimationPresets.scale.hoverLarge,
       });
     });
 
     // 【ホバー解除時の縮小エフェクト】: カードを元のサイズに戻す
+    // TASK-0054: AnimationPresets.scale.resetXY を使用
     // 【アニメーション設計】:
     //   - スケール: 1.0倍（元のサイズに復帰）
     //   - 時間: 100ms（拡大時と同じ時間で統一感）
@@ -281,10 +284,7 @@ export class CardUI extends BaseComponent {
     this.background.on('pointerout', () => {
       this.scene.tweens.add({
         targets: this.container,
-        scaleX: 1, // 【横方向復帰】: 元のサイズに戻す
-        scaleY: 1, // 【縦方向復帰】: 元のサイズに戻す
-        duration: 100, // 【アニメーション時間】: 拡大時と同じ100ms
-        ease: 'Power2', // 【イージング関数】: 拡大時と統一
+        ...AnimationPresets.scale.resetXY,
       });
     });
 
