@@ -1,0 +1,850 @@
+/**
+ * RankUpScene ユニットテスト
+ * TASK-0051 RankUpScene実装
+ *
+ * @description
+ * 昇格試験画面のテストケース
+ *
+ * テストカテゴリ:
+ * - 正常系: シーン初期化、ランク情報表示、試験処理
+ * - 異常系: サービス未初期化
+ * - シーン遷移: MainSceneへの戻り
+ */
+
+import type {
+  IRankService,
+  PromotionResult,
+  PromotionTest,
+} from '@domain/interfaces/rank-service.interface';
+import { GamePhase, GuildRank } from '@shared/types/common';
+import type { IGuildRankMaster } from '@shared/types/master-data';
+import type Phaser from 'phaser';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// =============================================================================
+// モック定義
+// =============================================================================
+
+/**
+ * Phaserモック
+ */
+vi.mock('phaser', () => {
+  return {
+    default: {
+      Scene: class MockScene {},
+      GameObjects: {
+        Container: class MockContainer {},
+        Text: class MockText {},
+        Graphics: class MockGraphics {},
+      },
+    },
+  };
+});
+
+// DIコンテナのモックインスタンス
+// biome-ignore lint/suspicious/noExplicitAny: テスト用のモック変数
+let mockStateManagerInstance: any;
+// biome-ignore lint/suspicious/noExplicitAny: テスト用のモック変数
+let mockRankServiceInstance: any;
+// biome-ignore lint/suspicious/noExplicitAny: テスト用のモック変数
+let mockEventBusInstance: any;
+
+const mockContainerInstance = {
+  resolve: vi.fn((key: string) => {
+    if (key === 'StateManager') return mockStateManagerInstance;
+    if (key === 'RankService') return mockRankServiceInstance;
+    if (key === 'EventBus') return mockEventBusInstance;
+    throw new Error(`Service not found: ${key}`);
+  }),
+  register: vi.fn(),
+};
+
+vi.mock('@infrastructure/di/container', () => ({
+  Container: {
+    getInstance: vi.fn(() => mockContainerInstance),
+  },
+  ServiceKeys: {
+    StateManager: 'StateManager',
+    RankService: 'RankService',
+    EventBus: 'EventBus',
+  },
+}));
+
+// =============================================================================
+// モック作成ヘルパー
+// =============================================================================
+
+/**
+ * Phaserコンテナのモックを作成
+ */
+const createMockContainer = () => ({
+  setVisible: vi.fn().mockReturnThis(),
+  setPosition: vi.fn().mockReturnThis(),
+  setDepth: vi.fn().mockReturnThis(),
+  add: vi.fn().mockReturnThis(),
+  destroy: vi.fn(),
+  bringToTop: vi.fn().mockReturnThis(),
+  x: 0,
+  y: 0,
+  visible: true,
+});
+
+/**
+ * Phaserテキストのモックを作成
+ */
+const createMockText = () => ({
+  setText: vi.fn().mockReturnThis(),
+  setOrigin: vi.fn().mockReturnThis(),
+  setStyle: vi.fn().mockReturnThis(),
+  setColor: vi.fn().mockReturnThis(),
+  setFontSize: vi.fn().mockReturnThis(),
+  setVisible: vi.fn().mockReturnThis(),
+  destroy: vi.fn(),
+  text: '',
+});
+
+/**
+ * Phaserグラフィックスのモックを作成
+ */
+const createMockGraphics = () => ({
+  fillStyle: vi.fn().mockReturnThis(),
+  fillRect: vi.fn().mockReturnThis(),
+  fillRoundedRect: vi.fn().mockReturnThis(),
+  clear: vi.fn().mockReturnThis(),
+  destroy: vi.fn(),
+  lineStyle: vi.fn().mockReturnThis(),
+  beginPath: vi.fn().mockReturnThis(),
+  moveTo: vi.fn().mockReturnThis(),
+  lineTo: vi.fn().mockReturnThis(),
+  stroke: vi.fn().mockReturnThis(),
+  strokePath: vi.fn().mockReturnThis(),
+});
+
+/**
+ * rexUIモックを作成
+ */
+const createMockRexUI = () => ({
+  add: {
+    sizer: vi.fn().mockReturnValue({
+      layout: vi.fn(),
+      add: vi.fn().mockReturnThis(),
+      destroy: vi.fn(),
+    }),
+    label: vi.fn().mockReturnValue({
+      layout: vi.fn(),
+      setInteractive: vi.fn().mockReturnThis(),
+      on: vi.fn().mockReturnThis(),
+      destroy: vi.fn(),
+      setText: vi.fn().mockReturnThis(),
+      setAlpha: vi.fn().mockReturnThis(),
+      removeInteractive: vi.fn().mockReturnThis(),
+      setVisible: vi.fn().mockReturnThis(),
+    }),
+    roundRectangle: vi.fn().mockReturnValue({
+      setFillStyle: vi.fn().mockReturnThis(),
+      setStrokeStyle: vi.fn().mockReturnThis(),
+      destroy: vi.fn(),
+    }),
+    scrollablePanel: vi.fn().mockReturnValue({
+      layout: vi.fn(),
+      destroy: vi.fn(),
+    }),
+  },
+});
+
+/**
+ * Phaserシーンのモックを作成
+ */
+const createMockScene = () => {
+  const mockContainer = createMockContainer();
+  const mockText = createMockText();
+  const mockGraphics = createMockGraphics();
+  const mockRexUI = createMockRexUI();
+
+  return {
+    scene: {
+      add: {
+        container: vi.fn().mockImplementation((x: number, y: number) => ({
+          ...mockContainer,
+          x,
+          y,
+        })),
+        text: vi.fn().mockReturnValue(mockText),
+        graphics: vi.fn().mockReturnValue(mockGraphics),
+        rectangle: vi.fn().mockReturnValue({
+          setFillStyle: vi.fn().mockReturnThis(),
+          setStrokeStyle: vi.fn().mockReturnThis(),
+          setOrigin: vi.fn().mockReturnThis(),
+          setInteractive: vi.fn().mockReturnThis(),
+          on: vi.fn().mockReturnThis(),
+          destroy: vi.fn(),
+        }),
+      },
+      cameras: {
+        main: {
+          centerX: 640,
+          centerY: 360,
+          width: 1280,
+          height: 720,
+          fadeIn: vi.fn(),
+          fadeOut: vi.fn(),
+          once: vi.fn().mockImplementation((event, callback) => {
+            // 即時にコールバックを呼び出す
+            if (event === 'camerafadeoutcomplete') {
+              setTimeout(callback, 0);
+            }
+          }),
+        },
+      },
+      rexUI: mockRexUI,
+      tweens: {
+        add: vi.fn().mockImplementation((config) => {
+          if (config.onComplete) {
+            config.onComplete();
+          }
+          return {};
+        }),
+      },
+      scene: {
+        start: vi.fn(),
+      },
+    } as unknown as Phaser.Scene,
+    mockContainer,
+    mockText,
+    mockGraphics,
+    mockRexUI,
+  };
+};
+
+/**
+ * StateManagerモックを作成
+ */
+const createMockStateManager = () => ({
+  getState: vi.fn().mockReturnValue({
+    currentRank: GuildRank.E,
+    promotionGauge: 100,
+    remainingDays: 25,
+    currentDay: 6,
+    currentPhase: GamePhase.QUEST_ACCEPT,
+    gold: 500,
+    actionPoints: 3,
+    comboCount: 0,
+    rankHp: 100,
+    isPromotionTest: false,
+  }),
+  updateState: vi.fn(),
+});
+
+/**
+ * RankServiceモックを作成
+ */
+const createMockRankService = (): IRankService => ({
+  getCurrentRank: vi.fn().mockReturnValue(GuildRank.E),
+  getNextRank: vi.fn().mockReturnValue(GuildRank.D),
+  getPromotionGauge: vi.fn().mockReturnValue(100),
+  getAccumulatedContribution: vi.fn().mockReturnValue(1000),
+  getRemainingContribution: vi.fn().mockReturnValue(0),
+  canPromote: vi.fn().mockReturnValue(true),
+  addContribution: vi.fn(),
+  setRank: vi.fn(),
+  promote: vi.fn().mockReturnValue({
+    previousRank: GuildRank.E,
+    newRank: GuildRank.D,
+    bonusReward: 300,
+  } as PromotionResult),
+  isInPromotionTest: vi.fn().mockReturnValue(false),
+  startPromotionTest: vi.fn().mockReturnValue({
+    targetRank: GuildRank.D,
+    requirements: [{ itemId: 'potion', quantity: 3, minQuality: 'C' }],
+    remainingDays: 5,
+    completedRequirements: [],
+  } as PromotionTest),
+  getCurrentPromotionTest: vi.fn().mockReturnValue(null),
+  completePromotionTestRequirement: vi.fn(),
+  completePromotionTest: vi.fn().mockReturnValue({
+    previousRank: GuildRank.E,
+    newRank: GuildRank.D,
+    bonusReward: 300,
+  } as PromotionResult),
+  decrementPromotionTestDays: vi.fn().mockReturnValue(false),
+  getRankRequirements: vi.fn().mockReturnValue({
+    id: 'rank-e',
+    rank: GuildRank.E,
+    requiredContribution: 1000,
+    promotionTest: {
+      requirements: [{ itemId: 'potion', quantity: 3, minQuality: 'C' }],
+      dayLimit: 5,
+    },
+    specialRules: [],
+  } as IGuildRankMaster),
+});
+
+/**
+ * EventBusモックを作成
+ */
+const createMockEventBus = () => {
+  const listeners = new Map<string, Array<(...args: unknown[]) => void>>();
+  return {
+    emit: vi.fn().mockImplementation((event: string, data: unknown) => {
+      const handlers = listeners.get(event) || [];
+      for (const handler of handlers) {
+        handler(data);
+      }
+    }),
+    on: vi.fn().mockImplementation((event: string, handler: (...args: unknown[]) => void) => {
+      const existing = listeners.get(event) || [];
+      existing.push(handler);
+      listeners.set(event, existing);
+      return () => {
+        const index = existing.indexOf(handler);
+        if (index > -1) {
+          existing.splice(index, 1);
+        }
+      };
+    }),
+    off: vi.fn(),
+    once: vi.fn(),
+    listeners,
+  };
+};
+
+// =============================================================================
+// テストスイート
+// =============================================================================
+
+describe('RankUpScene', () => {
+  beforeEach(() => {
+    mockStateManagerInstance = createMockStateManager();
+    mockRankServiceInstance = createMockRankService();
+    mockEventBusInstance = createMockEventBus();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  // ===========================================================================
+  // 基本テスト - create()
+  // ===========================================================================
+
+  describe('create()', () => {
+    it('TC-0051-001: シーンが正しく初期化されること', async () => {
+      // 【テスト目的】: RankUpScene生成時にレイアウトコンポーネントが正しく作成されることを確認
+      // 【対応要件】: REQ-051-01
+      // 🔵 信頼性レベル: TASK-0051.md セクション2に明記
+
+      const { RankUpScene } = await import('@presentation/scenes/RankUpScene');
+      const { scene: mockScene } = createMockScene();
+
+      const rankUpScene = new RankUpScene();
+
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.add = mockScene.add;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.cameras = mockScene.cameras;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.rexUI = mockScene.rexUI;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.scene = mockScene.scene;
+
+      rankUpScene.create();
+
+      // シーンが初期化されていることを確認
+      expect(mockScene.add.graphics).toHaveBeenCalled();
+    });
+
+    it('TC-0051-002: 現在のランクが表示されること', async () => {
+      // 【テスト目的】: RankUpSceneで現在のランクが正しく表示されることを確認
+      // 【対応要件】: REQ-051-02
+      // 🔵 信頼性レベル: TASK-0051.md セクション2に明記
+
+      const { RankUpScene } = await import('@presentation/scenes/RankUpScene');
+      const { scene: mockScene } = createMockScene();
+
+      const rankUpScene = new RankUpScene();
+
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.add = mockScene.add;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.cameras = mockScene.cameras;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.rexUI = mockScene.rexUI;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.scene = mockScene.scene;
+
+      rankUpScene.create();
+
+      // getCurrentRankが呼ばれていることを確認
+      expect(mockRankServiceInstance.getCurrentRank).toHaveBeenCalled();
+    });
+
+    it('TC-0051-003: 次のランクが表示されること', async () => {
+      // 【テスト目的】: RankUpSceneで次のランクが正しく表示されることを確認
+      // 【対応要件】: REQ-051-02
+      // 🔵 信頼性レベル: TASK-0051.md セクション2に明記
+
+      const { RankUpScene } = await import('@presentation/scenes/RankUpScene');
+      const { scene: mockScene } = createMockScene();
+
+      const rankUpScene = new RankUpScene();
+
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.add = mockScene.add;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.cameras = mockScene.cameras;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.rexUI = mockScene.rexUI;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.scene = mockScene.scene;
+
+      rankUpScene.create();
+
+      // getNextRankが呼ばれていることを確認
+      expect(mockRankServiceInstance.getNextRank).toHaveBeenCalled();
+    });
+
+    it('TC-0051-004: 昇格条件が表示されること', async () => {
+      // 【テスト目的】: RankUpSceneで昇格条件が表示されることを確認
+      // 【対応要件】: REQ-051-03
+      // 🔵 信頼性レベル: TASK-0051.md セクション2に明記
+
+      const { RankUpScene } = await import('@presentation/scenes/RankUpScene');
+      const { scene: mockScene } = createMockScene();
+
+      const rankUpScene = new RankUpScene();
+
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.add = mockScene.add;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.cameras = mockScene.cameras;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.rexUI = mockScene.rexUI;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.scene = mockScene.scene;
+
+      rankUpScene.create();
+
+      // getRankRequirementsが呼ばれていることを確認
+      expect(mockRankServiceInstance.getRankRequirements).toHaveBeenCalled();
+    });
+
+    it('TC-0051-005: 試験開始ボタンが表示されること', async () => {
+      // 【テスト目的】: RankUpSceneで試験開始ボタンが表示されることを確認
+      // 【対応要件】: REQ-051-04
+      // 🔵 信頼性レベル: TASK-0051.md セクション2に明記
+
+      const { RankUpScene } = await import('@presentation/scenes/RankUpScene');
+      const { scene: mockScene } = createMockScene();
+
+      const rankUpScene = new RankUpScene();
+
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.add = mockScene.add;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.cameras = mockScene.cameras;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.rexUI = mockScene.rexUI;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.scene = mockScene.scene;
+
+      rankUpScene.create();
+
+      // 試験開始ボタンが生成されていることを確認
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      expect(rankUpScene.startTestButton).toBeDefined();
+    });
+  });
+
+  // ===========================================================================
+  // 昇格試験テスト
+  // ===========================================================================
+
+  describe('昇格試験', () => {
+    it('TC-0051-006: 試験開始ボタンクリックで試験が開始されること', async () => {
+      // 【テスト目的】: 試験開始ボタンクリック時にRankService.startPromotionTest()が呼ばれることを確認
+      // 【対応要件】: REQ-051-04
+      // 🔵 信頼性レベル: TASK-0051.md セクション2に明記
+
+      const { RankUpScene } = await import('@presentation/scenes/RankUpScene');
+      const { scene: mockScene } = createMockScene();
+
+      const rankUpScene = new RankUpScene();
+
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.add = mockScene.add;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.cameras = mockScene.cameras;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.rexUI = mockScene.rexUI;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.scene = mockScene.scene;
+
+      rankUpScene.create();
+
+      // 試験開始処理を実行
+      // @ts-expect-error - テストのためにprivateメソッドにアクセス
+      rankUpScene.onStartTestClick();
+
+      // startPromotionTest()が呼ばれていることを確認
+      expect(mockRankServiceInstance.startPromotionTest).toHaveBeenCalled();
+    });
+
+    it('TC-0051-007: 合格条件を満たした場合に合格判定されること', async () => {
+      // 【テスト目的】: 合格条件を満たした場合にcompletePromotionTest(true)が呼ばれることを確認
+      // 【対応要件】: REQ-051-05
+      // 🔵 信頼性レベル: TASK-0051.md セクション2に明記
+
+      const { RankUpScene } = await import('@presentation/scenes/RankUpScene');
+      const { scene: mockScene } = createMockScene();
+
+      const rankUpScene = new RankUpScene();
+
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.add = mockScene.add;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.cameras = mockScene.cameras;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.rexUI = mockScene.rexUI;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.scene = mockScene.scene;
+
+      rankUpScene.create();
+
+      // 合格処理を実行
+      // @ts-expect-error - テストのためにprivateメソッドにアクセス
+      rankUpScene.handleTestResult(true);
+
+      // completePromotionTest(true)が呼ばれていることを確認
+      expect(mockRankServiceInstance.completePromotionTest).toHaveBeenCalledWith(true);
+    });
+
+    it('TC-0051-008: 合格条件を満たさない場合に不合格判定されること', async () => {
+      // 【テスト目的】: 不合格時にcompletePromotionTest(false)が呼ばれることを確認
+      // 【対応要件】: REQ-051-05
+      // 🔵 信頼性レベル: TASK-0051.md セクション2に明記
+
+      // completePromotionTest(false)はnullを返す
+      mockRankServiceInstance.completePromotionTest = vi.fn().mockReturnValue(null);
+
+      const { RankUpScene } = await import('@presentation/scenes/RankUpScene');
+      const { scene: mockScene } = createMockScene();
+
+      const rankUpScene = new RankUpScene();
+
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.add = mockScene.add;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.cameras = mockScene.cameras;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.rexUI = mockScene.rexUI;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.scene = mockScene.scene;
+
+      rankUpScene.create();
+
+      // 不合格処理を実行
+      // @ts-expect-error - テストのためにprivateメソッドにアクセス
+      rankUpScene.handleTestResult(false);
+
+      // completePromotionTest(false)が呼ばれていることを確認
+      expect(mockRankServiceInstance.completePromotionTest).toHaveBeenCalledWith(false);
+    });
+
+    it('TC-0051-009: 合格時にランクが更新されること', async () => {
+      // 【テスト目的】: 合格時にランクがEからDに更新されることを確認
+      // 【対応要件】: REQ-051-06
+      // 🔵 信頼性レベル: TASK-0051.md セクション2に明記
+
+      const { RankUpScene } = await import('@presentation/scenes/RankUpScene');
+      const { scene: mockScene } = createMockScene();
+
+      const rankUpScene = new RankUpScene();
+
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.add = mockScene.add;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.cameras = mockScene.cameras;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.rexUI = mockScene.rexUI;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.scene = mockScene.scene;
+
+      rankUpScene.create();
+
+      // 合格処理を実行
+      // @ts-expect-error - テストのためにprivateメソッドにアクセス
+      const result = rankUpScene.handleTestResult(true);
+
+      // 結果を確認
+      expect(result?.newRank).toBe(GuildRank.D);
+    });
+
+    it('TC-0051-010: 合格時にRANK_UPイベントが発火すること', async () => {
+      // 【テスト目的】: 合格時にEventBusでRANK_UPイベントが発火することを確認
+      // 【対応要件】: REQ-051-08
+      // 🟡 信頼性レベル: TASK-0051.md セクション2に明記（推奨）
+
+      const { RankUpScene } = await import('@presentation/scenes/RankUpScene');
+      const { scene: mockScene } = createMockScene();
+
+      const rankUpScene = new RankUpScene();
+
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.add = mockScene.add;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.cameras = mockScene.cameras;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.rexUI = mockScene.rexUI;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.scene = mockScene.scene;
+
+      rankUpScene.create();
+
+      // 合格処理を実行
+      // @ts-expect-error - テストのためにprivateメソッドにアクセス
+      rankUpScene.handleTestResult(true);
+
+      // RANK_UPイベントが発火していることを確認
+      expect(mockEventBusInstance.emit).toHaveBeenCalledWith(
+        'RANK_UP',
+        expect.objectContaining({
+          previousRank: GuildRank.E,
+          newRank: GuildRank.D,
+        }),
+      );
+    });
+  });
+
+  // ===========================================================================
+  // シーン遷移テスト
+  // ===========================================================================
+
+  describe('シーン遷移', () => {
+    it('TC-0051-011: 合格後「次へ」ボタンクリックでMainSceneに戻ること', async () => {
+      // 【テスト目的】: 合格後に次へボタンクリックでMainSceneに遷移することを確認
+      // 【対応要件】: REQ-051-07
+      // 🔵 信頼性レベル: TASK-0051.md セクション2に明記
+
+      const { RankUpScene } = await import('@presentation/scenes/RankUpScene');
+      const { scene: mockScene } = createMockScene();
+
+      const rankUpScene = new RankUpScene();
+
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.add = mockScene.add;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.cameras = mockScene.cameras;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.rexUI = mockScene.rexUI;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.scene = mockScene.scene;
+
+      rankUpScene.create();
+
+      // 「次へ」ボタンクリック処理を実行
+      // @ts-expect-error - テストのためにprivateメソッドにアクセス
+      rankUpScene.onNextButtonClick();
+
+      // MainSceneへの遷移を確認（フェードアウト後）
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      expect(mockScene.scene.start).toHaveBeenCalledWith('MainScene');
+    });
+
+    it('TC-0051-012: 不合格後「戻る」ボタンクリックでMainSceneに戻ること', async () => {
+      // 【テスト目的】: 不合格後に戻るボタンクリックでMainSceneに遷移することを確認
+      // 【対応要件】: REQ-051-07
+      // 🔵 信頼性レベル: TASK-0051.md セクション2に明記
+
+      const { RankUpScene } = await import('@presentation/scenes/RankUpScene');
+      const { scene: mockScene } = createMockScene();
+
+      const rankUpScene = new RankUpScene();
+
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.add = mockScene.add;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.cameras = mockScene.cameras;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.rexUI = mockScene.rexUI;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.scene = mockScene.scene;
+
+      rankUpScene.create();
+
+      // 「戻る」ボタンクリック処理を実行
+      // @ts-expect-error - テストのためにprivateメソッドにアクセス
+      rankUpScene.onBackButtonClick();
+
+      // MainSceneへの遷移を確認（フェードアウト後）
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      expect(mockScene.scene.start).toHaveBeenCalledWith('MainScene');
+    });
+  });
+
+  // ===========================================================================
+  // エラーハンドリングテスト
+  // ===========================================================================
+
+  describe('Error Handling', () => {
+    it('TC-0051-E01: StateManager未初期化時にエラー処理される', async () => {
+      // 【テスト目的】: StateManager未初期化時のエラーハンドリングを確認
+      // 【対応要件】: REQ-051-01（異常系）
+
+      const { RankUpScene } = await import('@presentation/scenes/RankUpScene');
+      const { scene: mockScene } = createMockScene();
+
+      const originalStateManager = mockStateManagerInstance;
+      mockStateManagerInstance = undefined;
+
+      try {
+        const rankUpScene = new RankUpScene();
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        rankUpScene.add = mockScene.add;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        rankUpScene.cameras = mockScene.cameras;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        rankUpScene.rexUI = mockScene.rexUI;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        rankUpScene.scene = mockScene.scene;
+
+        expect(() => rankUpScene.create()).toThrow('StateManager is required');
+      } finally {
+        mockStateManagerInstance = originalStateManager;
+      }
+    });
+
+    it('TC-0051-E02: RankService未初期化時にエラー処理される', async () => {
+      // 【テスト目的】: RankService未初期化時のエラーハンドリングを確認
+      // 【対応要件】: REQ-051-01（異常系）
+
+      const { RankUpScene } = await import('@presentation/scenes/RankUpScene');
+      const { scene: mockScene } = createMockScene();
+
+      const originalRankService = mockRankServiceInstance;
+      mockRankServiceInstance = undefined;
+
+      try {
+        const rankUpScene = new RankUpScene();
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        rankUpScene.add = mockScene.add;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        rankUpScene.cameras = mockScene.cameras;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        rankUpScene.rexUI = mockScene.rexUI;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        rankUpScene.scene = mockScene.scene;
+
+        expect(() => rankUpScene.create()).toThrow('RankService is required');
+      } finally {
+        mockRankServiceInstance = originalRankService;
+      }
+    });
+
+    it('TC-0051-E03: 最高ランク時に昇格不可であること', async () => {
+      // 【テスト目的】: Sランク時に昇格ボタンが無効化されることを確認
+      // 【対応要件】: REQ-051-02（境界条件）
+
+      // 最高ランク設定
+      mockRankServiceInstance.getCurrentRank = vi.fn().mockReturnValue(GuildRank.S);
+      mockRankServiceInstance.getNextRank = vi.fn().mockReturnValue(null);
+      mockRankServiceInstance.canPromote = vi.fn().mockReturnValue(false);
+
+      const { RankUpScene } = await import('@presentation/scenes/RankUpScene');
+      const { scene: mockScene } = createMockScene();
+
+      const rankUpScene = new RankUpScene();
+
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.add = mockScene.add;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.cameras = mockScene.cameras;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.rexUI = mockScene.rexUI;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.scene = mockScene.scene;
+
+      rankUpScene.create();
+
+      // canPromote()がfalseを返すことを確認
+      expect(mockRankServiceInstance.canPromote()).toBe(false);
+    });
+  });
+
+  // ===========================================================================
+  // 公開メソッドテスト
+  // ===========================================================================
+
+  describe('公開メソッド', () => {
+    it('TC-0051-013: getCurrentRankDisplay()が現在ランクを返すこと', async () => {
+      // 【テスト目的】: 現在ランク表示用メソッドが正しく動作することを確認
+
+      const { RankUpScene } = await import('@presentation/scenes/RankUpScene');
+      const { scene: mockScene } = createMockScene();
+
+      const rankUpScene = new RankUpScene();
+
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.add = mockScene.add;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.cameras = mockScene.cameras;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.rexUI = mockScene.rexUI;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.scene = mockScene.scene;
+
+      rankUpScene.create();
+
+      // 現在ランク表示を確認
+      const currentRank = rankUpScene.getCurrentRankDisplay();
+      expect(currentRank).toBe('E');
+    });
+
+    it('TC-0051-014: getNextRankDisplay()が次ランクを返すこと', async () => {
+      // 【テスト目的】: 次ランク表示用メソッドが正しく動作することを確認
+
+      const { RankUpScene } = await import('@presentation/scenes/RankUpScene');
+      const { scene: mockScene } = createMockScene();
+
+      const rankUpScene = new RankUpScene();
+
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.add = mockScene.add;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.cameras = mockScene.cameras;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.rexUI = mockScene.rexUI;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.scene = mockScene.scene;
+
+      rankUpScene.create();
+
+      // 次ランク表示を確認
+      const nextRank = rankUpScene.getNextRankDisplay();
+      expect(nextRank).toBe('D');
+    });
+
+    it('TC-0051-015: canStartTest()が昇格可能かを返すこと', async () => {
+      // 【テスト目的】: 昇格可能判定メソッドが正しく動作することを確認
+
+      const { RankUpScene } = await import('@presentation/scenes/RankUpScene');
+      const { scene: mockScene } = createMockScene();
+
+      const rankUpScene = new RankUpScene();
+
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.add = mockScene.add;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.cameras = mockScene.cameras;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.rexUI = mockScene.rexUI;
+      // @ts-expect-error - テストのためにprivateプロパティにアクセス
+      rankUpScene.scene = mockScene.scene;
+
+      rankUpScene.create();
+
+      // 昇格可能かを確認
+      const canStart = rankUpScene.canStartTest();
+      expect(canStart).toBe(true);
+    });
+  });
+});
