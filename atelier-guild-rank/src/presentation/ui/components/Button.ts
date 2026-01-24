@@ -8,6 +8,7 @@
  * rexUI の Label コンポーネントをラップして、統一されたスタイルとインタラクションを実現。
  */
 
+import type { RexLabel, RexRoundRectangle } from '@presentation/types/rexui';
 import type Phaser from 'phaser';
 import { THEME } from '../theme';
 import { BaseComponent } from './BaseComponent';
@@ -42,15 +43,12 @@ export class Button extends BaseComponent {
   private config: ButtonConfig;
   // 【修正内容】: [W-003]への対応 - 型定義の厳密化
   // 【修正理由】: TypeScriptの型推論を正しく機能させるため
-  // 【修正前】: private label: any; （nullの可能性を型に含めていない）
-  // 【修正後】: private label: any | null = null; （null許容型として明示）
-  // 🔴 信頼性レベル: TypeScriptの一般的なベストプラクティス
-  // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelコンポーネントは複雑な型のため
-  private label: any | null = null;
+  // TASK-0059: rexUI型定義を適用
+  private label: RexLabel | null = null;
   private _enabled: boolean;
   // TASK-0039: ホバーエフェクト用のプロパティ
-  // biome-ignore lint/suspicious/noExplicitAny: rexUI RoundRectangleコンポーネントは複雑な型のため
-  private background: any | null = null;
+  // TASK-0059: rexUI型定義を適用
+  private background: RexRoundRectangle | null = null;
   private normalColor: number = 0;
   private hoverColor: number = 0;
 
@@ -163,6 +161,7 @@ export class Button extends BaseComponent {
    * ボタンの有効/無効状態を更新する
    */
   private updateEnabledState(): void {
+    if (!this.label) return;
     if (this._enabled) {
       this.label.setAlpha(1.0);
     } else {
