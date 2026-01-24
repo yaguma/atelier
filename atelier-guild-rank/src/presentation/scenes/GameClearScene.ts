@@ -302,6 +302,9 @@ export class GameClearScene extends Phaser.Scene {
    * @param backgroundColor 背景色
    * @param onClick クリック時のコールバック
    * @returns 生成されたボタン（rexUI Labelコンポーネント）
+   * 【修正内容】: W-001への対応
+   * 【修正理由】: TitleSceneと同様にRexLabel型を適用
+   * 🔵 信頼性レベル: TitleSceneのcreateButtonメソッドに準拠
    */
   private createButton(
     x: number,
@@ -309,8 +312,7 @@ export class GameClearScene extends Phaser.Scene {
     text: string,
     backgroundColor: number,
     onClick: () => void,
-    // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelコンポーネントの型は複雑なため
-  ): any {
+  ): RexLabel {
     const buttonText = this.add.text(0, 0, text, {
       fontSize: STYLES.BUTTON_FONT_SIZE,
       color: THEME.colors.textOnPrimary,

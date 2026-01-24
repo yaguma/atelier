@@ -89,7 +89,10 @@ declare module 'phaser' {
     /**
      * rexUIプラグインへの参照
      * main.tsでプラグインとして登録されている
+     * 【修正内容】: I-001への対応
+     * 【修正理由】: UIPlugin → UIPluginType に修正（同ファイルでエクスポートされている正しい型名を使用）
+     * 🔵 信頼性レベル: rexui.d.ts内の型定義に準拠
      */
-    rexUI: UIPlugin;
+    rexUI: UIPluginType;
   }
 }
