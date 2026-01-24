@@ -81,6 +81,11 @@ export class ItemSelector {
   private itemButtons: ItemButton[] = [];
   private items: ItemInstance[] = [];
   private selectedItemId: string | null = null;
+  /**
+   * 【修正】空メッセージ要素の参照を保持
+   * 🔵 信頼性レベル: コードレビュー指摘に基づく修正
+   */
+  private emptyMessageText: Phaser.GameObjects.Text | null = null;
 
   /**
    * コンストラクタ
@@ -108,9 +113,15 @@ export class ItemSelector {
    * アイテムリストを設定
    * @param items - アイテム配列
    */
+  /**
+   * アイテムリストを設定
+   * 【修正】空メッセージ要素を適切にクリアするよう修正
+   * @param items - アイテム配列
+   */
   public setItems(items: ItemInstance[]): void {
-    // 既存ボタンを破棄
+    // 【修正ポイント】既存要素を破棄（空メッセージ含む）
     this.destroyItemButtons();
+    this.destroyEmptyMessage();
 
     this.items = items;
 
@@ -160,15 +171,28 @@ export class ItemSelector {
 
   /**
    * 空メッセージを表示
+   * 【修正】メンバー変数に参照を保持するよう修正
    */
   private showEmptyMessage(): void {
-    const emptyText = this.scene.add.text(
+    this.emptyMessageText = this.scene.add.text(
       0,
       LAYOUT.ITEM_OFFSET_Y,
       UI_TEXT.NO_ITEMS,
       UI_STYLES.DESCRIPTION,
     );
-    this.container.add(emptyText);
+    this.container.add(this.emptyMessageText);
+  }
+
+  /**
+   * 空メッセージを破棄
+   * 【修正】空メッセージ要素のリーク対策として追加
+   * 🔵 信頼性レベル: コードレビュー指摘に基づく修正
+   */
+  private destroyEmptyMessage(): void {
+    if (this.emptyMessageText) {
+      this.emptyMessageText.destroy();
+      this.emptyMessageText = null;
+    }
   }
 
   /**
@@ -263,9 +287,11 @@ export class ItemSelector {
 
   /**
    * リソースを解放
+   * 【修正】空メッセージも破棄対象に追加
    */
   public destroy(): void {
     this.destroyItemButtons();
+    this.destroyEmptyMessage();
     this.container.destroy();
   }
 }

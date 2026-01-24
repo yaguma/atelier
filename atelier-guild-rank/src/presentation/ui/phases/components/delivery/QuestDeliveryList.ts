@@ -63,6 +63,11 @@ export class QuestDeliveryList {
   private questPanels: QuestPanel[] = [];
   private quests: Quest[] = [];
   private selectedQuestId: string | null = null;
+  /**
+   * 【修正】空メッセージ要素の参照を保持
+   * 🔵 信頼性レベル: コードレビュー指摘に基づく修正
+   */
+  private emptyMessageText: Phaser.GameObjects.Text | null = null;
 
   /**
    * コンストラクタ
@@ -86,11 +91,13 @@ export class QuestDeliveryList {
 
   /**
    * 依頼リストを設定
+   * 【修正】空メッセージ要素を適切にクリアするよう修正
    * @param quests - 依頼配列
    */
   public setQuests(quests: Quest[]): void {
-    // 既存パネルを破棄
+    // 【修正ポイント】既存要素を破棄（空メッセージ含む）
     this.destroyQuestPanels();
+    this.destroyEmptyMessage();
 
     this.quests = quests;
 
@@ -182,10 +189,23 @@ export class QuestDeliveryList {
 
   /**
    * 空メッセージを表示
+   * 【修正】メンバー変数に参照を保持するよう修正
    */
   private showEmptyMessage(): void {
-    const emptyText = this.scene.add.text(0, 0, UI_TEXT.NO_QUESTS, UI_STYLES.DESCRIPTION);
-    this.container.add(emptyText);
+    this.emptyMessageText = this.scene.add.text(0, 0, UI_TEXT.NO_QUESTS, UI_STYLES.DESCRIPTION);
+    this.container.add(this.emptyMessageText);
+  }
+
+  /**
+   * 空メッセージを破棄
+   * 【修正】空メッセージ要素のリーク対策として追加
+   * 🔵 信頼性レベル: コードレビュー指摘に基づく修正
+   */
+  private destroyEmptyMessage(): void {
+    if (this.emptyMessageText) {
+      this.emptyMessageText.destroy();
+      this.emptyMessageText = null;
+    }
   }
 
   /**
@@ -280,9 +300,11 @@ export class QuestDeliveryList {
 
   /**
    * リソースを解放
+   * 【修正】空メッセージも破棄対象に追加
    */
   public destroy(): void {
     this.destroyQuestPanels();
+    this.destroyEmptyMessage();
     this.container.destroy();
   }
 }
