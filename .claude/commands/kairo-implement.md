@@ -65,7 +65,7 @@ argument-hint: [要件名（省略可）] [TASK-ID (TASK-00001)] [--hil]
 
    ### A. **TDDプロセス**（コード実装タスク用）
 
-   a. **コンテキスト準備** - `@task general-purpose /tsumiki:tdd-tasknote`
+   a. **コンテキスト準備** - `@task general-purpose /tdd-tasknote`
    ```
    Task実行: TDDコンテキスト準備フェーズ
    目的: タスクノートを生成し、開発に必要なコンテキスト情報を収集する
@@ -75,25 +75,25 @@ argument-hint: [要件名（省略可）] [TASK-ID (TASK-00001)] [--hil]
    - 関連実装（既存の実装パターン・参考コード）
    - 設計文書（データモデル・ディレクトリ構造）
    - 注意事項（技術的制約・セキュリティ要件・パフォーマンス要件）
-   コマンド: /tsumiki:tdd-tasknote {要件名} {TASK-ID}
+   コマンド: /tdd-tasknote {要件名} {TASK-ID}
    実行方式: 個別Task実行
    出力ファイル: docs/implements/{要件名}/{TASK-ID}/note.md
    ```
 
-   b. **要件定義** - `@task general-purpose /tsumiki:tdd-requirements`
+   b. **要件定義** - `@task general-purpose /tdd-requirements`
    ```
    Task実行: TDD要件定義フェーズ
    目的: タスクの詳細要件を記述し、受け入れ基準を明確化する
    前提条件: タスクノート（note.md）が存在すること
-   コマンド: /tsumiki:tdd-requirements {要件名} {TASK-ID}
+   コマンド: /tdd-requirements {要件名} {TASK-ID}
    実行方式: 個別Task実行
    ```
 
-   c. **テストケース作成** - `@task general-purpose /tsumiki:tdd-testcases`
+   c. **テストケース作成** - `@task general-purpose /tdd-testcases`
    ```
    Task実行: TDDテストケース作成フェーズ
    目的: 単体テストケースを作成し、エッジケースを考慮する
-   コマンド: /tsumiki:tdd-testcases
+   コマンド: /tdd-testcases
    実行方式: 個別Task実行
    ```
 
@@ -113,31 +113,31 @@ argument-hint: [要件名（省略可）] [TASK-ID (TASK-00001)] [--hil]
    - 追加・修正が必要なテストケースはないか
    ```
 
-   d. **テスト実装** - `@task general-purpose /tsumiki:tdd-red`
+   d. **テスト実装** - `@task general-purpose /tdd-red`
    ```
    Task実行: TDDレッドフェーズ
    目的: 失敗するテストを実装し、テストが失敗することを確認する
-   コマンド: /tsumiki:tdd-red
+   コマンド: /tdd-red
    実行方式: 個別Task実行
    ```
 
-   e. **最小実装** - `@task general-purpose /tsumiki:tdd-green`
+   e. **最小実装** - `@task general-purpose /tdd-green`
    ```
    Task実行: TDDグリーンフェーズ
    目的: テストが通る最小限の実装を行い、過度な実装を避ける
-   コマンド: /tsumiki:tdd-green
+   コマンド: /tdd-green
    実行方式: 個別Task実行
    ```
 
-   f. **リファクタリング** - `@task general-purpose /tsumiki:tdd-refactor`
+   f. **リファクタリング** - `@task general-purpose /tdd-refactor`
    ```
    Task実行: TDDリファクタリングフェーズ
    目的: コードの品質向上と保守性の改善を行う
-   コマンド: /tsumiki:tdd-refactor
+   コマンド: /tdd-refactor
    実行方式: 個別Task実行
    ```
 
-   g. **品質確認** - `@task general-purpose /tsumiki:tdd-verify-complete`
+   g. **品質確認** - `@task general-purpose /tdd-verify-complete`
    ```
    Task実行: TDD品質確認フェーズ
    目的: 実装の完成度とテストケースの充足度を確認する
@@ -152,7 +152,7 @@ argument-hint: [要件名（省略可）] [TASK-ID (TASK-00001)] [--hil]
    - テストケースは十分だが実装が不足している場合: e(tdd-green)から繰り返す
    - 実装・テストともに十分な場合: 次のステップ（h. タスク完了処理）へ
 
-   コマンド: /tsumiki:tdd-verify-complete
+   コマンド: /tdd-verify-complete
    実行方式: 個別Task実行
    ```
 
@@ -166,7 +166,7 @@ argument-hint: [要件名（省略可）] [TASK-ID (TASK-00001)] [--hil]
 
    ### B. **直接作業プロセス**（準備作業タスク用）
 
-   a. **準備作業の実行** - `@task general-purpose /tsumiki:direct-setup`
+   a. **準備作業の実行** - `@task general-purpose /direct-setup`
    ```
    Task実行: 直接作業実行フェーズ
    目的: ディレクトリ作成、設定ファイル作成、依存関係のインストール、環境設定を行う
@@ -178,7 +178,7 @@ argument-hint: [要件名（省略可）] [TASK-ID (TASK-00001)] [--hil]
    実行方式: 個別Task実行
    ```
 
-   b. **作業結果の確認** - `@task general-purpose /tsumiki:direct-verify`
+   b. **作業結果の確認** - `@task general-purpose /direct-verify`
    ```
    Task実行: 直接作業確認フェーズ
    目的: 作業完了の検証と成果物確認を行う
@@ -250,16 +250,16 @@ flowchart TD
 
 ```bash
 # 全タスクを順番に実装
-$ /tsumiki:kairo-implement {要件名}
+$ /kairo-implement {要件名}
 
 # 特定のタスクを実装
-$ /tsumiki:kairo-implement {要件名} TASK-0001
+$ /kairo-implement {要件名} TASK-0001
 
 # Human-in-the-Loopモードで実装（テストケース作成後に確認）
-$ /tsumiki:kairo-implement {要件名} TASK-0001 --hil
+$ /kairo-implement {要件名} TASK-0001 --hil
 
 # Human-in-the-Loopモードで全タスクを実装
-$ /tsumiki:kairo-implement {要件名} --hil
+$ /kairo-implement {要件名} --hil
 ```
 
 ## 実装タイプ判定基準
@@ -302,17 +302,17 @@ $ /tsumiki:kairo-implement {要件名} --hil
 
 ```bash
 # TDDプロセスの場合
-@task general-purpose /tsumiki:tdd-tasknote {要件名} {TASK-ID}
-@task general-purpose /tsumiki:tdd-requirements {要件名} {TASK-ID}
-@task general-purpose /tsumiki:tdd-testcases {要件名} {TASK-ID}
-@task general-purpose /tsumiki:tdd-red
-@task general-purpose /tsumiki:tdd-green
-@task general-purpose /tsumiki:tdd-refactor
-@task general-purpose /tsumiki:tdd-verify-complete
+@task general-purpose /tdd-tasknote {要件名} {TASK-ID}
+@task general-purpose /tdd-requirements {要件名} {TASK-ID}
+@task general-purpose /tdd-testcases {要件名} {TASK-ID}
+@task general-purpose /tdd-red
+@task general-purpose /tdd-green
+@task general-purpose /tdd-refactor
+@task general-purpose /tdd-verify-complete
 
 # 直接作業プロセスの場合
-@task general-purpose /tsumiki:direct-setup
-@task general-purpose /tsumiki:direct-verify
+@task general-purpose /direct-setup
+@task general-purpose /direct-verify
 ```
 
 ## 実装時の注意事項
@@ -427,20 +427,20 @@ $ /tsumiki:kairo-implement {要件名} --hil
 ### 各ステップ完了時（TDD）
 
 ```
-✅ Task 1/8: @task /tsumiki:tdd-tasknote 完了
+✅ Task 1/8: @task /tdd-tasknote 完了
    ファイル: docs/implements/{要件名}/{{task_id}}/note.md
    Task実行結果: タスクノート作成完了
 
-✅ Task 2/8: @task /tsumiki:tdd-requirements 完了
+✅ Task 2/8: @task /tdd-requirements 完了
    ファイル: docs/implements/{要件名}/{{task_id}}/{要件名}-requirements.md
    Task実行結果: 要件定義書作成完了
 
-🏃 Task 3/8: @task /tsumiki:tdd-testcases 実行中...
+🏃 Task 3/8: @task /tdd-testcases 実行中...
    Task実行: TDDテストケース作成フェーズを開始
 
 ...
 
-✅ Task 7/8: @task /tsumiki:tdd-verify-complete 完了
+✅ Task 7/8: @task /tdd-verify-complete 完了
    品質確認結果:
    - テストケース充足度: 95% (26/27件実装済み)
    - テストケース成功率: 92% (24/26件成功)
@@ -449,14 +449,14 @@ $ /tsumiki:kairo-implement {要件名} --hil
    判定: テストケース不足あり & 実装不足あり
    → Task 4/8 (tdd-red) から再実行します
 
-🏃 Task 4/8: @task /tsumiki:tdd-red 実行中...
+🏃 Task 4/8: @task /tdd-red 実行中...
    不足しているテストケースを追加します
 ```
 
 ### ユーザー確認時（--hilオプション指定時）
 
 ```
-✅ Task 3/8: @task /tsumiki:tdd-testcases 完了
+✅ Task 3/8: @task /tdd-testcases 完了
    ファイル: docs/implements/{要件名}/{{task_id}}/testcases.md
 
 📋 作成されたテストケース (27個):
@@ -496,11 +496,11 @@ $ /tsumiki:kairo-implement {要件名} --hil
 ### 各ステップ完了時（直接作業）
 
 ```
-✅ Task 1/2: @task /tsumiki:direct-setup 完了
+✅ Task 1/2: @task /direct-setup 完了
    作成ファイル: 8個、設定更新: 3個
    Task実行結果: 準備作業実行完了
 
-🏃 Task 2/2: @task /tsumiki:direct-verify 実行中...
+🏃 Task 2/2: @task /direct-verify 実行中...
    Task実行: 直接作業確認フェーズを開始
 ```
 

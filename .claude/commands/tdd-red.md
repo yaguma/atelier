@@ -56,7 +56,7 @@ Redフェーズファイル=./docs/implements/{要件名}/{{task_id}}/{feature_n
 **4. タスクノートの読み込み**
 - `./docs/implements/{要件名}/{{task_id}}/note.md` が既存ドキュメント確認でまだ読み込まれていない場合
 - 存在しない場合:
-  - @task で `/tsumiki:tdd-tasknote {要件名} {{task_id}}` コマンドを実行してノートを生成
+  - @task で `/tdd-tasknote {要件名} {{task_id}}` コマンドを実行してノートを生成
   - 生成されたノートファイルを読み込み
 - ノートには技術スタック、開発ルール、関連実装、設計文書、注意事項が含まれる
 
@@ -125,7 +125,7 @@ Redフェーズファイル=./docs/implements/{要件名}/{{task_id}}/{feature_n
   - 品質判定結果をTODO内容に記録
   - 次のフェーズ「Greenフェーズ（最小実装）」をTODOに追加
 
-- 次のステップ表示: 「次のお勧めステップ: `/tsumiki:tdd-green` でGreenフェーズ（最小実装）を開始します。」
+- 次のステップ表示: 「次のお勧めステップ: `/tdd-green` でGreenフェーズ（最小実装）を開始します。」
 
 # rules
 

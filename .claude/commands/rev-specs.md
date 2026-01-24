@@ -12,7 +12,7 @@ description: 既存のコードベースから包括的なテストケースと�
 
 - 分析対象のコードベースが存在する
 - `docs/reverse/` ディレクトリが存在する（なければ作成）
-- 可能であれば事前に `/tsumiki:rev-requirements`, `/tsumiki:rev-design` を実行済み
+- 可能であれば事前に `/rev-requirements`, `/rev-design` を実行済み
 
 ## 実行内容
 

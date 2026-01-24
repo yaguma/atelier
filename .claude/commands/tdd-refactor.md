@@ -182,7 +182,7 @@ Refactorフェーズファイル=./docs/implements/{要件名}/{{task_id}}/{feat
   - コード品質: 適切なレベルに向上
 
 - **次のステップ表示**: 判定結果に関わらず、次のお勧めコマンドを表示
-  - 「次のお勧めステップ: `/tsumiki:tdd-verify-complete` で完全性検証を実行します。」
+  - 「次のお勧めステップ: `/tdd-verify-complete` で完全性検証を実行します。」
 
 # rules
 

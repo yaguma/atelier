@@ -339,7 +339,7 @@ step7 を実行する
 🚀 要件定義に対する完全な充実度を達成しました。
 自動で次のTDDサイクルに進みます。
 
-次のお勧めステップ: `/tsumiki:tdd-cycle` で次のTDDサイクルを開始します。
+次のお勧めステップ: `/tdd-cycle` で次のTDDサイクルを開始します。
 </complete_output>
 
 <incomplete_output>
