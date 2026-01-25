@@ -15,6 +15,7 @@
  * @see docs/tasks/atelier-guild-rank/phase-3/TASK-0027.md
  */
 
+import type { RexLabel, RexUIPlugin } from '@presentation/types/rexui';
 import Phaser from 'phaser';
 import type { GameEndStats } from '../../shared/types';
 import { THEME } from '../ui/theme';
@@ -110,10 +111,9 @@ export class GameClearScene extends Phaser.Scene {
 
   /**
    * rexUIプラグイン参照（テストでモックされる）
-   * @remarks rexUIプラグインの型は複雑なため、anyを使用
+   * TASK-0059: rexUI型定義を適用
    */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUIプラグインの型は複雑なため
-  protected rexUI: any;
+  declare rexUI: RexUIPlugin;
 
   /**
    * ゲーム終了時の統計情報
@@ -122,10 +122,9 @@ export class GameClearScene extends Phaser.Scene {
 
   /**
    * ボタン参照（破棄時に使用）
-   * @remarks rexUI Labelコンポーネントの型は複雑なため、anyを使用
+   * TASK-0059: rexUI型定義を適用
    */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelコンポーネントの型は複雑なため
-  private buttons: any[] = [];
+  private buttons: RexLabel[] = [];
 
   // ===========================================================================
   // コンストラクタ
@@ -303,6 +302,9 @@ export class GameClearScene extends Phaser.Scene {
    * @param backgroundColor 背景色
    * @param onClick クリック時のコールバック
    * @returns 生成されたボタン（rexUI Labelコンポーネント）
+   * 【修正内容】: W-001への対応
+   * 【修正理由】: TitleSceneと同様にRexLabel型を適用
+   * 🔵 信頼性レベル: TitleSceneのcreateButtonメソッドに準拠
    */
   private createButton(
     x: number,
@@ -310,8 +312,7 @@ export class GameClearScene extends Phaser.Scene {
     text: string,
     backgroundColor: number,
     onClick: () => void,
-    // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelコンポーネントの型は複雑なため
-  ): any {
+  ): RexLabel {
     const buttonText = this.add.text(0, 0, text, {
       fontSize: STYLES.BUTTON_FONT_SIZE,
       color: THEME.colors.textOnPrimary,

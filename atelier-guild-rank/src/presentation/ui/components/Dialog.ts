@@ -8,6 +8,7 @@
  * rexUI の Dialog コンポーネントをラップして、統一されたスタイルとアニメーションを実現。
  */
 
+import type { RexDialog } from '@presentation/types/rexui';
 import type Phaser from 'phaser';
 import { THEME } from '../theme';
 import { BaseComponent } from './BaseComponent';
@@ -50,13 +51,9 @@ export class Dialog extends BaseComponent {
   private config: DialogConfig;
   // 【修正内容】: [W-003]への対応 - 型定義の厳密化
   // 【修正理由】: TypeScriptの型推論を正しく機能させるため
-  // 【修正前】: private dialog: any; / private overlay: any; （nullの可能性を型に含めていない）
-  // 【修正後】: any | null = null; （null許容型として明示）
-  // 🔴 信頼性レベル: TypeScriptの一般的なベストプラクティス
-  // biome-ignore lint/suspicious/noExplicitAny: rexUI Dialogコンポーネントは複雑な型のため
-  private dialog: any | null = null;
-  // biome-ignore lint/suspicious/noExplicitAny: Phaser Rectangleオブジェクトの型が複雑なため
-  private overlay: any | null = null;
+  // TASK-0059: rexUI型定義を適用
+  private dialog: RexDialog | null = null;
+  private overlay: Phaser.GameObjects.Rectangle | null = null;
   private _visible: boolean = false;
 
   constructor(scene: Phaser.Scene, x: number, y: number, config: DialogConfig) {
@@ -191,7 +188,7 @@ export class Dialog extends BaseComponent {
    * @returns メソッドチェーン用に自身を返す
    */
   public show(duration: number = 300): this {
-    if (!this._visible) {
+    if (!this._visible && this.overlay && this.dialog) {
       this._visible = true;
       this.overlay.setVisible(true);
       this.dialog.setVisible(true);
@@ -213,9 +210,11 @@ export class Dialog extends BaseComponent {
    */
   public hide(duration: number = 300): this {
     this._visible = false;
-    this.dialog.scaleDownDestroy(duration);
-    this.overlay.setVisible(false);
-    this.dialog.setVisible(false);
+    if (this.dialog && this.overlay) {
+      this.dialog.scaleDownDestroy(duration);
+      this.overlay.setVisible(false);
+      this.dialog.setVisible(false);
+    }
 
     // 【修正ポイント】: W-001対応 - アニメーション完了後にコールバックを実行
     // Phaser.Time.delayedCallを使用してアニメーション完了を待つ

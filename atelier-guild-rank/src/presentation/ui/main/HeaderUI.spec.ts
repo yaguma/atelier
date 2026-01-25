@@ -152,7 +152,7 @@ describe('HeaderUI', () => {
 
     test('rexUI プラグインへの参照が設定されている', () => {
       // 【確認内容】: シーンのrexUIプラグインへの参照が、コンポーネントのrexUIプロパティに設定されていることを確認
-      // @ts-expect-error - rexUIはモックで追加しているプロパティ
+      // TASK-0059: rexUI型定義を追加したため、@ts-expect-errorは不要
       // biome-ignore lint/complexity/useLiteralKeys: protectedプロパティのテストには配列アクセスが必要
       expect(headerUI['rexUI']).toBe(scene.rexUI); // 🔵
     });

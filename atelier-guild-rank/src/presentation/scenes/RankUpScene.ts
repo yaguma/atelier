@@ -12,6 +12,7 @@
 import type { IEventBus } from '@application/events/event-bus.interface';
 import type { IRankService, PromotionResult } from '@domain/interfaces/rank-service.interface';
 import { Container, ServiceKeys } from '@infrastructure/di/container';
+import type { RexLabel, RexUIPlugin } from '@presentation/types/rexui';
 import { THEME } from '@presentation/ui/theme';
 import { GameEventType, type GuildRank } from '@shared/types';
 import Phaser from 'phaser';
@@ -146,17 +147,14 @@ export class RankUpScene extends Phaser.Scene {
   // UIコンポーネント
   // ===========================================================================
 
-  /** 試験開始ボタン */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelコンポーネントの型は複雑なため
-  private startTestButton: any;
+  /** 試験開始ボタン - TASK-0059: rexUI型定義を適用 */
+  private startTestButton!: RexLabel;
 
-  /** 戻るボタン */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelコンポーネントの型は複雑なため
-  private backButton: any;
+  /** 戻るボタン - TASK-0059: rexUI型定義を適用 */
+  private backButton!: RexLabel;
 
-  /** 次へボタン */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelコンポーネントの型は複雑なため
-  private nextButton: any;
+  /** 次へボタン - TASK-0059: rexUI型定義を適用 */
+  private nextButton!: RexLabel;
 
   /** 結果表示テキスト */
   private resultText!: Phaser.GameObjects.Text;
@@ -168,9 +166,8 @@ export class RankUpScene extends Phaser.Scene {
   // rexUIプラグイン
   // ===========================================================================
 
-  /** rexUIプラグイン参照 */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUIプラグインの型は複雑なため
-  protected rexUI: any;
+  /** rexUIプラグイン参照 - TASK-0059: rexUI型定義を適用 */
+  declare rexUI: RexUIPlugin;
 
   // ===========================================================================
   // コンストラクタ

@@ -18,6 +18,7 @@
  * @see docs/design/atelier-guild-rank/ui-design/screens/title.md
  */
 
+import type { RexDialog, RexLabel, RexUIPlugin } from '@presentation/types/rexui';
 import Phaser from 'phaser';
 import { THEME } from '../ui/theme';
 
@@ -254,10 +255,10 @@ export class TitleScene extends Phaser.Scene {
 
   /**
    * rexUIプラグイン参照（テストでモックされる）
-   * @remarks rexUIプラグインの型は複雑なため、anyを使用
+   * TASK-0059: rexUI型定義を適用
+   * rexUIはプラグインによって注入されるため、definite assignment assertionを使用
    */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUIプラグインの型は複雑なため
-  protected rexUI: any;
+  declare rexUI: RexUIPlugin;
 
   /**
    * セーブデータリポジトリ（テストでモックされる）
@@ -266,17 +267,15 @@ export class TitleScene extends Phaser.Scene {
 
   /**
    * ボタン参照（破棄時に使用）
-   * @remarks rexUI Labelコンポーネントの型は複雑なため、anyを使用
+   * TASK-0059: rexUI型定義を適用
    */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelコンポーネントの型は複雑なため
-  private buttons: any[] = [];
+  private buttons: RexLabel[] = [];
 
   /**
    * コンティニューボタン参照（有効/無効制御に使用）
-   * @remarks rexUI Labelコンポーネントの型は複雑なため、anyを使用
+   * TASK-0059: rexUI型定義を適用
    */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelコンポーネントの型は複雑なため
-  private continueButton: any | null = null;
+  private continueButton: RexLabel | null = null;
 
   /**
    * コンティニューボタン有効状態
@@ -449,6 +448,7 @@ export class TitleScene extends Phaser.Scene {
    * @param backgroundColor 背景色
    * @param onClick クリック時のコールバック
    * @returns 生成されたボタン（rexUI Labelコンポーネント）
+   * TASK-0059: rexUI型定義を適用
    */
   private createButton(
     x: number,
@@ -456,8 +456,7 @@ export class TitleScene extends Phaser.Scene {
     text: string,
     backgroundColor: number,
     onClick: () => void,
-    // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelコンポーネントの型は複雑なため
-  ): any {
+  ): RexLabel {
     const buttonBackground = this.rexUI.add.roundRectangle(
       0,
       0,
@@ -665,9 +664,9 @@ export class TitleScene extends Phaser.Scene {
    * @param centerY 中央Y座標
    * @param config ダイアログ設定
    * @returns 生成されたダイアログ
+   * TASK-0059: rexUI型定義を適用
    */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUI Dialogコンポーネントの型は複雑なため
-  private createDialog(centerX: number, centerY: number, config: DialogConfig): any {
+  private createDialog(centerX: number, centerY: number, config: DialogConfig): RexDialog {
     // 背景を先に作成（描画順序のため）
     const dialogBackground = this.rexUI.add.roundRectangle(
       0,

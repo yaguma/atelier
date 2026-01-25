@@ -7,6 +7,7 @@
  * Phaserシーン、コンテナ、rexUIプラグインへのアクセスを提供
  */
 
+import type { RexUIPlugin } from '@presentation/types/rexui';
 import type Phaser from 'phaser';
 
 /**
@@ -33,8 +34,7 @@ export abstract class BaseComponent {
   private containerId: number;
 
   /** rexUIプラグインへの参照 */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUIプラグインは型定義が複雑なため、anyで扱う
-  protected rexUI: any;
+  protected rexUI: RexUIPlugin;
 
   /**
    * コンストラクタ
@@ -73,7 +73,7 @@ export abstract class BaseComponent {
 
     // 🟡 rexUIプラグインへの参照を設定
     // rexUIはオプショナルなので、undefinedでも警告のみ
-    // @ts-expect-error - rexUIはプラグインなので型定義がないため、anyで扱う
+    // TASK-0059: 型拡張によりscene.rexUIが型安全になった
     this.rexUI = scene.rexUI;
 
     // rexUIがundefinedの場合は警告を出力
@@ -94,7 +94,6 @@ export abstract class BaseComponent {
     containerCoordinates.set(this.containerId, coordinates);
 
     // containerをProxyでラップして、x, yプロパティを各インスタンスごとに独立させる
-    // biome-ignore lint/suspicious/noExplicitAny: モック対応のためProxyを使用
     this.container = new Proxy(originalContainer, {
       get(target, prop) {
         if (prop === 'x') return coordinates.x;
