@@ -11,6 +11,7 @@
  * @see docs/design/atelier-guild-rank/ui-design/screens/title.md
  */
 
+import type { RexDialog, RexLabel, RexUIPlugin } from '@presentation/types/rexui';
 import Phaser from 'phaser';
 import {
   TITLE_ANIMATION,
@@ -60,13 +61,37 @@ interface DialogConfig {
  * タイトルロゴ・メニューボタン・ダイアログの表示を担当
  */
 export class TitleScene extends Phaser.Scene {
-  // biome-ignore lint/suspicious/noExplicitAny: rexUIプラグインの型は複雑
-  protected rexUI: any;
+  // ===========================================================================
+  // プロパティ
+  // ===========================================================================
+
+  /**
+   * rexUIプラグイン参照（テストでモックされる）
+   * TASK-0059: rexUI型定義を適用
+   * rexUIはプラグインによって注入されるため、definite assignment assertionを使用
+   */
+  declare rexUI: RexUIPlugin;
+
+  /**
+   * セーブデータリポジトリ（テストでモックされる）
+   */
   protected saveDataRepository: ISaveDataRepository | null = null;
-  // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelの型は複雑
-  private buttons: any[] = [];
-  // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelの型は複雑
-  private continueButton: any | null = null;
+
+  /**
+   * ボタン参照（破棄時に使用）
+   * TASK-0059: rexUI型定義を適用
+   */
+  private buttons: RexLabel[] = [];
+
+  /**
+   * コンティニューボタン参照（有効/無効制御に使用）
+   * TASK-0059: rexUI型定義を適用
+   */
+  private continueButton: RexLabel | null = null;
+
+  /**
+   * コンティニューボタン有効状態
+   */
   private continueEnabled = false;
 
   constructor() {
@@ -154,15 +179,24 @@ export class TitleScene extends Phaser.Scene {
     );
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelの型は複雑
+  /**
+   * ボタンを生成する共通メソッド
+   * @param x X座標
+   * @param y Y座標
+   * @param text ボタンテキスト
+   * @param backgroundColor 背景色
+   * @param onClick クリック時のコールバック
+   * @returns 生成されたボタン（rexUI Labelコンポーネント）
+   * TASK-0059: rexUI型定義を適用
+   */
   private createButton(
     x: number,
     y: number,
     text: string,
     bgColor: number,
     onClick: () => void,
-  ): any {
-    const bg = this.rexUI.add.roundRectangle(
+  ): RexLabel {
+    const buttonBackground = this.rexUI.add.roundRectangle(
       0,
       0,
       TITLE_SIZES.BUTTON_WIDTH,
@@ -178,7 +212,7 @@ export class TitleScene extends Phaser.Scene {
     const button = this.rexUI.add.label({
       width: TITLE_SIZES.BUTTON_WIDTH,
       height: TITLE_SIZES.BUTTON_HEIGHT,
-      background: bg,
+      background: buttonBackground,
       text: label,
       align: 'center',
       space: { left: 10, right: 10, top: 10, bottom: 10 },
@@ -300,9 +334,17 @@ export class TitleScene extends Phaser.Scene {
     return { overlay, centerX, centerY };
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: rexUI Dialogの型は複雑
-  private createDialog(centerX: number, centerY: number, config: DialogConfig): any {
-    const bg = this.rexUI.add.roundRectangle(
+  /**
+   * ダイアログを作成する共通メソッド
+   * @param centerX 中央X座標
+   * @param centerY 中央Y座標
+   * @param config ダイアログ設定
+   * @returns 生成されたダイアログ
+   * TASK-0059: rexUI型定義を適用
+   */
+  private createDialog(centerX: number, centerY: number, config: DialogConfig): RexDialog {
+    // 背景を先に作成（描画順序のため）
+    const dialogBackground = this.rexUI.add.roundRectangle(
       0,
       0,
       config.width,
@@ -326,7 +368,7 @@ export class TitleScene extends Phaser.Scene {
       y: centerY,
       width: config.width,
       height: config.height,
-      background: bg,
+      background: dialogBackground,
       title,
       content,
       actions: actionButtons,

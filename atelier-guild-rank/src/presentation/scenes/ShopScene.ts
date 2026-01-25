@@ -15,6 +15,7 @@ import type {
   IShopService,
 } from '@domain/interfaces/shop-service.interface';
 import { Container, ServiceKeys } from '@infrastructure/di/container';
+import type { RexLabel, RexUIPlugin } from '@presentation/types/rexui';
 import { THEME } from '@presentation/ui/theme';
 import type { GuildRank } from '@shared/types';
 import Phaser from 'phaser';
@@ -151,9 +152,8 @@ export class ShopScene extends Phaser.Scene {
   // UIコンポーネント
   // ===========================================================================
 
-  /** 戻るボタン */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelコンポーネントの型は複雑なため
-  private backButton: any;
+  /** 戻るボタン - TASK-0059: rexUI型定義を適用 */
+  private backButton!: RexLabel;
 
   /** 所持金テキスト */
   private goldText!: Phaser.GameObjects.Text;
@@ -164,17 +164,20 @@ export class ShopScene extends Phaser.Scene {
   /** ショップアイテムリスト */
   private shopItems: IShopItem[] = [];
 
-  /** アイテムUIリスト */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUI コンポーネントの型は複雑なため
+  /**
+   * アイテムUIリスト
+   * 各アイテムUIにはカスタムプロパティ（item, buyButton, card）が追加されるため、
+   * RexSizer型では対応できず、anyを使用する必要がある
+   */
+  // biome-ignore lint/suspicious/noExplicitAny: カスタムプロパティを持つためanyが必要
   private itemUIs: any[] = [];
 
   // ===========================================================================
   // rexUIプラグイン
   // ===========================================================================
 
-  /** rexUIプラグイン参照 */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUIプラグインの型は複雑なため
-  protected rexUI: any;
+  /** rexUIプラグイン参照 - TASK-0059: rexUI型定義を適用 */
+  declare rexUI: RexUIPlugin;
 
   // ===========================================================================
   // コンストラクタ
