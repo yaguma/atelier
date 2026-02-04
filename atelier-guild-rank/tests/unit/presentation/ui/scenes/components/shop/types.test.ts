@@ -24,9 +24,7 @@ describe('Shop Types', () => {
 
     it('TC-TY-001: ShopHeaderConfigが必須プロパティを持つ', async () => {
       // Given: 型定義をインポート
-      const { ShopHeaderConfig } = await import(
-        '@presentation/ui/scenes/components/shop/types'
-      );
+      const { ShopHeaderConfig } = await import('@presentation/ui/scenes/components/shop/types');
 
       // When: 正しいShopHeaderConfigオブジェクトを作成
       const config: typeof ShopHeaderConfig = {
@@ -95,9 +93,7 @@ describe('Shop Types', () => {
 
     it('TC-TY-003: onPurchaseコールバックが正しい型シグネチャを持つ', async () => {
       // Given: 型定義をインポート
-      const { OnPurchaseCallback } = await import(
-        '@presentation/ui/scenes/components/shop/types'
-      );
+      const { OnPurchaseCallback } = await import('@presentation/ui/scenes/components/shop/types');
 
       // When: 型安全なコールバックを作成
       const callback: typeof OnPurchaseCallback = (itemId: string): void => {
@@ -120,9 +116,7 @@ describe('Shop Types', () => {
 
     it('TC-TY-003b: onBackClickコールバックが正しい型シグネチャを持つ', async () => {
       // Given: 型定義をインポート
-      const { OnBackClickCallback } = await import(
-        '@presentation/ui/scenes/components/shop/types'
-      );
+      const { OnBackClickCallback } = await import('@presentation/ui/scenes/components/shop/types');
 
       // When: 型安全なコールバックを作成
       const callback: typeof OnBackClickCallback = (): void => {
