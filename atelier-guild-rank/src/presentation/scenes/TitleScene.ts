@@ -2,6 +2,7 @@
  * TitleScene.ts - タイトルシーン
  * TASK-0019: TitleScene実装
  * TASK-0058: TitleSceneリファクタリング（コンポーネント分割）
+ * Issue #111: MainSceneで本日の依頼が表示されない問題を修正
  *
  * ゲームのタイトル画面を表示するシーン。
  * タイトルロゴ、サブタイトル、バージョン情報、メニューボタンを表示し、
@@ -11,6 +12,8 @@
  * @see docs/design/atelier-guild-rank/ui-design/screens/title.md
  */
 
+import type { IGameFlowManager } from '@application/services/game-flow-manager.interface';
+import { Container, ServiceKeys } from '@infrastructure/di/container';
 import type { RexDialog, RexLabel, RexUIPlugin } from '@presentation/types/rexui';
 import Phaser from 'phaser';
 import {
@@ -94,11 +97,21 @@ export class TitleScene extends Phaser.Scene {
    */
   private continueEnabled = false;
 
+  /**
+   * GameFlowManager参照
+   * Issue #111: ゲーム開始時にstartNewGame()を呼ぶために追加
+   */
+  private gameFlowManager: IGameFlowManager | null = null;
+
   constructor() {
     super({ key: 'TitleScene' });
   }
 
   create(): void {
+    // DIコンテナからGameFlowManagerを取得
+    // Issue #111: ゲーム開始時にstartNewGame()を呼ぶために追加
+    this.initializeGameFlowManager();
+
     const centerX = this.cameras.main.centerX;
     this.createTitleLogo(centerX);
     this.createSubtitle(centerX);
@@ -108,6 +121,17 @@ export class TitleScene extends Phaser.Scene {
     this.createMenuButtons(centerX, hasSaveData);
     this.checkSaveDataIntegrity();
     this.fadeIn();
+  }
+
+  /**
+   * DIコンテナからGameFlowManagerを取得
+   * Issue #111: ゲーム開始時にstartNewGame()を呼ぶために追加
+   */
+  private initializeGameFlowManager(): void {
+    const container = Container.getInstance();
+    if (container.has(ServiceKeys.GameFlowManager)) {
+      this.gameFlowManager = container.resolve<IGameFlowManager>(ServiceKeys.GameFlowManager);
+    }
   }
 
   shutdown(): void {
@@ -226,7 +250,17 @@ export class TitleScene extends Phaser.Scene {
   }
 
   private onNewGameClick(): void {
-    this.saveDataRepository?.exists() ? this.showConfirmDialog() : this.fadeOutToScene('MainScene');
+    this.saveDataRepository?.exists() ? this.showConfirmDialog() : this.startNewGameAndTransition();
+  }
+
+  /**
+   * 新規ゲームを開始してMainSceneに遷移
+   * Issue #111: fadeOutToSceneの前にstartNewGame()を呼ぶ
+   */
+  private startNewGameAndTransition(): void {
+    // GameFlowManagerで新規ゲームを開始（依頼生成などの初期化処理が実行される）
+    this.gameFlowManager?.startNewGame();
+    this.fadeOutToScene('MainScene');
   }
 
   private async onContinueClick(): Promise<void> {
@@ -258,7 +292,8 @@ export class TitleScene extends Phaser.Scene {
             this.saveDataRepository?.delete();
             overlay.destroy();
             dialog.destroy();
-            this.fadeOutToScene('MainScene');
+            // Issue #111: fadeOutToSceneの前にstartNewGame()を呼ぶ
+            this.startNewGameAndTransition();
           },
         },
         {
