@@ -8,12 +8,12 @@ pre-commit:
   commands:
     biome-check:
       root: atelier-guild-rank/
-      glob: "*.{ts,tsx,js,jsx,json}"
-      run: pnpm biome check --write --staged {staged_files}
+      glob: "**/*.{ts,tsx,js,jsx,json}"
+      run: pnpm biome check --write {staged_files}
       stage_fixed: true
     typecheck:
       root: atelier-guild-rank/
-      glob: "*.{ts,tsx}"
+      glob: "**/*.{ts,tsx}"
       run: pnpm tsc --noEmit
 
 # commit-msg:
