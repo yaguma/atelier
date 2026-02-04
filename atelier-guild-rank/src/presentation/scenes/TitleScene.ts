@@ -12,8 +12,6 @@
  * @see docs/design/atelier-guild-rank/ui-design/screens/title.md
  */
 
-import type { IGameFlowManager } from '@application/services/game-flow-manager.interface';
-import { Container, ServiceKeys } from '@infrastructure/di/container';
 import type { RexDialog, RexLabel, RexUIPlugin } from '@presentation/types/rexui';
 import Phaser from 'phaser';
 import {
@@ -97,21 +95,11 @@ export class TitleScene extends Phaser.Scene {
    */
   private continueEnabled = false;
 
-  /**
-   * GameFlowManager参照
-   * Issue #111: ゲーム開始時にstartNewGame()を呼ぶために追加
-   */
-  private gameFlowManager: IGameFlowManager | null = null;
-
   constructor() {
     super({ key: 'TitleScene' });
   }
 
   create(): void {
-    // DIコンテナからGameFlowManagerを取得
-    // Issue #111: ゲーム開始時にstartNewGame()を呼ぶために追加
-    this.initializeGameFlowManager();
-
     const centerX = this.cameras.main.centerX;
     this.createTitleLogo(centerX);
     this.createSubtitle(centerX);
@@ -121,17 +109,6 @@ export class TitleScene extends Phaser.Scene {
     this.createMenuButtons(centerX, hasSaveData);
     this.checkSaveDataIntegrity();
     this.fadeIn();
-  }
-
-  /**
-   * DIコンテナからGameFlowManagerを取得
-   * Issue #111: ゲーム開始時にstartNewGame()を呼ぶために追加
-   */
-  private initializeGameFlowManager(): void {
-    const container = Container.getInstance();
-    if (container.has(ServiceKeys.GameFlowManager)) {
-      this.gameFlowManager = container.resolve<IGameFlowManager>(ServiceKeys.GameFlowManager);
-    }
   }
 
   shutdown(): void {
@@ -255,12 +232,12 @@ export class TitleScene extends Phaser.Scene {
 
   /**
    * 新規ゲームを開始してMainSceneに遷移
-   * Issue #111: fadeOutToSceneの前にstartNewGame()を呼ぶ
+   * Issue #111: MainSceneでstartNewGame()を呼ぶようにシーンデータを渡す
    */
   private startNewGameAndTransition(): void {
-    // GameFlowManagerで新規ゲームを開始（依頼生成などの初期化処理が実行される）
-    this.gameFlowManager?.startNewGame();
-    this.fadeOutToScene('MainScene');
+    // MainSceneにシーンデータとして isNewGame: true を渡す
+    // MainSceneのcreate()でこのフラグを見てstartNewGame()を呼ぶ
+    this.fadeOutToScene('MainScene', { isNewGame: true });
   }
 
   private async onContinueClick(): Promise<void> {

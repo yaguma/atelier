@@ -278,14 +278,21 @@ const createMockGameFlowManager = () => ({
 
 /**
  * EventBusモックを作成
+ * Issue #111: 本物のEventBusと同じように{ type, payload, timestamp }形式でイベントをラップする
  */
 const createMockEventBus = () => {
   const listeners = new Map<string, Array<(...args: unknown[]) => void>>();
   return {
-    emit: vi.fn().mockImplementation((event: string, data: unknown) => {
-      const handlers = listeners.get(event) || [];
+    emit: vi.fn().mockImplementation((type: string, payload: unknown) => {
+      // 本物のEventBusと同じ形式でイベントをラップ
+      const busEvent = {
+        type,
+        payload,
+        timestamp: Date.now(),
+      };
+      const handlers = listeners.get(type) || [];
       for (const handler of handlers) {
-        handler(data);
+        handler(busEvent);
       }
     }),
     on: vi.fn().mockImplementation((event: string, handler: (...args: unknown[]) => void) => {

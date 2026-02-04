@@ -181,8 +181,12 @@ export class GameFlowManager implements IGameFlowManager {
 
     // 【実装内容】: 依頼受注フェーズに遷移
     // 【処理方針】: StateManagerのsetPhase()を呼び出す
+    // 【Issue #111修正】: 新規ゲーム開始時、initialize()後は既にQUEST_ACCEPTフェーズのため、
+    //   同じフェーズへの遷移を避けてエラーを防ぐ
     // 🔵 信頼性レベル: 設計文書に明記
-    this.stateManager.setPhase(GamePhase.QUEST_ACCEPT);
+    if (state.currentPhase !== GamePhase.QUEST_ACCEPT) {
+      this.stateManager.setPhase(GamePhase.QUEST_ACCEPT);
+    }
   }
 
   /**
