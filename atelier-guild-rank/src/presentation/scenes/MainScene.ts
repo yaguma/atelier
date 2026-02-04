@@ -9,6 +9,7 @@
  * @信頼性レベル 🔵 requirements.md セクション2.1に基づく
  */
 
+import { Quest } from '@domain/entities/Quest';
 import type { IAlchemyService } from '@domain/interfaces/alchemy-service.interface';
 import type { IGatheringService } from '@domain/interfaces/gathering-service.interface';
 import { Container, ServiceKeys } from '@infrastructure/di/container';
@@ -22,6 +23,7 @@ import { QuestAcceptPhaseUI } from '@presentation/ui/phases/QuestAcceptPhaseUI';
 import { GamePhase, VALID_GAME_PHASES } from '@shared/types/common';
 import type { IPhaseChangedEvent } from '@shared/types/events';
 import { GameEventType } from '@shared/types/events';
+import type { IClient, IQuest } from '@shared/types/quests';
 import Phaser from 'phaser';
 
 // =============================================================================
@@ -387,6 +389,12 @@ export class MainScene extends Phaser.Scene {
       const event = data as { remainingDays: number };
       this.handleDayStarted(event);
     });
+
+    // QUEST_GENERATEDイベント（依頼生成時）
+    this.eventBus.on(GameEventType.QUEST_GENERATED, (data: unknown) => {
+      const event = data as { quests: import('@shared/types/quests').IQuest[] };
+      this.handleQuestGenerated(event);
+    });
   }
 
   // ===========================================================================
@@ -433,6 +441,35 @@ export class MainScene extends Phaser.Scene {
       actionPoints: state.actionPoints,
       maxActionPoints: 3, // 固定値（将来的にはStateManagerから取得）
     });
+  }
+
+  /**
+   * QUEST_GENERATEDイベントハンドラ
+   * 依頼生成時にQuestAcceptPhaseUIに依頼リストを渡す
+   *
+   * @param event - 依頼生成イベント
+   */
+  private handleQuestGenerated(event: { quests: IQuest[]; clients?: IClient[] }): void {
+    // QuestAcceptPhaseUIを取得して依頼リストを更新
+    const questAcceptUI = this.phaseUIs.get(GamePhase.QUEST_ACCEPT);
+    if (questAcceptUI && 'updateQuests' in questAcceptUI) {
+      // Quest エンティティに変換して渡す
+      const quests = event.quests.map((q) => {
+        // クライアント情報を取得（なければダミー）
+        const client: IClient = event.clients?.find((c) => c.id === q.clientId) ?? {
+          id: q.clientId,
+          name: '依頼者',
+          type: 'VILLAGER',
+          contributionMultiplier: 1.0,
+          goldMultiplier: 1.0,
+          deadlineModifier: 0,
+          preferredQuestTypes: ['QUANTITY'],
+          unlockRank: 'G',
+        };
+        return new Quest(q, client);
+      });
+      (questAcceptUI as QuestAcceptPhaseUI).updateQuests(quests);
+    }
   }
 
   // ===========================================================================
