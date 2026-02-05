@@ -76,21 +76,4 @@ export class TitlePage extends BasePage {
 			return state?.hasSaveData ?? false;
 		});
 	}
-
-	/**
-	 * 指定したシーンになるまで待機
-	 *
-	 * @param sceneName - 待機するシーン名
-	 * @param timeout - タイムアウト（ミリ秒）
-	 */
-	private async waitForScene(sceneName: string, timeout: number = BasePage.DEFAULT_TIMEOUT): Promise<void> {
-		await this.page.waitForFunction(
-			(name) => {
-				const state = (window as unknown as GameWindow).gameState?.();
-				return state?.currentScene === name;
-			},
-			sceneName,
-			{ timeout },
-		);
-	}
 }

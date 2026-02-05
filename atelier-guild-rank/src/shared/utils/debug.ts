@@ -318,14 +318,13 @@ export class DebugTools {
    * ```
    */
   static skipPhase(): void {
-    // GameFlowManagerが初期化されている場合のみ実行
     try {
       const container = Container.getInstance();
       if (container.has(ServiceKeys.GameFlowManager)) {
-        // GameFlowManagerは存在するが、skipPhaseの具体的な実装は将来のタスクで追加
-        // 現時点ではログ出力のみ
-        container.resolve(ServiceKeys.GameFlowManager);
-        console.log('skipPhase called - GameFlowManager available');
+        const gameFlowManager = container.resolve<{ skipPhase: () => void }>(
+          ServiceKeys.GameFlowManager,
+        );
+        gameFlowManager.skipPhase();
       }
     } catch (e) {
       console.warn('skipPhase failed:', e);
