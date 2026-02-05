@@ -146,6 +146,41 @@ export const TEST_SCENARIOS = {
 		},
 		description: '資金が枯渇した状態（エラーハンドリングテスト用）',
 	} as TestScenario,
+
+	/**
+	 * フルゲームプレイシナリオ
+	 *
+	 * @description
+	 * 新規ゲーム開始からクリアまでのフルフロー用。初期状態と同じ。
+	 */
+	fullGamePlay: {
+		name: 'フルゲームプレイ',
+		initialState: {
+			rank: GuildRank.G,
+			gold: 100,
+			days: 30,
+			actionPoints: 3,
+		},
+		description: '新規ゲーム開始からクリアまでのフルフロー',
+	} as TestScenario,
+
+	/**
+	 * ハイブリッドプレイシナリオ
+	 *
+	 * @description
+	 * UI操作+デバッグ補助のハイブリッドフロー用。Aランク高貢献度状態。
+	 */
+	hybridGamePlay: {
+		name: 'ハイブリッドプレイ',
+		initialState: {
+			rank: GuildRank.A,
+			gold: 5000,
+			days: 10,
+			actionPoints: 3,
+			contribution: 8000,
+		},
+		description: 'UI操作+デバッグ補助のハイブリッドフロー',
+	} as TestScenario,
 } as const;
 
 // =============================================================================

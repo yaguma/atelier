@@ -14,9 +14,9 @@
  * 各シーンで必要なプロパティを含む。
  */
 export interface GameState {
-	/** 現在のシーン名（TitleScene, MainScene, ResultScene等） */
+	/** 現在のシーン名（TitleScene, MainScene, GameClearScene, GameOverScene等） */
 	currentScene?: string;
-	/** 現在のフェーズ（Morning, Expedition等） */
+	/** 現在のフェーズ（QUEST_ACCEPT, GATHERING, ALCHEMY, DELIVERY等） */
 	currentPhase?: string;
 	/** 残り日数（1-30） */
 	remainingDays?: number;
@@ -32,6 +32,16 @@ export interface GameState {
 	isGameClear?: boolean;
 	/** ゲームオーバー状態 */
 	isGameOver?: boolean;
+	/** 受注済み依頼数 */
+	acceptedQuestCount?: number;
+	/** インベントリの素材数 */
+	materialCount?: number;
+	/** インベントリの完成品数 */
+	artifactCount?: number;
+	/** 累計貢献度 */
+	contribution?: number;
+	/** 現在の日数（経過日数） */
+	currentDay?: number;
 }
 
 /**
@@ -56,7 +66,7 @@ export interface DebugTools {
 	setActionPoints?: (ap: number) => void;
 	/** セーブデータを削除 */
 	clearSaveData?: () => void;
-	/** フェーズをスキップ */
+	/** フェーズをスキップ（次のフェーズへ進む） */
 	skipPhase?: () => void;
 	/** 日を終了 */
 	endDay?: () => void;
