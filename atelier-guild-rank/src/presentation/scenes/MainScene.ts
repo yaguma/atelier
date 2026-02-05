@@ -90,7 +90,8 @@ interface IGameFlowManager {
   startPhase(phase: GamePhase): void;
   endPhase(): void;
   startNewGame(): void;
-  continueGame(): void;
+  // biome-ignore lint/suspicious/noExplicitAny: セーブデータは任意の型を許容（ISaveData）
+  continueGame(saveData: any): void;
   startDay(): void;
   endDay(): void;
   skipPhase(): void;
@@ -236,6 +237,9 @@ export class MainScene extends Phaser.Scene {
     // これにより、QUEST_GENERATEDイベントが正しくハンドリングされる
     if (data?.isNewGame) {
       this.gameFlowManager.startNewGame();
+    } else if (data?.saveData) {
+      // コンティニュー: セーブデータからゲーム状態を復元
+      this.gameFlowManager.continueGame(data.saveData);
     }
 
     // 初期状態の反映

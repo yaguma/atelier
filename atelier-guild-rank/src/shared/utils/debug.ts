@@ -252,9 +252,9 @@ export class DebugTools {
     // Phaserゲームインスタンス経由でシーン遷移
     const game = (globalThis as unknown as { game?: Phaser.Game }).game;
     if (game?.scene) {
-      // TitleSceneを停止してMainSceneを開始
+      // TitleSceneを停止してMainSceneを開始（isNewGame: trueで状態リセット）
       game.scene.stop('TitleScene');
-      game.scene.start('MainScene');
+      game.scene.start('MainScene', { isNewGame: true });
     }
   }
 
