@@ -15,6 +15,7 @@ import type {
   DraftSession,
   IGatheringService,
 } from '@domain/interfaces/gathering-service.interface';
+import { getSelectionIndexFromKey, isKeyForAction } from '@shared/constants/keybindings';
 import type { MaterialId, Quality } from '@shared/types';
 import type Phaser from 'phaser';
 import { BaseComponent } from '../components/BaseComponent';
@@ -42,6 +43,12 @@ export class GatheringPhaseUI extends BaseComponent {
   private session: DraftSession | null = null;
   private onEndCallback?: () => void;
 
+  /** キーボードイベントハンドラ参照（Issue #135） */
+  private keyboardHandler: ((event: { key: string }) => void) | null = null;
+
+  /** 現在のフォーカスインデックス（キーボードナビゲーション用） */
+  private focusedSlotIndex = 0;
+
   /**
    * コンストラクタ
    * Issue #116: コンテンツコンテナが既にオフセット済みなので(0, 0)を使用
@@ -68,6 +75,7 @@ export class GatheringPhaseUI extends BaseComponent {
     this.createMaterialPool();
     this.createGatheredDisplay();
     this.createEndButton();
+    this.setupKeyboardListener();
   }
 
   /**
@@ -353,11 +361,146 @@ export class GatheringPhaseUI extends BaseComponent {
    * コンポーネントを破棄
    */
   destroy(): void {
+    this.removeKeyboardListener();
     for (const slot of this.materialSlots) {
       slot.destroy();
     }
     this.materialSlots = [];
     this.gatheredMaterialTexts = [];
     this.container.destroy();
+  }
+
+  // =============================================================================
+  // Issue #135: キーボード操作
+  // =============================================================================
+
+  /**
+   * キーボードリスナーを設定
+   */
+  private setupKeyboardListener(): void {
+    this.keyboardHandler = (event: { key: string }) => this.handleKeyboardInput(event);
+    this.scene?.input?.keyboard?.on('keydown', this.keyboardHandler);
+  }
+
+  /**
+   * キーボードリスナーを解除
+   */
+  private removeKeyboardListener(): void {
+    if (this.keyboardHandler) {
+      this.scene?.input?.keyboard?.off('keydown', this.keyboardHandler);
+      this.keyboardHandler = null;
+    }
+  }
+
+  /**
+   * キーボード入力を処理
+   *
+   * @param event - キーボードイベント
+   */
+  private handleKeyboardInput(event: { key: string }): void {
+    // 数字キーで素材スロットを直接選択（1-6）
+    const selectionIndex = getSelectionIndexFromKey(event.key);
+    if (selectionIndex !== null && selectionIndex <= this.materialSlots.length) {
+      const slot = this.materialSlots[selectionIndex - 1];
+      if (slot) {
+        // フォーカスを更新
+        this.focusedSlotIndex = selectionIndex - 1;
+        this.updateSlotFocus();
+        // 選択を実行
+        this.selectSlotByIndex(selectionIndex - 1);
+      }
+      return;
+    }
+
+    // 矢印キーでナビゲーション（2行3列グリッド）
+    if (isKeyForAction(event.key, 'LEFT')) {
+      this.moveFocus(-1, 0);
+    } else if (isKeyForAction(event.key, 'RIGHT')) {
+      this.moveFocus(1, 0);
+    } else if (isKeyForAction(event.key, 'UP')) {
+      this.moveFocus(0, -1);
+    } else if (isKeyForAction(event.key, 'DOWN')) {
+      this.moveFocus(0, 1);
+    }
+    // Enter/Spaceで選択中のスロットを選択
+    else if (isKeyForAction(event.key, 'CONFIRM')) {
+      this.selectSlotByIndex(this.focusedSlotIndex);
+    }
+    // Nキーで採取終了
+    else if (isKeyForAction(event.key, 'NEXT_PHASE')) {
+      this.endGathering();
+    }
+  }
+
+  /**
+   * フォーカスを移動（2行3列グリッド）
+   *
+   * @param deltaCol - 列方向の移動量
+   * @param deltaRow - 行方向の移動量
+   */
+  private moveFocus(deltaCol: number, deltaRow: number): void {
+    const COLS = 3;
+    const ROWS = 2;
+
+    const currentCol = this.focusedSlotIndex % COLS;
+    const currentRow = Math.floor(this.focusedSlotIndex / COLS);
+
+    let newCol = currentCol + deltaCol;
+    let newRow = currentRow + deltaRow;
+
+    // 範囲内に収める
+    if (newCol < 0) newCol = 0;
+    if (newCol >= COLS) newCol = COLS - 1;
+    if (newRow < 0) newRow = 0;
+    if (newRow >= ROWS) newRow = ROWS - 1;
+
+    const newIndex = newRow * COLS + newCol;
+    if (newIndex !== this.focusedSlotIndex && newIndex < this.materialSlots.length) {
+      this.focusedSlotIndex = newIndex;
+      this.updateSlotFocus();
+    }
+  }
+
+  /**
+   * スロットフォーカスを視覚的に更新
+   */
+  private updateSlotFocus(): void {
+    const FOCUSED_SCALE = 1.1;
+    const DEFAULT_SCALE = 1.0;
+
+    this.materialSlots.forEach((slot, index) => {
+      const container = slot.getContainer();
+      if (!container) return;
+
+      // setScaleメソッドが存在する場合のみスケール変更
+      if (typeof container.setScale === 'function') {
+        if (index === this.focusedSlotIndex) {
+          container.setScale(FOCUSED_SCALE);
+        } else {
+          container.setScale(DEFAULT_SCALE);
+        }
+      }
+    });
+  }
+
+  /**
+   * インデックスでスロットを選択
+   *
+   * @param index - スロットインデックス
+   */
+  private selectSlotByIndex(index: number): void {
+    if (!this.session) return;
+
+    const options = this.session.currentOptions;
+    if (index >= 0 && index < options.length) {
+      const option = options[index];
+      const material: MaterialDisplay = {
+        id: option.materialId,
+        name: this.getMaterialName(option.materialId),
+        type: this.getMaterialType(option.materialId),
+        quality: option.quality,
+      };
+      this.onMaterialSelect(material);
+    }
   }
 }

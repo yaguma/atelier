@@ -10,6 +10,7 @@
 import type { ItemInstance } from '@domain/entities/ItemInstance';
 import type { MaterialInstance } from '@domain/entities/MaterialInstance';
 import type { IAlchemyService } from '@domain/interfaces/alchemy-service.interface';
+import { getSelectionIndexFromKey, isKeyForAction } from '@shared/constants/keybindings';
 import type { CardId, Quality } from '@shared/types';
 import type { IRecipeCardMaster } from '@shared/types/master-data';
 import type Phaser from 'phaser';
@@ -88,6 +89,12 @@ export class AlchemyPhaseUI extends BaseComponent {
   /** rexUIラベルリスト（レシピ用） */
   private recipeLabels: RecipeLabelInfo[] = [];
 
+  /** キーボードイベントハンドラ参照（Issue #135） */
+  private keyboardHandler: ((event: { key: string }) => void) | null = null;
+
+  /** 現在のフォーカスインデックス（キーボードナビゲーション用） */
+  private focusedRecipeIndex = 0;
+
   /**
    * コンストラクタ
    *
@@ -124,6 +131,8 @@ export class AlchemyPhaseUI extends BaseComponent {
     this.createTitle();
     this.loadRecipes();
     this.createRecipeList();
+    this.setupKeyboardListener();
+    this.updateRecipeFocus();
   }
 
   /**
@@ -477,10 +486,113 @@ export class AlchemyPhaseUI extends BaseComponent {
    * コンポーネントを破棄
    */
   destroy(): void {
+    this.removeKeyboardListener();
     for (const item of this.recipeLabels) {
       item.label.destroy();
     }
     this.recipeLabels = [];
     this.container.destroy();
+  }
+
+  // =============================================================================
+  // Issue #135: キーボード操作
+  // =============================================================================
+
+  /**
+   * キーボードリスナーを設定
+   */
+  private setupKeyboardListener(): void {
+    this.keyboardHandler = (event: { key: string }) => this.handleKeyboardInput(event);
+    this.scene?.input?.keyboard?.on('keydown', this.keyboardHandler);
+  }
+
+  /**
+   * キーボードリスナーを解除
+   */
+  private removeKeyboardListener(): void {
+    if (this.keyboardHandler) {
+      this.scene?.input?.keyboard?.off('keydown', this.keyboardHandler);
+      this.keyboardHandler = null;
+    }
+  }
+
+  /**
+   * キーボード入力を処理
+   *
+   * @param event - キーボードイベント
+   */
+  private handleKeyboardInput(event: { key: string }): void {
+    // 数字キーでレシピを直接選択
+    const selectionIndex = getSelectionIndexFromKey(event.key);
+    if (selectionIndex !== null && selectionIndex <= this.recipes.length) {
+      this.focusedRecipeIndex = selectionIndex - 1;
+      this.updateRecipeFocus();
+      const recipe = this.recipes[this.focusedRecipeIndex];
+      if (recipe) {
+        this.selectRecipe(recipe.id);
+      }
+      return;
+    }
+
+    // 上下矢印キーでレシピをナビゲート
+    if (isKeyForAction(event.key, 'UP')) {
+      this.moveFocus(-1);
+    } else if (isKeyForAction(event.key, 'DOWN')) {
+      this.moveFocus(1);
+    }
+    // Enter/Spaceでフォーカス中のレシピを選択
+    else if (isKeyForAction(event.key, 'CONFIRM')) {
+      if (this.focusedRecipeIndex >= 0 && this.focusedRecipeIndex < this.recipes.length) {
+        const recipe = this.recipes[this.focusedRecipeIndex];
+        if (recipe) {
+          this.selectRecipe(recipe.id);
+        }
+      }
+    }
+  }
+
+  /**
+   * フォーカスを移動
+   *
+   * @param delta - 移動量
+   */
+  private moveFocus(delta: number): void {
+    if (this.recipes.length === 0) return;
+
+    let newIndex = this.focusedRecipeIndex + delta;
+
+    // 範囲内に収める
+    if (newIndex < 0) {
+      newIndex = 0;
+    } else if (newIndex >= this.recipes.length) {
+      newIndex = this.recipes.length - 1;
+    }
+
+    if (newIndex !== this.focusedRecipeIndex) {
+      this.focusedRecipeIndex = newIndex;
+      this.updateRecipeFocus();
+    }
+  }
+
+  /**
+   * レシピフォーカスを視覚的に更新
+   */
+  private updateRecipeFocus(): void {
+    const FOCUSED_SCALE = 1.05;
+    const DEFAULT_SCALE = 1.0;
+
+    this.recipeLabels.forEach((item, index) => {
+      if (!item.label) return;
+
+      if (index === this.focusedRecipeIndex) {
+        if (typeof item.label.setScale === 'function') {
+          item.label.setScale(FOCUSED_SCALE);
+        }
+      } else {
+        if (typeof item.label.setScale === 'function') {
+          item.label.setScale(DEFAULT_SCALE);
+        }
+      }
+    });
   }
 }

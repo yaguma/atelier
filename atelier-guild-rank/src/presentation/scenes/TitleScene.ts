@@ -13,6 +13,7 @@
  */
 
 import type { RexDialog, RexLabel, RexUIPlugin } from '@presentation/types/rexui';
+import { isKeyForAction } from '@shared/constants/keybindings';
 import Phaser from 'phaser';
 import {
   TITLE_ANIMATION,
@@ -95,6 +96,17 @@ export class TitleScene extends Phaser.Scene {
    */
   private continueEnabled = false;
 
+  /**
+   * 現在選択中のメニューインデックス（キーボードナビゲーション用）
+   * 0: 新規ゲーム, 1: コンティニュー, 2: 設定
+   */
+  private selectedMenuIndex = 0;
+
+  /**
+   * キーボードイベントハンドラ参照
+   */
+  private keyboardHandler: ((event: { key: string }) => void) | null = null;
+
   constructor() {
     super({ key: 'TitleScene' });
   }
@@ -108,10 +120,13 @@ export class TitleScene extends Phaser.Scene {
     this.continueEnabled = hasSaveData;
     this.createMenuButtons(centerX, hasSaveData);
     this.checkSaveDataIntegrity();
+    this.setupKeyboardListener();
+    this.updateMenuSelection();
     this.fadeIn();
   }
 
   shutdown(): void {
+    this.removeKeyboardListener();
     for (const button of this.buttons) button?.destroy();
     this.buttons = [];
     this.continueButton = null;
@@ -443,5 +458,132 @@ export class TitleScene extends Phaser.Scene {
         ? this.scene.start(targetScene, sceneData)
         : this.scene.start(targetScene);
     });
+  }
+
+  // ===========================================================================
+  // キーボード操作（Issue #135）
+  // ===========================================================================
+
+  /**
+   * キーボードリスナーを設定
+   */
+  private setupKeyboardListener(): void {
+    // キーボード入力が利用可能な場合のみリスナーを設定
+    if (!this.input?.keyboard?.on) {
+      return;
+    }
+    this.keyboardHandler = (event: { key: string }) => this.handleKeyboardInput(event);
+    this.input.keyboard.on('keydown', this.keyboardHandler);
+  }
+
+  /**
+   * キーボードリスナーを解除
+   */
+  private removeKeyboardListener(): void {
+    if (this.keyboardHandler) {
+      this.input?.keyboard?.off('keydown', this.keyboardHandler);
+      this.keyboardHandler = null;
+    }
+  }
+
+  /**
+   * キーボード入力を処理
+   *
+   * @param event - キーボードイベント
+   */
+  private handleKeyboardInput(event: { key: string }): void {
+    const key = event.key;
+
+    // 上下矢印キーでメニュー選択
+    if (isKeyForAction(key, 'UP')) {
+      this.moveMenuSelection(-1);
+    } else if (isKeyForAction(key, 'DOWN')) {
+      this.moveMenuSelection(1);
+    }
+    // Enter/Spaceで決定
+    else if (isKeyForAction(key, 'CONFIRM')) {
+      this.executeMenuAction();
+    }
+    // 数字キーで直接選択（1: 新規ゲーム, 2: コンティニュー, 3: 設定）
+    else if (key === '1') {
+      this.selectedMenuIndex = 0;
+      this.updateMenuSelection();
+      this.executeMenuAction();
+    } else if (key === '2' && this.continueEnabled) {
+      this.selectedMenuIndex = 1;
+      this.updateMenuSelection();
+      this.executeMenuAction();
+    } else if (key === '3') {
+      this.selectedMenuIndex = 2;
+      this.updateMenuSelection();
+      this.executeMenuAction();
+    }
+  }
+
+  /**
+   * メニュー選択を移動
+   *
+   * @param direction - 移動方向（-1: 上, 1: 下）
+   */
+  private moveMenuSelection(direction: number): void {
+    const menuCount = 3; // 新規ゲーム, コンティニュー, 設定
+    let newIndex = this.selectedMenuIndex + direction;
+
+    // ループナビゲーション
+    if (newIndex < 0) {
+      newIndex = menuCount - 1;
+    } else if (newIndex >= menuCount) {
+      newIndex = 0;
+    }
+
+    // コンティニューが無効の場合はスキップ
+    if (newIndex === 1 && !this.continueEnabled) {
+      newIndex = direction > 0 ? 2 : 0;
+    }
+
+    this.selectedMenuIndex = newIndex;
+    this.updateMenuSelection();
+  }
+
+  /**
+   * メニュー選択の視覚的更新
+   */
+  private updateMenuSelection(): void {
+    const SELECTED_SCALE = 1.1;
+    const DEFAULT_SCALE = 1.0;
+
+    this.buttons.forEach((button, index) => {
+      if (!button) return;
+
+      // setScaleメソッドが存在する場合のみスケール変更
+      if (typeof button.setScale === 'function') {
+        if (index === this.selectedMenuIndex) {
+          // 選択中のボタンをハイライト
+          button.setScale(SELECTED_SCALE);
+        } else {
+          // 非選択のボタンは通常表示
+          button.setScale(DEFAULT_SCALE);
+        }
+      }
+    });
+  }
+
+  /**
+   * 選択中のメニューアクションを実行
+   */
+  private executeMenuAction(): void {
+    switch (this.selectedMenuIndex) {
+      case 0:
+        this.onNewGameClick();
+        break;
+      case 1:
+        if (this.continueEnabled) {
+          this.onContinueClick();
+        }
+        break;
+      case 2:
+        this.onSettingsClick();
+        break;
+    }
   }
 }
