@@ -68,6 +68,8 @@ export interface DebugTools {
 	clearSaveData?: () => void;
 	/** フェーズをスキップ（次のフェーズへ進む） */
 	skipPhase?: () => void;
+	/** 「次へ」ボタンクリック（フェーズ遷移） */
+	clickNextButton?: () => void;
 	/** 日を終了 */
 	endDay?: () => void;
 	/** タイトルに戻る */

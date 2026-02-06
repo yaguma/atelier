@@ -332,6 +332,31 @@ export class DebugTools {
   }
 
   /**
+   * 【機能概要】: 「次へ」ボタンをクリックする（E2Eテスト用）
+   * 【実装方針】: GameFlowManager経由でフェーズを終了する
+   * 【用途】: E2Eテストで「次へ」ボタンクリックをシミュレート
+   * 【注意】: UIの「次へ」ボタンと同等の動作（endPhase()を呼び出す）
+   *
+   * @example
+   * ```typescript
+   * window.debug?.clickNextButton(); // 「次へ」ボタンクリック
+   * ```
+   */
+  static clickNextButton(): void {
+    try {
+      const container = Container.getInstance();
+      if (container.has(ServiceKeys.GameFlowManager)) {
+        const gameFlowManager = container.resolve<{ endPhase: () => void }>(
+          ServiceKeys.GameFlowManager,
+        );
+        gameFlowManager.endPhase();
+      }
+    } catch (e) {
+      console.warn('clickNextButton failed:', e);
+    }
+  }
+
+  /**
    * 【機能概要】: 日を終了する（E2Eテスト用）
    * 【実装方針】: StateManager経由で日を進め、ゲーム終了条件をチェックしてシーン遷移
    * 【用途】: E2Eテストで日数を進める

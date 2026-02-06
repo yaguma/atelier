@@ -81,6 +81,19 @@ export class MainPage extends BasePage {
 	// =============================================================================
 
 	/**
+	 * 「次へ」ボタンをクリック
+	 *
+	 * @description
+	 * MainSceneのフッターにある「次へ」ボタンのクリックをシミュレートする。
+	 * GameFlowManager.endPhase()が呼ばれ、次のフェーズに遷移する。
+	 *
+	 * @throws デバッグツールが利用不可の場合
+	 */
+	async clickNextButton(): Promise<void> {
+		await this.executeDebugAction('clickNextButton');
+	}
+
+	/**
 	 * フェーズをスキップ
 	 *
 	 * @throws デバッグツールが利用不可の場合
