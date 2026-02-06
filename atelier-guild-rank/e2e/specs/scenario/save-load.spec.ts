@@ -56,17 +56,27 @@ test.describe('SCN-008: セーブ/ロード連携', () => {
 		// ゲーム状態を記録
 		const stateBefore: GameState = await main.getGameState();
 
-		// セーブデータを手動作成（セーブ機能がまだ自動で動かない場合のフォールバック）
+		// セーブデータをISaveData形式で手動作成
 		await gamePage.evaluate((state) => {
 			const saveData = {
-				version: 1,
-				timestamp: Date.now(),
-				state: {
-					remainingDays: state.remainingDays,
-					gold: state.gold,
-					currentRank: state.currentRank,
-					actionPoints: state.actionPoints,
+				version: '1.0.0',
+				lastSaved: new Date().toISOString(),
+				gameState: {
+					currentRank: state.currentRank ?? 'G',
+					rankHp: 3,
+					promotionGauge: 0,
+					remainingDays: state.remainingDays ?? 30,
+					currentDay: 30 - (state.remainingDays ?? 30) + 1,
+					currentPhase: state.currentPhase ?? 'QUEST_ACCEPT',
+					gold: state.gold ?? 100,
+					comboCount: 0,
+					actionPoints: state.actionPoints ?? 3,
+					isPromotionTest: false,
 				},
+				deckState: { deck: [], hand: [], discard: [], ownedCards: [] },
+				inventoryState: { materials: [], craftedItems: [], storageLimit: 20 },
+				questState: { activeQuests: [], todayClients: [], todayQuests: [], questLimit: 3 },
+				artifacts: [],
 			};
 			localStorage.setItem('atelier-guild-rank-save', JSON.stringify(saveData));
 		}, stateBefore);
