@@ -322,13 +322,38 @@ export class DebugTools {
     try {
       const container = Container.getInstance();
       if (container.has(ServiceKeys.GameFlowManager)) {
-        // GameFlowManagerは存在するが、skipPhaseの具体的な実装は将来のタスクで追加
-        // 現時点ではログ出力のみ
-        container.resolve(ServiceKeys.GameFlowManager);
-        console.log('skipPhase called - GameFlowManager available');
+        const gameFlowManager = container.resolve<{
+          skipPhase: () => void;
+        }>(ServiceKeys.GameFlowManager);
+        gameFlowManager.skipPhase();
       }
     } catch (e) {
       console.warn('skipPhase failed:', e);
+    }
+  }
+
+  /**
+   * 【機能概要】: 「次へ」ボタンをクリックする（E2Eテスト用）
+   * 【実装方針】: GameFlowManager経由でフェーズを終了する
+   * 【用途】: E2Eテストで「次へ」ボタンクリックをシミュレート
+   * 【注意】: UIの「次へ」ボタンと同等の動作（endPhase()を呼び出す）
+   *
+   * @example
+   * ```typescript
+   * window.debug?.clickNextButton(); // 「次へ」ボタンクリック
+   * ```
+   */
+  static clickNextButton(): void {
+    try {
+      const container = Container.getInstance();
+      if (container.has(ServiceKeys.GameFlowManager)) {
+        const gameFlowManager = container.resolve<{
+          endPhase: () => void;
+        }>(ServiceKeys.GameFlowManager);
+        gameFlowManager.endPhase();
+      }
+    } catch (e) {
+      console.warn('clickNextButton failed:', e);
     }
   }
 
