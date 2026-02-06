@@ -202,11 +202,11 @@ describe('QuestAcceptPhaseUI', () => {
       expect(phaseUI.getContainer()).toBeDefined();
     });
 
-    test('container.x = 160, container.y = 80 に配置される', () => {
+    test('container.x = 0, container.y = 0 に配置される（Issue #116: コンテンツコンテナが既にオフセット済み）', () => {
       const phaseUI = new QuestAcceptPhaseUI(mockScene);
       phaseUI.create();
 
-      expect(mockScene.add.container).toHaveBeenCalledWith(160, 80);
+      expect(mockScene.add.container).toHaveBeenCalledWith(0, 0);
     });
 
     test('タイトル「📋 本日の依頼」が表示される', () => {

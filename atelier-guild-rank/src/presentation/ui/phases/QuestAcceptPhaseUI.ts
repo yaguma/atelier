@@ -85,9 +85,10 @@ export class QuestAcceptPhaseUI extends BaseComponent {
 
   /**
    * 【コンポーネント配置定数】: UIコンポーネントの配置位置
+   * Issue #116: コンテンツコンテナが既にオフセット済みなので(0, 0)を使用
    */
-  private static readonly COMPONENT_X = 160;
-  private static readonly COMPONENT_Y = 80;
+  private static readonly COMPONENT_X = 0;
+  private static readonly COMPONENT_Y = 0;
 
   /**
    * 【タイトルスタイル定数】: タイトルテキストのスタイル

@@ -111,7 +111,8 @@ export class AlchemyPhaseUI extends BaseComponent {
       throw new Error('AlchemyPhaseUI: alchemyService is required');
     }
 
-    super(scene, 400, 100);
+    // Issue #116: コンテンツコンテナが既にオフセット済みなので(0, 0)を使用
+    super(scene, 0, 0);
     this.alchemyService = alchemyService;
     this.onCraftCompleteCallback = onCraftComplete;
   }

@@ -27,8 +27,9 @@ import {
 // =============================================================================
 
 const UI_LAYOUT = {
-  COMPONENT_X: 160,
-  COMPONENT_Y: 80,
+  // Issue #116: コンテンツコンテナが既にオフセット済みなので(0, 0)を使用
+  COMPONENT_X: 0,
+  COMPONENT_Y: 0,
   QUEST_LIST_Y: 60,
   ITEM_SELECTOR_Y: 450,
   PREVIEW_Y: 350,

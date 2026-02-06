@@ -44,6 +44,7 @@ export class GatheringPhaseUI extends BaseComponent {
 
   /**
    * コンストラクタ
+   * Issue #116: コンテンツコンテナが既にオフセット済みなので(0, 0)を使用
    *
    * @param scene - Phaserシーン
    * @param gatheringService - 採取サービス
@@ -54,7 +55,7 @@ export class GatheringPhaseUI extends BaseComponent {
     private gatheringService: IGatheringService,
     onEnd?: () => void,
   ) {
-    super(scene, 400, 100);
+    super(scene, 0, 0);
     this.onEndCallback = onEnd;
   }
 
