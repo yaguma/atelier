@@ -206,6 +206,7 @@ export class MainScene extends Phaser.Scene {
   /**
    * create() - メイン画面の生成
    * Issue #111: シーンデータを受け取り、新規ゲーム開始時はstartNewGame()を呼ぶ
+   * Issue #115: EventBusをシーンデータに設定（UIコンポーネントからアクセス可能にする）
    *
    * @param data - TitleSceneから渡されるシーンデータ
    * @throws {Error} StateManagerが未初期化の場合
@@ -218,6 +219,10 @@ export class MainScene extends Phaser.Scene {
 
     // サービスの検証
     this.validateServices();
+
+    // Issue #115: EventBusをシーンデータに設定
+    // QuestAcceptPhaseUI等のUIコンポーネントがthis.scene.data.get('eventBus')でアクセスできるようにする
+    this.data.set('eventBus', this.eventBus);
 
     // UIコンポーネントの作成
     this.createLayoutComponents();
