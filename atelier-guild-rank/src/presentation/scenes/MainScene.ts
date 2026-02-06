@@ -10,9 +10,11 @@
  * @信頼性レベル 🔵 requirements.md セクション2.1に基づく
  */
 
+import { Card } from '@domain/entities/Card';
 import { Quest } from '@domain/entities/Quest';
 import type { IAlchemyService } from '@domain/interfaces/alchemy-service.interface';
 import type { IGatheringService } from '@domain/interfaces/gathering-service.interface';
+import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
 import { Container, ServiceKeys } from '@infrastructure/di/container';
 import { FooterUI } from '@presentation/ui/components/FooterUI';
 import { HeaderUI } from '@presentation/ui/components/HeaderUI';
@@ -24,7 +26,9 @@ import { QuestAcceptPhaseUI } from '@presentation/ui/phases/QuestAcceptPhaseUI';
 import { GamePhase, VALID_GAME_PHASES } from '@shared/types/common';
 import type { IPhaseChangedEvent } from '@shared/types/events';
 import { GameEventType } from '@shared/types/events';
+import { toCardId } from '@shared/types/ids';
 import type { IClient, IQuest } from '@shared/types/quests';
+import { generateUniqueId } from '@shared/utils';
 import Phaser from 'phaser';
 
 // =============================================================================
@@ -546,6 +550,7 @@ export class MainScene extends Phaser.Scene {
   /**
    * 指定フェーズのUIを表示
    * TASK-0052: 実際のフェーズUIの表示/非表示を切り替え
+   * Issue #119: GATHERINGフェーズ遷移時にセッションを初期化
    *
    * @param phase - 表示するフェーズ
    * @throws {Error} 無効なフェーズが指定された場合
@@ -577,7 +582,60 @@ export class MainScene extends Phaser.Scene {
       targetUI.setVisible(true);
     }
 
+    // Issue #119: GATHERINGフェーズ遷移時にセッションを初期化
+    if (phase === GamePhase.GATHERING) {
+      this.initializeGatheringSession();
+    }
+
     this._currentVisiblePhase = phase;
+  }
+
+  /**
+   * Issue #119: 採取セッションを初期化
+   * GatheringServiceでセッションを開始し、GatheringPhaseUIに渡す
+   */
+  private initializeGatheringSession(): void {
+    const container = Container.getInstance();
+
+    // GatheringServiceを取得
+    if (!container.has(ServiceKeys.GatheringService)) {
+      console.warn('GatheringService is not available');
+      return;
+    }
+    const gatheringService = container.resolve<IGatheringService>(ServiceKeys.GatheringService);
+
+    // MasterDataRepositoryから採取地カードを取得
+    if (!container.has(ServiceKeys.MasterDataRepository)) {
+      console.warn('MasterDataRepository is not available');
+      return;
+    }
+    const masterDataRepo = container.resolve<IMasterDataRepository>(
+      ServiceKeys.MasterDataRepository,
+    );
+
+    // デフォルトの採取地カードを取得（最初の採取地カード）
+    const gatheringCardMasters = masterDataRepo.getCardsByType('GATHERING');
+    if (gatheringCardMasters.length === 0) {
+      console.warn('No gathering cards available');
+      return;
+    }
+
+    // Cardエンティティを作成
+    const cardId = toCardId(generateUniqueId('card'));
+    const defaultCard = new Card(cardId, gatheringCardMasters[0]);
+
+    try {
+      // 採取セッションを開始
+      const session = gatheringService.startDraftGathering(defaultCard);
+
+      // GatheringPhaseUIにセッションを渡す
+      const gatheringUI = this.phaseUIs.get(GamePhase.GATHERING);
+      if (gatheringUI && 'updateSession' in gatheringUI) {
+        (gatheringUI as GatheringPhaseUI).updateSession(session);
+      }
+    } catch (error) {
+      console.error('Failed to initialize gathering session:', error);
+    }
   }
 
   /**
