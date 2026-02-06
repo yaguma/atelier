@@ -50,6 +50,8 @@ function createMockScene(): Phaser.Scene {
       rectangle: vi.fn().mockReturnValue({
         setOrigin: vi.fn().mockReturnThis(),
         setInteractive: vi.fn().mockReturnThis(),
+        setFillStyle: vi.fn().mockReturnThis(),
+        setStrokeStyle: vi.fn().mockReturnThis(),
         on: vi.fn().mockReturnThis(),
         off: vi.fn().mockReturnThis(),
         destroy: vi.fn(),
@@ -320,11 +322,11 @@ describe('QuestCardUI', () => {
     });
   });
 
-  describe('TC-003: インタラクティブ動作（ホバー）', () => {
-    // 【テスト目的】: カードにホバーすると、スケールが1.05倍に拡大されること
+  describe('TC-003: インタラクティブ動作（ボタンホバー）', () => {
+    // 【テスト目的】: Issue #118: ボタンにホバーすると色が変わること
     // 【信頼性】: 🟡
 
-    test('Tweenが作成される', () => {
+    test('ボタンホバー時にsetFillStyleが呼ばれる', () => {
       const config: QuestCardUIConfig = {
         quest: mockQuest,
         x: 100,
@@ -335,13 +337,14 @@ describe('QuestCardUI', () => {
       const questCard = new QuestCardUI(mockScene, config);
       questCard.create();
 
-      const background = (questCard as any).background;
-      background.emit('pointerover');
+      const acceptButton = (questCard as any).acceptButton;
+      acceptButton.emit('pointerover');
 
-      expect(mockScene.tweens.add).toHaveBeenCalled();
+      // setFillStyleが呼ばれることを確認
+      expect(acceptButton.setFillStyle).toHaveBeenCalled();
     });
 
-    test('スケールが1.05倍になるTweenが実行される', () => {
+    test('ボタンホバー解除時にsetFillStyleが呼ばれる', () => {
       const config: QuestCardUIConfig = {
         quest: mockQuest,
         x: 100,
@@ -352,17 +355,11 @@ describe('QuestCardUI', () => {
       const questCard = new QuestCardUI(mockScene, config);
       questCard.create();
 
-      const background = (questCard as any).background;
-      background.emit('pointerover');
+      const acceptButton = (questCard as any).acceptButton;
+      acceptButton.emit('pointerout');
 
-      expect(mockScene.tweens.add).toHaveBeenCalledWith(
-        expect.objectContaining({
-          targets: expect.any(Object),
-          scale: 1.05,
-          duration: 150,
-          ease: 'Quad.Out',
-        }),
-      );
+      // setFillStyleが呼ばれることを確認
+      expect(acceptButton.setFillStyle).toHaveBeenCalled();
     });
   });
 

@@ -11,7 +11,7 @@
 import type Phaser from 'phaser';
 import type { Quest } from '../../../domain/entities/Quest';
 import { Colors } from '../theme';
-import { AnimationPresets } from '../utils/AnimationPresets';
+// Issue #118: AnimationPresetsはホバー拡大エフェクト削除により不要になった
 import { BaseComponent } from './BaseComponent';
 
 /**
@@ -79,15 +79,7 @@ export class QuestCardUI extends BaseComponent {
   private static readonly BUTTON_HEIGHT = 30; // 【ボタン高】: クリックしやすい高さ
   private static readonly BUTTON_Y_OFFSET = 15; // 【ボタンY座標オフセット】: カード下部からの位置
 
-  /**
-   * 【アニメーション定数】: ホバー時の拡大エフェクトのパラメータ
-   * TASK-0054: AnimationPresets.scale.hover を参照するため、個別定数は不要
-   * 後方互換性のために残しておくが、新しい実装ではAnimationPresetsを使用
-   * 🔵 信頼性レベル: 既存実装のマジックナンバーを定数化
-   */
-  private static readonly HOVER_SCALE = AnimationPresets.scale.hover.scale; // 【ホバー時のスケール】: 1.05倍で控えめな強調
-  private static readonly HOVER_DURATION = AnimationPresets.scale.hover.duration; // 【アニメーション時間】: 150msで瞬時にフィードバック
-  private static readonly HOVER_EASE = AnimationPresets.scale.hover.ease; // 【イージング関数】: 自然な加速・減速曲線
+  // Issue #118: ホバー拡大エフェクト定数を削除（ボタンホバーエフェクトに変更したため）
 
   constructor(scene: Phaser.Scene, config: QuestCardUIConfig) {
     // バリデーション: configが必須
@@ -366,51 +358,39 @@ export class QuestCardUI extends BaseComponent {
   }
 
   /**
-   * 【インタラクティブ機能の設定】: ホバー時の拡大エフェクトを追加
-   * 【ユーザビリティ】: カードが操作可能であることを視覚的にフィードバック
-   * 【設計方針】: interactiveフラグによる条件付き有効化
+   * 【インタラクティブ機能の設定】: カードのインタラクション設定
+   * Issue #118: ホバー拡大とカーソル変更の混在を解消
+   *
+   * 【設計方針】:
+   * - カード背景: ホバー拡大エフェクトを削除（ボタンとの混在による違和感を解消）
+   * - 受注ボタン: カーソル変更 + ホバー時の色変化で明確なフィードバック
+   *
    * 🔵 信頼性レベル: 実装ファイルに基づく
    */
   private setupInteraction(): void {
     // 【早期リターン】: インタラクティブ機能が無効な場合は何もしない
     if (!this.config.interactive) return;
 
-    // Issue #117: useHandCursorを設定
-    this.background.setInteractive({ useHandCursor: true });
+    // Issue #118: カード背景のホバー拡大エフェクトを削除
+    // 以前はbackground.setInteractive()でホバー拡大を設定していたが、
+    // ボタンのカーソル変更と混在して違和感があったため削除
+    // （Issue #117のuseHandCursor設定もこの方針により不要）
 
-    // 【型安全性】: モックの場合、on と emit を実際のイベントエミッターとして動作させる
-    this.setupEventEmitter(this.background);
+    // 【受注ボタンのホバーエフェクト】: ボタンの色を変化させてフィードバック
+    this.setupEventEmitter(this.acceptButton);
 
-    // 【ホバー時の拡大エフェクト】: カードを拡大してフィードバック
-    // 【アニメーション設計】:
-    //   - スケール: 定数HOVER_SCALEで管理
-    //   - 時間: 定数HOVER_DURATIONで管理
-    //   - イージング: 定数HOVER_EASEで管理
-    // 【UX効果】: ユーザーの操作に即座に反応し、選択意図を明確化
-    // 🔵 信頼性レベル: 実装ファイルに基づく
-    this.background.on('pointerover', () => {
-      this.scene.tweens.add({
-        targets: this.container,
-        scale: QuestCardUI.HOVER_SCALE,
-        duration: QuestCardUI.HOVER_DURATION,
-        ease: QuestCardUI.HOVER_EASE,
-      });
+    this.acceptButton.on('pointerover', () => {
+      // 【ホバー時】: ボタンを少し明るくする
+      if (this.acceptButton.setFillStyle) {
+        this.acceptButton.setFillStyle(Colors.ui.button.hover);
+      }
     });
 
-    // 【ホバー解除時の縮小エフェクト】: カードを元のサイズに戻す
-    // 【アニメーション設計】:
-    //   - スケール: 1.0倍（元のサイズに復帰）
-    //   - 時間: 定数HOVER_DURATIONで管理
-    //   - イージング: 定数HOVER_EASEで管理
-    // 【UX効果】: 他のカードとの視覚的整合性を保つ
-    // 🔵 信頼性レベル: 実装ファイルに基づく
-    this.background.on('pointerout', () => {
-      this.scene.tweens.add({
-        targets: this.container,
-        scale: 1.0,
-        duration: QuestCardUI.HOVER_DURATION,
-        ease: QuestCardUI.HOVER_EASE,
-      });
+    this.acceptButton.on('pointerout', () => {
+      // 【ホバー解除時】: ボタンを元の色に戻す
+      if (this.acceptButton.setFillStyle) {
+        this.acceptButton.setFillStyle(Colors.ui.button.accept);
+      }
     });
   }
 
