@@ -14,34 +14,34 @@
  * 各シーンで必要なプロパティを含む。
  */
 export interface GameState {
-	/** 現在のシーン名（TitleScene, MainScene, GameClearScene, GameOverScene等） */
-	currentScene?: string;
-	/** 現在のフェーズ（QUEST_ACCEPT, GATHERING, ALCHEMY, DELIVERY等） */
-	currentPhase?: string;
-	/** 残り日数（1-30） */
-	remainingDays?: number;
-	/** 所持金 */
-	gold?: number;
-	/** 現在のギルドランク（G-S） */
-	currentRank?: string;
-	/** 行動ポイント */
-	actionPoints?: number;
-	/** セーブデータの存在有無 */
-	hasSaveData?: boolean;
-	/** ゲームクリア状態 */
-	isGameClear?: boolean;
-	/** ゲームオーバー状態 */
-	isGameOver?: boolean;
-	/** 受注済み依頼数 */
-	acceptedQuestCount?: number;
-	/** インベントリの素材数 */
-	materialCount?: number;
-	/** インベントリの完成品数 */
-	artifactCount?: number;
-	/** 累計貢献度 */
-	contribution?: number;
-	/** 現在の日数（経過日数） */
-	currentDay?: number;
+  /** 現在のシーン名（TitleScene, MainScene, GameClearScene, GameOverScene等） */
+  currentScene?: string;
+  /** 現在のフェーズ（QUEST_ACCEPT, GATHERING, ALCHEMY, DELIVERY等） */
+  currentPhase?: string;
+  /** 残り日数（1-30） */
+  remainingDays?: number;
+  /** 所持金 */
+  gold?: number;
+  /** 現在のギルドランク（G-S） */
+  currentRank?: string;
+  /** 行動ポイント */
+  actionPoints?: number;
+  /** セーブデータの存在有無 */
+  hasSaveData?: boolean;
+  /** ゲームクリア状態 */
+  isGameClear?: boolean;
+  /** ゲームオーバー状態 */
+  isGameOver?: boolean;
+  /** 受注済み依頼数 */
+  acceptedQuestCount?: number;
+  /** インベントリの素材数 */
+  materialCount?: number;
+  /** インベントリの完成品数 */
+  artifactCount?: number;
+  /** 累計貢献度 */
+  contribution?: number;
+  /** 現在の日数（経過日数） */
+  currentDay?: number;
 }
 
 /**
@@ -52,32 +52,32 @@ export interface GameState {
  * window.debugとして公開される。
  */
 export interface DebugTools {
-	/** ギルドランクを設定 */
-	setRank?: (rank: string) => void;
-	/** ゴールドを追加（負の値で減少） */
-	addGold?: (amount: number) => void;
-	/** 指定日にスキップ */
-	skipToDay?: (day: number) => void;
-	/** 全カードを解放 */
-	unlockAllCards?: () => void;
-	/** 現在の状態をコンソールに出力 */
-	logState?: () => void;
-	/** 行動ポイントを設定 */
-	setActionPoints?: (ap: number) => void;
-	/** セーブデータを削除 */
-	clearSaveData?: () => void;
-	/** フェーズをスキップ（次のフェーズへ進む） */
-	skipPhase?: () => void;
-	/** 「次へ」ボタンクリック（フェーズ遷移） */
-	clickNextButton?: () => void;
-	/** 日を終了 */
-	endDay?: () => void;
-	/** タイトルに戻る */
-	returnToTitle?: () => void;
-	/** 新規ゲームを開始 */
-	clickNewGame?: () => void;
-	/** コンティニュー */
-	clickContinue?: () => void;
+  /** ギルドランクを設定 */
+  setRank?: (rank: string) => void;
+  /** ゴールドを追加（負の値で減少） */
+  addGold?: (amount: number) => void;
+  /** 指定日にスキップ */
+  skipToDay?: (day: number) => void;
+  /** 全カードを解放 */
+  unlockAllCards?: () => void;
+  /** 現在の状態をコンソールに出力 */
+  logState?: () => void;
+  /** 行動ポイントを設定 */
+  setActionPoints?: (ap: number) => void;
+  /** セーブデータを削除 */
+  clearSaveData?: () => void;
+  /** フェーズをスキップ（次のフェーズへ進む） */
+  skipPhase?: () => void;
+  /** 「次へ」ボタンクリック（フェーズ遷移） */
+  clickNextButton?: () => void;
+  /** 日を終了 */
+  endDay?: () => void;
+  /** タイトルに戻る */
+  returnToTitle?: () => void;
+  /** 新規ゲームを開始 */
+  clickNewGame?: () => void;
+  /** コンティニュー */
+  clickContinue?: () => void;
 }
 
 /**
@@ -87,8 +87,8 @@ export interface DebugTools {
  * ゲームアプリケーションによって拡張されたwindowオブジェクトの型。
  */
 export interface GameWindow {
-	/** ゲーム状態を取得する関数 */
-	gameState?: () => GameState;
-	/** デバッグツール（開発環境のみ） */
-	debug?: DebugTools;
+  /** ゲーム状態を取得する関数 */
+  gameState?: () => GameState;
+  /** デバッグツール（開発環境のみ） */
+  debug?: DebugTools;
 }
