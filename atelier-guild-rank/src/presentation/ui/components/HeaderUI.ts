@@ -9,6 +9,7 @@
  * @信頼性レベル 🔵 requirements.md セクション2.2に基づく
  */
 
+import { GuildRank, type GuildRank as GuildRankType } from '@shared/types/common';
 import type Phaser from 'phaser';
 import { BaseComponent } from './BaseComponent';
 
@@ -60,13 +61,22 @@ const HEADER_LAYOUT = {
  * HeaderUI更新データの型定義
  */
 export interface IHeaderUIData {
-  currentRank: string;
+  currentRank: GuildRankType;
   promotionGauge: number;
   remainingDays: number;
   gold: number;
   actionPoints: number;
   maxActionPoints: number;
 }
+
+/**
+ * 有効なGuildRankかどうかを検証
+ * @param value - 検証する値
+ * @returns 有効なGuildRankの場合true
+ */
+const isValidGuildRank = (value: unknown): value is GuildRankType => {
+  return Object.values(GuildRank).includes(value as GuildRankType);
+};
 
 // =============================================================================
 // HeaderUIクラス
@@ -309,8 +319,9 @@ export class HeaderUI extends BaseComponent {
     // 以前の点滅状態を保持
     const wasBlinking = this._remainingDaysBlinking;
 
-    // ランク表示
-    this._rankText = `ランク: ${data.currentRank}`;
+    // ランク表示（防御的チェック: 無効な値の場合はデフォルト値Gを使用）
+    const validRank = isValidGuildRank(data.currentRank) ? data.currentRank : GuildRank.G;
+    this._rankText = `ランク: ${validRank}`;
 
     // 昇格ゲージ
     this._promotionGaugeValue = data.promotionGauge;

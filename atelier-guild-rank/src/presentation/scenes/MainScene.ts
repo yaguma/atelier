@@ -23,7 +23,7 @@ import { AlchemyPhaseUI } from '@presentation/ui/phases/AlchemyPhaseUI';
 import { DeliveryPhaseUI } from '@presentation/ui/phases/DeliveryPhaseUI';
 import { GatheringPhaseUI } from '@presentation/ui/phases/GatheringPhaseUI';
 import { QuestAcceptPhaseUI } from '@presentation/ui/phases/QuestAcceptPhaseUI';
-import { GamePhase, VALID_GAME_PHASES } from '@shared/types/common';
+import { GamePhase, type GuildRank, VALID_GAME_PHASES } from '@shared/types/common';
 import type { IPhaseChangedEvent } from '@shared/types/events';
 import { GameEventType } from '@shared/types/events';
 import { toCardId } from '@shared/types/ids';
@@ -66,7 +66,7 @@ const PHASE_BUTTON_LABELS: Record<GamePhase, string> = {
  */
 interface IStateManager {
   getState(): {
-    currentRank: string;
+    currentRank: GuildRank;
     promotionGauge: number;
     remainingDays: number;
     currentDay: number;
