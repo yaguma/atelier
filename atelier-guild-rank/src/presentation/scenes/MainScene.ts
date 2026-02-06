@@ -321,6 +321,7 @@ export class MainScene extends Phaser.Scene {
 
     // QuestAcceptPhaseUI
     const questAcceptUI = new QuestAcceptPhaseUI(this);
+    this._contentContainer.add(questAcceptUI.getContainer());
     this.phaseUIs.set(GamePhase.QUEST_ACCEPT, questAcceptUI);
 
     // GatheringPhaseUI
@@ -332,6 +333,7 @@ export class MainScene extends Phaser.Scene {
     if (gatheringService) {
       const gatheringUI = new GatheringPhaseUI(this, gatheringService);
       gatheringUI.create();
+      this._contentContainer.add(gatheringUI.getContainer());
       this.phaseUIs.set(GamePhase.GATHERING, gatheringUI);
     } else {
       // GatheringServiceが利用できない場合はダミーUIを作成
@@ -348,6 +350,7 @@ export class MainScene extends Phaser.Scene {
     if (alchemyService) {
       const alchemyUI = new AlchemyPhaseUI(this, alchemyService);
       alchemyUI.create();
+      this._contentContainer.add(alchemyUI.getContainer());
       this.phaseUIs.set(GamePhase.ALCHEMY, alchemyUI);
     } else {
       // AlchemyServiceが利用できない場合はダミーUIを作成
@@ -357,6 +360,7 @@ export class MainScene extends Phaser.Scene {
 
     // DeliveryPhaseUI
     const deliveryUI = new DeliveryPhaseUI(this);
+    this._contentContainer.add(deliveryUI.getContainer());
     this.phaseUIs.set(GamePhase.DELIVERY, deliveryUI);
 
     // 全てのフェーズUIを非表示に初期化
