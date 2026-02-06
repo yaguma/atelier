@@ -279,6 +279,7 @@ export class QuestAcceptPhaseUI extends BaseComponent {
       const quest = quests[i];
       const position = this.calculateCardPosition(i);
       const questCard = this.createQuestCard(quest, position);
+      this.container.add(questCard.getContainer());
       this.setupCardClickHandler(questCard, quest);
       this.questCards.push(questCard);
     }
