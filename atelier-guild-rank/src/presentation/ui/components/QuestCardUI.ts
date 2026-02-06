@@ -375,7 +375,8 @@ export class QuestCardUI extends BaseComponent {
     // 【早期リターン】: インタラクティブ機能が無効な場合は何もしない
     if (!this.config.interactive) return;
 
-    this.background.setInteractive();
+    // Issue #117: useHandCursorを設定
+    this.background.setInteractive({ useHandCursor: true });
 
     // 【型安全性】: モックの場合、on と emit を実際のイベントエミッターとして動作させる
     this.setupEventEmitter(this.background);
