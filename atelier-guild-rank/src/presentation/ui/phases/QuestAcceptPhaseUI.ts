@@ -459,6 +459,39 @@ export class QuestAcceptPhaseUI extends BaseComponent {
     }
   }
 
+  /**
+   * 【クリーンアップ】: フェーズ遷移時に呼び出されるクリーンアップ処理
+   *
+   * Issue #120: フェーズ遷移時にモーダルを閉じる
+   *
+   * 【設計意図】:
+   * - setVisible(false)時に呼び出され、開いているモーダルを閉じる
+   * - UIを非表示にする際に不要な表示要素を確実にクリーンアップ
+   */
+  public cleanup(): void {
+    this.closeQuestDetailModal();
+  }
+
+  /**
+   * 【可視性設定オーバーライド】: 表示/非表示切り替え時にクリーンアップを実行
+   *
+   * Issue #120: 非表示時にモーダルを閉じる
+   *
+   * 【設計意図】:
+   * - 親クラスのsetVisibleを呼び出しつつ、非表示時はcleanup()を実行
+   * - フェーズ遷移で依頼カードやモーダルが残らないようにする
+   *
+   * @param visible - 表示するかどうか
+   * @returns this（チェイン可能）
+   */
+  public override setVisible(visible: boolean): this {
+    if (!visible) {
+      this.cleanup();
+    }
+    super.setVisible(visible);
+    return this;
+  }
+
   // =============================================================================
   // TASK-0043: サイドバー機能（将来実装用に保持）
   // =============================================================================

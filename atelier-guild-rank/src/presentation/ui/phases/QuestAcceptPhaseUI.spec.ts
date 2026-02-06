@@ -39,6 +39,7 @@ function createMockScene(): Phaser.Scene {
         add: vi.fn(),
         setDepth: vi.fn(),
         destroy: vi.fn(),
+        setVisible: vi.fn(),
         x: 0,
         y: 0,
         active: true,
@@ -838,6 +839,93 @@ describe('QuestAcceptPhaseUI', () => {
 
       // 2件目のカードが1件目の下に配置されることを確認
       expect(targetY2).toBeGreaterThan(targetY1);
+    });
+  });
+
+  // =============================================================================
+  // Issue #120: フェーズ遷移時のクリーンアップテストケース
+  // =============================================================================
+
+  describe('TC-801: setVisible(false)時のクリーンアップ', () => {
+    // 【テスト目的】: setVisible(false)が呼ばれるとモーダルが閉じられることを確認
+    // 【対応Issue】: Issue #120 - 採取フェーズに移動しても依頼カードの表示が消えない
+    // 🔵 信頼性レベル: Issue #120に明記
+
+    test('setVisible(false)でモーダルが閉じられる', () => {
+      const mockQuest = createMockQuestEntity({ id: 'Q001' });
+
+      const phaseUI = new QuestAcceptPhaseUI(mockScene);
+      phaseUI.create();
+      phaseUI.updateQuests([mockQuest]);
+
+      // モーダルを開く
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateメソッドにアクセスするために必要
+      (phaseUI as any).openQuestDetailModal(mockQuest);
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
+      expect((phaseUI as any).currentModal).not.toBeNull();
+
+      // setVisible(false)を呼ぶ
+      phaseUI.setVisible(false);
+
+      // モーダルが閉じられていることを確認
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
+      expect((phaseUI as any).currentModal).toBeNull();
+    });
+
+    test('setVisible(true)ではcleanup()が呼ばれない', () => {
+      const mockQuest = createMockQuestEntity({ id: 'Q001' });
+
+      const phaseUI = new QuestAcceptPhaseUI(mockScene);
+      phaseUI.create();
+      phaseUI.updateQuests([mockQuest]);
+
+      // モーダルを開く
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateメソッドにアクセスするために必要
+      (phaseUI as any).openQuestDetailModal(mockQuest);
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
+      expect((phaseUI as any).currentModal).not.toBeNull();
+
+      // setVisible(true)を呼ぶ
+      phaseUI.setVisible(true);
+
+      // モーダルが開いたままであることを確認
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
+      expect((phaseUI as any).currentModal).not.toBeNull();
+    });
+  });
+
+  describe('TC-802: cleanup()メソッドの動作', () => {
+    // 【テスト目的】: cleanup()がモーダルを閉じることを確認
+    // 【対応Issue】: Issue #120
+    // 🔵 信頼性レベル: Issue #120に明記
+
+    test('cleanup()がモーダルを閉じる', () => {
+      const mockQuest = createMockQuestEntity({ id: 'Q001' });
+
+      const phaseUI = new QuestAcceptPhaseUI(mockScene);
+      phaseUI.create();
+      phaseUI.updateQuests([mockQuest]);
+
+      // モーダルを開く
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateメソッドにアクセスするために必要
+      (phaseUI as any).openQuestDetailModal(mockQuest);
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
+      expect((phaseUI as any).currentModal).not.toBeNull();
+
+      // cleanup()を呼ぶ
+      phaseUI.cleanup();
+
+      // モーダルが閉じられていることを確認
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
+      expect((phaseUI as any).currentModal).toBeNull();
+    });
+
+    test('モーダルが開いていない場合もcleanup()はエラーにならない', () => {
+      const phaseUI = new QuestAcceptPhaseUI(mockScene);
+      phaseUI.create();
+
+      // モーダルを開かずにcleanup()を呼ぶ
+      expect(() => phaseUI.cleanup()).not.toThrow();
     });
   });
 });
