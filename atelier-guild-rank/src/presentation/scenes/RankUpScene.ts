@@ -14,6 +14,7 @@ import type { IRankService, PromotionResult } from '@domain/interfaces/rank-serv
 import { Container, ServiceKeys } from '@infrastructure/di/container';
 import type { RexLabel, RexUIPlugin } from '@presentation/types/rexui';
 import { THEME } from '@presentation/ui/theme';
+import { isKeyForAction } from '@shared/constants/keybindings';
 import { GameEventType, type GuildRank } from '@shared/types';
 import Phaser from 'phaser';
 
@@ -169,6 +170,12 @@ export class RankUpScene extends Phaser.Scene {
   /** rexUIプラグイン参照 - TASK-0059: rexUI型定義を適用 */
   declare rexUI: RexUIPlugin;
 
+  /** キーボードイベントハンドラ参照（Issue #135） */
+  private keyboardHandler: ((event: { key: string }) => void) | null = null;
+
+  /** 試験結果表示中フラグ */
+  private showingResult = false;
+
   // ===========================================================================
   // コンストラクタ
   // ===========================================================================
@@ -200,8 +207,18 @@ export class RankUpScene extends Phaser.Scene {
     this.createConditionsCard();
     this.createFooter();
 
+    // キーボードリスナーを設定
+    this.setupKeyboardListener();
+
     // フェードイン
     this.fadeIn();
+  }
+
+  /**
+   * shutdown() - シーン終了時のクリーンアップ
+   */
+  shutdown(): void {
+    this.removeKeyboardListener();
   }
 
   // ===========================================================================
@@ -583,6 +600,9 @@ export class RankUpScene extends Phaser.Scene {
     // 結果テキストを表示
     this.resultText.setVisible(true);
 
+    // 結果表示中フラグを設定
+    this.showingResult = true;
+
     if (success && result) {
       this.resultText.setText(TEXT.RESULT_PASS);
       this.resultText.setColor(STYLES.SUCCESS_COLOR);
@@ -671,5 +691,67 @@ export class RankUpScene extends Phaser.Scene {
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.scene.start(targetScene);
     });
+  }
+
+  // ===========================================================================
+  // Issue #135: キーボード操作
+  // ===========================================================================
+
+  /**
+   * キーボードリスナーを設定
+   */
+  private setupKeyboardListener(): void {
+    this.keyboardHandler = (event: { key: string }) => this.handleKeyboardInput(event);
+    this.input?.keyboard?.on('keydown', this.keyboardHandler);
+  }
+
+  /**
+   * キーボードリスナーを解除
+   */
+  private removeKeyboardListener(): void {
+    if (this.keyboardHandler) {
+      this.input?.keyboard?.off('keydown', this.keyboardHandler);
+      this.keyboardHandler = null;
+    }
+  }
+
+  /**
+   * キーボード入力を処理
+   *
+   * @param event - キーボードイベント
+   */
+  private handleKeyboardInput(event: { key: string }): void {
+    const key = event.key;
+
+    // 結果表示中
+    if (this.showingResult) {
+      // Enter/Spaceで次へまたは戻る
+      if (isKeyForAction(key, 'CONFIRM')) {
+        if (this.nextButton) {
+          this.onNextButtonClick();
+        } else {
+          this.onBackButtonClick();
+        }
+      }
+      // Escapeで戻る
+      else if (isKeyForAction(key, 'CANCEL')) {
+        this.onBackButtonClick();
+      }
+      return;
+    }
+
+    // 試験開始前
+    // 1キーで試験開始
+    if (key === '1' && this.rankService.canPromote()) {
+      this.onStartTestClick();
+    }
+    // Enterで試験開始
+    else if (isKeyForAction(key, 'CONFIRM') && this.rankService.canPromote()) {
+      this.onStartTestClick();
+    }
+    // Escapeで戻る
+    else if (isKeyForAction(key, 'CANCEL')) {
+      this.onBackButtonClick();
+    }
   }
 }

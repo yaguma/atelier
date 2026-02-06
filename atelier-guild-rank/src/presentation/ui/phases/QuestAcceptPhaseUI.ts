@@ -17,6 +17,7 @@
 
 import type Phaser from 'phaser';
 import type { Quest } from '../../../domain/entities/Quest';
+import { getSelectionIndexFromKey, isKeyForAction } from '../../../shared/constants/keybindings';
 import { GameEventType } from '../../../shared/types/events';
 import { BaseComponent } from '../components/BaseComponent';
 import { QuestCardUI } from '../components/QuestCardUI';
@@ -68,6 +69,15 @@ export class QuestAcceptPhaseUI extends BaseComponent {
 
   /** 現在表示中のモーダル（排他制御用） */
   private currentModal: QuestDetailModal | null = null;
+
+  /** キーボードイベントハンドラ参照（Issue #135） */
+  private keyboardHandler: ((event: { key: string }) => void) | null = null;
+
+  /** 現在の依頼リスト（キーボード選択用） */
+  private currentQuests: Quest[] = [];
+
+  /** 現在のフォーカスインデックス（キーボードナビゲーション用） */
+  private focusedCardIndex = -1;
 
   // =============================================================================
   // レイアウト定数
@@ -140,6 +150,7 @@ export class QuestAcceptPhaseUI extends BaseComponent {
     this.createTitle();
     this.createQuestList();
     this.createAcceptedList();
+    this.setupKeyboardListener();
   }
 
   /**
@@ -248,11 +259,17 @@ export class QuestAcceptPhaseUI extends BaseComponent {
 
     // 【入力検証】: null/undefined/非配列をガード
     if (!quests || !Array.isArray(quests)) {
+      this.currentQuests = [];
       return;
     }
 
     // 【新しいカードを作成】: 3列グリッド配置で依頼カードを配置
     this.createQuestCards(quests);
+
+    // 【キーボード選択用】: 依頼リストを保持
+    this.currentQuests = quests;
+    this.focusedCardIndex = quests.length > 0 ? 0 : -1;
+    this.updateCardFocus();
   }
 
   /**
@@ -363,9 +380,12 @@ export class QuestAcceptPhaseUI extends BaseComponent {
    *
    * 【設計意図】:
    * - メモリリークを防止するため、全ての要素を適切に破棄
-   * - 破棄順序: カード → 受注済みリスト → タイトル → モーダル → コンテナ
+   * - 破棄順序: キーボードリスナー → カード → 受注済みリスト → タイトル → モーダル → コンテナ
    */
   public destroy(): void {
+    // 【キーボードリスナー破棄】
+    this.removeKeyboardListener();
+
     // 【カード破棄】: すべてのQuestCardUIを破棄
     this.destroyExistingCards();
 
@@ -470,6 +490,8 @@ export class QuestAcceptPhaseUI extends BaseComponent {
    */
   public cleanup(): void {
     this.closeQuestDetailModal();
+    this.focusedCardIndex = -1;
+    this.updateCardFocus();
   }
 
   /**
@@ -553,5 +575,126 @@ export class QuestAcceptPhaseUI extends BaseComponent {
   // @ts-expect-error テストから呼び出される将来機能のため、未使用警告を抑制
   private calculateAcceptedCardY(index: number): number {
     return QuestAcceptPhaseUI.SIDEBAR_START_Y + index * QuestAcceptPhaseUI.SIDEBAR_CARD_SPACING;
+  }
+
+  // =============================================================================
+  // Issue #135: キーボード操作
+  // =============================================================================
+
+  /**
+   * 【キーボードリスナー設定】: キーボード入力を監視
+   */
+  private setupKeyboardListener(): void {
+    this.keyboardHandler = (event: { key: string }) => this.handleKeyboardInput(event);
+    this.scene?.input?.keyboard?.on('keydown', this.keyboardHandler);
+  }
+
+  /**
+   * 【キーボードリスナー解除】
+   */
+  private removeKeyboardListener(): void {
+    if (this.keyboardHandler) {
+      this.scene?.input?.keyboard?.off('keydown', this.keyboardHandler);
+      this.keyboardHandler = null;
+    }
+  }
+
+  /**
+   * 【キーボード入力処理】
+   *
+   * @param event - キーボードイベント
+   */
+  private handleKeyboardInput(event: { key: string }): void {
+    // モーダルが開いている場合はモーダル操作のみ
+    if (this.currentModal) {
+      if (isKeyForAction(event.key, 'CANCEL')) {
+        this.closeQuestDetailModal();
+      } else if (isKeyForAction(event.key, 'CONFIRM')) {
+        // モーダル内で受注ボタンがフォーカスされていれば受注
+        const quest = this.currentQuests[this.focusedCardIndex];
+        if (quest) {
+          this.onAcceptQuest(quest);
+          this.closeQuestDetailModal();
+        }
+      }
+      return;
+    }
+
+    // 数字キーで依頼カードを直接選択（1-5）
+    const selectionIndex = getSelectionIndexFromKey(event.key);
+    if (selectionIndex !== null && selectionIndex <= this.currentQuests.length) {
+      this.focusedCardIndex = selectionIndex - 1;
+      this.updateCardFocus();
+      const quest = this.currentQuests[this.focusedCardIndex];
+      if (quest) {
+        this.openQuestDetailModal(quest);
+      }
+      return;
+    }
+
+    // 矢印キーでナビゲーション
+    if (isKeyForAction(event.key, 'LEFT')) {
+      this.moveFocus(-1);
+    } else if (isKeyForAction(event.key, 'RIGHT')) {
+      this.moveFocus(1);
+    } else if (isKeyForAction(event.key, 'UP')) {
+      this.moveFocus(-QuestAcceptPhaseUI.GRID_COLUMNS);
+    } else if (isKeyForAction(event.key, 'DOWN')) {
+      this.moveFocus(QuestAcceptPhaseUI.GRID_COLUMNS);
+    }
+    // Enter/Spaceで選択中のカードのモーダルを開く
+    else if (isKeyForAction(event.key, 'CONFIRM')) {
+      if (this.focusedCardIndex >= 0 && this.focusedCardIndex < this.currentQuests.length) {
+        const quest = this.currentQuests[this.focusedCardIndex];
+        if (quest) {
+          this.openQuestDetailModal(quest);
+        }
+      }
+    }
+  }
+
+  /**
+   * 【フォーカス移動】
+   *
+   * @param delta - 移動量
+   */
+  private moveFocus(delta: number): void {
+    if (this.currentQuests.length === 0) return;
+
+    let newIndex = this.focusedCardIndex + delta;
+
+    // 範囲内に収める
+    if (newIndex < 0) {
+      newIndex = 0;
+    } else if (newIndex >= this.currentQuests.length) {
+      newIndex = this.currentQuests.length - 1;
+    }
+
+    if (newIndex !== this.focusedCardIndex) {
+      this.focusedCardIndex = newIndex;
+      this.updateCardFocus();
+    }
+  }
+
+  /**
+   * 【カードフォーカス更新】: フォーカス中のカードを視覚的にハイライト
+   */
+  private updateCardFocus(): void {
+    const FOCUSED_SCALE = 1.05;
+    const DEFAULT_SCALE = 1.0;
+
+    this.questCards.forEach((card, index) => {
+      const container = card.getContainer();
+      if (!container) return;
+
+      // setScaleメソッドが存在する場合のみスケール変更
+      if (typeof container.setScale === 'function') {
+        if (index === this.focusedCardIndex) {
+          container.setScale(FOCUSED_SCALE);
+        } else {
+          container.setScale(DEFAULT_SCALE);
+        }
+      }
+    });
   }
 }
