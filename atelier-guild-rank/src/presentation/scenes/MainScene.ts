@@ -1,6 +1,7 @@
 /**
  * MainScene.ts - メインゲームシーン
  * TASK-0046: MainScene共通レイアウト実装
+ * Issue #111: MainSceneで本日の依頼が表示されない問題を修正
  *
  * @description
  * ゲームのメイン画面を表示するシーン。
@@ -89,7 +90,8 @@ interface IGameFlowManager {
   startPhase(phase: GamePhase): void;
   endPhase(): void;
   startNewGame(): void;
-  continueGame(): void;
+  // biome-ignore lint/suspicious/noExplicitAny: セーブデータは任意の型を許容（ISaveData）
+  continueGame(saveData: any): void;
   startDay(): void;
   endDay(): void;
   skipPhase(): void;
@@ -110,6 +112,18 @@ interface IEventBus {
   emit(event: string, data: unknown): void;
   on(event: string, handler: (...args: unknown[]) => void): void;
   off(event: string, handler?: (...args: unknown[]) => void): void;
+}
+
+/**
+ * MainSceneのシーンデータ型
+ * Issue #111: TitleSceneからのシーン遷移時にゲーム開始フラグを受け取る
+ */
+interface MainSceneData {
+  /** 新規ゲーム開始フラグ（TitleSceneから渡される） */
+  isNewGame?: boolean;
+  /** セーブデータ（コンティニュー時に渡される） */
+  // biome-ignore lint/suspicious/noExplicitAny: セーブデータは任意の型を許容
+  saveData?: any;
 }
 
 // =============================================================================
@@ -191,12 +205,14 @@ export class MainScene extends Phaser.Scene {
 
   /**
    * create() - メイン画面の生成
+   * Issue #111: シーンデータを受け取り、新規ゲーム開始時はstartNewGame()を呼ぶ
    *
+   * @param data - TitleSceneから渡されるシーンデータ
    * @throws {Error} StateManagerが未初期化の場合
    * @throws {Error} GameFlowManagerが未初期化の場合
    * @throws {Error} EventBusが未初期化の場合
    */
-  create(): void {
+  create(data?: MainSceneData): void {
     // DIコンテナからサービスを取得
     this.initializeServicesFromContainer();
 
@@ -210,10 +226,21 @@ export class MainScene extends Phaser.Scene {
     this.createPhaseUIs();
 
     // イベント購読の設定
+    // Issue #111: startNewGame()よりも先にイベント購読を設定することで、
+    // QUEST_GENERATEDイベントを確実に受信できるようにする
     this.setupEventSubscriptions();
 
     // Footerの「次へ」ボタンにコールバック設定
     this.setupFooterNextButtonCallback();
+
+    // Issue #111: 新規ゲーム開始の場合、イベント購読後にstartNewGame()を呼ぶ
+    // これにより、QUEST_GENERATEDイベントが正しくハンドリングされる
+    if (data?.isNewGame) {
+      this.gameFlowManager.startNewGame();
+    } else if (data?.saveData) {
+      // コンティニュー: セーブデータからゲーム状態を復元
+      this.gameFlowManager.continueGame(data.saveData);
+    }
 
     // 初期状態の反映
     this.updateHeader();
@@ -376,23 +403,28 @@ export class MainScene extends Phaser.Scene {
 
   /**
    * イベント購読を設定
+   * Issue #111: EventBusはIBusEvent形式（{ type, payload, timestamp }）でイベントを渡すため、
+   * payloadプロパティからデータを取得する必要がある
    */
   private setupEventSubscriptions(): void {
     // PHASE_CHANGEDイベント
-    this.eventBus.on(GameEventType.PHASE_CHANGED, (data: unknown) => {
-      const event = data as IPhaseChangedEvent;
+    // biome-ignore lint/suspicious/noExplicitAny: EventBusのIBusEvent型に対応
+    this.eventBus.on(GameEventType.PHASE_CHANGED, (busEvent: any) => {
+      const event = busEvent.payload as IPhaseChangedEvent;
       this.handlePhaseChanged(event);
     });
 
     // DAY_STARTEDイベント
-    this.eventBus.on(GameEventType.DAY_STARTED, (data: unknown) => {
-      const event = data as { remainingDays: number };
+    // biome-ignore lint/suspicious/noExplicitAny: EventBusのIBusEvent型に対応
+    this.eventBus.on(GameEventType.DAY_STARTED, (busEvent: any) => {
+      const event = busEvent.payload as { remainingDays: number };
       this.handleDayStarted(event);
     });
 
     // QUEST_GENERATEDイベント（依頼生成時）
-    this.eventBus.on(GameEventType.QUEST_GENERATED, (data: unknown) => {
-      const event = data as { quests: import('@shared/types/quests').IQuest[] };
+    // biome-ignore lint/suspicious/noExplicitAny: EventBusのIBusEvent型に対応
+    this.eventBus.on(GameEventType.QUEST_GENERATED, (busEvent: any) => {
+      const event = busEvent.payload as { quests: import('@shared/types/quests').IQuest[] };
       this.handleQuestGenerated(event);
     });
   }

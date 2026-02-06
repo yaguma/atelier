@@ -1,5 +1,4 @@
 import { BasePage } from './base.page';
-import type { GameWindow } from '../types/game-window.types';
 
 /**
  * メイン画面のPage Objectクラス
@@ -35,7 +34,7 @@ export class MainPage extends BasePage {
 	/**
 	 * 現在のフェーズを取得
 	 *
-	 * @returns フェーズ名（Morning, Expedition等）
+	 * @returns フェーズ名（QuestAccept, Gathering等）
 	 */
 	async getCurrentPhase(): Promise<string> {
 		return await this.getStateProperty('currentPhase', '');
@@ -197,70 +196,11 @@ export class MainPage extends BasePage {
 	private async waitForPhaseAvailable(): Promise<void> {
 		await this.page.waitForFunction(
 			() => {
-				const state = (window as unknown as GameWindow).gameState?.();
+				// biome-ignore lint/suspicious/noExplicitAny: window拡張型のため
+				const state = (window as any).gameState?.();
 				return state?.currentPhase !== undefined;
 			},
 			{ timeout: BasePage.DEFAULT_TIMEOUT },
-		);
-	}
-
-	/**
-	 * ゲーム状態から指定プロパティを取得
-	 *
-	 * @param property - 取得するプロパティ名
-	 * @param defaultValue - デフォルト値
-	 * @returns プロパティ値またはデフォルト値
-	 */
-	private async getStateProperty<T>(property: string, defaultValue: T): Promise<T> {
-		return await this.page.evaluate(
-			({ prop, def }) => {
-				const state = (window as unknown as GameWindow).gameState?.();
-				// biome-ignore lint/suspicious/noExplicitAny: 動的プロパティアクセスのため
-				return (state?.[prop as keyof typeof state] as T) ?? (def as T);
-			},
-			{ prop: property, def: defaultValue },
-		);
-	}
-
-	/**
-	 * デバッグアクションを実行（引数なし）
-	 *
-	 * @param actionName - 実行するアクション名
-	 * @throws デバッグツールが利用不可の場合
-	 */
-	private async executeDebugAction(actionName: string): Promise<void> {
-		await this.page.evaluate((name) => {
-			const debug = (window as unknown as GameWindow).debug;
-			// biome-ignore lint/suspicious/noExplicitAny: 動的メソッド呼び出しのため
-			const action = debug?.[name as keyof typeof debug] as (() => void) | undefined;
-			if (action) {
-				action();
-			} else {
-				throw new Error(`Debug tools not available or ${name} not implemented`);
-			}
-		}, actionName);
-	}
-
-	/**
-	 * デバッグアクションを実行（引数あり）
-	 *
-	 * @param actionName - 実行するアクション名
-	 * @param arg - アクションに渡す引数
-	 * @throws デバッグツールが利用不可の場合
-	 */
-	private async executeDebugActionWithArg<T>(actionName: string, arg: T): Promise<void> {
-		await this.page.evaluate(
-			({ name, value }) => {
-				const debug = (window as unknown as GameWindow).debug;
-				// biome-ignore lint/suspicious/noExplicitAny: 動的メソッド呼び出しのため
-				const action = debug?.[name as keyof typeof debug] as ((v: T) => void) | undefined;
-				if (action) {
-					action(value as T);
-				} else {
-					throw new Error(`Debug tools not available or ${name} not implemented`);
-				}
-			},
-			{ name: actionName, value: arg },
 		);
 	}
 }

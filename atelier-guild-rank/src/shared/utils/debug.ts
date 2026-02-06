@@ -252,9 +252,9 @@ export class DebugTools {
     // Phaserゲームインスタンス経由でシーン遷移
     const game = (globalThis as unknown as { game?: Phaser.Game }).game;
     if (game?.scene) {
-      // TitleSceneを停止してMainSceneを開始
+      // TitleSceneを停止してMainSceneを開始（isNewGame: trueで状態リセット）
       game.scene.stop('TitleScene');
-      game.scene.start('MainScene');
+      game.scene.start('MainScene', { isNewGame: true });
     }
   }
 
@@ -318,13 +318,12 @@ export class DebugTools {
    * ```
    */
   static skipPhase(): void {
-    // GameFlowManagerが初期化されている場合のみ実行
     try {
       const container = Container.getInstance();
       if (container.has(ServiceKeys.GameFlowManager)) {
-        const gameFlowManager = container.resolve<{
-          skipPhase: () => void;
-        }>(ServiceKeys.GameFlowManager);
+        const gameFlowManager = container.resolve<{ skipPhase: () => void }>(
+          ServiceKeys.GameFlowManager,
+        );
         gameFlowManager.skipPhase();
       }
     } catch (e) {
@@ -347,9 +346,9 @@ export class DebugTools {
     try {
       const container = Container.getInstance();
       if (container.has(ServiceKeys.GameFlowManager)) {
-        const gameFlowManager = container.resolve<{
-          endPhase: () => void;
-        }>(ServiceKeys.GameFlowManager);
+        const gameFlowManager = container.resolve<{ endPhase: () => void }>(
+          ServiceKeys.GameFlowManager,
+        );
         gameFlowManager.endPhase();
       }
     } catch (e) {

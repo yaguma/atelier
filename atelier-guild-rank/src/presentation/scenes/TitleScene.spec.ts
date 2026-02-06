@@ -471,7 +471,8 @@ describe('TitleScene', () => {
       triggerButtonClick(0); // 1番目のボタン（新規ゲーム）
 
       // 【結果検証】: MainSceneへ遷移することを確認
-      expect(mockSceneManager.start).toHaveBeenCalledWith('MainScene'); // 🔵
+      // Issue #111: isNewGame フラグを含むシーンデータを渡す
+      expect(mockSceneManager.start).toHaveBeenCalledWith('MainScene', { isNewGame: true }); // 🔵
 
       // 【確認内容】: 確認ダイアログが表示されないことを確認
       expect(mockRexUI.add.dialog).not.toHaveBeenCalled(); // 🔵
@@ -538,7 +539,8 @@ describe('TitleScene', () => {
       expect(mockSaveRepo.delete).toHaveBeenCalled(); // 🔵
 
       // 【確認内容】: MainSceneへ遷移することを確認
-      expect(mockSceneManager.start).toHaveBeenCalledWith('MainScene'); // 🔵
+      // Issue #111: isNewGame フラグを含むシーンデータを渡す
+      expect(mockSceneManager.start).toHaveBeenCalledWith('MainScene', { isNewGame: true }); // 🔵
     });
   });
 

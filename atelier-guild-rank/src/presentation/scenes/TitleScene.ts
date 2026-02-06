@@ -2,6 +2,7 @@
  * TitleScene.ts - タイトルシーン
  * TASK-0019: TitleScene実装
  * TASK-0058: TitleSceneリファクタリング（コンポーネント分割）
+ * Issue #111: MainSceneで本日の依頼が表示されない問題を修正
  *
  * ゲームのタイトル画面を表示するシーン。
  * タイトルロゴ、サブタイトル、バージョン情報、メニューボタンを表示し、
@@ -226,7 +227,17 @@ export class TitleScene extends Phaser.Scene {
   }
 
   private onNewGameClick(): void {
-    this.saveDataRepository?.exists() ? this.showConfirmDialog() : this.fadeOutToScene('MainScene');
+    this.saveDataRepository?.exists() ? this.showConfirmDialog() : this.startNewGameAndTransition();
+  }
+
+  /**
+   * 新規ゲームを開始してMainSceneに遷移
+   * Issue #111: MainSceneでstartNewGame()を呼ぶようにシーンデータを渡す
+   */
+  private startNewGameAndTransition(): void {
+    // MainSceneにシーンデータとして isNewGame: true を渡す
+    // MainSceneのcreate()でこのフラグを見てstartNewGame()を呼ぶ
+    this.fadeOutToScene('MainScene', { isNewGame: true });
   }
 
   private async onContinueClick(): Promise<void> {
@@ -258,7 +269,8 @@ export class TitleScene extends Phaser.Scene {
             this.saveDataRepository?.delete();
             overlay.destroy();
             dialog.destroy();
-            this.fadeOutToScene('MainScene');
+            // Issue #111: fadeOutToSceneの前にstartNewGame()を呼ぶ
+            this.startNewGameAndTransition();
           },
         },
         {

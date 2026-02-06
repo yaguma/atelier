@@ -9,8 +9,8 @@
  * TC-SC-D01 ~ TC-SC-D02: 破棄処理テストケース
  */
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { IShopItem } from '@presentation/ui/scenes/components/shop/types';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // =============================================================================
 // モック定義
@@ -240,8 +240,8 @@ describe('ShopItemCard', () => {
         // Then: 「[カード]」テキストが表示される
         expect(mockScene.add.text).toHaveBeenCalled();
         const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
-        const hasCardType = textCalls.some(
-          (call: unknown[]) => call[2]?.toString().includes('[カード]'),
+        const hasCardType = textCalls.some((call: unknown[]) =>
+          call[2]?.toString().includes('[カード]'),
         );
         expect(hasCardType).toBe(true);
       });
@@ -278,8 +278,8 @@ describe('ShopItemCard', () => {
         // Then: 「[素材]」テキストが表示される
         expect(mockScene.add.text).toHaveBeenCalled();
         const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
-        const hasMaterialType = textCalls.some(
-          (call: unknown[]) => call[2]?.toString().includes('[素材]'),
+        const hasMaterialType = textCalls.some((call: unknown[]) =>
+          call[2]?.toString().includes('[素材]'),
         );
         expect(hasMaterialType).toBe(true);
       });
@@ -316,8 +316,8 @@ describe('ShopItemCard', () => {
         // Then: 「[アーティファクト]」テキストが表示される
         expect(mockScene.add.text).toHaveBeenCalled();
         const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
-        const hasArtifactType = textCalls.some(
-          (call: unknown[]) => call[2]?.toString().includes('[アーティファクト]'),
+        const hasArtifactType = textCalls.some((call: unknown[]) =>
+          call[2]?.toString().includes('[アーティファクト]'),
         );
         expect(hasArtifactType).toBe(true);
       });
@@ -393,7 +393,8 @@ describe('ShopItemCard', () => {
         expect(mockScene.add.text).toHaveBeenCalled();
         const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
         const hasStock = textCalls.some(
-          (call: unknown[]) => call[2]?.toString().includes('在庫') && call[2]?.toString().includes('3'),
+          (call: unknown[]) =>
+            call[2]?.toString().includes('在庫') && call[2]?.toString().includes('3'),
         );
         expect(hasStock).toBe(true);
       });
@@ -430,9 +431,7 @@ describe('ShopItemCard', () => {
         // Then: 「∞」が表示される
         expect(mockScene.add.text).toHaveBeenCalled();
         const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
-        const hasUnlimited = textCalls.some(
-          (call: unknown[]) => call[2]?.toString().includes('∞'),
-        );
+        const hasUnlimited = textCalls.some((call: unknown[]) => call[2]?.toString().includes('∞'));
         expect(hasUnlimited).toBe(true);
       });
     });
@@ -536,9 +535,8 @@ describe('ShopItemCard', () => {
 
         // Then: 「売切」ボタンが無効状態で表示
         const labelCalls = mockRexUI.add.label.mock.calls;
-        const hasSoldOutText = labelCalls.some(
-          (call: unknown[]) =>
-            JSON.stringify(call).includes('売切'),
+        const hasSoldOutText = labelCalls.some((call: unknown[]) =>
+          JSON.stringify(call).includes('売切'),
         );
         expect(hasSoldOutText).toBe(true);
       });
@@ -716,9 +714,7 @@ describe('ShopItemCard', () => {
         };
 
         // When & Then: エラーがスローされる
-        expect(() => new ShopItemCard(mockScene, config)).toThrow(
-          'ShopItemCard: item is required',
-        );
+        expect(() => new ShopItemCard(mockScene, config)).toThrow('ShopItemCard: item is required');
       });
     });
   });
@@ -832,7 +828,8 @@ describe('ShopItemCard', () => {
         expect(mockScene.add.text).toHaveBeenCalled();
         const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
         const hasStock1 = textCalls.some(
-          (call: unknown[]) => call[2]?.toString().includes('在庫') && call[2]?.toString().includes('1'),
+          (call: unknown[]) =>
+            call[2]?.toString().includes('在庫') && call[2]?.toString().includes('1'),
         );
         expect(hasStock1).toBe(true);
 

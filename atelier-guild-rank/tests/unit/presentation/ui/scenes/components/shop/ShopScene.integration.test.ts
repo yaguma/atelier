@@ -6,8 +6,8 @@
  * TC-INT-001 ~ TC-INT-005: コンポーネント連携テストケース
  */
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { IShopItem } from '@presentation/ui/scenes/components/shop/types';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // =============================================================================
 // モック定義
@@ -177,9 +177,7 @@ describe('ShopScene Integration Tests', () => {
       };
 
       // When: ShopItemGridを初期化してcreate()を呼び出す
-      const { ShopItemGrid } = await import(
-        '@presentation/ui/scenes/components/shop/ShopItemGrid'
-      );
+      const { ShopItemGrid } = await import('@presentation/ui/scenes/components/shop/ShopItemGrid');
       const grid = new ShopItemGrid(mockScene, 0, 100, config);
       grid.create();
 
@@ -211,9 +209,7 @@ describe('ShopScene Integration Tests', () => {
       };
 
       // When: ShopItemGridを初期化してアイテムカードの購入ボタンをクリック
-      const { ShopItemGrid } = await import(
-        '@presentation/ui/scenes/components/shop/ShopItemGrid'
-      );
+      const { ShopItemGrid } = await import('@presentation/ui/scenes/components/shop/ShopItemGrid');
       const grid = new ShopItemGrid(mockScene, 0, 100, config);
       grid.create();
 
@@ -239,9 +235,7 @@ describe('ShopScene Integration Tests', () => {
       const { scene: mockScene, mockText } = createMockScene();
 
       // When: ShopHeaderを初期化して購入処理を実行
-      const { ShopHeader } = await import(
-        '@presentation/ui/scenes/components/shop/ShopHeader'
-      );
+      const { ShopHeader } = await import('@presentation/ui/scenes/components/shop/ShopHeader');
       const header = new ShopHeader(mockScene, 0, 0);
       header.create();
       header.setGold(500);
@@ -274,9 +268,7 @@ describe('ShopScene Integration Tests', () => {
       };
 
       // When: ShopItemGridを初期化して購入後に更新
-      const { ShopItemGrid } = await import(
-        '@presentation/ui/scenes/components/shop/ShopItemGrid'
-      );
+      const { ShopItemGrid } = await import('@presentation/ui/scenes/components/shop/ShopItemGrid');
       const grid = new ShopItemGrid(mockScene, 0, 100, config);
       grid.create();
 
@@ -307,9 +299,7 @@ describe('ShopScene Integration Tests', () => {
       });
 
       // When: ShopHeaderを初期化して戻るボタンをクリック
-      const { ShopHeader } = await import(
-        '@presentation/ui/scenes/components/shop/ShopHeader'
-      );
+      const { ShopHeader } = await import('@presentation/ui/scenes/components/shop/ShopHeader');
       const header = new ShopHeader(mockScene, 0, 0, { onBackClick });
       header.create();
 

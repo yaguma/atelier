@@ -9,8 +9,8 @@
  * TC-SG-D01: 破棄処理テストケース
  */
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { IShopItem } from '@presentation/ui/scenes/components/shop/types';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // =============================================================================
 // モック定義
