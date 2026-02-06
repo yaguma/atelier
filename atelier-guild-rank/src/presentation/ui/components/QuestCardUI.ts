@@ -374,6 +374,7 @@ export class QuestCardUI extends BaseComponent {
     // Issue #118: カード背景のホバー拡大エフェクトを削除
     // 以前はbackground.setInteractive()でホバー拡大を設定していたが、
     // ボタンのカーソル変更と混在して違和感があったため削除
+    // （Issue #117のuseHandCursor設定もこの方針により不要）
 
     // 【受注ボタンのホバーエフェクト】: ボタンの色を変化させてフィードバック
     this.setupEventEmitter(this.acceptButton);
