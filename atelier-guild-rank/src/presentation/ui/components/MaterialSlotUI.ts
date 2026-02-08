@@ -62,7 +62,8 @@ export class MaterialSlotUI extends BaseComponent {
     y: number,
     onClick?: (material: MaterialDisplay) => void,
   ) {
-    super(scene, x, y);
+    // Issue #137: 親コンテナに追加されるため、シーンには直接追加しない
+    super(scene, x, y, { addToScene: false });
     this.clickCallback = onClick;
   }
 
