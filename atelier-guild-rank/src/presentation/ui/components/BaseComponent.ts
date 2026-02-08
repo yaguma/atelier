@@ -8,7 +8,7 @@
  */
 
 import type { RexUIPlugin } from '@presentation/types/rexui';
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 
 /**
  * コンテナ座標管理用のマップ
@@ -16,6 +16,20 @@ import type Phaser from 'phaser';
  */
 const containerCoordinates = new Map<number, { x: number; y: number }>();
 let containerIdCounter = 0;
+
+/**
+ * BaseComponentのオプション
+ */
+export interface BaseComponentOptions {
+  /**
+   * コンテナをシーンに直接追加するかどうか
+   * @default true
+   * @description
+   * - true: シーンのdisplayListに直接追加される（独立したUIコンポーネントとして表示）
+   * - false: 親コンテナに追加されるまで表示されない（子コンポーネントとして使用）
+   */
+  addToScene?: boolean;
+}
 
 /**
  * 基底UIコンポーネント抽象クラス
@@ -42,11 +56,13 @@ export abstract class BaseComponent {
    * @param scene - Phaserシーンインスタンス
    * @param x - X座標
    * @param y - Y座標
+   * @param options - オプション設定
    * @throws {Error} sceneがnullまたはundefinedの場合
    * @throws {Error} scene.add.containerが利用できない場合
    * @throws {Error} x, yが有限数でない場合（NaN、Infinityなど）
    */
-  constructor(scene: Phaser.Scene, x: number, y: number) {
+  constructor(scene: Phaser.Scene, x: number, y: number, options?: BaseComponentOptions) {
+    const { addToScene = true } = options ?? {};
     // 🟡 入力値検証: sceneの存在確認
     // TDDのGreenフェーズでは最小実装が目標だが、コードレビューで推奨されたため追加
     if (!scene) {
@@ -85,7 +101,14 @@ export abstract class BaseComponent {
 
     // 🔵 コンテナの作成
     // 指定された座標でPhaserのコンテナを作成
-    const originalContainer = scene.add.container(x, y);
+    // Issue #137: addToScene=falseの場合、シーンに直接追加しない
+    let originalContainer: Phaser.GameObjects.Container;
+    if (addToScene) {
+      originalContainer = scene.add.container(x, y);
+    } else {
+      // シーンに追加せずにコンテナを作成（親コンテナに追加されるまで表示されない）
+      originalContainer = new Phaser.GameObjects.Container(scene, x, y);
+    }
 
     // モックの場合、複数のインスタンスが同じcontainerオブジェクトを共有する可能性があるため、
     // Proxyでラップして各インスタンスが独立した座標を持つようにする
