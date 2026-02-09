@@ -497,7 +497,7 @@ export class QuestService implements IQuestService {
       // 🟡 信頼性レベル: 設計文書から妥当に推測
       for (let i = 0; i < count; i++) {
         const client: IClient = {
-          id: toClientId(`client_${generateUniqueId('client')}`),
+          id: toClientId(generateUniqueId('client')),
           name: `依頼者${i + 1}`,
           type: 'VILLAGER',
           contributionMultiplier: 1.0,
@@ -540,7 +540,7 @@ export class QuestService implements IQuestService {
       for (let i = 0; i < count; i++) {
         const client = clients[i % clients.length];
         const questData: IQuest = {
-          id: toQuestId(`quest_${generateUniqueId('quest')}`),
+          id: toQuestId(generateUniqueId('quest')),
           clientId: client.id,
           condition: { type: 'QUANTITY', quantity: 1 },
           contribution: 50 + Math.floor(Math.random() * 50),
@@ -569,7 +569,7 @@ export class QuestService implements IQuestService {
       // 🔵 信頼性レベル: 設計文書に明記
       const questData: IQuest = {
         ...template,
-        id: toQuestId(`quest_${generateUniqueId('quest')}`),
+        id: toQuestId(generateUniqueId('quest')),
         clientId: client.id,
       };
       const quest = new Quest(questData, client);
