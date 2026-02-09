@@ -298,10 +298,8 @@ describe('QuestService', () => {
         expect(accepted).toBe(true);
         expect(questService.getActiveQuests()).toHaveLength(1);
         expect(questService.getActiveQuests()[0].quest.id).toBe(questId);
-        expect(mockEventBus.emit).toHaveBeenCalledWith(
-          'QUEST_ACCEPTED',
-          expect.objectContaining({ quest: expect.any(Object) }),
-        );
+        // Note: QUEST_ACCEPTEDイベントはUI層（QuestAcceptPhaseUI）から発行されるため、
+        // QuestServiceではイベント発行しない (Issue #137)
       });
     });
 
@@ -506,17 +504,16 @@ describe('QuestService', () => {
     });
 
     describe('T-0013-SE02: 存在しない依頼IDで受注', () => {
-      it('acceptQuest()で存在しない依頼IDを指定するとエラー', () => {
-        // 【テスト目的】: 存在しない依頼IDのエラーハンドリングを確認
+      it('acceptQuest()で存在しない依頼IDを指定するとfalseを返す', () => {
+        // 【テスト目的】: 存在しない依頼IDの処理を確認
         // 【テスト内容】: 存在しない依頼IDで受注を試みる
-        // 【期待される動作】: ApplicationErrorがスローされる
-        // 🔵 信頼性レベル: 設計文書に明記
+        // 【期待される動作】: falseを返す（イベント重複発行時の堅牢性のため）
+        // Issue #137: イベント重複発行による二重受注を防止
 
         questService.generateDailyQuests('G');
 
-        expect(() => {
-          questService.acceptQuest(toQuestId('invalid_quest_id'));
-        }).toThrow(/Quest not found/);
+        const result = questService.acceptQuest(toQuestId('invalid_quest_id'));
+        expect(result).toBe(false);
       });
     });
 

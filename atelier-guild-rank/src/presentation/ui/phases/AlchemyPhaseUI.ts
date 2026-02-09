@@ -119,7 +119,8 @@ export class AlchemyPhaseUI extends BaseComponent {
     }
 
     // Issue #116: コンテンツコンテナが既にオフセット済みなので(0, 0)を使用
-    super(scene, 0, 0);
+    // Issue #137: 親コンテナに追加されるため、シーンには直接追加しない
+    super(scene, 0, 0, { addToScene: false });
     this.alchemyService = alchemyService;
     this.onCraftCompleteCallback = onCraftComplete;
   }

@@ -209,11 +209,20 @@ export class QuestService implements IQuestService {
    * 🔵 信頼性レベル: 設計文書に明記
    */
   acceptQuest(questId: QuestId): boolean {
+    // 【重複受注チェック】: 既に受注済みの場合は早期リターン
+    // Issue #137: イベント重複発行による二重受注を防止
+    if (this.activeQuests.has(questId)) {
+      console.warn(`Quest already accepted: ${questId}`);
+      return false;
+    }
+
     // 【依頼存在チェック】: 利用可能な依頼から検索
     // 🔵 信頼性レベル: 設計文書に明記
     const quest = this.availableQuests.get(questId);
     if (!quest) {
-      throw new ApplicationError(ErrorCodes.QUEST_NOT_FOUND, `Quest not found: ${questId}`);
+      // 既に受注処理が完了している可能性があるため、警告のみ出力
+      console.warn(`Quest not found (may already be accepted): ${questId}`);
+      return false;
     }
 
     // 【上限チェック】: 受注中の依頼数が上限に達しているか確認
@@ -241,9 +250,8 @@ export class QuestService implements IQuestService {
     // 🔵 信頼性レベル: 設計文書に明記
     this.availableQuests.delete(questId);
 
-    // 【イベント発行】: QUEST_ACCEPTEDイベントを発行
-    // 🔵 信頼性レベル: 設計文書に明記
-    this.eventBus.emit(GameEventType.QUEST_ACCEPTED, { quest: quest.data });
+    // Note: QUEST_ACCEPTEDイベントはUI層（QuestAcceptPhaseUI）から発行されるため、
+    // ここでは発行しない。二重発行を防止するため。(Issue #137)
 
     return true;
   }
@@ -497,7 +505,7 @@ export class QuestService implements IQuestService {
       // 🟡 信頼性レベル: 設計文書から妥当に推測
       for (let i = 0; i < count; i++) {
         const client: IClient = {
-          id: toClientId(`client_${generateUniqueId('client')}`),
+          id: toClientId(generateUniqueId('client')),
           name: `依頼者${i + 1}`,
           type: 'VILLAGER',
           contributionMultiplier: 1.0,
@@ -540,7 +548,7 @@ export class QuestService implements IQuestService {
       for (let i = 0; i < count; i++) {
         const client = clients[i % clients.length];
         const questData: IQuest = {
-          id: toQuestId(`quest_${generateUniqueId('quest')}`),
+          id: toQuestId(generateUniqueId('quest')),
           clientId: client.id,
           condition: { type: 'QUANTITY', quantity: 1 },
           contribution: 50 + Math.floor(Math.random() * 50),
@@ -569,7 +577,7 @@ export class QuestService implements IQuestService {
       // 🔵 信頼性レベル: 設計文書に明記
       const questData: IQuest = {
         ...template,
-        id: toQuestId(`quest_${generateUniqueId('quest')}`),
+        id: toQuestId(generateUniqueId('quest')),
         clientId: client.id,
       };
       const quest = new Quest(questData, client);

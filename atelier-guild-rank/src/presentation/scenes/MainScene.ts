@@ -15,6 +15,7 @@ import { Quest } from '@domain/entities/Quest';
 import type { IAlchemyService } from '@domain/interfaces/alchemy-service.interface';
 import type { IGatheringService } from '@domain/interfaces/gathering-service.interface';
 import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
+import type { IQuestService } from '@domain/interfaces/quest-service.interface';
 import { Container, ServiceKeys } from '@infrastructure/di/container';
 import { FooterUI } from '@presentation/ui/components/FooterUI';
 import { HeaderUI } from '@presentation/ui/components/HeaderUI';
@@ -158,6 +159,9 @@ export class MainScene extends Phaser.Scene {
   /** イベントバス */
   private eventBus!: IEventBus;
 
+  /** 依頼管理サービス */
+  private questService!: IQuestService;
+
   // ===========================================================================
   // UIコンポーネント
   // ===========================================================================
@@ -272,6 +276,7 @@ export class MainScene extends Phaser.Scene {
     this.stateManager = container.resolve(ServiceKeys.StateManager);
     this.gameFlowManager = container.resolve(ServiceKeys.GameFlowManager);
     this.eventBus = container.resolve(ServiceKeys.EventBus);
+    this.questService = container.resolve(ServiceKeys.QuestService);
   }
 
   /**
@@ -288,6 +293,9 @@ export class MainScene extends Phaser.Scene {
     }
     if (!this.eventBus) {
       throw new Error('EventBus is required');
+    }
+    if (!this.questService) {
+      throw new Error('QuestService is required');
     }
   }
 
@@ -440,6 +448,14 @@ export class MainScene extends Phaser.Scene {
       const event = busEvent.payload as { quests: import('@shared/types/quests').IQuest[] };
       this.handleQuestGenerated(event);
     });
+
+    // QUEST_ACCEPTEDイベント（依頼受注時）
+    // Issue #137: UIから発行された受注イベントをQuestServiceに伝達
+    // biome-ignore lint/suspicious/noExplicitAny: EventBusのIBusEvent型に対応
+    this.eventBus.on(GameEventType.QUEST_ACCEPTED, (busEvent: any) => {
+      const event = busEvent.payload as { quest: import('@shared/types/quests').IQuest };
+      this.handleQuestAccepted(event);
+    });
   }
 
   // ===========================================================================
@@ -486,6 +502,48 @@ export class MainScene extends Phaser.Scene {
       actionPoints: state.actionPoints,
       maxActionPoints: 3, // 固定値（将来的にはStateManagerから取得）
     });
+  }
+
+  /**
+   * QUEST_ACCEPTEDイベントハンドラ
+   * UIから受注された依頼をQuestServiceに伝達
+   * Issue #137: 受注ボタンを押しても受注できない問題を修正
+   *
+   * @param event - 依頼受注イベント
+   */
+  private handleQuestAccepted(event: { quest: IQuest }): void {
+    try {
+      // QuestServiceで依頼を受注
+      this.questService.acceptQuest(event.quest.id);
+
+      // サイドバーの受注済み依頼リストを更新
+      const activeQuests = this.questService.getActiveQuests();
+      this.sidebarUI.updateAcceptedQuests(activeQuests);
+
+      // QuestAcceptPhaseUIの依頼リストを更新（受注済み依頼を除外）
+      const availableQuests = this.questService.getAvailableQuests();
+      const questAcceptUI = this.phaseUIs.get(GamePhase.QUEST_ACCEPT);
+      if (questAcceptUI && 'updateQuests' in questAcceptUI) {
+        // IQuestからQuestエンティティに変換
+        const quests = availableQuests.map((q) => {
+          // クライアント情報はダミーで作成（UIでは表示のみなので問題なし）
+          const client: IClient = {
+            id: q.clientId,
+            name: '依頼者',
+            type: 'VILLAGER',
+            contributionMultiplier: 1.0,
+            goldMultiplier: 1.0,
+            deadlineModifier: 0,
+            preferredQuestTypes: ['QUANTITY'],
+            unlockRank: 'G',
+          };
+          return new Quest(q, client);
+        });
+        (questAcceptUI as QuestAcceptPhaseUI).updateQuests(quests);
+      }
+    } catch (error) {
+      console.error('Failed to accept quest:', error);
+    }
   }
 
   /**
