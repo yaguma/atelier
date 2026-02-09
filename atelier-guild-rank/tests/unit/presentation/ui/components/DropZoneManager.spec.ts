@@ -10,13 +10,13 @@
  * TC-303: 統合テスト
  */
 
+import { Card } from '@domain/entities/Card';
+import type { DropZone } from '@presentation/ui/components/DropZone';
+import { DropZoneManager } from '@presentation/ui/components/DropZoneManager';
+import type { CardId } from '@shared/types';
+import { CardType } from '@shared/types/common';
+import type { CardMaster } from '@shared/types/master-data';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { Card } from '../../../domain/entities/Card';
-import type { CardId } from '../../../shared/types';
-import { CardType } from '../../../shared/types/common';
-import type { CardMaster } from '../../../shared/types/master-data';
-import type { DropZone } from './DropZone';
-import { DropZoneManager } from './DropZoneManager';
 
 // Phaser.Geom.Rectangleのモック
 const createMockRectangle = (x: number, y: number, width: number, height: number) => ({

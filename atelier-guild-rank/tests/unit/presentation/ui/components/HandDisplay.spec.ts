@@ -8,13 +8,13 @@
  * T-0021-04: カード選択テスト
  */
 
+import { Card } from '@domain/entities/Card';
+import { HandDisplay } from '@presentation/ui/components/HandDisplay';
+import type { CardId } from '@shared/types';
+import { CardType } from '@shared/types/common';
+import type { CardMaster } from '@shared/types/master-data';
 import type Phaser from 'phaser';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { Card } from '../../../domain/entities/Card';
-import type { CardId } from '../../../shared/types';
-import { CardType } from '../../../shared/types/common';
-import type { CardMaster } from '../../../shared/types/master-data';
-import { HandDisplay } from './HandDisplay';
 
 interface MockTweens {
   add: ReturnType<typeof vi.fn>;

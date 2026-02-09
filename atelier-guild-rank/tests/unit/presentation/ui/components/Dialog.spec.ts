@@ -19,9 +19,9 @@
  * T-0018-DLG-13: 多数のアクションボタン
  */
 
+import { Dialog, DialogType } from '@presentation/ui/components/Dialog';
 import type Phaser from 'phaser';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { Dialog, DialogType } from './Dialog';
 
 // rexUIプラグイン拡張シーンインターフェース（テスト用）
 interface RexUIScene extends Phaser.Scene {

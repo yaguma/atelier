@@ -10,13 +10,13 @@
  * T-0021-04: カード情報表示テスト
  */
 
+import { Card } from '@domain/entities/Card';
+import { CardUI } from '@presentation/ui/components/CardUI';
+import type { CardId } from '@shared/types';
+import { CardType } from '@shared/types/common';
+import type { CardMaster } from '@shared/types/master-data';
 import type Phaser from 'phaser';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { Card } from '../../../domain/entities/Card';
-import type { CardId } from '../../../shared/types';
-import { CardType } from '../../../shared/types/common';
-import type { CardMaster } from '../../../shared/types/master-data';
-import { CardUI } from './CardUI';
 
 interface MockTweens {
   add: ReturnType<typeof vi.fn>;

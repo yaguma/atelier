@@ -1,23 +1,23 @@
 /**
- * GameOverScene.spec.ts - GameOverSceneのテスト
+ * GameClearScene.spec.ts - GameClearSceneのテスト
  * TASK-0027: リザルト画面（GameOver/GameClear）
  *
  * テストケース:
- * T-0027-01: ゲームオーバー遷移 - 画面表示
+ * T-0027-02: ゲームクリア遷移 - 画面表示
  * T-0027-03: 統計表示 - 正しい値
  * T-0027-04: タイトルへボタン - TitleSceneへ遷移
  */
 
+import { GameClearScene } from '@presentation/scenes/GameClearScene';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { GameEndStats } from '../../shared/types';
-import { GameOverScene } from './GameOverScene';
 
-describe('GameOverScene', () => {
-  let scene: GameOverScene;
+describe('GameClearScene', () => {
+  let scene: GameClearScene;
   let mockRexUI: any;
 
   beforeEach(() => {
-    scene = new GameOverScene();
+    scene = new GameClearScene();
 
     // rexUIプラグインのモック
     mockRexUI = {
@@ -61,25 +61,25 @@ describe('GameOverScene', () => {
     };
   });
 
-  describe('T-0027-01: ゲームオーバー遷移 - 画面表示', () => {
-    it('GameOverSceneが正しく初期化される', () => {
+  describe('T-0027-02: ゲームクリア遷移 - 画面表示', () => {
+    it('GameClearSceneが正しく初期化される', () => {
       const stats: GameEndStats = {
-        finalRank: 'C',
-        totalDays: 30,
-        totalDeliveries: 45,
-        totalGold: 2350,
+        finalRank: 'S',
+        totalDays: 25,
+        totalDeliveries: 58,
+        totalGold: 4120,
       };
 
       scene.init({ stats });
       expect((scene as any).stats).toEqual(stats);
     });
 
-    it('GameOverSceneのcreate()が正しく実行される', () => {
+    it('GameClearSceneのcreate()が正しく実行される', () => {
       const stats: GameEndStats = {
-        finalRank: 'C',
-        totalDays: 30,
-        totalDeliveries: 45,
-        totalGold: 2350,
+        finalRank: 'S',
+        totalDays: 25,
+        totalDeliveries: 58,
+        totalGold: 4120,
       };
 
       scene.init({ stats });
@@ -87,9 +87,9 @@ describe('GameOverScene', () => {
 
       // 背景が作成される
       expect((scene as any).add.rectangle).toHaveBeenCalled();
-      // テキストが作成される（タイトル、メッセージ、統計情報4行、ボタンテキスト2つ）
+      // テキストが作成される（タイトル、メッセージ、統計情報3行、ボタンテキスト2つ）
       expect((scene as any).add.text).toHaveBeenCalled();
-      // ボタンが作成される（タイトルへ、リトライ）
+      // ボタンが作成される（タイトルへ、NEW GAME+）
       expect(mockRexUI.add.label).toHaveBeenCalledTimes(2);
     });
   });
@@ -97,10 +97,10 @@ describe('GameOverScene', () => {
   describe('T-0027-03: 統計表示 - 正しい値', () => {
     it('統計情報が正しく表示される', () => {
       const stats: GameEndStats = {
-        finalRank: 'C',
-        totalDays: 30,
-        totalDeliveries: 45,
-        totalGold: 2350,
+        finalRank: 'S',
+        totalDays: 25,
+        totalDeliveries: 58,
+        totalGold: 4120,
       };
 
       scene.init({ stats });
@@ -111,20 +111,19 @@ describe('GameOverScene', () => {
       // 統計情報のテキストを確認
       const statsTexts = textCalls.slice(2); // タイトルとメッセージをスキップ
 
-      expect(statsTexts.some((call: any) => call[2].includes('最終ランク: C'))).toBe(true);
-      expect(statsTexts.some((call: any) => call[2].includes('経過日数: 30日'))).toBe(true);
-      expect(statsTexts.some((call: any) => call[2].includes('総納品数: 45'))).toBe(true);
-      expect(statsTexts.some((call: any) => call[2].includes('獲得ゴールド: 2,350G'))).toBe(true);
+      expect(statsTexts.some((call: any) => call[2].includes('クリア日数: 25日'))).toBe(true);
+      expect(statsTexts.some((call: any) => call[2].includes('総納品数: 58'))).toBe(true);
+      expect(statsTexts.some((call: any) => call[2].includes('獲得ゴールド: 4,120G'))).toBe(true);
     });
   });
 
   describe('T-0027-04: タイトルへボタン - TitleSceneへ遷移', () => {
     it('タイトルへボタンをクリックするとTitleSceneへ遷移する', () => {
       const stats: GameEndStats = {
-        finalRank: 'C',
-        totalDays: 30,
-        totalDeliveries: 45,
-        totalGold: 2350,
+        finalRank: 'S',
+        totalDays: 25,
+        totalDeliveries: 58,
+        totalGold: 4120,
       };
 
       scene.init({ stats });
@@ -143,18 +142,18 @@ describe('GameOverScene', () => {
       expect((scene as any).scene.start).toHaveBeenCalledWith('TitleScene');
     });
 
-    it('リトライボタンをクリックするとMainSceneへ遷移する', () => {
+    it('NEW GAME+ボタンをクリックするとMainSceneへ遷移する', () => {
       const stats: GameEndStats = {
-        finalRank: 'C',
-        totalDays: 30,
-        totalDeliveries: 45,
-        totalGold: 2350,
+        finalRank: 'S',
+        totalDays: 25,
+        totalDeliveries: 58,
+        totalGold: 4120,
       };
 
       scene.init({ stats });
       scene.create();
 
-      // リトライボタンのクリックハンドラーを取得
+      // NEW GAME+ボタンのクリックハンドラーを取得
       const buttonElement = mockRexUI.add.label.mock.results[1].value;
       const onHandler = buttonElement.on.mock.calls.find((call: any) => call[0] === 'pointerdown');
 
@@ -163,7 +162,7 @@ describe('GameOverScene', () => {
       // ボタンをクリック
       onHandler[1]();
 
-      // MainSceneへ遷移することを確認
+      // MainSceneへ遷移することを確認（将来実装でNEW GAME+の処理を追加予定）
       expect((scene as any).scene.start).toHaveBeenCalledWith('MainScene');
     });
   });
@@ -171,10 +170,10 @@ describe('GameOverScene', () => {
   describe('シーンのライフサイクル', () => {
     it('shutdown()でリソースが解放される', () => {
       const stats: GameEndStats = {
-        finalRank: 'C',
-        totalDays: 30,
-        totalDeliveries: 45,
-        totalGold: 2350,
+        finalRank: 'S',
+        totalDays: 25,
+        totalDeliveries: 58,
+        totalGold: 4120,
       };
 
       scene.init({ stats });

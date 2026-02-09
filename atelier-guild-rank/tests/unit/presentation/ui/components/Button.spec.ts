@@ -19,9 +19,9 @@
  * T-0018-BTN-13: ボタンの無効化と再有効化
  */
 
+import { Button, ButtonType } from '@presentation/ui/components/Button';
 import type Phaser from 'phaser';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { Button, ButtonType } from './Button';
 
 // rexUIプラグイン拡張シーンインターフェース（テスト用）
 interface RexUIScene extends Phaser.Scene {

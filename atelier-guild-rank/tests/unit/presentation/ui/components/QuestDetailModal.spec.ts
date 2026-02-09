@@ -12,12 +12,15 @@
  */
 
 import type { Quest } from '@domain/entities/Quest';
+import {
+  QuestDetailModal,
+  type QuestDetailModalConfig,
+} from '@presentation/ui/components/QuestDetailModal';
 import type { ClientType, QuestType } from '@shared/types';
 import { toClientId, toQuestId } from '@shared/types/ids';
 import type { IClient, IQuest, QuestDifficulty } from '@shared/types/quests';
 import type Phaser from 'phaser';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { QuestDetailModal, type QuestDetailModalConfig } from './QuestDetailModal';
 
 // =============================================================================
 // モックヘルパー関数

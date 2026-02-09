@@ -17,12 +17,12 @@
  */
 
 import type { Quest } from '@domain/entities/Quest';
+import { QuestCardUI, type QuestCardUIConfig } from '@presentation/ui/components/QuestCardUI';
 import type { ClientType, QuestType } from '@shared/types';
 import { toClientId, toQuestId } from '@shared/types/ids';
 import type { IClient, IQuest, QuestDifficulty } from '@shared/types/quests';
 import type Phaser from 'phaser';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { QuestCardUI, type QuestCardUIConfig } from './QuestCardUI';
 
 // =============================================================================
 // モックヘルパー関数

@@ -38,7 +38,7 @@ vi.mock('phaser', () => {
 });
 
 // TitleSceneのインポート（モック後）
-import { TitleScene } from './TitleScene';
+import { TitleScene } from '@presentation/scenes/TitleScene';
 
 // モック変数
 let mockSceneManager: ReturnType<typeof createMockSceneManager>;

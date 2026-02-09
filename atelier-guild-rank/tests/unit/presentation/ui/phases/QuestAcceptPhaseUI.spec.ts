@@ -17,13 +17,13 @@
  */
 
 import type { Quest } from '@domain/entities/Quest';
+import { QuestAcceptPhaseUI } from '@presentation/ui/phases/QuestAcceptPhaseUI';
 import type { ClientType, QuestType } from '@shared/types';
 import { GameEventType } from '@shared/types/events';
 import { toClientId, toQuestId } from '@shared/types/ids';
 import type { IClient, IQuest, QuestDifficulty } from '@shared/types/quests';
 import type Phaser from 'phaser';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { QuestAcceptPhaseUI } from './QuestAcceptPhaseUI';
 
 // =============================================================================
 // モックヘルパー関数

@@ -10,15 +10,15 @@
  * TC-301〜TC-305: 統合テスト
  */
 
+import { Card } from '@domain/entities/Card';
+import { DraggableCardUI } from '@presentation/ui/components/DraggableCardUI';
+import type { DropZone } from '@presentation/ui/components/DropZone';
+import { DropZoneManager } from '@presentation/ui/components/DropZoneManager';
+import type { CardId } from '@shared/types';
+import { CardType } from '@shared/types/common';
+import type { CardMaster } from '@shared/types/master-data';
 import type Phaser from 'phaser';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { Card } from '../../../domain/entities/Card';
-import type { CardId } from '../../../shared/types';
-import { CardType } from '../../../shared/types/common';
-import type { CardMaster } from '../../../shared/types/master-data';
-import { DraggableCardUI } from './DraggableCardUI';
-import type { DropZone } from './DropZone';
-import { DropZoneManager } from './DropZoneManager';
 
 interface MockTweens {
   add: ReturnType<typeof vi.fn>;

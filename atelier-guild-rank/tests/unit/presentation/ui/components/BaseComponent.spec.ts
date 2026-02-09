@@ -10,9 +10,9 @@
  * T-0018-BASE-05: メソッドチェーンの検証
  */
 
+import { BaseComponent } from '@presentation/ui/components/BaseComponent';
 import type Phaser from 'phaser';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { BaseComponent } from './BaseComponent';
 
 // テスト用の具象クラス
 class TestComponent extends BaseComponent {

@@ -10,8 +10,8 @@
  * T-0018-THEME-05: 定数としての不変性確認
  */
 
+import { THEME } from '@presentation/ui/theme';
 import { describe, expect, test } from 'vitest';
-import { THEME } from './theme';
 
 describe('THEME定義', () => {
   describe('T-0018-THEME-01: カラーパレット定義の検証', () => {
