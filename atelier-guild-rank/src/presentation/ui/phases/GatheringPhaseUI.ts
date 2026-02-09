@@ -62,7 +62,8 @@ export class GatheringPhaseUI extends BaseComponent {
     private gatheringService: IGatheringService,
     onEnd?: () => void,
   ) {
-    super(scene, 0, 0);
+    // Issue #137: 親コンテナに追加されるため、シーンには直接追加しない
+    super(scene, 0, 0, { addToScene: false });
     this.onEndCallback = onEnd;
   }
 

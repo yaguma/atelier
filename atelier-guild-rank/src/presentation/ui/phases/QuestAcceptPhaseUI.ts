@@ -118,7 +118,10 @@ export class QuestAcceptPhaseUI extends BaseComponent {
    * @param scene - Phaserシーンインスタンス
    */
   constructor(scene: Phaser.Scene) {
-    super(scene, QuestAcceptPhaseUI.COMPONENT_X, QuestAcceptPhaseUI.COMPONENT_Y);
+    // Issue #137: 親コンテナに追加されるため、シーンには直接追加しない
+    super(scene, QuestAcceptPhaseUI.COMPONENT_X, QuestAcceptPhaseUI.COMPONENT_Y, {
+      addToScene: false,
+    });
 
     // 【EventBusの取得】: シーンデータからEventBusを取得
     this.initializeEventBus();

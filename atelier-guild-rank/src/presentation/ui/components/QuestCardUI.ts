@@ -92,7 +92,8 @@ export class QuestCardUI extends BaseComponent {
       throw new Error('config.quest is required');
     }
 
-    super(scene, config.x, config.y);
+    // Issue #137: 親コンテナに追加されるため、シーンには直接追加しない
+    super(scene, config.x, config.y, { addToScene: false });
 
     this.config = {
       ...config,

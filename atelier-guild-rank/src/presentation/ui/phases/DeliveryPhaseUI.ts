@@ -104,7 +104,8 @@ export class DeliveryPhaseUI extends BaseComponent {
   private keyboardHandler: ((event: { key: string }) => void) | null = null;
 
   constructor(scene: Phaser.Scene) {
-    super(scene, UI_LAYOUT.COMPONENT_X, UI_LAYOUT.COMPONENT_Y);
+    // Issue #137: 親コンテナに追加されるため、シーンには直接追加しない
+    super(scene, UI_LAYOUT.COMPONENT_X, UI_LAYOUT.COMPONENT_Y, { addToScene: false });
     this.initializeServices();
     this.create();
   }

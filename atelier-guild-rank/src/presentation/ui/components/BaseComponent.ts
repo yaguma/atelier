@@ -8,7 +8,7 @@
  */
 
 import type { RexUIPlugin } from '@presentation/types/rexui';
-import Phaser from 'phaser';
+import type Phaser from 'phaser';
 
 /**
  * コンテナ座標管理用のマップ
@@ -102,12 +102,10 @@ export abstract class BaseComponent {
     // 🔵 コンテナの作成
     // 指定された座標でPhaserのコンテナを作成
     // Issue #137: addToScene=falseの場合、シーンに直接追加しない
-    let originalContainer: Phaser.GameObjects.Container;
-    if (addToScene) {
-      originalContainer = scene.add.container(x, y);
-    } else {
-      // シーンに追加せずにコンテナを作成（親コンテナに追加されるまで表示されない）
-      originalContainer = new Phaser.GameObjects.Container(scene, x, y);
+    const originalContainer = scene.add.container(x, y);
+    if (!addToScene && scene.children?.remove) {
+      // シーンのdisplayListから削除（親コンテナに追加されるまで表示されない）
+      scene.children.remove(originalContainer);
     }
 
     // モックの場合、複数のインスタンスが同じcontainerオブジェクトを共有する可能性があるため、
