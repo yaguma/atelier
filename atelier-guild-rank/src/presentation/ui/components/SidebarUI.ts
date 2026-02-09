@@ -154,6 +154,12 @@ export class SidebarUI extends BaseComponent {
   /** 保管容量テキスト要素 */
   private _storageTextElement: Phaser.GameObjects.Text | null = null;
 
+  /** 依頼リスト表示用テキスト要素 */
+  private _questListTexts: Phaser.GameObjects.Text[] = [];
+
+  /** 依頼リストのY座標開始位置 */
+  private _questListStartY = 0;
+
   /** ショップボタン背景 */
   private _shopButtonBackground: Phaser.GameObjects.Rectangle | null = null;
   /** ショップボタンテキスト */
@@ -249,7 +255,11 @@ export class SidebarUI extends BaseComponent {
     );
     this.container.add(this._questsHeaderText);
 
-    currentY += SIDEBAR_LAYOUT.SECTION_HEADER_HEIGHT + 80 + SIDEBAR_LAYOUT.SECTION_GAP;
+    // 依頼リストの開始位置を記録
+    currentY += SIDEBAR_LAYOUT.SECTION_HEADER_HEIGHT;
+    this._questListStartY = currentY;
+
+    currentY += 80 + SIDEBAR_LAYOUT.SECTION_GAP;
 
     // 素材セクションヘッダー背景
     const materialsHeaderBg = this.scene.add.rectangle(
@@ -379,6 +389,12 @@ export class SidebarUI extends BaseComponent {
    * コンポーネントの破棄処理
    */
   destroy(): void {
+    // 依頼リストのテキスト要素を破棄
+    for (const text of this._questListTexts) {
+      text.destroy();
+    }
+    this._questListTexts = [];
+
     this.container.destroy();
   }
 
@@ -409,6 +425,9 @@ export class SidebarUI extends BaseComponent {
 
     // TASK-0047: 視覚要素の更新
     this.updateVisualElements();
+
+    // Issue #137: 依頼リストUIを更新
+    this.updateQuestListUI();
   }
 
   /**
@@ -419,9 +438,66 @@ export class SidebarUI extends BaseComponent {
    */
   updateAcceptedQuests(quests: IActiveQuest[]): void {
     this._activeQuests = quests;
-    // 依頼セクションヘッダーに件数を表示（将来的な拡張用）
+
+    // 依頼セクションヘッダーに件数を表示
     if (this._questsHeaderText) {
       this._questsHeaderText.setText(`受注依頼 (${quests.length})`);
+    }
+
+    // 依頼リストのUI更新
+    this.updateQuestListUI();
+  }
+
+  /**
+   * 依頼リストのUI要素を更新
+   * Issue #137: 受注した依頼をサイドバーに表示する
+   */
+  private updateQuestListUI(): void {
+    // 既存のリスト要素を削除
+    for (const text of this._questListTexts) {
+      text.destroy();
+    }
+    this._questListTexts = [];
+
+    // セクションが折りたたまれている場合は表示しない
+    if (this._sectionCollapsed.quests) {
+      return;
+    }
+
+    // 依頼リストを表示（最大3件）
+    const displayQuests = this._activeQuests.slice(0, 3);
+    let y = this._questListStartY + 4;
+
+    for (const activeQuest of displayQuests) {
+      // 依頼者名と残り日数を表示
+      const questText = this.scene.add.text(
+        SIDEBAR_LAYOUT.PADDING + 4,
+        y,
+        `${activeQuest.client.name} (${activeQuest.remainingDays}日)`,
+        {
+          fontSize: '12px',
+          color: '#D1D5DB',
+        },
+      );
+      this.container.add(questText);
+      this._questListTexts.push(questText);
+
+      y += 20;
+    }
+
+    // 3件を超える場合は「...」を表示
+    if (this._activeQuests.length > 3) {
+      const moreText = this.scene.add.text(
+        SIDEBAR_LAYOUT.PADDING + 4,
+        y,
+        `他${this._activeQuests.length - 3}件...`,
+        {
+          fontSize: '11px',
+          color: '#9CA3AF',
+        },
+      );
+      this.container.add(moreText);
+      this._questListTexts.push(moreText);
     }
   }
 
@@ -539,6 +615,8 @@ export class SidebarUI extends BaseComponent {
         if (this._questsIconText) {
           this._questsIconText.setText(iconText);
         }
+        // Issue #137: 折りたたみ状態に応じて依頼リストを更新
+        this.updateQuestListUI();
         break;
       case 'materials':
         if (this._materialsIconText) {
