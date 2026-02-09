@@ -53,40 +53,49 @@ pnpm test:e2e e2e/specs/game-flow.spec.ts
 
 ## Architecture
 
-### Clean Architecture (4層構造)
+本プロジェクトは以下のアーキテクチャパターンを採用:
+
+1. **Feature-Based Architecture** - 機能単位でのコード配置
+2. **Functional Core, Imperative Shell** - 純粋関数とI/Oの分離
+
+詳細は `.claude/rules/architecture.md` を参照。
+
+### Directory Structure
 
 ```
 src/
-├── domain/          # ビジネスロジック・エンティティ（依存なし）
-├── application/     # ゲームフロー制御・状態管理・イベント調整
-├── infrastructure/  # データ永続化・外部連携
-├── presentation/    # Phaser Scenes・UI Components
-└── shared/          # 共通ユーティリティ・型定義
+├── features/           # 機能単位のモジュール
+│   ├── quest/          # 依頼機能
+│   ├── alchemy/        # 調合機能
+│   ├── gathering/      # 採取機能
+│   ├── deck/           # デッキ機能
+│   ├── inventory/      # インベントリ機能
+│   ├── shop/           # ショップ機能
+│   └── rank/           # ランク機能
+├── shared/             # 機能横断の共通コード
+│   ├── components/     # 共通UIコンポーネント
+│   ├── services/       # 共通サービス（EventBus, StateManager等）
+│   ├── types/          # 共通型定義
+│   └── utils/          # ユーティリティ関数
+└── scenes/             # Phaserシーン（機能を組み合わせる）
 ```
-
-**依存方向**: Presentation → Application → Domain → Infrastructure(IF)
 
 ### Path Aliases
 
 ```typescript
-import { Card } from '@domain/entities/Card';
-import { DeckService } from '@domain/services/DeckService';
-import { StateManager } from '@application/state/StateManager';
-import { SaveDataRepository } from '@infrastructure/repositories/SaveDataRepository';
-import { MainScene } from '@presentation/scenes/MainScene';
+import { Quest, generateQuest } from '@features/quest';
+import { Card } from '@features/deck';
+import { EventBus } from '@shared/services';
+import { Button } from '@shared/components';
+import { MainScene } from '@scenes/MainScene';
 ```
 
-### Key Services
+### Functional Core vs Imperative Shell
 
-| Layer | Service | 責務 |
-|-------|---------|------|
-| Domain | DeckService | ドロー・シャッフル・捨て札処理 |
-| Domain | GatheringService | ドラフト採取・素材獲得 |
-| Domain | AlchemyService | 調合計算・品質決定 |
-| Domain | QuestService | 依頼生成・期限管理・報酬計算 |
-| Application | StateManager | ゲーム状態の一元管理（イミュータブル） |
-| Application | EventBus | 層間のイベント駆動通信 |
-| Application | GameFlowManager | シーン遷移・ゲームライフサイクル |
+| 部分 | 責務 | 配置場所 |
+|------|------|---------|
+| **Functional Core** | 純粋関数（計算、バリデーション） | `features/*/services/` |
+| **Imperative Shell** | I/O、状態管理、UI | `scenes/`, `shared/services/` |
 
 ### Phaser Scenes
 
@@ -121,7 +130,12 @@ import { MainScene } from '@presentation/scenes/MainScene';
 
 ```
 tests/
-├── unit/           # ユニットテスト（Domain/Application層）
+├── unit/           # ユニットテスト（src/と同じ階層構造）
+│   ├── domain/
+│   ├── application/
+│   ├── infrastructure/
+│   ├── presentation/
+│   └── shared/
 ├── integration/    # 統合テスト（サービス連携）
 └── mocks/          # テスト用モック
 
@@ -130,6 +144,12 @@ e2e/
 ├── pages/          # Page Objects
 └── fixtures/       # テストデータ
 ```
+
+### Test File Rules
+
+- **専用ディレクトリ配置**: テストファイルは `tests/` または `e2e/` に配置（`src/` 内に置かない）
+- **エイリアス使用**: テストファイルでは `@domain/`、`@shared/` 等の絶対パスを使用（相対パス禁止）
+- **命名規則**: `*.test.ts` または `*.spec.ts`
 
 ### Coverage Target
 
