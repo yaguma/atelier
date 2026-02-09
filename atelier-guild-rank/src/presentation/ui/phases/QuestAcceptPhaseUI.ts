@@ -333,7 +333,6 @@ export class QuestAcceptPhaseUI extends BaseComponent {
       x: position.x,
       y: position.y,
       interactive: true,
-      onAccept: (q) => this.onAcceptQuest(q),
     });
   }
 

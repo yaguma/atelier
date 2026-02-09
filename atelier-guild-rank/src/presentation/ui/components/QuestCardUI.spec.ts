@@ -3,17 +3,17 @@
  * TASK-0022 依頼受注フェーズUI
  *
  * @description
- * TC-001〜TC-010: QuestCardUIコンポーネントのユニットテスト
+ * TC-001〜TC-007: QuestCardUIコンポーネントのユニットテスト
  * - TC-001: カード初期化と表示
- * - TC-002: 受注ボタンクリック処理
- * - TC-003: インタラクティブ動作（ホバー）
- * - TC-004: リソース解放
- * - TC-005: 無効なconfig（null）
- * - TC-006: 無効なconfig.quest（undefined）
- * - TC-007: 無効なonAccept（関数以外）
- * - TC-008: 長いテキストの依頼内容
- * - TC-009: 空文字列の依頼者名
- * - TC-010: 報酬0の依頼
+ * - TC-002: インタラクティブ動作（背景クリック）
+ * - TC-003: リソース解放
+ * - TC-004: 無効なconfig（null）
+ * - TC-005: 無効なconfig.quest（undefined）
+ * - TC-006: 長いテキストの依頼内容
+ * - TC-007: 空文字列の依頼者名
+ * - TC-008: 報酬0の依頼
+ *
+ * Note: Issue #118で受注ボタンは削除され、カードクリックで詳細モーダルを開く方式に変更
  */
 
 import type { Quest } from '@domain/entities/Quest';
@@ -74,6 +74,9 @@ function createMockScene(): Phaser.Scene {
           sizer: vi.fn(),
         },
       }),
+    },
+    children: {
+      remove: vi.fn(),
     },
   } as any;
 
@@ -184,7 +187,6 @@ describe('QuestCardUI', () => {
         x: 100,
         y: 200,
         interactive: true,
-        onAccept: vi.fn(),
       };
 
       const questCard = new QuestCardUI(mockScene, config);
@@ -260,73 +262,13 @@ describe('QuestCardUI', () => {
         expect.any(Object),
       );
     });
-
-    test('「受注する」ボタンが表示される', () => {
-      const config: QuestCardUIConfig = {
-        quest: mockQuest,
-        x: 100,
-        y: 200,
-      };
-
-      const questCard = new QuestCardUI(mockScene, config);
-      questCard.create();
-
-      expect(mockScene.add.text).toHaveBeenCalledWith(
-        expect.any(Number),
-        expect.any(Number),
-        expect.stringContaining('受注'),
-        expect.any(Object),
-      );
-    });
   });
 
-  describe('TC-002: 受注ボタンクリック処理', () => {
-    // 【テスト目的】: 受注ボタンをクリックすると、onAcceptコールバックが呼び出されること
+  describe('TC-002: インタラクティブ動作（背景クリック）', () => {
+    // 【テスト目的】: Issue #118: カードクリックで詳細モーダルを開く方式に変更
     // 【信頼性】: 🔵
 
-    test('onAcceptコールバックが1回呼び出される', () => {
-      const mockOnAccept = vi.fn();
-      const config: QuestCardUIConfig = {
-        quest: mockQuest,
-        x: 100,
-        y: 200,
-        onAccept: mockOnAccept,
-      };
-
-      const questCard = new QuestCardUI(mockScene, config);
-      questCard.create();
-
-      // 受注ボタンを取得
-      const acceptButton = (questCard as any).acceptButton;
-      acceptButton.emit('pointerdown');
-
-      expect(mockOnAccept).toHaveBeenCalledTimes(1);
-    });
-
-    test('onAcceptの引数にquestが渡される', () => {
-      const mockOnAccept = vi.fn();
-      const config: QuestCardUIConfig = {
-        quest: mockQuest,
-        x: 100,
-        y: 200,
-        onAccept: mockOnAccept,
-      };
-
-      const questCard = new QuestCardUI(mockScene, config);
-      questCard.create();
-
-      const acceptButton = (questCard as any).acceptButton;
-      acceptButton.emit('pointerdown');
-
-      expect(mockOnAccept).toHaveBeenCalledWith(mockQuest);
-    });
-  });
-
-  describe('TC-003: インタラクティブ動作（ボタンホバー）', () => {
-    // 【テスト目的】: Issue #118: ボタンにホバーすると色が変わること
-    // 【信頼性】: 🟡
-
-    test('ボタンホバー時にsetFillStyleが呼ばれる', () => {
+    test('背景がインタラクティブに設定される', () => {
       const config: QuestCardUIConfig = {
         quest: mockQuest,
         x: 100,
@@ -337,33 +279,28 @@ describe('QuestCardUI', () => {
       const questCard = new QuestCardUI(mockScene, config);
       questCard.create();
 
-      const acceptButton = (questCard as any).acceptButton;
-      acceptButton.emit('pointerover');
-
-      // setFillStyleが呼ばれることを確認
-      expect(acceptButton.setFillStyle).toHaveBeenCalled();
+      const background = (questCard as any).background;
+      expect(background.setInteractive).toHaveBeenCalledWith({ useHandCursor: true });
     });
 
-    test('ボタンホバー解除時にsetFillStyleが呼ばれる', () => {
+    test('インタラクティブがfalseの場合、背景はインタラクティブにならない', () => {
       const config: QuestCardUIConfig = {
         quest: mockQuest,
         x: 100,
         y: 200,
-        interactive: true,
+        interactive: false,
       };
 
       const questCard = new QuestCardUI(mockScene, config);
       questCard.create();
 
-      const acceptButton = (questCard as any).acceptButton;
-      acceptButton.emit('pointerout');
-
-      // setFillStyleが呼ばれることを確認
-      expect(acceptButton.setFillStyle).toHaveBeenCalled();
+      const background = (questCard as any).background;
+      // interactive: falseの場合、setInteractiveは呼ばれない
+      expect(background.setInteractive).not.toHaveBeenCalled();
     });
   });
 
-  describe('TC-004: リソース解放', () => {
+  describe('TC-003: リソース解放', () => {
     // 【テスト目的】: destroy()が呼ばれると、すべてのGameObjectsが破棄されること
     // 【信頼性】: 🔵
 
@@ -398,11 +335,10 @@ describe('QuestCardUI', () => {
       expect((questCard as any).clientNameText.destroy).toHaveBeenCalled();
       expect((questCard as any).dialogueText.destroy).toHaveBeenCalled();
       expect((questCard as any).rewardText.destroy).toHaveBeenCalled();
-      expect((questCard as any).acceptButton.destroy).toHaveBeenCalled();
     });
   });
 
-  describe('TC-005: 無効なconfig（null）', () => {
+  describe('TC-004: 無効なconfig（null）', () => {
     // 【テスト目的】: configがnullの場合、エラーがスローされること
     // 【信頼性】: 🔵
 
@@ -423,7 +359,7 @@ describe('QuestCardUI', () => {
     });
   });
 
-  describe('TC-006: 無効なconfig.quest（undefined）', () => {
+  describe('TC-005: 無効なconfig.quest（undefined）', () => {
     // 【テスト目的】: config.questがundefinedの場合、エラーがスローされること
     // 【信頼性】: 🔵
 
@@ -452,45 +388,7 @@ describe('QuestCardUI', () => {
     });
   });
 
-  describe('TC-007: 無効なonAccept（関数以外）', () => {
-    // 【テスト目的】: onAcceptが関数でない場合、警告が出るか無視されること
-    // 【信頼性】: 🟡
-
-    test('エラーはスローされない', () => {
-      const invalidConfig: any = {
-        quest: mockQuest,
-        x: 100,
-        y: 200,
-        onAccept: 'not-a-function',
-      };
-
-      const createCard = () => {
-        const questCard = new QuestCardUI(mockScene, invalidConfig);
-        questCard.create();
-      };
-
-      expect(createCard).not.toThrow();
-    });
-
-    test('クリックしても何も起きない', () => {
-      const invalidConfig: any = {
-        quest: mockQuest,
-        x: 100,
-        y: 200,
-        onAccept: 'not-a-function',
-      };
-
-      const questCard = new QuestCardUI(mockScene, invalidConfig);
-      questCard.create();
-
-      const acceptButton = questCard['acceptButton'];
-      const clickButton = () => acceptButton.emit('pointerdown');
-
-      expect(clickButton).not.toThrow();
-    });
-  });
-
-  describe('TC-008: 長いテキストの依頼内容', () => {
+  describe('TC-006: 長いテキストの依頼内容', () => {
     // 【テスト目的】: 依頼内容が長い場合でも、正しく表示されること
     // 【信頼性】: 🟡
 
@@ -542,7 +440,7 @@ describe('QuestCardUI', () => {
     });
   });
 
-  describe('TC-009: 空文字列の依頼者名', () => {
+  describe('TC-007: 空文字列の依頼者名', () => {
     // 【テスト目的】: 依頼者名が空文字列の場合、デフォルト値が表示されること
     // 【信頼性】: 🟡
 
@@ -590,7 +488,7 @@ describe('QuestCardUI', () => {
     });
   });
 
-  describe('TC-010: 報酬0の依頼', () => {
+  describe('TC-008: 報酬0の依頼', () => {
     // 【テスト目的】: 報酬が0の依頼でも正しく表示されること
     // 【信頼性】: 🟡
 

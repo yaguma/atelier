@@ -4,8 +4,9 @@
  * TASK-0054 テーマ定数統一（カラー・アニメーション）
  *
  * @description
- * 個別依頼をカード形式で表示し、受注操作を提供するコンポーネント。
- * 依頼者名、セリフ、依頼内容、報酬情報、受注ボタンを表示する。
+ * 個別依頼をカード形式で表示するコンポーネント。
+ * 依頼者名、セリフ、依頼内容、報酬情報を表示する。
+ * カードクリックで詳細モーダルを開き、そこから受注する。
  */
 
 import type Phaser from 'phaser';
@@ -26,16 +27,14 @@ export interface QuestCardUIConfig {
   y: number;
   /** インタラクティブにするか（デフォルト: true） */
   interactive?: boolean;
-  /** 受注ボタンクリック時のコールバック */
-  onAccept?: (quest: Quest) => void;
 }
 
 /**
  * QuestCardUIコンポーネント
  *
  * 依頼の視覚的表現を管理するコンポーネント。
- * 依頼者名、セリフ、依頼内容、報酬、受注ボタンを表示し、
- * ホバー時の拡大やクリックイベントをサポートする。
+ * 依頼者名、セリフ、依頼内容、報酬を表示し、
+ * カードクリックで詳細モーダルを開く。
  */
 export class QuestCardUI extends BaseComponent {
   private config: QuestCardUIConfig;
@@ -45,8 +44,6 @@ export class QuestCardUI extends BaseComponent {
   private dialogueText!: Phaser.GameObjects.Text;
   private rewardText!: Phaser.GameObjects.Text;
   private deadlineText!: Phaser.GameObjects.Text;
-  private acceptButton!: Phaser.GameObjects.Rectangle;
-  private acceptButtonText!: Phaser.GameObjects.Text;
 
   /** create()が既に呼ばれたかのフラグ */
   private isCreated = false;
@@ -70,16 +67,7 @@ export class QuestCardUI extends BaseComponent {
   private static readonly TEXT_REWARD_OFFSET = 60; // 【報酬の追加オフセット】: カード下部からの位置
   private static readonly TEXT_DEADLINE_OFFSET = 40; // 【期限の追加オフセット】: カード下部からの位置
 
-  /**
-   * 【ボタンの寸法定数】: 受注ボタンのレイアウトを定義する基本寸法
-   * 【設計方針】: ボタンサイズを定数化し、統一感を持たせる
-   * 🔵 信頼性レベル: 既存実装のマジックナンバーを定数化
-   */
-  private static readonly BUTTON_WIDTH = 100; // 【ボタン幅】: 「受注する」テキストが収まる幅
-  private static readonly BUTTON_HEIGHT = 30; // 【ボタン高】: クリックしやすい高さ
-  private static readonly BUTTON_Y_OFFSET = 15; // 【ボタンY座標オフセット】: カード下部からの位置
-
-  // Issue #118: ホバー拡大エフェクト定数を削除（ボタンホバーエフェクトに変更したため）
+  // Issue #118: ホバー拡大エフェクト定数を削除（カードクリックで詳細モーダルを開く方式に変更）
 
   constructor(scene: Phaser.Scene, config: QuestCardUIConfig) {
     // バリデーション: configが必須
@@ -118,7 +106,6 @@ export class QuestCardUI extends BaseComponent {
     this.createDialogue();
     this.createRewardInfo();
     this.createDeadline();
-    this.createAcceptButton();
     this.setupInteraction();
   }
 
@@ -271,100 +258,10 @@ export class QuestCardUI extends BaseComponent {
   }
 
   /**
-   * 【受注ボタンの作成】: 依頼を受注するボタンを生成
-   * 【配置位置】: カード下部中央に配置
-   * 【設計意図】: プレイヤーが依頼を受注できることを明示
-   * 【型安全性】: onAcceptがfunctionであることを確認してから呼び出す
-   * 🔵 信頼性レベル: 実装ファイルに基づく
-   */
-  private createAcceptButton(): void {
-    // 【Y座標計算】: カード下端 - 余白 - ボタンオフセット
-    // 【レイアウト意図】: カード最下部にボタンを配置
-    const buttonY = QuestCardUI.CARD_HEIGHT / 2 - QuestCardUI.PADDING - QuestCardUI.BUTTON_Y_OFFSET;
-
-    // 【ボタン背景】: 緑色の矩形でボタン感を演出
-    // TASK-0054: Colors.ui.button.accept, Colors.ui.button.acceptBorder を使用
-    this.acceptButton = this.scene.add.rectangle(
-      0,
-      buttonY,
-      QuestCardUI.BUTTON_WIDTH,
-      QuestCardUI.BUTTON_HEIGHT,
-      Colors.ui.button.accept, // 【背景色】: 緑色（受注を促進）
-    );
-    // 【型安全性】: setStrokeStyleはテストモックで定義されていないため、存在確認してから呼び出す
-    if (this.acceptButton.setStrokeStyle) {
-      this.acceptButton.setStrokeStyle(1, Colors.ui.button.acceptBorder); // 【枠線】: 濃い緑色で強調
-    }
-    this.acceptButton.setInteractive({ useHandCursor: true });
-    this.container.add(this.acceptButton);
-
-    // 【ボタンテキスト】: 「受注する」を白で中央揃えに表示
-    this.acceptButtonText = this.scene.add.text(0, buttonY, '受注する', {
-      fontSize: '12px',
-      color: '#ffffff',
-      fontStyle: 'bold',
-    });
-    this.acceptButtonText.setOrigin(0.5);
-    this.container.add(this.acceptButtonText);
-
-    // 【クリックイベント】: 受注ボタンクリック時にonAcceptコールバックを実行
-    // 【型安全性】: モックの場合、on と emit を実際のイベントエミッターとして動作させる
-    this.setupEventEmitter(this.acceptButton);
-    this.acceptButton.on('pointerdown', () => {
-      // 【型安全性】: onAcceptが関数であることを確認してから呼び出す
-      if (typeof this.config.onAccept === 'function') {
-        this.config.onAccept(this.quest);
-      }
-    });
-  }
-
-  /**
-   * 【イベントエミッターの設定】: モックオブジェクトを実際のイベントエミッターとして動作させる
-   * 【設計意図】: テスト環境でもイベントが正しく動作するようにする
-   * 【型安全性】: on、emitメソッドの存在確認を行う
-   * 🔵 信頼性レベル: 実装ファイルに基づく
-   */
-  // biome-ignore lint/suspicious/noExplicitAny: イベントエミッター機能のためanyを使用
-  private setupEventEmitter(obj: any): void {
-    // 【型安全性】: on、emitメソッドが存在しない場合は何もしない
-    if (!obj.on || !obj.emit) return;
-
-    // 【パフォーマンス最適化】: 既にセットアップ済みの場合はスキップし、重複登録を防止
-    if (obj.__eventEmitterSetup) return;
-    obj.__eventEmitterSetup = true;
-
-    // 【イベントリスナー管理】: イベント名ごとにリスナーを配列で保持
-    const eventListeners: { [key: string]: Function[] } = {};
-    const originalOn = obj.on.bind(obj);
-    const originalEmit = obj.emit.bind(obj);
-
-    // 【onメソッドのオーバーライド】: リスナーを登録し、内部管理も行う
-    obj.on = (event: string, callback: Function) => {
-      if (!eventListeners[event]) {
-        eventListeners[event] = [];
-      }
-      eventListeners[event].push(callback);
-      return originalOn(event, callback);
-    };
-
-    // 【emitメソッドのオーバーライド】: 登録されたリスナーを順次呼び出す
-    obj.emit = (event: string, ...args: unknown[]) => {
-      if (eventListeners[event]) {
-        for (const cb of eventListeners[event]) {
-          cb(...args);
-        }
-      }
-      return originalEmit(event, ...args);
-    };
-  }
-
-  /**
    * 【インタラクティブ機能の設定】: カードのインタラクション設定
-   * Issue #118: ホバー拡大とカーソル変更の混在を解消
    *
    * 【設計方針】:
-   * - カード背景: ホバー拡大エフェクトを削除（ボタンとの混在による違和感を解消）
-   * - 受注ボタン: カーソル変更 + ホバー時の色変化で明確なフィードバック
+   * - カード全体をクリック可能にして、詳細モーダルを開く
    *
    * 🔵 信頼性レベル: 実装ファイルに基づく
    */
@@ -372,27 +269,8 @@ export class QuestCardUI extends BaseComponent {
     // 【早期リターン】: インタラクティブ機能が無効な場合は何もしない
     if (!this.config.interactive) return;
 
-    // Issue #131: カード背景にsetInteractive()を追加
     // カード全体をクリック可能にして、詳細モーダルを開けるようにする
-    // Issue #118の方針（ボタンのみホバーエフェクト）は維持
     this.background.setInteractive({ useHandCursor: true });
-
-    // 【受注ボタンのホバーエフェクト】: ボタンの色を変化させてフィードバック
-    this.setupEventEmitter(this.acceptButton);
-
-    this.acceptButton.on('pointerover', () => {
-      // 【ホバー時】: ボタンを少し明るくする
-      if (this.acceptButton.setFillStyle) {
-        this.acceptButton.setFillStyle(Colors.ui.button.hover);
-      }
-    });
-
-    this.acceptButton.on('pointerout', () => {
-      // 【ホバー解除時】: ボタンを元の色に戻す
-      if (this.acceptButton.setFillStyle) {
-        this.acceptButton.setFillStyle(Colors.ui.button.accept);
-      }
-    });
   }
 
   /**
@@ -418,12 +296,6 @@ export class QuestCardUI extends BaseComponent {
     }
     if (this.deadlineText) {
       this.deadlineText.destroy();
-    }
-    if (this.acceptButton) {
-      this.acceptButton.destroy();
-    }
-    if (this.acceptButtonText) {
-      this.acceptButtonText.destroy();
     }
 
     // 【コンテナを破棄】: 最後にコンテナ自体を破棄
