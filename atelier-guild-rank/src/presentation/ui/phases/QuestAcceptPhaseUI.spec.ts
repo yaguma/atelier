@@ -279,19 +279,19 @@ describe('QuestAcceptPhaseUI', () => {
   describe('TC-103: 依頼受注処理', () => {
     // 【テスト目的】: 依頼を受注すると、QUEST_ACCEPTEDイベントが発行されること
     // 【信頼性】: 🔵
+    // Issue #137: 受注ボタンはQuestCardUIからQuestDetailModalに移動
+    // 内部メソッド onAcceptQuest を直接呼び出してテスト
 
-    test('EventBus.emit()が呼ばれる', () => {
+    test('onAcceptQuestを呼ぶとEventBus.emit()が呼ばれる', () => {
       const mockQuest = createMockQuestEntity({ id: 'Q001' });
 
       const phaseUI = new QuestAcceptPhaseUI(mockScene);
       phaseUI.create();
       phaseUI.updateQuests([mockQuest]);
 
-      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
-      const questCard = (phaseUI as any).questCards[0];
-      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
-      const acceptButton = (questCard as any).acceptButton;
-      acceptButton.emit('pointerdown');
+      // privateメソッドを直接呼び出してテスト
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateメソッドにアクセスするために必要
+      (phaseUI as any).onAcceptQuest(mockQuest);
 
       expect(mockEventBus.emit).toHaveBeenCalledTimes(1);
     });
@@ -303,11 +303,9 @@ describe('QuestAcceptPhaseUI', () => {
       phaseUI.create();
       phaseUI.updateQuests([mockQuest]);
 
-      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
-      const questCard = (phaseUI as any).questCards[0];
-      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
-      const acceptButton = (questCard as any).acceptButton;
-      acceptButton.emit('pointerdown');
+      // privateメソッドを直接呼び出してテスト
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateメソッドにアクセスするために必要
+      (phaseUI as any).onAcceptQuest(mockQuest);
 
       expect(mockEventBus.emit).toHaveBeenCalledWith(
         GameEventType.QUEST_ACCEPTED,
@@ -322,11 +320,9 @@ describe('QuestAcceptPhaseUI', () => {
       phaseUI.create();
       phaseUI.updateQuests([mockQuest]);
 
-      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
-      const questCard = (phaseUI as any).questCards[0];
-      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
-      const acceptButton = (questCard as any).acceptButton;
-      acceptButton.emit('pointerdown');
+      // privateメソッドを直接呼び出してテスト
+      // biome-ignore lint/suspicious/noExplicitAny: テストでprivateメソッドにアクセスするために必要
+      (phaseUI as any).onAcceptQuest(mockQuest);
 
       expect(mockEventBus.emit).toHaveBeenCalledWith(GameEventType.QUEST_ACCEPTED, {
         quest: mockQuest,

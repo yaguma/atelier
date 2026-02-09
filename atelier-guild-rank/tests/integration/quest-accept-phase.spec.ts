@@ -229,7 +229,9 @@ describe('依頼受注フェーズ統合テスト', () => {
       expect((phaseUI as any).questCards[2].getContainer().x).toBe(800);
     });
 
-    test('各カードに依頼者名、報酬情報、受注ボタンが表示される', () => {
+    test('各カードに依頼者名、報酬情報が表示される', () => {
+      // Issue #137: 受注ボタンはQuestCardUIからQuestDetailModalに移動
+      // カードには依頼者名と報酬情報のみ表示される
       const dailyQuests = [createMockQuestEntity({ id: 'Q001', clientId: 'C001' })];
 
       const phaseUI = new QuestAcceptPhaseUI(mockScene);
@@ -251,31 +253,24 @@ describe('依頼受注フェーズ統合テスト', () => {
         expect.stringContaining('50'),
         expect.any(Object),
       );
-
-      // 受注ボタンが表示される
-      expect(mockScene.add.text).toHaveBeenCalledWith(
-        expect.any(Number),
-        expect.any(Number),
-        expect.stringContaining('受注'),
-        expect.any(Object),
-      );
     });
   });
 
-  describe('T-0022-02: 受注ボタン', () => {
-    // 【テスト目的】: 依頼カードの「受注する」ボタンをクリックすると、QUEST_ACCEPTEDイベントが発行される
+  describe('T-0022-02: 受注処理', () => {
+    // 【テスト目的】: 依頼を受注すると、QUEST_ACCEPTEDイベントが発行される
     // 【信頼性】: 🔵
+    // Issue #137: 受注ボタンはQuestCardUIからQuestDetailModalに移動
+    // 内部メソッド onAcceptQuest を直接呼び出してテスト
 
-    test('EventBus.emit()が呼ばれる', () => {
+    test('onAcceptQuestを呼ぶとEventBus.emit()が呼ばれる', () => {
       const mockQuest = createMockQuestEntity({ id: 'Q001', clientId: 'C001' });
 
       const phaseUI = new QuestAcceptPhaseUI(mockScene);
       phaseUI.create();
       phaseUI.updateQuests([mockQuest]);
 
-      const questCard = (phaseUI as any).questCards[0];
-      const acceptButton = (questCard as any).acceptButton;
-      acceptButton.emit('pointerdown');
+      // privateメソッドを直接呼び出してテスト
+      (phaseUI as any).onAcceptQuest(mockQuest);
 
       expect(mockEventBus.emit).toHaveBeenCalledTimes(1);
     });
@@ -287,9 +282,8 @@ describe('依頼受注フェーズ統合テスト', () => {
       phaseUI.create();
       phaseUI.updateQuests([mockQuest]);
 
-      const questCard = (phaseUI as any).questCards[0];
-      const acceptButton = (questCard as any).acceptButton;
-      acceptButton.emit('pointerdown');
+      // privateメソッドを直接呼び出してテスト
+      (phaseUI as any).onAcceptQuest(mockQuest);
 
       expect(mockEventBus.emit).toHaveBeenCalledWith(
         GameEventType.QUEST_ACCEPTED,
@@ -304,9 +298,8 @@ describe('依頼受注フェーズ統合テスト', () => {
       phaseUI.create();
       phaseUI.updateQuests([mockQuest]);
 
-      const questCard = (phaseUI as any).questCards[0];
-      const acceptButton = (questCard as any).acceptButton;
-      acceptButton.emit('pointerdown');
+      // privateメソッドを直接呼び出してテスト
+      (phaseUI as any).onAcceptQuest(mockQuest);
 
       expect(mockEventBus.emit).toHaveBeenCalledWith(GameEventType.QUEST_ACCEPTED, {
         quest: mockQuest,
@@ -317,6 +310,8 @@ describe('依頼受注フェーズ統合テスト', () => {
   describe('T-0022-03: 受注後表示更新', () => {
     // 【テスト目的】: QUEST_ACCEPTEDイベント発行後、受注済みリスト（ScrollablePanel）に依頼が追加される
     // 【信頼性】: 🔵
+    // Issue #137: 受注ボタンはQuestCardUIからQuestDetailModalに移動
+    // 内部メソッド onAcceptQuest を直接呼び出してテスト
 
     test('受注済みリストに依頼が追加される', () => {
       const mockQuest = createMockQuestEntity({
@@ -330,10 +325,8 @@ describe('依頼受注フェーズ統合テスト', () => {
       phaseUI.create();
       phaseUI.updateQuests([mockQuest]);
 
-      // 受注処理を実行
-      const questCard = (phaseUI as any).questCards[0];
-      const acceptButton = (questCard as any).acceptButton;
-      acceptButton.emit('pointerdown');
+      // 受注処理を実行（privateメソッドを直接呼び出し）
+      (phaseUI as any).onAcceptQuest(mockQuest);
 
       const acceptedList = (phaseUI as any).acceptedList;
       expect(acceptedList).toBeDefined();
@@ -351,10 +344,8 @@ describe('依頼受注フェーズ統合テスト', () => {
       phaseUI.create();
       phaseUI.updateQuests([mockQuest]);
 
-      // 受注処理を実行
-      const questCard = (phaseUI as any).questCards[0];
-      const acceptButton = (questCard as any).acceptButton;
-      acceptButton.emit('pointerdown');
+      // 受注処理を実行（privateメソッドを直接呼び出し）
+      (phaseUI as any).onAcceptQuest(mockQuest);
 
       // ScrollablePanelの内容を確認
       // 注: 現在、受注済みリストへの追加機能は未実装のため、このテストは将来実装時に有効化される
@@ -377,10 +368,8 @@ describe('依頼受注フェーズ統合テスト', () => {
       phaseUI.create();
       phaseUI.updateQuests([mockQuest]);
 
-      // 受注処理を実行
-      const questCard = (phaseUI as any).questCards[0];
-      const acceptButton = (questCard as any).acceptButton;
-      acceptButton.emit('pointerdown');
+      // 受注処理を実行（privateメソッドを直接呼び出し）
+      (phaseUI as any).onAcceptQuest(mockQuest);
 
       // 注: 現在、受注済みリストへの追加機能は未実装のため、このテストは将来実装時に有効化される
       const acceptedList = (phaseUI as any).acceptedList;

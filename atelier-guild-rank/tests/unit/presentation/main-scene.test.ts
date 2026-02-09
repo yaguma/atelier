@@ -47,17 +47,20 @@ let mockStateManagerInstance: any;
 let mockGameFlowManagerInstance: any;
 // biome-ignore lint/suspicious/noExplicitAny: テスト用のモック変数
 let mockEventBusInstance: any;
+// biome-ignore lint/suspicious/noExplicitAny: テスト用のモック変数
+let mockQuestServiceInstance: any;
 
 const mockContainerInstance = {
   resolve: vi.fn((key: string) => {
     if (key === 'StateManager') return mockStateManagerInstance;
     if (key === 'GameFlowManager') return mockGameFlowManagerInstance;
     if (key === 'EventBus') return mockEventBusInstance;
+    if (key === 'QuestService') return mockQuestServiceInstance;
     throw new Error(`Service not found: ${key}`);
   }),
   register: vi.fn(),
   has: vi.fn((key: string) => {
-    return ['StateManager', 'GameFlowManager', 'EventBus'].includes(key);
+    return ['StateManager', 'GameFlowManager', 'EventBus', 'QuestService'].includes(key);
   }),
 };
 
@@ -69,6 +72,7 @@ vi.mock('@infrastructure/di/container', () => ({
     StateManager: 'StateManager',
     GameFlowManager: 'GameFlowManager',
     EventBus: 'EventBus',
+    QuestService: 'QuestService',
     GatheringService: 'GatheringService',
     AlchemyService: 'AlchemyService',
   },
@@ -380,12 +384,31 @@ const mockCraftedItems = [
 // テストスイート
 // =============================================================================
 
+/**
+ * QuestServiceのモックを作成
+ * Issue #137: MainSceneでQuestServiceを使用するようになったため追加
+ */
+const createMockQuestService = () => ({
+  acceptQuest: vi.fn().mockReturnValue(true),
+  cancelQuest: vi.fn(),
+  getActiveQuests: vi.fn().mockReturnValue([]),
+  getAvailableQuests: vi.fn().mockReturnValue([]),
+  generateDailyQuests: vi.fn(),
+  canDeliver: vi.fn().mockReturnValue(false),
+  deliver: vi.fn(),
+  updateDeadlines: vi.fn().mockReturnValue([]),
+  checkCondition: vi.fn().mockReturnValue(false),
+  getQuestLimit: vi.fn().mockReturnValue(2),
+  setQuestLimit: vi.fn(),
+});
+
 describe('MainScene共通レイアウト', () => {
   beforeEach(() => {
     // DIコンテナから返されるモックインスタンスを初期化
     mockStateManagerInstance = createMockStateManager();
     mockGameFlowManagerInstance = createMockGameFlowManager();
     mockEventBusInstance = createMockEventBus();
+    mockQuestServiceInstance = createMockQuestService();
   });
 
   afterEach(() => {

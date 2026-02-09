@@ -411,6 +411,20 @@ export class SidebarUI extends BaseComponent {
     this.updateVisualElements();
   }
 
+  /**
+   * 受注済み依頼リストを更新
+   * Issue #137: 依頼受注時にサイドバーの依頼リストを更新する
+   *
+   * @param quests - 受注済み依頼リスト
+   */
+  updateAcceptedQuests(quests: IActiveQuest[]): void {
+    this._activeQuests = quests;
+    // 依頼セクションヘッダーに件数を表示（将来的な拡張用）
+    if (this._questsHeaderText) {
+      this._questsHeaderText.setText(`受注依頼 (${quests.length})`);
+    }
+  }
+
   // ===========================================================================
   // 視覚更新メソッド
   // ===========================================================================
