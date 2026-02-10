@@ -95,7 +95,7 @@ describe('TitleLogo', () => {
         const { scene: mockScene } = createMockScene();
 
         // When: TitleLogoを初期化
-        const { TitleLogo } = await import('@presentation/ui/scenes/components/title/TitleLogo');
+        const { TitleLogo } = await import('@presentation/scenes/components/title/TitleLogo');
         const logo = new TitleLogo(mockScene, 640, 200);
 
         // Then: コンテナが作成される
@@ -118,7 +118,7 @@ describe('TitleLogo', () => {
         const { scene: mockScene, mockText } = createMockScene();
 
         // When: TitleLogoを初期化してcreate()を呼び出す
-        const { TitleLogo } = await import('@presentation/ui/scenes/components/title/TitleLogo');
+        const { TitleLogo } = await import('@presentation/scenes/components/title/TitleLogo');
         const logo = new TitleLogo(mockScene, 640, 200);
         logo.create();
 
@@ -147,7 +147,7 @@ describe('TitleLogo', () => {
         const { scene: mockScene } = createMockScene();
 
         // When: TitleLogoを初期化してcreate()を呼び出す
-        const { TitleLogo } = await import('@presentation/ui/scenes/components/title/TitleLogo');
+        const { TitleLogo } = await import('@presentation/scenes/components/title/TitleLogo');
         const logo = new TitleLogo(mockScene, 640, 200);
         logo.create();
 
@@ -176,7 +176,7 @@ describe('TitleLogo', () => {
         const { scene: mockScene } = createMockScene();
 
         // When: TitleLogoを初期化してcreate()を呼び出す
-        const { TitleLogo } = await import('@presentation/ui/scenes/components/title/TitleLogo');
+        const { TitleLogo } = await import('@presentation/scenes/components/title/TitleLogo');
         const logo = new TitleLogo(mockScene, 640, 200);
         logo.create();
 
@@ -204,7 +204,7 @@ describe('TitleLogo', () => {
         const { scene: mockScene } = createMockScene();
 
         // When: TitleLogoを初期化してcreate()を呼び出す
-        const { TitleLogo } = await import('@presentation/ui/scenes/components/title/TitleLogo');
+        const { TitleLogo } = await import('@presentation/scenes/components/title/TitleLogo');
         const logo = new TitleLogo(mockScene, 640, 200);
         logo.create();
 
@@ -237,7 +237,7 @@ describe('TitleLogo', () => {
         const { scene: mockScene, mockText } = createMockScene();
 
         // When: TitleLogoを初期化してcreate()を呼び出す
-        const { TitleLogo } = await import('@presentation/ui/scenes/components/title/TitleLogo');
+        const { TitleLogo } = await import('@presentation/scenes/components/title/TitleLogo');
         const logo = new TitleLogo(mockScene, 640, 200);
         logo.create();
 
@@ -263,7 +263,7 @@ describe('TitleLogo', () => {
 
       it('TC-TL-E01: nullシーンでコンストラクタを呼び出すとエラーがスローされる', async () => {
         // Given: nullシーン
-        const { TitleLogo } = await import('@presentation/ui/scenes/components/title/TitleLogo');
+        const { TitleLogo } = await import('@presentation/scenes/components/title/TitleLogo');
 
         // When & Then: エラーがスローされる
         expect(() => new TitleLogo(null as unknown as Phaser.Scene, 640, 200)).toThrow(
@@ -283,7 +283,7 @@ describe('TitleLogo', () => {
 
       it('TC-TL-E02: undefinedシーンでコンストラクタを呼び出すとエラーがスローされる', async () => {
         // Given: undefinedシーン
-        const { TitleLogo } = await import('@presentation/ui/scenes/components/title/TitleLogo');
+        const { TitleLogo } = await import('@presentation/scenes/components/title/TitleLogo');
 
         // When & Then: エラーがスローされる
         expect(() => new TitleLogo(undefined as unknown as Phaser.Scene, 640, 200)).toThrow(
@@ -312,7 +312,7 @@ describe('TitleLogo', () => {
         const { scene: mockScene } = createMockScene();
 
         // When: 座標(0, 0)でTitleLogoを作成
-        const { TitleLogo } = await import('@presentation/ui/scenes/components/title/TitleLogo');
+        const { TitleLogo } = await import('@presentation/scenes/components/title/TitleLogo');
         const logo = new TitleLogo(mockScene, 0, 0);
 
         // Then: コンテナが(0, 0)に配置される
@@ -339,7 +339,7 @@ describe('TitleLogo', () => {
       it('TC-TL-D01: destroy()が呼び出されるとコンテナと子要素が破棄される', async () => {
         // Given: TitleLogoインスタンス
         const { scene: mockScene, mockContainer } = createMockScene();
-        const { TitleLogo } = await import('@presentation/ui/scenes/components/title/TitleLogo');
+        const { TitleLogo } = await import('@presentation/scenes/components/title/TitleLogo');
         const logo = new TitleLogo(mockScene, 640, 200);
         logo.create();
 

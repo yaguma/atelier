@@ -135,7 +135,7 @@ describe('TitleMenu', () => {
         };
 
         // When: TitleMenuを初期化
-        const { TitleMenu } = await import('@presentation/ui/scenes/components/title/TitleMenu');
+        const { TitleMenu } = await import('@presentation/scenes/components/title/TitleMenu');
         const menu = new TitleMenu(mockScene, 640, 400, config);
 
         // Then: コンテナが作成される
@@ -164,7 +164,7 @@ describe('TitleMenu', () => {
         };
 
         // When: TitleMenuを初期化してcreate()を呼び出す
-        const { TitleMenu } = await import('@presentation/ui/scenes/components/title/TitleMenu');
+        const { TitleMenu } = await import('@presentation/scenes/components/title/TitleMenu');
         const menu = new TitleMenu(mockScene, 640, 400, config);
         menu.create();
 
@@ -193,7 +193,7 @@ describe('TitleMenu', () => {
         };
 
         // When: TitleMenuを初期化してcreate()を呼び出す
-        const { TitleMenu } = await import('@presentation/ui/scenes/components/title/TitleMenu');
+        const { TitleMenu } = await import('@presentation/scenes/components/title/TitleMenu');
         const menu = new TitleMenu(mockScene, 640, 400, config);
         menu.create();
 
@@ -225,7 +225,7 @@ describe('TitleMenu', () => {
         };
 
         // When: TitleMenuを初期化してcreate()を呼び出す
-        const { TitleMenu } = await import('@presentation/ui/scenes/components/title/TitleMenu');
+        const { TitleMenu } = await import('@presentation/scenes/components/title/TitleMenu');
         const menu = new TitleMenu(mockScene, 640, 400, config);
         menu.create();
 
@@ -255,7 +255,7 @@ describe('TitleMenu', () => {
         };
 
         // When: TitleMenuを初期化してcreate()を呼び出す
-        const { TitleMenu } = await import('@presentation/ui/scenes/components/title/TitleMenu');
+        const { TitleMenu } = await import('@presentation/scenes/components/title/TitleMenu');
         const menu = new TitleMenu(mockScene, 640, 400, config);
         menu.create();
 
@@ -285,7 +285,7 @@ describe('TitleMenu', () => {
         };
 
         // When: TitleMenuを初期化してcreate()を呼び出し、クリックイベントをシミュレート
-        const { TitleMenu } = await import('@presentation/ui/scenes/components/title/TitleMenu');
+        const { TitleMenu } = await import('@presentation/scenes/components/title/TitleMenu');
         const menu = new TitleMenu(mockScene, 640, 400, config);
         menu.create();
 
@@ -325,7 +325,7 @@ describe('TitleMenu', () => {
         };
 
         // When: TitleMenuを初期化してcreate()を呼び出し、クリックイベントをシミュレート
-        const { TitleMenu } = await import('@presentation/ui/scenes/components/title/TitleMenu');
+        const { TitleMenu } = await import('@presentation/scenes/components/title/TitleMenu');
         const menu = new TitleMenu(mockScene, 640, 400, config);
         menu.create();
 
@@ -358,7 +358,7 @@ describe('TitleMenu', () => {
         };
 
         // When: TitleMenuを初期化してcreate()を呼び出し、クリックイベントをシミュレート
-        const { TitleMenu } = await import('@presentation/ui/scenes/components/title/TitleMenu');
+        const { TitleMenu } = await import('@presentation/scenes/components/title/TitleMenu');
         const menu = new TitleMenu(mockScene, 640, 400, config);
         menu.create();
 
@@ -391,7 +391,7 @@ describe('TitleMenu', () => {
         };
 
         // When: TitleMenuを初期化してcreate()を呼び出し、クリックイベントをシミュレート
-        const { TitleMenu } = await import('@presentation/ui/scenes/components/title/TitleMenu');
+        const { TitleMenu } = await import('@presentation/scenes/components/title/TitleMenu');
         const menu = new TitleMenu(mockScene, 640, 400, config);
         menu.create();
 
@@ -420,7 +420,7 @@ describe('TitleMenu', () => {
 
       it('TC-TM-E01: nullシーンでコンストラクタを呼び出すとエラーがスローされる', async () => {
         // Given: nullシーン
-        const { TitleMenu } = await import('@presentation/ui/scenes/components/title/TitleMenu');
+        const { TitleMenu } = await import('@presentation/scenes/components/title/TitleMenu');
         const config = {
           hasSaveData: false,
           onNewGame: vi.fn(),
@@ -447,7 +447,7 @@ describe('TitleMenu', () => {
       it('TC-TM-E02: undefinedコールバックでコンストラクタを呼び出すとエラーがスローされる', async () => {
         // Given: undefinedコールバック
         const { scene: mockScene } = createMockScene();
-        const { TitleMenu } = await import('@presentation/ui/scenes/components/title/TitleMenu');
+        const { TitleMenu } = await import('@presentation/scenes/components/title/TitleMenu');
         const config = {
           hasSaveData: false,
           onNewGame: undefined as unknown as () => void,
@@ -488,7 +488,7 @@ describe('TitleMenu', () => {
         };
 
         // When: 座標(0, 0)でTitleMenuを作成
-        const { TitleMenu } = await import('@presentation/ui/scenes/components/title/TitleMenu');
+        const { TitleMenu } = await import('@presentation/scenes/components/title/TitleMenu');
         const menu = new TitleMenu(mockScene, 0, 0, config);
 
         // Then: コンテナが(0, 0)に配置される
@@ -521,7 +521,7 @@ describe('TitleMenu', () => {
           onContinue: vi.fn(),
           onSettings: vi.fn(),
         };
-        const { TitleMenu } = await import('@presentation/ui/scenes/components/title/TitleMenu');
+        const { TitleMenu } = await import('@presentation/scenes/components/title/TitleMenu');
         const menu = new TitleMenu(mockScene, 640, 400, config);
         menu.create();
 

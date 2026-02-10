@@ -95,9 +95,7 @@ describe('RankUpHeader', () => {
       const { scene: mockScene } = createMockScene();
 
       // When: RankUpHeaderを初期化
-      const { RankUpHeader } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpHeader'
-      );
+      const { RankUpHeader } = await import('@presentation/scenes/components/rankup/RankUpHeader');
       const header = new RankUpHeader(mockScene, 0, 0);
 
       // Then: コンテナが作成される
@@ -116,9 +114,7 @@ describe('RankUpHeader', () => {
       const { scene: mockScene, mockText } = createMockScene();
 
       // When: RankUpHeaderを初期化してcreate()が呼び出される
-      const { RankUpHeader } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpHeader'
-      );
+      const { RankUpHeader } = await import('@presentation/scenes/components/rankup/RankUpHeader');
       const header = new RankUpHeader(mockScene, 0, 0);
       header.create();
 
@@ -135,9 +131,7 @@ describe('RankUpHeader', () => {
     it('TC-H03: updateRank(F, E)が呼び出されると「F → E ランクへの昇格」と表示される', async () => {
       // Given: RankUpHeaderインスタンス
       const { scene: mockScene, mockText } = createMockScene();
-      const { RankUpHeader } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpHeader'
-      );
+      const { RankUpHeader } = await import('@presentation/scenes/components/rankup/RankUpHeader');
       const header = new RankUpHeader(mockScene, 0, 0);
       header.create();
 
@@ -152,9 +146,7 @@ describe('RankUpHeader', () => {
     it('TC-H03b: updateRank()を2回呼び出すと2回目はsetTextで更新される', async () => {
       // Given: RankUpHeaderインスタンス
       const { scene: mockScene, mockText } = createMockScene();
-      const { RankUpHeader } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpHeader'
-      );
+      const { RankUpHeader } = await import('@presentation/scenes/components/rankup/RankUpHeader');
       const header = new RankUpHeader(mockScene, 0, 0);
       header.create();
 
@@ -175,9 +167,7 @@ describe('RankUpHeader', () => {
     it('TC-H04: destroy()が呼び出されるとコンテナと子要素が破棄される', async () => {
       // Given: RankUpHeaderインスタンス
       const { scene: mockScene, mockContainer } = createMockScene();
-      const { RankUpHeader } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpHeader'
-      );
+      const { RankUpHeader } = await import('@presentation/scenes/components/rankup/RankUpHeader');
       const header = new RankUpHeader(mockScene, 0, 0);
       header.create();
 

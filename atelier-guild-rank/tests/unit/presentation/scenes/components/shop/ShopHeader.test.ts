@@ -128,7 +128,7 @@ describe('ShopHeader', () => {
         const { scene: mockScene } = createMockScene();
 
         // When: ShopHeaderを初期化
-        const { ShopHeader } = await import('@presentation/ui/scenes/components/shop/ShopHeader');
+        const { ShopHeader } = await import('@presentation/scenes/components/shop/ShopHeader');
         const header = new ShopHeader(mockScene, 0, 0);
 
         // Then: コンテナが作成される
@@ -151,7 +151,7 @@ describe('ShopHeader', () => {
         const { scene: mockScene, mockText } = createMockScene();
 
         // When: ShopHeaderを初期化してcreate()を呼び出す
-        const { ShopHeader } = await import('@presentation/ui/scenes/components/shop/ShopHeader');
+        const { ShopHeader } = await import('@presentation/scenes/components/shop/ShopHeader');
         const header = new ShopHeader(mockScene, 0, 0);
         header.create();
 
@@ -180,7 +180,7 @@ describe('ShopHeader', () => {
         const { scene: mockScene } = createMockScene();
 
         // When: ShopHeaderを初期化してsetGold()を呼び出す
-        const { ShopHeader } = await import('@presentation/ui/scenes/components/shop/ShopHeader');
+        const { ShopHeader } = await import('@presentation/scenes/components/shop/ShopHeader');
         const header = new ShopHeader(mockScene, 0, 0);
         header.create();
         header.setGold(500);
@@ -204,7 +204,7 @@ describe('ShopHeader', () => {
         const { scene: mockScene, mockText } = createMockScene();
 
         // When: 所持金を設定後に更新
-        const { ShopHeader } = await import('@presentation/ui/scenes/components/shop/ShopHeader');
+        const { ShopHeader } = await import('@presentation/scenes/components/shop/ShopHeader');
         const header = new ShopHeader(mockScene, 0, 0);
         header.create();
         header.setGold(500);
@@ -229,7 +229,7 @@ describe('ShopHeader', () => {
         const { scene: mockScene, mockRexUI } = createMockScene();
 
         // When: ShopHeaderを初期化してcreate()を呼び出す
-        const { ShopHeader } = await import('@presentation/ui/scenes/components/shop/ShopHeader');
+        const { ShopHeader } = await import('@presentation/scenes/components/shop/ShopHeader');
         const header = new ShopHeader(mockScene, 0, 0);
         header.create();
 
@@ -253,7 +253,7 @@ describe('ShopHeader', () => {
         const onBackClick = vi.fn();
 
         // When: ShopHeaderを初期化してcreate()を呼び出し、クリックイベントをシミュレート
-        const { ShopHeader } = await import('@presentation/ui/scenes/components/shop/ShopHeader');
+        const { ShopHeader } = await import('@presentation/scenes/components/shop/ShopHeader');
         const header = new ShopHeader(mockScene, 0, 0, { onBackClick });
         header.create();
 
@@ -289,7 +289,7 @@ describe('ShopHeader', () => {
 
       it('TC-SH-E01: nullシーンでコンストラクタを呼び出すとエラーがスローされる', async () => {
         // Given: nullシーン
-        const { ShopHeader } = await import('@presentation/ui/scenes/components/shop/ShopHeader');
+        const { ShopHeader } = await import('@presentation/scenes/components/shop/ShopHeader');
 
         // When & Then: エラーがスローされる
         expect(() => new ShopHeader(null as unknown as Phaser.Scene, 0, 0)).toThrow(
@@ -309,7 +309,7 @@ describe('ShopHeader', () => {
 
       it('TC-SH-E02: undefinedシーンでコンストラクタを呼び出すとエラーがスローされる', async () => {
         // Given: undefinedシーン
-        const { ShopHeader } = await import('@presentation/ui/scenes/components/shop/ShopHeader');
+        const { ShopHeader } = await import('@presentation/scenes/components/shop/ShopHeader');
 
         // When & Then: エラーがスローされる
         expect(() => new ShopHeader(undefined as unknown as Phaser.Scene, 0, 0)).toThrow(
@@ -330,7 +330,7 @@ describe('ShopHeader', () => {
       it('TC-SH-E03: NaN座標でコンストラクタを呼び出すとエラーがスローされる', async () => {
         // Given: 有効なシーンとNaN座標
         const { scene: mockScene } = createMockScene();
-        const { ShopHeader } = await import('@presentation/ui/scenes/components/shop/ShopHeader');
+        const { ShopHeader } = await import('@presentation/scenes/components/shop/ShopHeader');
 
         // When & Then: エラーがスローされる
         expect(() => new ShopHeader(mockScene, NaN, NaN)).toThrow('Invalid position');
@@ -357,7 +357,7 @@ describe('ShopHeader', () => {
         const { scene: mockScene } = createMockScene();
 
         // When: setGold(0)を呼び出す
-        const { ShopHeader } = await import('@presentation/ui/scenes/components/shop/ShopHeader');
+        const { ShopHeader } = await import('@presentation/scenes/components/shop/ShopHeader');
         const header = new ShopHeader(mockScene, 0, 0);
         header.create();
         header.setGold(0);
@@ -381,7 +381,7 @@ describe('ShopHeader', () => {
         const { scene: mockScene } = createMockScene();
 
         // When: setGold(9999999)を呼び出す
-        const { ShopHeader } = await import('@presentation/ui/scenes/components/shop/ShopHeader');
+        const { ShopHeader } = await import('@presentation/scenes/components/shop/ShopHeader');
         const header = new ShopHeader(mockScene, 0, 0);
         header.create();
         header.setGold(9999999);
@@ -405,7 +405,7 @@ describe('ShopHeader', () => {
         const { scene: mockScene } = createMockScene();
 
         // When: 座標(0, 0)でShopHeaderを作成
-        const { ShopHeader } = await import('@presentation/ui/scenes/components/shop/ShopHeader');
+        const { ShopHeader } = await import('@presentation/scenes/components/shop/ShopHeader');
         const header = new ShopHeader(mockScene, 0, 0);
 
         // Then: コンテナが(0, 0)に配置される
@@ -432,7 +432,7 @@ describe('ShopHeader', () => {
       it('TC-SH-D01: destroy()が呼び出されるとコンテナと子要素が破棄される', async () => {
         // Given: ShopHeaderインスタンス
         const { scene: mockScene, mockContainer } = createMockScene();
-        const { ShopHeader } = await import('@presentation/ui/scenes/components/shop/ShopHeader');
+        const { ShopHeader } = await import('@presentation/scenes/components/shop/ShopHeader');
         const header = new ShopHeader(mockScene, 0, 0);
         header.create();
 

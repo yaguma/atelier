@@ -164,9 +164,7 @@ describe('TitleDialog', () => {
         };
 
         // When: TitleDialogを初期化
-        const { TitleDialog } = await import(
-          '@presentation/ui/scenes/components/title/TitleDialog'
-        );
+        const { TitleDialog } = await import('@presentation/scenes/components/title/TitleDialog');
         const dialog = new TitleDialog(mockScene, config);
         dialog.show();
 
@@ -195,9 +193,7 @@ describe('TitleDialog', () => {
         };
 
         // When: TitleDialogを初期化
-        const { TitleDialog } = await import(
-          '@presentation/ui/scenes/components/title/TitleDialog'
-        );
+        const { TitleDialog } = await import('@presentation/scenes/components/title/TitleDialog');
         const dialog = new TitleDialog(mockScene, config);
         dialog.show();
 
@@ -226,9 +222,7 @@ describe('TitleDialog', () => {
         };
 
         // When: TitleDialogを初期化
-        const { TitleDialog } = await import(
-          '@presentation/ui/scenes/components/title/TitleDialog'
-        );
+        const { TitleDialog } = await import('@presentation/scenes/components/title/TitleDialog');
         const dialog = new TitleDialog(mockScene, config);
         dialog.show();
 
@@ -258,9 +252,7 @@ describe('TitleDialog', () => {
         };
 
         // When: TitleDialogを表示
-        const { TitleDialog } = await import(
-          '@presentation/ui/scenes/components/title/TitleDialog'
-        );
+        const { TitleDialog } = await import('@presentation/scenes/components/title/TitleDialog');
         const dialog = new TitleDialog(mockScene, config);
         dialog.show();
 
@@ -291,9 +283,7 @@ describe('TitleDialog', () => {
         };
 
         // When: TitleDialogを表示
-        const { TitleDialog } = await import(
-          '@presentation/ui/scenes/components/title/TitleDialog'
-        );
+        const { TitleDialog } = await import('@presentation/scenes/components/title/TitleDialog');
         const dialog = new TitleDialog(mockScene, config);
         dialog.show();
 
@@ -326,9 +316,7 @@ describe('TitleDialog', () => {
         };
 
         // When: TitleDialogを表示
-        const { TitleDialog } = await import(
-          '@presentation/ui/scenes/components/title/TitleDialog'
-        );
+        const { TitleDialog } = await import('@presentation/scenes/components/title/TitleDialog');
         const dialog = new TitleDialog(mockScene, config);
         dialog.show();
 
@@ -363,9 +351,7 @@ describe('TitleDialog', () => {
         };
 
         // When: TitleDialogを表示
-        const { TitleDialog } = await import(
-          '@presentation/ui/scenes/components/title/TitleDialog'
-        );
+        const { TitleDialog } = await import('@presentation/scenes/components/title/TitleDialog');
         const dialog = new TitleDialog(mockScene, config);
         dialog.show();
 
@@ -394,9 +380,7 @@ describe('TitleDialog', () => {
         };
 
         // When: TitleDialogを表示
-        const { TitleDialog } = await import(
-          '@presentation/ui/scenes/components/title/TitleDialog'
-        );
+        const { TitleDialog } = await import('@presentation/scenes/components/title/TitleDialog');
         const dialog = new TitleDialog(mockScene, config);
         dialog.show();
 
@@ -427,9 +411,7 @@ describe('TitleDialog', () => {
         };
 
         // When: TitleDialogを表示して確認をクリック
-        const { TitleDialog } = await import(
-          '@presentation/ui/scenes/components/title/TitleDialog'
-        );
+        const { TitleDialog } = await import('@presentation/scenes/components/title/TitleDialog');
         const dialog = new TitleDialog(mockScene, config);
         dialog.show();
 
@@ -470,9 +452,7 @@ describe('TitleDialog', () => {
         };
 
         // When: TitleDialogを表示してclose()を呼び出す
-        const { TitleDialog } = await import(
-          '@presentation/ui/scenes/components/title/TitleDialog'
-        );
+        const { TitleDialog } = await import('@presentation/scenes/components/title/TitleDialog');
         const dialog = new TitleDialog(mockScene, config);
         dialog.show();
         dialog.close();
@@ -503,9 +483,7 @@ describe('TitleDialog', () => {
         };
 
         // When: TitleDialogを表示
-        const { TitleDialog } = await import(
-          '@presentation/ui/scenes/components/title/TitleDialog'
-        );
+        const { TitleDialog } = await import('@presentation/scenes/components/title/TitleDialog');
         const dialog = new TitleDialog(mockScene, config);
         dialog.show();
 
@@ -536,9 +514,7 @@ describe('TitleDialog', () => {
         };
 
         // When: TitleDialogを表示
-        const { TitleDialog } = await import(
-          '@presentation/ui/scenes/components/title/TitleDialog'
-        );
+        const { TitleDialog } = await import('@presentation/scenes/components/title/TitleDialog');
         const dialog = new TitleDialog(mockScene, config);
         dialog.show();
 
@@ -565,9 +541,7 @@ describe('TitleDialog', () => {
 
       it('TC-TD-E01: nullシーンでコンストラクタを呼び出すとエラーがスローされる', async () => {
         // Given: nullシーン
-        const { TitleDialog } = await import(
-          '@presentation/ui/scenes/components/title/TitleDialog'
-        );
+        const { TitleDialog } = await import('@presentation/scenes/components/title/TitleDialog');
         const config = {
           type: 'confirm' as const,
           title: '確認',
@@ -595,9 +569,7 @@ describe('TitleDialog', () => {
       it('TC-TD-E02: 不正なtypeでコンストラクタを呼び出すとエラーがスローされる', async () => {
         // Given: 不正なタイプ
         const { scene: mockScene } = createMockScene();
-        const { TitleDialog } = await import(
-          '@presentation/ui/scenes/components/title/TitleDialog'
-        );
+        const { TitleDialog } = await import('@presentation/scenes/components/title/TitleDialog');
         const config = {
           type: 'invalid' as 'confirm',
           title: '確認',
@@ -639,9 +611,7 @@ describe('TitleDialog', () => {
         };
 
         // When: TitleDialogを表示
-        const { TitleDialog } = await import(
-          '@presentation/ui/scenes/components/title/TitleDialog'
-        );
+        const { TitleDialog } = await import('@presentation/scenes/components/title/TitleDialog');
         const dialog = new TitleDialog(mockScene, config);
         dialog.show();
 
@@ -671,9 +641,7 @@ describe('TitleDialog', () => {
         };
 
         // When: TitleDialogを表示
-        const { TitleDialog } = await import(
-          '@presentation/ui/scenes/components/title/TitleDialog'
-        );
+        const { TitleDialog } = await import('@presentation/scenes/components/title/TitleDialog');
         const dialog = new TitleDialog(mockScene, config);
         dialog.show();
 
@@ -707,9 +675,7 @@ describe('TitleDialog', () => {
           onConfirm: vi.fn(),
           onClose: vi.fn(),
         };
-        const { TitleDialog } = await import(
-          '@presentation/ui/scenes/components/title/TitleDialog'
-        );
+        const { TitleDialog } = await import('@presentation/scenes/components/title/TitleDialog');
         const dialog = new TitleDialog(mockScene, config);
         dialog.show();
 
@@ -742,9 +708,7 @@ describe('TitleDialog', () => {
           onConfirm: vi.fn(),
           onClose: vi.fn(),
         };
-        const { TitleDialog } = await import(
-          '@presentation/ui/scenes/components/title/TitleDialog'
-        );
+        const { TitleDialog } = await import('@presentation/scenes/components/title/TitleDialog');
         const dialog = new TitleDialog(mockScene, config);
         dialog.show();
 

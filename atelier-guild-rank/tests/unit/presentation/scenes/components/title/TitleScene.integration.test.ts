@@ -197,7 +197,7 @@ describe('TitleScene Integration Tests', () => {
       const mockSaveDataRepository = createMockSaveDataRepository(false);
 
       // When: TitleSceneを模倣したコンポーネント初期化
-      const { TitleLogo } = await import('@presentation/ui/scenes/components/title/TitleLogo');
+      const { TitleLogo } = await import('@presentation/scenes/components/title/TitleLogo');
       const logo = new TitleLogo(mockScene, 640, 200);
       logo.create();
 
@@ -232,7 +232,7 @@ describe('TitleScene Integration Tests', () => {
       };
 
       // When: TitleMenuを初期化
-      const { TitleMenu } = await import('@presentation/ui/scenes/components/title/TitleMenu');
+      const { TitleMenu } = await import('@presentation/scenes/components/title/TitleMenu');
       const menu = new TitleMenu(mockScene, 640, 400, config);
       menu.create();
 
@@ -262,7 +262,7 @@ describe('TitleScene Integration Tests', () => {
       };
 
       // When: TitleMenuで新規ゲームをクリック
-      const { TitleMenu } = await import('@presentation/ui/scenes/components/title/TitleMenu');
+      const { TitleMenu } = await import('@presentation/scenes/components/title/TitleMenu');
       const menu = new TitleMenu(mockScene, 640, 400, config);
       menu.create();
       menu.handleNewGameClick();
@@ -296,7 +296,7 @@ describe('TitleScene Integration Tests', () => {
       };
 
       // When: TitleDialogを表示して確認
-      const { TitleDialog } = await import('@presentation/ui/scenes/components/title/TitleDialog');
+      const { TitleDialog } = await import('@presentation/scenes/components/title/TitleDialog');
       const dialog = new TitleDialog(mockScene, config);
       dialog.show();
 
@@ -335,7 +335,7 @@ describe('TitleScene Integration Tests', () => {
       };
 
       // When: TitleMenuでコンティニューをクリック
-      const { TitleMenu } = await import('@presentation/ui/scenes/components/title/TitleMenu');
+      const { TitleMenu } = await import('@presentation/scenes/components/title/TitleMenu');
       const menu = new TitleMenu(mockScene, 640, 400, config);
       menu.create();
       menu.handleContinueClick();
@@ -371,7 +371,7 @@ describe('TitleScene Integration Tests', () => {
       };
 
       // When: TitleMenuで設定をクリック
-      const { TitleMenu } = await import('@presentation/ui/scenes/components/title/TitleMenu');
+      const { TitleMenu } = await import('@presentation/scenes/components/title/TitleMenu');
       const menu = new TitleMenu(mockScene, 640, 400, config);
       menu.create();
       menu.handleSettingsClick();
@@ -429,7 +429,7 @@ describe('TitleScene Integration Tests', () => {
       };
 
       // When: エラーダイアログを表示
-      const { TitleDialog } = await import('@presentation/ui/scenes/components/title/TitleDialog');
+      const { TitleDialog } = await import('@presentation/scenes/components/title/TitleDialog');
       const dialog = new TitleDialog(mockScene, config);
       dialog.show();
 
@@ -461,7 +461,7 @@ describe('TitleScene Integration Tests', () => {
       };
 
       // When: TitleMenuを初期化
-      const { TitleMenu } = await import('@presentation/ui/scenes/components/title/TitleMenu');
+      const { TitleMenu } = await import('@presentation/scenes/components/title/TitleMenu');
       const menu = new TitleMenu(mockScene, 640, 400, config);
       menu.create();
 
@@ -486,8 +486,8 @@ describe('TitleScene Integration Tests', () => {
       // Given: 各コンポーネントのインスタンス
       const { scene: mockScene, mockContainer } = createMockScene();
 
-      const { TitleLogo } = await import('@presentation/ui/scenes/components/title/TitleLogo');
-      const { TitleMenu } = await import('@presentation/ui/scenes/components/title/TitleMenu');
+      const { TitleLogo } = await import('@presentation/scenes/components/title/TitleLogo');
+      const { TitleMenu } = await import('@presentation/scenes/components/title/TitleMenu');
 
       const logo = new TitleLogo(mockScene, 640, 200);
       logo.create();

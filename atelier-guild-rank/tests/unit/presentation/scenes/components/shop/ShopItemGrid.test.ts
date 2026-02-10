@@ -9,7 +9,7 @@
  * TC-SG-D01: 破棄処理テストケース
  */
 
-import type { IShopItem } from '@presentation/ui/scenes/components/shop/types';
+import type { IShopItem } from '@presentation/scenes/components/shop/types';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // =============================================================================
@@ -152,9 +152,7 @@ describe('ShopItemGrid', () => {
         };
 
         // When: ShopItemGridを初期化
-        const { ShopItemGrid } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemGrid'
-        );
+        const { ShopItemGrid } = await import('@presentation/scenes/components/shop/ShopItemGrid');
         const grid = new ShopItemGrid(mockScene, 0, 100, config);
 
         // Then: コンテナが作成される
@@ -181,9 +179,7 @@ describe('ShopItemGrid', () => {
         };
 
         // When: ShopItemGridを初期化してcreate()を呼び出す
-        const { ShopItemGrid } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemGrid'
-        );
+        const { ShopItemGrid } = await import('@presentation/scenes/components/shop/ShopItemGrid');
         const grid = new ShopItemGrid(mockScene, 0, 100, config);
 
         // Then: エラーなく動作する
@@ -214,9 +210,7 @@ describe('ShopItemGrid', () => {
         };
 
         // When: ShopItemGridを初期化してcreate()を呼び出す
-        const { ShopItemGrid } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemGrid'
-        );
+        const { ShopItemGrid } = await import('@presentation/scenes/components/shop/ShopItemGrid');
         const grid = new ShopItemGrid(mockScene, 0, 100, config);
         grid.create();
 
@@ -246,9 +240,7 @@ describe('ShopItemGrid', () => {
         };
 
         // When: ShopItemGridを初期化してcreate()を呼び出す
-        const { ShopItemGrid } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemGrid'
-        );
+        const { ShopItemGrid } = await import('@presentation/scenes/components/shop/ShopItemGrid');
         const grid = new ShopItemGrid(mockScene, 0, 100, config);
         grid.create();
 
@@ -278,9 +270,7 @@ describe('ShopItemGrid', () => {
         };
 
         // When: ShopItemGridを初期化してアイテムを選択
-        const { ShopItemGrid } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemGrid'
-        );
+        const { ShopItemGrid } = await import('@presentation/scenes/components/shop/ShopItemGrid');
         const grid = new ShopItemGrid(mockScene, 0, 100, config);
         grid.create();
         grid.selectItem(item.id);
@@ -309,9 +299,7 @@ describe('ShopItemGrid', () => {
         };
 
         // When: ShopItemGridを初期化して新しいアイテムリストに更新
-        const { ShopItemGrid } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemGrid'
-        );
+        const { ShopItemGrid } = await import('@presentation/scenes/components/shop/ShopItemGrid');
         const grid = new ShopItemGrid(mockScene, 0, 100, config);
         grid.create();
 
@@ -343,9 +331,7 @@ describe('ShopItemGrid', () => {
 
       it('TC-SG-E01: nullシーンでコンストラクタを呼び出すとエラーがスローされる', async () => {
         // Given: nullシーン
-        const { ShopItemGrid } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemGrid'
-        );
+        const { ShopItemGrid } = await import('@presentation/scenes/components/shop/ShopItemGrid');
         const config = {
           items: [],
           onItemSelect: vi.fn(),
@@ -370,9 +356,7 @@ describe('ShopItemGrid', () => {
       it('TC-SG-E02: nullアイテムリストでコンストラクタを呼び出すとエラーがスローされる', async () => {
         // Given: nullアイテムリスト
         const { scene: mockScene } = createMockScene();
-        const { ShopItemGrid } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemGrid'
-        );
+        const { ShopItemGrid } = await import('@presentation/scenes/components/shop/ShopItemGrid');
         const config = {
           items: null as unknown as IShopItem[],
           onItemSelect: vi.fn(),
@@ -410,9 +394,7 @@ describe('ShopItemGrid', () => {
         };
 
         // When: ShopItemGridを初期化してcreate()を呼び出す
-        const { ShopItemGrid } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemGrid'
-        );
+        const { ShopItemGrid } = await import('@presentation/scenes/components/shop/ShopItemGrid');
         const grid = new ShopItemGrid(mockScene, 0, 100, config);
         grid.create();
 
@@ -442,9 +424,7 @@ describe('ShopItemGrid', () => {
         };
 
         // When: ShopItemGridを初期化してcreate()を呼び出す
-        const { ShopItemGrid } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemGrid'
-        );
+        const { ShopItemGrid } = await import('@presentation/scenes/components/shop/ShopItemGrid');
         const grid = new ShopItemGrid(mockScene, 0, 100, config);
         grid.create();
 
@@ -482,9 +462,7 @@ describe('ShopItemGrid', () => {
         };
 
         // When: ShopItemGridを初期化してdestroy()を呼び出す
-        const { ShopItemGrid } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemGrid'
-        );
+        const { ShopItemGrid } = await import('@presentation/scenes/components/shop/ShopItemGrid');
         const grid = new ShopItemGrid(mockScene, 0, 100, config);
         grid.create();
         grid.destroy();

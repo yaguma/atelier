@@ -24,7 +24,7 @@ describe('Title Types', () => {
 
     it('TC-TY-001: TitleLogoConfigが必須プロパティを持つ', async () => {
       // Given: 型定義をインポート
-      const { TitleLogoConfig } = await import('@presentation/ui/scenes/components/title/types');
+      const { TitleLogoConfig } = await import('@presentation/scenes/components/title/types');
 
       // When: 正しいTitleLogoConfigオブジェクトを作成
       const config: typeof TitleLogoConfig = {
@@ -50,7 +50,7 @@ describe('Title Types', () => {
 
     it('TC-TY-002: TitleMenuConfigが必須プロパティを持つ', async () => {
       // Given: 型定義をインポート
-      const { TitleMenuConfig } = await import('@presentation/ui/scenes/components/title/types');
+      const { TitleMenuConfig } = await import('@presentation/scenes/components/title/types');
 
       // When: 正しいTitleMenuConfigオブジェクトを作成
       const config: typeof TitleMenuConfig = {
@@ -80,7 +80,7 @@ describe('Title Types', () => {
 
     it('TC-TY-003a: OnNewGameCallbackが正しい型シグネチャを持つ', async () => {
       // Given: 型定義をインポート
-      const { OnNewGameCallback } = await import('@presentation/ui/scenes/components/title/types');
+      const { OnNewGameCallback } = await import('@presentation/scenes/components/title/types');
 
       // When: 型安全なコールバックを作成
       const callback: typeof OnNewGameCallback = (): void => {
@@ -93,7 +93,7 @@ describe('Title Types', () => {
 
     it('TC-TY-003b: OnContinueCallbackが正しい型シグネチャを持つ', async () => {
       // Given: 型定義をインポート
-      const { OnContinueCallback } = await import('@presentation/ui/scenes/components/title/types');
+      const { OnContinueCallback } = await import('@presentation/scenes/components/title/types');
 
       // When: 型安全なコールバックを作成
       const callback: typeof OnContinueCallback = (): void => {
@@ -106,7 +106,7 @@ describe('Title Types', () => {
 
     it('TC-TY-003c: OnSettingsCallbackが正しい型シグネチャを持つ', async () => {
       // Given: 型定義をインポート
-      const { OnSettingsCallback } = await import('@presentation/ui/scenes/components/title/types');
+      const { OnSettingsCallback } = await import('@presentation/scenes/components/title/types');
 
       // When: 型安全なコールバックを作成
       const callback: typeof OnSettingsCallback = (): void => {
@@ -119,9 +119,7 @@ describe('Title Types', () => {
 
     it('TC-TY-003d: OnDialogCloseCallbackが正しい型シグネチャを持つ', async () => {
       // Given: 型定義をインポート
-      const { OnDialogCloseCallback } = await import(
-        '@presentation/ui/scenes/components/title/types'
-      );
+      const { OnDialogCloseCallback } = await import('@presentation/scenes/components/title/types');
 
       // When: 型安全なコールバックを作成
       const callback: typeof OnDialogCloseCallback = (): void => {
@@ -135,7 +133,7 @@ describe('Title Types', () => {
     it('TC-TY-003e: OnDialogConfirmCallbackが正しい型シグネチャを持つ', async () => {
       // Given: 型定義をインポート
       const { OnDialogConfirmCallback } = await import(
-        '@presentation/ui/scenes/components/title/types'
+        '@presentation/scenes/components/title/types'
       );
 
       // When: 型安全なコールバックを作成
@@ -159,7 +157,7 @@ describe('Title Types', () => {
 
     it('TC-TY-004: TitleDialogConfigが必須プロパティを持つ', async () => {
       // Given: 型定義をインポート
-      const { TitleDialogConfig } = await import('@presentation/ui/scenes/components/title/types');
+      const { TitleDialogConfig } = await import('@presentation/scenes/components/title/types');
 
       // When: 正しいTitleDialogConfigオブジェクトを作成
       const config: typeof TitleDialogConfig = {
@@ -191,7 +189,7 @@ describe('Title Types', () => {
 
     it('TC-TY-005: TITLE_LAYOUTがレイアウト定数を持つ', async () => {
       // Given: 定数をインポート
-      const { TITLE_LAYOUT } = await import('@presentation/ui/scenes/components/title/types');
+      const { TITLE_LAYOUT } = await import('@presentation/scenes/components/title/types');
 
       // Then: 必須のレイアウト定数が存在する
       expect(TITLE_LAYOUT).toBeDefined();
@@ -214,7 +212,7 @@ describe('Title Types', () => {
 
     it('TC-TY-006: TITLE_STYLESがスタイル定数を持つ', async () => {
       // Given: 定数をインポート
-      const { TITLE_STYLES } = await import('@presentation/ui/scenes/components/title/types');
+      const { TITLE_STYLES } = await import('@presentation/scenes/components/title/types');
 
       // Then: 必須のスタイル定数が存在する
       expect(TITLE_STYLES).toBeDefined();
@@ -236,7 +234,7 @@ describe('Title Types', () => {
 
     it('TC-TY-007: TITLE_TEXTがテキスト定数を持つ', async () => {
       // Given: 定数をインポート
-      const { TITLE_TEXT } = await import('@presentation/ui/scenes/components/title/types');
+      const { TITLE_TEXT } = await import('@presentation/scenes/components/title/types');
 
       // Then: 必須のテキスト定数が存在する
       expect(TITLE_TEXT).toBeDefined();
