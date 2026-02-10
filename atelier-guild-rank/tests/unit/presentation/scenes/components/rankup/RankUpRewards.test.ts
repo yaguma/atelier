@@ -142,7 +142,7 @@ describe('RankUpRewards', () => {
 
       // When: RankUpRewardsを初期化
       const { RankUpRewards } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpRewards'
+        '@presentation/scenes/components/rankup/RankUpRewards'
       );
       const rewards = new RankUpRewards(mockScene, 0, 0, { onSelectArtifact });
 
@@ -162,7 +162,7 @@ describe('RankUpRewards', () => {
       const { scene: mockScene, mockText } = createMockScene();
       const onSelectArtifact = vi.fn();
       const { RankUpRewards } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpRewards'
+        '@presentation/scenes/components/rankup/RankUpRewards'
       );
       const rewards = new RankUpRewards(mockScene, 0, 0, { onSelectArtifact });
       rewards.create();
@@ -185,7 +185,7 @@ describe('RankUpRewards', () => {
       const { scene: mockScene, mockContainer } = createMockScene();
       const onSelectArtifact = vi.fn();
       const { RankUpRewards } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpRewards'
+        '@presentation/scenes/components/rankup/RankUpRewards'
       );
       const rewards = new RankUpRewards(mockScene, 0, 0, { onSelectArtifact });
       rewards.create();
@@ -218,7 +218,7 @@ describe('RankUpRewards', () => {
       });
 
       const { RankUpRewards } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpRewards'
+        '@presentation/scenes/components/rankup/RankUpRewards'
       );
       const rewards = new RankUpRewards(mockScene, 0, 0, { onSelectArtifact });
       rewards.create();
@@ -244,7 +244,7 @@ describe('RankUpRewards', () => {
       const { scene: mockScene, mockRectangle } = createMockScene();
       const onSelectArtifact = vi.fn();
       const { RankUpRewards } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpRewards'
+        '@presentation/scenes/components/rankup/RankUpRewards'
       );
       const rewards = new RankUpRewards(mockScene, 0, 0, { onSelectArtifact });
       rewards.create();
@@ -267,7 +267,7 @@ describe('RankUpRewards', () => {
       const { scene: mockScene } = createMockScene();
       const onSelectArtifact = vi.fn();
       const { RankUpRewards } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpRewards'
+        '@presentation/scenes/components/rankup/RankUpRewards'
       );
       const rewards = new RankUpRewards(mockScene, 0, 0, { onSelectArtifact });
       rewards.create();
@@ -291,7 +291,7 @@ describe('RankUpRewards', () => {
       const { scene: mockScene, mockContainer } = createMockScene();
       const onSelectArtifact = vi.fn();
       const { RankUpRewards } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpRewards'
+        '@presentation/scenes/components/rankup/RankUpRewards'
       );
       const rewards = new RankUpRewards(mockScene, 0, 0, { onSelectArtifact });
       rewards.create();

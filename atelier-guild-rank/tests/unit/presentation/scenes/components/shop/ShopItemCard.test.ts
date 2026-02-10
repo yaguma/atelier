@@ -9,7 +9,7 @@
  * TC-SC-D01 ~ TC-SC-D02: 破棄処理テストケース
  */
 
-import type { IShopItem } from '@presentation/ui/scenes/components/shop/types';
+import type { IShopItem } from '@presentation/scenes/components/shop/types';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // =============================================================================
@@ -159,9 +159,7 @@ describe('ShopItemCard', () => {
         };
 
         // When: ShopItemCardを初期化
-        const { ShopItemCard } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemCard'
-        );
+        const { ShopItemCard } = await import('@presentation/scenes/components/shop/ShopItemCard');
         const card = new ShopItemCard(mockScene, config);
 
         // Then: コンテナが作成される
@@ -192,9 +190,7 @@ describe('ShopItemCard', () => {
         };
 
         // When: create()を呼び出す
-        const { ShopItemCard } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemCard'
-        );
+        const { ShopItemCard } = await import('@presentation/scenes/components/shop/ShopItemCard');
         const card = new ShopItemCard(mockScene, config);
         card.create();
 
@@ -231,9 +227,7 @@ describe('ShopItemCard', () => {
         };
 
         // When: create()を呼び出す
-        const { ShopItemCard } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemCard'
-        );
+        const { ShopItemCard } = await import('@presentation/scenes/components/shop/ShopItemCard');
         const card = new ShopItemCard(mockScene, config);
         card.create();
 
@@ -269,9 +263,7 @@ describe('ShopItemCard', () => {
         };
 
         // When: create()を呼び出す
-        const { ShopItemCard } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemCard'
-        );
+        const { ShopItemCard } = await import('@presentation/scenes/components/shop/ShopItemCard');
         const card = new ShopItemCard(mockScene, config);
         card.create();
 
@@ -307,9 +299,7 @@ describe('ShopItemCard', () => {
         };
 
         // When: create()を呼び出す
-        const { ShopItemCard } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemCard'
-        );
+        const { ShopItemCard } = await import('@presentation/scenes/components/shop/ShopItemCard');
         const card = new ShopItemCard(mockScene, config);
         card.create();
 
@@ -345,9 +335,7 @@ describe('ShopItemCard', () => {
         };
 
         // When: create()を呼び出す
-        const { ShopItemCard } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemCard'
-        );
+        const { ShopItemCard } = await import('@presentation/scenes/components/shop/ShopItemCard');
         const card = new ShopItemCard(mockScene, config);
         card.create();
 
@@ -383,9 +371,7 @@ describe('ShopItemCard', () => {
         };
 
         // When: create()を呼び出す
-        const { ShopItemCard } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemCard'
-        );
+        const { ShopItemCard } = await import('@presentation/scenes/components/shop/ShopItemCard');
         const card = new ShopItemCard(mockScene, config);
         card.create();
 
@@ -422,9 +408,7 @@ describe('ShopItemCard', () => {
         };
 
         // When: create()を呼び出す
-        const { ShopItemCard } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemCard'
-        );
+        const { ShopItemCard } = await import('@presentation/scenes/components/shop/ShopItemCard');
         const card = new ShopItemCard(mockScene, config);
         card.create();
 
@@ -458,9 +442,7 @@ describe('ShopItemCard', () => {
         };
 
         // When: create()を呼び出す
-        const { ShopItemCard } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemCard'
-        );
+        const { ShopItemCard } = await import('@presentation/scenes/components/shop/ShopItemCard');
         const card = new ShopItemCard(mockScene, config);
         card.create();
 
@@ -493,9 +475,7 @@ describe('ShopItemCard', () => {
         };
 
         // When: create()を呼び出す
-        const { ShopItemCard } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemCard'
-        );
+        const { ShopItemCard } = await import('@presentation/scenes/components/shop/ShopItemCard');
         const card = new ShopItemCard(mockScene, config);
         card.create();
 
@@ -527,9 +507,7 @@ describe('ShopItemCard', () => {
         };
 
         // When: create()を呼び出す
-        const { ShopItemCard } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemCard'
-        );
+        const { ShopItemCard } = await import('@presentation/scenes/components/shop/ShopItemCard');
         const card = new ShopItemCard(mockScene, config);
         card.create();
 
@@ -565,9 +543,7 @@ describe('ShopItemCard', () => {
         };
 
         // When: create()を呼び出し、クリックイベントをシミュレート
-        const { ShopItemCard } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemCard'
-        );
+        const { ShopItemCard } = await import('@presentation/scenes/components/shop/ShopItemCard');
         const card = new ShopItemCard(mockScene, config);
         card.create();
 
@@ -608,9 +584,7 @@ describe('ShopItemCard', () => {
         };
 
         // When: create()を呼び出す
-        const { ShopItemCard } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemCard'
-        );
+        const { ShopItemCard } = await import('@presentation/scenes/components/shop/ShopItemCard');
         const card = new ShopItemCard(mockScene, config);
         card.create();
 
@@ -642,9 +616,7 @@ describe('ShopItemCard', () => {
         };
 
         // When: create()を呼び出す
-        const { ShopItemCard } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemCard'
-        );
+        const { ShopItemCard } = await import('@presentation/scenes/components/shop/ShopItemCard');
         const card = new ShopItemCard(mockScene, config);
         card.create();
 
@@ -671,9 +643,7 @@ describe('ShopItemCard', () => {
 
       it('TC-SC-E01: nullシーンでコンストラクタを呼び出すとエラーがスローされる', async () => {
         // Given: nullシーン
-        const { ShopItemCard } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemCard'
-        );
+        const { ShopItemCard } = await import('@presentation/scenes/components/shop/ShopItemCard');
         const mockItem = createMockShopItem();
         const config = {
           item: mockItem,
@@ -702,9 +672,7 @@ describe('ShopItemCard', () => {
       it('TC-SC-E02: nullアイテムでコンストラクタを呼び出すとエラーがスローされる', async () => {
         // Given: nullアイテム
         const { scene: mockScene } = createMockScene();
-        const { ShopItemCard } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemCard'
-        );
+        const { ShopItemCard } = await import('@presentation/scenes/components/shop/ShopItemCard');
         const config = {
           item: null as unknown as IShopItem,
           x: 0,
@@ -746,9 +714,7 @@ describe('ShopItemCard', () => {
         };
 
         // When: create()を呼び出す
-        const { ShopItemCard } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemCard'
-        );
+        const { ShopItemCard } = await import('@presentation/scenes/components/shop/ShopItemCard');
         const card = new ShopItemCard(mockScene, config);
         card.create();
 
@@ -785,9 +751,7 @@ describe('ShopItemCard', () => {
         };
 
         // When: create()を呼び出す
-        const { ShopItemCard } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemCard'
-        );
+        const { ShopItemCard } = await import('@presentation/scenes/components/shop/ShopItemCard');
         const card = new ShopItemCard(mockScene, config);
         card.create();
 
@@ -818,9 +782,7 @@ describe('ShopItemCard', () => {
         };
 
         // When: create()を呼び出す
-        const { ShopItemCard } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemCard'
-        );
+        const { ShopItemCard } = await import('@presentation/scenes/components/shop/ShopItemCard');
         const card = new ShopItemCard(mockScene, config);
         card.create();
 
@@ -866,9 +828,7 @@ describe('ShopItemCard', () => {
         };
 
         // When: create()を呼び出してからdestroy()
-        const { ShopItemCard } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemCard'
-        );
+        const { ShopItemCard } = await import('@presentation/scenes/components/shop/ShopItemCard');
         const card = new ShopItemCard(mockScene, config);
         card.create();
         card.destroy();
@@ -900,9 +860,7 @@ describe('ShopItemCard', () => {
         };
 
         // When: create()を呼び出してからdestroy()
-        const { ShopItemCard } = await import(
-          '@presentation/ui/scenes/components/shop/ShopItemCard'
-        );
+        const { ShopItemCard } = await import('@presentation/scenes/components/shop/ShopItemCard');
         const card = new ShopItemCard(mockScene, config);
         card.create();
         card.destroy();

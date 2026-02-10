@@ -126,7 +126,7 @@ describe('RankUpRequirements', () => {
 
       // When: RankUpRequirementsを初期化
       const { RankUpRequirements } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpRequirements'
+        '@presentation/scenes/components/rankup/RankUpRequirements'
       );
       const requirements = new RankUpRequirements(mockScene, 0, 0);
 
@@ -145,7 +145,7 @@ describe('RankUpRequirements', () => {
       // Given: RankUpRequirementsインスタンス
       const { scene: mockScene } = createMockScene();
       const { RankUpRequirements } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpRequirements'
+        '@presentation/scenes/components/rankup/RankUpRequirements'
       );
       const requirements = new RankUpRequirements(mockScene, 0, 0);
       requirements.create();
@@ -167,7 +167,7 @@ describe('RankUpRequirements', () => {
       // Given: RankUpRequirementsインスタンス
       const { scene: mockScene, mockText } = createMockScene();
       const { RankUpRequirements } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpRequirements'
+        '@presentation/scenes/components/rankup/RankUpRequirements'
       );
       const requirements = new RankUpRequirements(mockScene, 0, 0);
       requirements.create();
@@ -189,7 +189,7 @@ describe('RankUpRequirements', () => {
       // Given: RankUpRequirementsインスタンス
       const { scene: mockScene } = createMockScene();
       const { RankUpRequirements } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpRequirements'
+        '@presentation/scenes/components/rankup/RankUpRequirements'
       );
       const requirements = new RankUpRequirements(mockScene, 0, 0);
       requirements.create();
@@ -211,7 +211,7 @@ describe('RankUpRequirements', () => {
       // Given: RankUpRequirementsインスタンス
       const { scene: mockScene, mockText } = createMockScene();
       const { RankUpRequirements } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpRequirements'
+        '@presentation/scenes/components/rankup/RankUpRequirements'
       );
       const requirements = new RankUpRequirements(mockScene, 0, 0);
       requirements.create();
@@ -233,7 +233,7 @@ describe('RankUpRequirements', () => {
       // Given: RankUpRequirementsインスタンス
       const { scene: mockScene, mockGraphics } = createMockScene();
       const { RankUpRequirements } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpRequirements'
+        '@presentation/scenes/components/rankup/RankUpRequirements'
       );
       const requirements = new RankUpRequirements(mockScene, 0, 0);
 
@@ -254,7 +254,7 @@ describe('RankUpRequirements', () => {
       // Given: RankUpRequirementsインスタンス
       const { scene: mockScene, mockContainer } = createMockScene();
       const { RankUpRequirements } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpRequirements'
+        '@presentation/scenes/components/rankup/RankUpRequirements'
       );
       const requirements = new RankUpRequirements(mockScene, 0, 0);
       requirements.create();

@@ -117,7 +117,7 @@ describe('RankUpTestPanel', () => {
 
       // When: RankUpTestPanelを初期化
       const { RankUpTestPanel } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpTestPanel'
+        '@presentation/scenes/components/rankup/RankUpTestPanel'
       );
       const panel = new RankUpTestPanel(mockScene, 0, 0, callbacks);
 
@@ -141,7 +141,7 @@ describe('RankUpTestPanel', () => {
         onToTitle: vi.fn(),
       };
       const { RankUpTestPanel } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpTestPanel'
+        '@presentation/scenes/components/rankup/RankUpTestPanel'
       );
       const panel = new RankUpTestPanel(mockScene, 0, 0, callbacks);
       panel.create();
@@ -169,7 +169,7 @@ describe('RankUpTestPanel', () => {
       };
 
       const { RankUpTestPanel } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpTestPanel'
+        '@presentation/scenes/components/rankup/RankUpTestPanel'
       );
       const panel = new RankUpTestPanel(mockScene, 0, 0, callbacks);
       panel.create();
@@ -198,7 +198,7 @@ describe('RankUpTestPanel', () => {
       };
 
       const { RankUpTestPanel } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpTestPanel'
+        '@presentation/scenes/components/rankup/RankUpTestPanel'
       );
       const panel = new RankUpTestPanel(mockScene, 0, 0, callbacks);
       panel.create();
@@ -226,7 +226,7 @@ describe('RankUpTestPanel', () => {
         onToTitle: vi.fn(),
       };
       const { RankUpTestPanel } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpTestPanel'
+        '@presentation/scenes/components/rankup/RankUpTestPanel'
       );
       const panel = new RankUpTestPanel(mockScene, 0, 0, callbacks);
       panel.create();
@@ -253,7 +253,7 @@ describe('RankUpTestPanel', () => {
         onToTitle: vi.fn(),
       };
       const { RankUpTestPanel } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpTestPanel'
+        '@presentation/scenes/components/rankup/RankUpTestPanel'
       );
       const panel = new RankUpTestPanel(mockScene, 0, 0, callbacks);
       panel.create();
@@ -280,7 +280,7 @@ describe('RankUpTestPanel', () => {
         onToTitle: vi.fn(),
       };
       const { RankUpTestPanel } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpTestPanel'
+        '@presentation/scenes/components/rankup/RankUpTestPanel'
       );
       const panel = new RankUpTestPanel(mockScene, 0, 0, callbacks);
       panel.create();
@@ -308,7 +308,7 @@ describe('RankUpTestPanel', () => {
         onToTitle: vi.fn(),
       };
       const { RankUpTestPanel } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpTestPanel'
+        '@presentation/scenes/components/rankup/RankUpTestPanel'
       );
       const panel = new RankUpTestPanel(mockScene, 0, 0, callbacks);
       panel.create();
@@ -335,7 +335,7 @@ describe('RankUpTestPanel', () => {
         onToTitle: vi.fn(),
       };
       const { RankUpTestPanel } = await import(
-        '@presentation/ui/scenes/components/rankup/RankUpTestPanel'
+        '@presentation/scenes/components/rankup/RankUpTestPanel'
       );
       const panel = new RankUpTestPanel(mockScene, 0, 0, callbacks);
       panel.create();

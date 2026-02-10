@@ -15,6 +15,7 @@
 import type { RexDialog, RexLabel, RexUIPlugin } from '@presentation/types/rexui';
 import { isKeyForAction } from '@shared/constants/keybindings';
 import Phaser from 'phaser';
+import { THEME } from '../ui/theme';
 import {
   TITLE_ANIMATION,
   TITLE_DEPTH,
@@ -22,8 +23,7 @@ import {
   TITLE_SIZES,
   TITLE_STYLES,
   TITLE_TEXT,
-} from '../ui/scenes/components/title/types';
-import { THEME } from '../ui/theme';
+} from './components/title/types';
 
 /** デフォルト画面サイズ */
 const DEFAULT_SCREEN = { WIDTH: 1280, HEIGHT: 720 } as const;
