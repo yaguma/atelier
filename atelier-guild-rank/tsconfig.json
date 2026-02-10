@@ -30,7 +30,9 @@
       "@application/*": ["src/application/*"],
       "@infrastructure/*": ["src/infrastructure/*"],
       "@presentation/*": ["src/presentation/*"],
-      "@shared/*": ["src/shared/*"]
+      "@shared/*": ["src/shared/*"],
+      "@features/*": ["src/features/*"],
+      "@scenes/*": ["src/scenes/*"]
     }
   },
   "include": ["src"],

@@ -18,6 +18,8 @@ export default defineConfig(({ mode }) => ({
       '@infrastructure': path.resolve(__dirname, './src/infrastructure'),
       '@presentation': path.resolve(__dirname, './src/presentation'),
       '@shared': path.resolve(__dirname, './src/shared'),
+      '@features': path.resolve(__dirname, './src/features'),
+      '@scenes': path.resolve(__dirname, './src/scenes'),
     },
   },
   build: {
