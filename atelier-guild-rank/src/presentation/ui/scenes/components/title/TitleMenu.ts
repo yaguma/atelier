@@ -9,6 +9,7 @@
  * - 設定ボタン
  */
 
+import type { RexLabel } from '@presentation/types/rexui';
 import { BaseComponent } from '@presentation/ui/components/BaseComponent';
 import { THEME } from '@presentation/ui/theme';
 import type Phaser from 'phaser';
@@ -29,13 +30,17 @@ export class TitleMenu extends BaseComponent {
   /** メニュー設定 */
   private config: ITitleMenuConfig;
 
-  /** ボタン参照（破棄時に使用） */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelコンポーネントの型は複雑なため
-  private buttons: any[] = [];
+  /**
+   * ボタン参照（破棄時に使用）
+   * TASK-0059: rexUI型定義を適用
+   */
+  private buttons: RexLabel[] = [];
 
-  /** コンティニューボタン参照 */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelコンポーネントの型は複雑なため
-  private continueButton: any | null = null;
+  /**
+   * コンティニューボタン参照
+   * TASK-0059: rexUI型定義を適用
+   */
+  private continueButton: RexLabel | null = null;
 
   /**
    * コンストラクタ
@@ -69,7 +74,9 @@ export class TitleMenu extends BaseComponent {
       THEME.colors.primary,
       () => this.handleNewGameClick(),
     );
-    this.buttons.push(newGameButton);
+    if (newGameButton) {
+      this.buttons.push(newGameButton);
+    }
 
     // コンティニューボタン
     this.continueButton = this.createButton(
@@ -79,10 +86,12 @@ export class TitleMenu extends BaseComponent {
       THEME.colors.primary,
       () => this.handleContinueClick(),
     );
-    if (!this.config.hasSaveData) {
-      this.continueButton.setAlpha(TITLE_ANIMATION.DISABLED_ALPHA);
+    if (this.continueButton) {
+      if (!this.config.hasSaveData) {
+        this.continueButton.setAlpha(TITLE_ANIMATION.DISABLED_ALPHA);
+      }
+      this.buttons.push(this.continueButton);
     }
-    this.buttons.push(this.continueButton);
 
     // 設定ボタン
     const settingsButton = this.createButton(
@@ -92,11 +101,14 @@ export class TitleMenu extends BaseComponent {
       THEME.colors.secondary,
       () => this.handleSettingsClick(),
     );
-    this.buttons.push(settingsButton);
+    if (settingsButton) {
+      this.buttons.push(settingsButton);
+    }
   }
 
   /**
    * ボタンを生成する共通メソッド
+   * TASK-0059: rexUI型定義を適用
    * @param x X座標
    * @param y Y座標
    * @param text ボタンテキスト
@@ -110,8 +122,7 @@ export class TitleMenu extends BaseComponent {
     text: string,
     backgroundColor: number,
     onClick: () => void,
-    // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelコンポーネントの型は複雑なため
-  ): any {
+  ): RexLabel | null {
     if (!this.rexUI) {
       console.warn('TitleMenu: rexUI is not available');
       return null;

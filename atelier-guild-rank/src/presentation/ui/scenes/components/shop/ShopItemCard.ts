@@ -9,6 +9,7 @@
  * - ホバーエフェクト
  */
 
+import type { RexLabel } from '@presentation/types/rexui';
 import { BaseComponent } from '@presentation/ui/components/BaseComponent';
 import { Colors, THEME } from '@presentation/ui/theme';
 import { AnimationPresets, UIBackgroundBuilder } from '@presentation/ui/utils';
@@ -36,9 +37,11 @@ export class ShopItemCard extends BaseComponent {
   /** 購入コールバック */
   private onPurchase: OnPurchaseCallback;
 
-  /** 購入ボタン */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUIのラベルコンポーネント
-  private purchaseButton: any = null;
+  /**
+   * 購入ボタン
+   * TASK-0059: rexUI型定義を適用
+   */
+  private purchaseButton: RexLabel | null = null;
 
   /** カード背景 */
   private background: Phaser.GameObjects.Graphics | null = null;

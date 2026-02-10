@@ -14,6 +14,7 @@ import { getSelectionIndexFromKey, isKeyForAction } from '@shared/constants/keyb
 import type { CardId, Quality } from '@shared/types';
 import type { IRecipeCardMaster } from '@shared/types/master-data';
 import type Phaser from 'phaser';
+import type { RexLabel, RexRoundRectangle } from '../../types/rexui';
 import { BaseComponent } from '../components/BaseComponent';
 import { THEME } from '../theme';
 
@@ -37,12 +38,13 @@ const ALCHEMY_PHASE_LAYOUT = {
   PADDING_VERTICAL: 5,
 } as const;
 
-/** rexUIラベル情報の型定義 */
+/**
+ * rexUIラベル情報の型定義
+ * TASK-0059: rexUI型定義を適用
+ */
 interface RecipeLabelInfo {
-  // biome-ignore lint/suspicious/noExplicitAny: rexUIプラグインは型定義が複雑なため
-  label: any;
-  // biome-ignore lint/suspicious/noExplicitAny: rexUIプラグインは型定義が複雑なため
-  background: any;
+  label: RexLabel;
+  background: RexRoundRectangle;
   recipe: IRecipeCardMaster;
 }
 
@@ -225,13 +227,13 @@ export class AlchemyPhaseUI extends BaseComponent {
 
   /**
    * ラベルの位置を設定
+   * TASK-0059: rexUI型定義を適用
    *
    * @param label - rexUIラベル
    * @param x - X座標
    * @param y - Y座標
    */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUIプラグインは型定義が複雑なため
-  private setLabelPosition(label: any, x: number, y: number): void {
+  private setLabelPosition(label: RexLabel, x: number, y: number): void {
     if (typeof label.setPosition === 'function') {
       label.setPosition(x, y);
     } else {
@@ -242,12 +244,12 @@ export class AlchemyPhaseUI extends BaseComponent {
 
   /**
    * ラベルのインタラクションを設定
+   * TASK-0059: rexUI型定義を適用
    *
    * @param label - rexUIラベル
    * @param recipeId - レシピID
    */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUIプラグインは型定義が複雑なため
-  private setupLabelInteraction(label: any, recipeId: CardId): void {
+  private setupLabelInteraction(label: RexLabel, recipeId: CardId): void {
     if (typeof label.setInteractive === 'function') {
       label.setInteractive();
     }
