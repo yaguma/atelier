@@ -9,6 +9,7 @@
  * - 戻るボタン
  */
 
+import type { RexLabel } from '@presentation/types/rexui';
 import { BaseComponent } from '@presentation/ui/components/BaseComponent';
 import { Colors, THEME } from '@presentation/ui/theme';
 import type Phaser from 'phaser';
@@ -34,9 +35,11 @@ export class ShopHeader extends BaseComponent {
   /** オプション */
   private options: ShopHeaderOptions;
 
-  /** 戻るボタン */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUIのラベルコンポーネント
-  private backButton: any = null;
+  /**
+   * 戻るボタン
+   * TASK-0059: rexUI型定義を適用
+   */
+  private backButton: RexLabel | null = null;
 
   /**
    * コンストラクタ

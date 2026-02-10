@@ -9,6 +9,7 @@
  * - エラーダイアログ（OKのみ）
  */
 
+import type { RexDialog, RexLabel } from '@presentation/types/rexui';
 import { BaseComponent } from '@presentation/ui/components/BaseComponent';
 import { THEME } from '@presentation/ui/theme';
 import type Phaser from 'phaser';
@@ -38,9 +39,11 @@ export class TitleDialog extends BaseComponent {
   /** オーバーレイ */
   private overlay: Phaser.GameObjects.Rectangle | null = null;
 
-  /** ダイアログ参照 */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUI Dialogコンポーネントの型は複雑なため
-  private dialog: any | null = null;
+  /**
+   * ダイアログ参照
+   * TASK-0059: rexUI型定義を適用
+   */
+  private dialog: RexDialog | null = null;
 
   /** クローズ済みフラグ */
   private isClosed = false;
@@ -142,8 +145,8 @@ export class TitleDialog extends BaseComponent {
       color: THEME.colors.textOnPrimary,
     });
 
-    // アクションボタン
-    const actionButtons = this.createActionButtons();
+    // アクションボタン（nullを除外）
+    const actionButtons = this.createActionButtons().filter((btn): btn is RexLabel => btn !== null);
 
     // ダイアログ
     this.dialog = this.rexUI.add.dialog({
@@ -196,9 +199,9 @@ export class TitleDialog extends BaseComponent {
 
   /**
    * アクションボタンを作成
+   * TASK-0059: rexUI型定義を適用
    */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelコンポーネントの型は複雑なため
-  private createActionButtons(): any[] {
+  private createActionButtons(): Array<RexLabel | null> {
     if (this.config.type === 'confirm') {
       // 確認ダイアログ: はい/いいえ
       return [
@@ -223,13 +226,9 @@ export class TitleDialog extends BaseComponent {
 
   /**
    * ボタンを作成
+   * TASK-0059: rexUI型定義を適用
    */
-  private createButton(
-    text: string,
-    color: number,
-    onClick: () => void,
-    // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelコンポーネントの型は複雑なため
-  ): any {
+  private createButton(text: string, color: number, onClick: () => void): RexLabel | null {
     if (!this.rexUI) {
       return null;
     }

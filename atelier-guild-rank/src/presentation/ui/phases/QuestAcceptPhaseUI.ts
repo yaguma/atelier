@@ -19,10 +19,20 @@ import type Phaser from 'phaser';
 import type { Quest } from '../../../domain/entities/Quest';
 import { getSelectionIndexFromKey, isKeyForAction } from '../../../shared/constants/keybindings';
 import { GameEventType } from '../../../shared/types/events';
+import type { RexScrollablePanel } from '../../types/rexui';
 import { BaseComponent } from '../components/BaseComponent';
 import { QuestCardUI } from '../components/QuestCardUI';
 import { QuestDetailModal } from '../components/QuestDetailModal';
 import { AnimationPresets } from '../utils/AnimationPresets';
+
+/**
+ * テスト用モックScrollablePanel型
+ * TASK-0059: rexUI型定義と互換性を持つモック型
+ */
+interface MockScrollablePanel {
+  childOuter: Phaser.GameObjects.Container[];
+  destroy: () => void;
+}
 
 /**
  * EventBusインターフェース
@@ -53,10 +63,9 @@ export class QuestAcceptPhaseUI extends BaseComponent {
 
   /**
    * 受注済みリスト（ScrollablePanel）
-   * 【型安全性】: rexUIプラグインは型定義が複雑なため、anyで扱う
+   * TASK-0059: rexUI型定義を適用（モック互換のユニオン型）
    */
-  // biome-ignore lint/suspicious/noExplicitAny: rexUIプラグインは型定義が複雑なため、anyで扱う
-  private acceptedList: any;
+  private acceptedList: RexScrollablePanel | MockScrollablePanel | null = null;
 
   /** 受注済み依頼のコンテナ（UIコンテナを保持） */
   private acceptedQuestsContainer: Phaser.GameObjects.Container[] = [];
