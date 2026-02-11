@@ -7,26 +7,37 @@
  * 外部モジュールは @features/deck からのみインポートすべき。
  */
 
+import type {
+  CardUIConfig,
+  DeckState,
+  DraggableCardConfig,
+  HandDisplayConfig,
+  PlayCardError,
+  PlayCardErrorCode,
+  Result,
+} from '@features/deck';
 import {
-  // Components
   CardUI,
-  type CardUIConfig,
-  // Services（純粋関数）
   createSeededRandom,
-  // Types
-  type DeckState,
-  type DraggableCardConfig,
   DraggableCardUI,
   draw,
   HandDisplay,
-  type HandDisplayConfig,
-  type PlayCardError,
-  type PlayCardErrorCode,
   playCard,
-  type Result,
   shuffle,
 } from '@features/deck';
+import type { Card } from '@shared/types';
+import { toCardId } from '@shared/types';
 import { describe, expect, it } from 'vitest';
+
+const mockCard: Card = {
+  id: toCardId('test-card-1'),
+  name: 'テストカード',
+  type: 'GATHERING',
+  rarity: 'COMMON',
+  unlockRank: 'G',
+  cost: 1,
+  materials: [],
+};
 
 describe('features/deck 公開API', () => {
   describe('サービス関数のエクスポート', () => {
@@ -100,7 +111,7 @@ describe('features/deck 公開API', () => {
 
     it('CardUIConfig型がエクスポートされていること', () => {
       const config: CardUIConfig = {
-        card: {} as never,
+        card: mockCard,
         x: 0,
         y: 0,
       };
@@ -109,7 +120,7 @@ describe('features/deck 公開API', () => {
 
     it('DraggableCardConfig型がエクスポートされていること', () => {
       const config: DraggableCardConfig = {
-        card: {} as never,
+        card: mockCard,
         x: 0,
         y: 0,
       };
@@ -132,6 +143,7 @@ describe('features/deck 公開API', () => {
       const shuffled = shuffle(deck, 12345);
       expect(shuffled).toHaveLength(5);
       expect(shuffled).not.toBe(deck);
+      expect([...shuffled].sort()).toEqual([...deck].sort());
     });
 
     it('draw関数が正しく動作すること', () => {
