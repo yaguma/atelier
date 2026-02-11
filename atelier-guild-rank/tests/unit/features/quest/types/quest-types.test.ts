@@ -165,7 +165,7 @@ describe('features/quest/types', () => {
   describe('Client型', () => {
     it('Client型オブジェクトを作成できること', () => {
       const client: Client = {
-        id: 'client-001',
+        id: toClientId('client-001'),
         name: 'テスト依頼者',
         title: '村人',
         portrait: 'villager.png',
