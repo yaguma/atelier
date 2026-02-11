@@ -13,7 +13,7 @@ import type {
   RecipeCheckResult,
 } from '@features/alchemy/types';
 import { QUALITY_THRESHOLDS } from '@features/alchemy/types';
-import type { CardId, MaterialId, Quality } from '@shared/types';
+import type { Quality } from '@shared/types';
 import { describe, expect, it } from 'vitest';
 
 describe('features/alchemy/types', () => {
