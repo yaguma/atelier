@@ -4,13 +4,13 @@
  * TASK-0084: features/inventory/types作成
  */
 
-// --- アイテム関連型 ---
-export type { IItem, IItemEffect } from './item';
-export { ItemInstance } from './item';
-
-// --- 素材関連型 ---
-export type { IMaterial, IMaterialInstance } from './material';
-export { MaterialInstance } from './material';
+// --- エンティティクラス ---
+export { ItemInstance } from '@domain/entities/ItemInstance';
+export { MaterialInstance } from '@domain/entities/MaterialInstance';
 
 // --- サービスインターフェース ---
-export type { IInventoryService, IMaterialService } from './service-interfaces';
+export type { IInventoryService } from '@domain/interfaces/inventory-service.interface';
+export type { IMaterialService } from '@domain/interfaces/material-service.interface';
+
+// --- 素材・アイテム関連型 ---
+export type { IItem, IItemEffect, IMaterial, IMaterialInstance } from '@shared/types';
