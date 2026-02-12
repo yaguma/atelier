@@ -22,6 +22,7 @@ export { CardUI, DraggableCardUI, HandDisplay } from './components';
 export type { DeckState, PlayCardError, PlayCardErrorCode, Result } from './services';
 // --- Services（純粋関数） ---
 export { createSeededRandom, draw, playCard, shuffle } from './services';
+// --- Types（型定義） ---
 export type {
   CardData,
   CardId,
@@ -40,7 +41,6 @@ export type {
   IRecipeRequiredMaterial,
   IRequiredMaterial,
 } from './types';
-// --- Types（型定義） ---
 export {
   Card,
   CardType,

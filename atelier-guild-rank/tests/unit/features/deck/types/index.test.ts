@@ -36,6 +36,7 @@ import {
   isRecipeCardMaster,
   toCardId,
 } from '@features/deck/types';
+import type { MaterialId } from '@shared/types';
 import { describe, expect, it } from 'vitest';
 
 describe('features/deck/types', () => {
@@ -245,7 +246,7 @@ describe('features/deck/types', () => {
   describe('サブタイプ型のエクスポート確認', () => {
     it('IGatheringCard関連型が利用できること', () => {
       const material: IGatheringMaterial = {
-        materialId: 'mat-1' as unknown as import('@shared/types').MaterialId,
+        materialId: 'mat-1' as unknown as MaterialId,
         quantity: 2,
         probability: 0.8,
       };
@@ -265,7 +266,7 @@ describe('features/deck/types', () => {
 
     it('IRecipeCard関連型が利用できること', () => {
       const req: IRequiredMaterial = {
-        materialId: 'mat-1' as unknown as import('@shared/types').MaterialId,
+        materialId: 'mat-1' as unknown as MaterialId,
         quantity: 3,
       };
       expect(req.quantity).toBe(3);

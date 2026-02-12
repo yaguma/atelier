@@ -7,6 +7,9 @@
  * カードエンティティクラスと型定義を集約するモジュール。
  * domain/entities/Card.tsのCardクラスと、shared/typesのカード関連型を
  * features/deck/types経由でアクセス可能にする。
+ *
+ * TODO(TASK-0068): Phase 11で型定義の実体をこのファイルに移動し、
+ * domain/entities/Card.ts と shared/types 側を後方互換の再エクスポートに変更する。
  */
 
 // Cardエンティティクラス（domain層からの再エクスポート）
