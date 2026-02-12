@@ -4,8 +4,8 @@
  * TASK-0073: features/gathering/services作成
  */
 
-import { calculateGatheringCost } from '@features/gathering/services/calculate-materials';
-import type { GatheringCostResult } from '@features/gathering/types';
+import type { GatheringCostResult } from '@features/gathering';
+import { calculateGatheringCost } from '@features/gathering';
 import { describe, expect, it } from 'vitest';
 
 describe('calculateGatheringCost', () => {

@@ -4,7 +4,7 @@
  * TASK-0073: features/gathering/services作成
  */
 
-import { gather } from '@features/gathering/services/gather';
+import { gather } from '@features/gathering';
 import type { MaterialId, Quality } from '@shared/types';
 import { describe, expect, it } from 'vitest';
 

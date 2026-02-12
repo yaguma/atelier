@@ -5,6 +5,12 @@
  *
  * ランクに応じた依頼を生成する純粋関数。
  * シード付き乱数生成器を使用し、同一入力に対して決定的な出力を保証する。
+ *
+ * TODO(TASK-0081): このファイルは350行で300行上限を超過している。
+ * 定数テーブル（DAILY_QUEST_COUNT_BY_RANK等）を別ファイル（quest-constants.ts）に分離して解消する。
+ *
+ * TODO(TASK-0081): createSeededRandomはdeck/services/shuffle.tsにも類似実装がある（Mulberry32）。
+ * Phase 11でshared/utils/に統合を検討する。
  */
 
 import type { GuildRank, QuestType } from '@shared/types';
@@ -23,8 +29,8 @@ export interface GenerateQuestsConfig {
   count: number;
   /** 利用可能な依頼者リスト */
   clients: readonly IClient[];
-  /** 乱数シード（省略時はDate.now()） */
-  seed?: number;
+  /** 乱数シード */
+  seed: number;
 }
 
 /** 依頼生成結果 */
@@ -204,11 +210,11 @@ export function getDefaultClientCount(rank: GuildRank): number {
 /**
  * シード付き乱数生成器を作成する（純粋関数）
  *
- * @param seed - 乱数シード（省略時はDate.now()）
+ * @param seed - 乱数シード
  * @returns 0以上1未満の乱数を返す関数
  */
-export function createSeededRandom(seed?: number): () => number {
-  let state = seed ?? Date.now();
+export function createSeededRandom(seed: number): () => number {
+  let state = seed;
   return () => {
     state = (state * 1103515245 + 12345) & 0x7fffffff;
     return state / 0x7fffffff;
