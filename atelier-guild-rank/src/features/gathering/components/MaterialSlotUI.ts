@@ -9,6 +9,9 @@
  * @信頼性レベル
  * 🔵 品質ごとの枠色定義
  * 🟡 光彩効果とパーティクル(Phaser機能から推測)
+ *
+ * TODO(TASK-0074): このファイルは350行で300行上限を超過している。
+ * 品質エフェクト関連メソッドを別ファイル（quality-effects.ts等）に分離を検討する。
  */
 
 import { THEME } from '@presentation/ui/theme';
