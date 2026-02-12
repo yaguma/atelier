@@ -9,11 +9,11 @@
  * カードタイプに応じた色分け、インタラクティブな操作、アニメーション効果を実装。
  */
 
-import type { Card } from '@domain/entities/Card';
 import { Colors } from '@presentation/ui/theme';
 import { AnimationPresets } from '@presentation/ui/utils/AnimationPresets';
 import { BaseComponent } from '@shared/components';
 import type Phaser from 'phaser';
+import type { Card } from '../types';
 
 /**
  * カードUIの設定

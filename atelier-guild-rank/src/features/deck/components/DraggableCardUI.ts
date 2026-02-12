@@ -8,10 +8,10 @@
  * 手札からプレイエリアへのカード移動、調合画面での素材配置などで使用する。
  */
 
-import type { Card } from '@domain/entities/Card';
 import type { DropZone } from '@presentation/ui/components/DropZone';
 import { DropZoneManager } from '@presentation/ui/components/DropZoneManager';
 import type Phaser from 'phaser';
+import type { Card } from '../types';
 import { CardUI, type CardUIConfig } from './CardUI';
 
 /**
