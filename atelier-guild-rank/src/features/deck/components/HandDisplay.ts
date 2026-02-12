@@ -8,9 +8,9 @@
  * 最大5枚のカードを表示し、選択中のカードを強調表示する。
  */
 
-import type { Card } from '@domain/entities/Card';
 import { BaseComponent } from '@shared/components';
 import type Phaser from 'phaser';
+import type { Card } from '../types';
 import { CardUI } from './CardUI';
 
 /**
