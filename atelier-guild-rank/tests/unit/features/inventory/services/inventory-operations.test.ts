@@ -93,8 +93,8 @@ describe('inventory-operations', () => {
       const result = addMaterial(state, material);
 
       expect(result).not.toBeNull();
-      expect(result!.materials).toHaveLength(1);
-      expect(result!.materials[0]).toBe(material);
+      expect(result?.materials).toHaveLength(1);
+      expect(result?.materials[0]).toBe(material);
     });
 
     it('既存のインベントリを変更しない', () => {
@@ -130,9 +130,9 @@ describe('inventory-operations', () => {
 
       const result = addMaterial(state, material2);
 
-      expect(result!.materials).toHaveLength(2);
-      expect(result!.materials[0]).toBe(material1);
-      expect(result!.materials[1]).toBe(material2);
+      expect(result?.materials).toHaveLength(2);
+      expect(result?.materials[0]).toBe(material1);
+      expect(result?.materials[1]).toBe(material2);
     });
   });
 
@@ -144,7 +144,7 @@ describe('inventory-operations', () => {
       const result = addMaterials(state, materials);
 
       expect(result).not.toBeNull();
-      expect(result!.materials).toHaveLength(2);
+      expect(result?.materials).toHaveLength(2);
     });
 
     it('容量を超える場合はnullを返す', () => {
@@ -251,8 +251,8 @@ describe('inventory-operations', () => {
       const result = addItem(state, item);
 
       expect(result).not.toBeNull();
-      expect(result!.items).toHaveLength(1);
-      expect(result!.items[0]).toBe(item);
+      expect(result?.items).toHaveLength(1);
+      expect(result?.items[0]).toBe(item);
     });
 
     it('既存のインベントリを変更しない', () => {
@@ -318,8 +318,8 @@ describe('inventory-operations', () => {
       const result = addArtifact(state, artifactId);
 
       expect(result).not.toBeNull();
-      expect(result!.artifacts).toHaveLength(1);
-      expect(result!.artifacts[0]).toBe(artifactId);
+      expect(result?.artifacts).toHaveLength(1);
+      expect(result?.artifacts[0]).toBe(artifactId);
     });
 
     it('既存のインベントリを変更しない', () => {

@@ -118,7 +118,10 @@ export function removeMaterial(
   if (index === -1) {
     return { state, data: null };
   }
-  const removed = state.materials[index]!;
+  const removed = state.materials[index];
+  if (!removed) {
+    return { state, data: null };
+  }
   return {
     state: {
       ...state,
@@ -193,7 +196,10 @@ export function removeItem(
   if (index === -1) {
     return { state, data: null };
   }
-  const removed = state.items[index]!;
+  const removed = state.items[index];
+  if (!removed) {
+    return { state, data: null };
+  }
   return {
     state: {
       ...state,
