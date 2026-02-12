@@ -3,7 +3,7 @@
  *
  * TASK-0072: features/gathering/typesへ移行済み
  * このファイルは後方互換性のための再エクスポート。
- * 新しいコードでは @features/gathering/types からインポートすること。
+ * 新しいコードでは @features/gathering からインポートすること。
  */
 
 export type {
@@ -12,4 +12,4 @@ export type {
   GatheringResult,
   IGatheringService,
   MaterialOption,
-} from '@features/gathering/types';
+} from '@features/gathering';

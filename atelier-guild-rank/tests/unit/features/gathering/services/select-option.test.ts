@@ -4,8 +4,8 @@
  * TASK-0073: features/gathering/services作成
  */
 
-import { selectGatheringOption } from '@features/gathering/services/select-option';
-import type { MaterialOption } from '@features/gathering/types';
+import type { MaterialOption } from '@features/gathering';
+import { selectGatheringOption } from '@features/gathering';
 import type { MaterialId, Quality } from '@shared/types';
 import { describe, expect, it } from 'vitest';
 
