@@ -5,6 +5,9 @@
  * @description
  * レシピリストを縦方向に表示するUIコンポーネント。
  * 選択状態のハイライト表示とコールバック通知を実装。
+ *
+ * TODO(Phase 11): createRecipeLabel, setLabelPosition, setupLabelInteractionが
+ * AlchemyPhaseUIと重複している。共通ヘルパー（recipe-label-factory.ts等）に抽出を検討する。
  */
 
 import type { RexLabel, RexRoundRectangle } from '@presentation/types/rexui';
