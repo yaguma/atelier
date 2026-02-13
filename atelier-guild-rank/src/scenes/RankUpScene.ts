@@ -9,12 +9,12 @@
  * @信頼性レベル 🔵 TASK-0051.md セクション2に基づく
  */
 
-import type { IEventBus } from '@application/events/event-bus.interface';
-import type { IRankService, PromotionResult } from '@domain/interfaces/rank-service.interface';
+import type { IRankService, PromotionResult } from '@features/rank';
 import { Container, ServiceKeys } from '@infrastructure/di/container';
 import type { RexLabel, RexUIPlugin } from '@presentation/types/rexui';
 import { THEME } from '@presentation/ui/theme';
 import { isKeyForAction } from '@shared/constants/keybindings';
+import type { IEventBus } from '@shared/services';
 import { GameEventType, type GuildRank } from '@shared/types';
 import Phaser from 'phaser';
 
