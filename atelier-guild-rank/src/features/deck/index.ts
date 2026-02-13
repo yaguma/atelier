@@ -18,9 +18,8 @@
 // --- Components（UIコンポーネント） ---
 export type { CardUIConfig, DraggableCardConfig, HandDisplayConfig } from './components';
 export { CardUI, DraggableCardUI, HandDisplay } from './components';
-// --- Types（サービス由来の型定義） ---
-export type { DeckState, PlayCardError, PlayCardErrorCode, Result } from './services';
 // --- Services（純粋関数） ---
+export type { DeckState, PlayCardError, PlayCardErrorCode, Result } from './services';
 export { createSeededRandom, draw, playCard, shuffle } from './services';
 // --- Types（型定義） ---
 export type {
