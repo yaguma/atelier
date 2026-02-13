@@ -5,6 +5,9 @@
  * 依頼の詳細情報を表示するモーダルダイアログ。
  * 依頼者名、依頼内容、期限、報酬、難易度を表示し、
  * 受注・閉じるボタンを提供する。
+ *
+ * TODO(TASK-0082): このファイルは407行で300行上限を超過している。
+ * パネル描画ロジック（createPanel/createButtons等）を別ファイルに分離を検討する。
  */
 
 import { BaseComponent } from '@shared/components';
