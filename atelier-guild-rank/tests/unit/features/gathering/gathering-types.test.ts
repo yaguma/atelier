@@ -15,8 +15,8 @@ import type {
   IMaterial,
   IMaterialInstance,
   MaterialOption,
-} from '@features/gathering/types';
-import { isGatheringCard } from '@features/gathering/types';
+} from '@features/gathering';
+import { isGatheringCard } from '@features/gathering';
 import type { Card, MaterialId } from '@shared/types';
 import { CardType, Quality } from '@shared/types';
 import { describe, expect, it } from 'vitest';
