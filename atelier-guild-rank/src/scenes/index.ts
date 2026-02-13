@@ -2,6 +2,7 @@
  * Scenes Module - Phaserシーン公開API
  *
  * TASK-0094: scenes/ディレクトリ作成とBootScene移行
+ * TASK-0095: MainScene移行
  *
  * @description
  * Phaserシーンの公開エクスポート。
@@ -9,3 +10,4 @@
  */
 
 export { BootScene } from './BootScene';
+export { MainScene } from './MainScene';
