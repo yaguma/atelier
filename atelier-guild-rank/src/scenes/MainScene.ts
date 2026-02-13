@@ -11,24 +11,23 @@
  * @信頼性レベル 🔵 requirements.md セクション2.1に基づく
  */
 
-import { Card } from '@domain/entities/Card';
 import { Quest } from '@domain/entities/Quest';
-import type { IAlchemyService } from '@domain/interfaces/alchemy-service.interface';
-import type { IGatheringService } from '@domain/interfaces/gathering-service.interface';
 import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
-import type { IQuestService } from '@domain/interfaces/quest-service.interface';
+import type { IAlchemyService } from '@features/alchemy';
+import { AlchemyPhaseUI } from '@features/alchemy';
+import { Card, toCardId } from '@features/deck';
+import type { IGatheringService } from '@features/gathering';
+import { GatheringPhaseUI } from '@features/gathering';
+import type { IQuestService } from '@features/quest';
 import { Container, ServiceKeys } from '@infrastructure/di/container';
 import { FooterUI } from '@presentation/ui/components/FooterUI';
 import { HeaderUI } from '@presentation/ui/components/HeaderUI';
 import { SidebarUI } from '@presentation/ui/components/SidebarUI';
-import { AlchemyPhaseUI } from '@presentation/ui/phases/AlchemyPhaseUI';
 import { DeliveryPhaseUI } from '@presentation/ui/phases/DeliveryPhaseUI';
-import { GatheringPhaseUI } from '@presentation/ui/phases/GatheringPhaseUI';
 import { QuestAcceptPhaseUI } from '@presentation/ui/phases/QuestAcceptPhaseUI';
 import { GamePhase, type GuildRank, VALID_GAME_PHASES } from '@shared/types/common';
 import type { IPhaseChangedEvent } from '@shared/types/events';
 import { GameEventType } from '@shared/types/events';
-import { toCardId } from '@shared/types/ids';
 import type { IClient, IQuest } from '@shared/types/quests';
 import { generateUniqueId } from '@shared/utils';
 import Phaser from 'phaser';

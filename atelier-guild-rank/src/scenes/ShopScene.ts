@@ -9,11 +9,7 @@
  * @信頼性レベル 🔵 TASK-0050.md セクション2に基づく
  */
 
-import type {
-  IPurchaseResult,
-  IShopItem,
-  IShopService,
-} from '@domain/interfaces/shop-service.interface';
+import type { IPurchaseResult, IShopItem, IShopService } from '@features/shop';
 import { Container, ServiceKeys } from '@infrastructure/di/container';
 import type { RexLabel, RexUIPlugin } from '@presentation/types/rexui';
 import { THEME } from '@presentation/ui/theme';
