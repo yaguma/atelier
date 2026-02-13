@@ -7,6 +7,12 @@
  * レシピ選択、素材配置、品質プレビュー、調合実行を管理する。
  *
  * TODO(TASK-0078): 601行 > 300行上限。レシピリスト・素材スロット・品質プレビューに分割を検討
+ *
+ * TODO(Phase 11): @domain/依存（ItemInstance, MaterialInstance, IAlchemyService）を
+ * @features/または@shared/types経由に置き換える。UIコンポーネントはdomain層に直接依存すべきでない。
+ *
+ * TODO(Phase 11): createRecipeLabel, setLabelPosition, setupLabelInteractionが
+ * RecipeListUIと重複している。共通ヘルパー（recipe-label-factory.ts等）に抽出を検討する。
  */
 
 import type { ItemInstance } from '@domain/entities/ItemInstance';
