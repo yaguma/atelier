@@ -1,13 +1,13 @@
 # システムアーキテクチャ設計書
 
-**バージョン**: 2.0.0
+**バージョン**: 3.0.0
 **作成日**: 2026-01-01
-**最終更新**: 2026-01-14
+**最終更新**: 2026-02-12
 **対象**: アトリエ錬金術ゲーム（ギルドランク制）Phaser版
 
 # システムアーキテクチャ設計書 - コンポーネント設計
 
-このドキュメントは [システムアーキテクチャ設計書](architecture.md) の一部なのだ。
+このドキュメントは [システムアーキテクチャ設計書](architecture-overview.md) の一部なのだ。
 
 ---
 
@@ -424,116 +424,48 @@ sequenceDiagram
 
 ---
 
-## 11. ディレクトリ構造 🔴
+## 11. ディレクトリ構造
+
+> **注意**: Feature-Based Architecture移行に伴い、全体のディレクトリ構造は [architecture-overview.md セクション3](architecture-overview.md) を参照。
+> 旧Clean Architecture構造（application/, domain/, infrastructure/）から Feature-Based Architecture（features/, shared/, scenes/）へ移行済み。
 
 ```
 src/
-├── index.html                 # エントリーポイントHTML
-├── main.ts                    # Phaserゲーム初期化
-├── game/                      # Phaser関連（新規）
-│   ├── config.ts              # Phaserコンフィグ
-│   ├── scenes/
-│   │   ├── BaseGameScene.ts   # 基底シーン
-│   │   ├── BootScene.ts       # 起動・プリロード
-│   │   ├── TitleScene.ts      # タイトル画面
-│   │   ├── MainScene.ts       # メインゲーム画面
-│   │   ├── ShopScene.ts       # ショップ画面
-│   │   ├── RankUpScene.ts     # 昇格試験画面
-│   │   ├── GameOverScene.ts   # ゲームオーバー
-│   │   └── GameClearScene.ts  # ゲームクリア
-│   ├── ui/
-│   │   ├── components/        # カスタムUIコンポーネント
-│   │   │   ├── CardView.ts
-│   │   │   ├── HandView.ts
-│   │   │   ├── DeckView.ts
-│   │   │   ├── MaterialView.ts
-│   │   │   ├── MaterialOptionView.ts
-│   │   │   ├── InventoryView.ts
-│   │   │   ├── QuestView.ts
-│   │   │   ├── QuestListView.ts
-│   │   │   ├── ClientView.ts
-│   │   │   ├── RankProgressView.ts
-│   │   │   ├── PhaseIndicator.ts
-│   │   │   ├── ActionPointView.ts
-│   │   │   ├── GoldView.ts
-│   │   │   ├── DayCounter.ts
-│   │   │   ├── RewardCardSelector.ts
-│   │   │   └── ButtonComponent.ts
-│   │   ├── phases/            # フェーズ別UI
-│   │   │   ├── BasePhaseUI.ts
-│   │   │   ├── QuestAcceptPhaseUI.ts
-│   │   │   ├── GatheringPhaseUI.ts
-│   │   │   ├── AlchemyPhaseUI.ts
-│   │   │   └── DeliveryPhaseUI.ts
-│   │   └── common/            # 共通UI
-│   │       ├── HeaderUI.ts
-│   │       ├── SidebarUI.ts
-│   │       └── ActionButtons.ts
-│   └── assets/                # アセット管理
-│       ├── AssetKeys.ts       # アセットキー定数
-│       └── AssetLoader.ts     # アセットローダー
-├── application/               # 既存維持
-│   ├── managers/
-│   │   ├── GameFlowManager.ts
-│   │   ├── PhaseManager.ts
-│   │   └── StateManager.ts
-│   ├── events/
-│   │   ├── EventBus.ts
-│   │   └── GameEvents.ts
-│   └── usecases/
-│       ├── AcceptQuestUseCase.ts
-│       ├── GatheringUseCase.ts
-│       ├── AlchemyUseCase.ts
-│       └── DeliveryUseCase.ts
-├── domain/                    # 既存維持
-│   ├── services/
-│   │   ├── DeckService.ts
-│   │   ├── GatheringService.ts
-│   │   ├── AlchemyService.ts
-│   │   ├── QuestService.ts
-│   │   ├── ContributionCalculator.ts
-│   │   ├── RankService.ts
-│   │   ├── ShopService.ts
-│   │   ├── ArtifactService.ts
-│   │   └── MaterialService.ts
-│   ├── entities/
-│   │   ├── Card.ts
-│   │   ├── Material.ts
-│   │   ├── Item.ts
-│   │   ├── Quest.ts
-│   │   └── GuildRank.ts
-│   └── types/
-│       └── interfaces/         # 型定義（分割）
-│           ├── core.ts         # コアシステム型
-│           ├── cards.ts        # カード型
-│           ├── materials.ts    # 素材・アイテム型
-│           ├── quests.ts       # 依頼・ランク型
-│           └── game-state.ts   # ゲーム状態型
-├── infrastructure/            # 既存維持
-│   ├── repositories/
-│   │   └── SaveDataRepository.ts
-│   ├── loaders/
-│   │   └── MasterDataLoader.ts
-│   └── utils/
-│       └── RandomGenerator.ts
-└── data/                      # 既存維持
+├── main.ts                    # エントリーポイント
+├── features/                  # 機能単位のモジュール
+│   ├── quest/                 # 依頼機能
+│   │   ├── components/        # QuestCard, QuestList, QuestDetailModal等
+│   │   ├── services/          # quest-generator, reward-calculator (純粋関数)
+│   │   ├── types/             # Quest, Client 型定義
+│   │   └── index.ts           # 公開API
+│   ├── alchemy/               # 調合機能
+│   ├── gathering/             # 採取機能
+│   ├── deck/                  # デッキ機能
+│   ├── inventory/             # インベントリ機能
+│   ├── shop/                  # ショップ機能
+│   └── rank/                  # ランク機能
+├── shared/                    # 機能横断の共通コード
+│   ├── components/            # BaseComponent等の共通UIコンポーネント
+│   ├── services/              # EventBus, StateManager等 (Imperative Shell)
+│   ├── types/                 # 共通型定義、GameState、Events
+│   ├── constants/             # キーバインド等の定数
+│   ├── theme/                 # UIテーマ定義
+│   └── utils/                 # ユーティリティ関数
+├── scenes/                    # Phaserシーン（機能を組み合わせる）
+│   ├── BootScene.ts           # 起動・プリロード
+│   ├── TitleScene.ts          # タイトル画面
+│   ├── MainScene.ts           # メインゲーム画面（4フェーズ）
+│   ├── ShopScene.ts           # ショップ画面
+│   ├── RankUpScene.ts         # 昇格試験画面
+│   ├── GameOverScene.ts       # ゲームオーバー
+│   └── GameClearScene.ts      # ゲームクリア
+└── data/                      # マスターデータ
     └── master/
         ├── cards/
-        │   ├── gathering_cards.json
-        │   ├── recipe_cards.json
-        │   └── enhancement_cards.json
         ├── items/
-        │   ├── materials.json
-        │   └── items.json
         ├── quests/
-        │   ├── clients.json
-        │   └── quest_templates.json
         ├── ranks/
-        │   └── guild_ranks.json
-        ├── artifacts/
-        │   └── artifacts.json
         └── shop/
-            └── shop_items.json
 ```
 
 ---
@@ -623,6 +555,7 @@ class BootScene extends Phaser.Scene {
 | 2026-01-07 | 1.5.0 | Phaser版アーキテクチャ設計書を作成 |
 | 2026-01-14 | 2.0.0 | HTML版とPhaser版を統合 |
 | 2026-01-16 | 2.1.0 | 重複セクション整理：状態管理/エラーハンドリング/パフォーマンス/テスト設計をarchitecture-overview.mdに統合 |
+| 2026-02-12 | 3.0.0 | Feature-Based Architecture移行に伴いディレクトリ構造を更新 |
 
 ---
 

@@ -1,13 +1,13 @@
 # システムアーキテクチャ設計書
 
-**バージョン**: 2.0.0
+**バージョン**: 3.0.0
 **作成日**: 2026-01-01
-**最終更新**: 2026-01-14
+**最終更新**: 2026-02-12
 **対象**: アトリエ錬金術ゲーム（ギルドランク制）Phaser版
 
 # システムアーキテクチャ設計書 - Phaser実装設計
 
-このドキュメントは [システムアーキテクチャ設計書](architecture.md) の一部なのだ。
+このドキュメントは [システムアーキテクチャ設計書](architecture-overview.md) の一部なのだ。
 
 ---
 
@@ -28,16 +28,17 @@
 ### 4.2 シーンライフサイクル
 
 ```typescript
-class BaseGameScene extends Phaser.Scene {
+// 各シーンはPhaser.Sceneを直接継承
+class MainScene extends Phaser.Scene {
   // Phaserライフサイクル
   init(data?: SceneData): void;      // シーン初期化
-  preload(): void;                    // アセットロード
-  create(data?: SceneData): void;     // オブジェクト生成
-  update(time: number, delta: number): void; // 毎フレーム更新
+  preload(): void;                    // アセットロード（BootSceneで一括推奨）
+  create(data?: SceneData): void;     // オブジェクト生成・UIコンポーネント初期化
+  update(time: number, delta: number): void; // 毎フレーム更新（必要な場合のみ）
 
-  // 追加メソッド（アプリケーション層との連携）
-  protected bindEvents(): void;       // EventBus購読
-  protected unbindEvents(): void;     // EventBus購読解除
+  // イベント管理
+  private setupEventHandlers(): void;   // EventBus購読
+  private cleanupEventHandlers(): void; // EventBus購読解除
 }
 ```
 
@@ -206,14 +207,15 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     participant Scene as Phaser Scene
-    participant EventBus as EventBus
-    participant UseCase as UseCase
+    participant Feature as Feature Service (純粋関数)
     participant State as StateManager
+    participant EventBus as EventBus
 
     Note over Scene: ユーザー操作
-    Scene->>UseCase: execute(params)
-    UseCase->>State: update()
-    State->>EventBus: publish(event)
+    Scene->>Feature: 純粋関数呼び出し（計算・バリデーション）
+    Feature-->>Scene: 結果
+    Scene->>State: updateState()
+    State->>EventBus: emit(event)
     EventBus->>Scene: イベントハンドラ
     Scene->>Scene: UI更新
 ```
@@ -223,27 +225,28 @@ sequenceDiagram
 ```typescript
 class MainScene extends Phaser.Scene {
   private eventBus: IEventBus;
+  private unsubscribes: (() => void)[] = [];
 
   create(): void {
-    this.bindEvents();
+    this.setupEventHandlers();
   }
 
-  private bindEvents(): void {
-    // Application層からのイベントを購読
-    this.eventBus.subscribe('PHASE_CHANGED', this.onPhaseChanged.bind(this));
-    this.eventBus.subscribe('QUEST_ACCEPTED', this.onQuestAccepted.bind(this));
-    this.eventBus.subscribe('GATHERING_COMPLETED', this.onGatheringCompleted.bind(this));
-    this.eventBus.subscribe('ITEM_CRAFTED', this.onItemCrafted.bind(this));
-    this.eventBus.subscribe('QUEST_DELIVERED', this.onQuestDelivered.bind(this));
-    this.eventBus.subscribe('STATE_UPDATED', this.onStateUpdated.bind(this));
+  private setupEventHandlers(): void {
+    // EventBusのon()は購読解除関数を返す
+    this.unsubscribes.push(
+      this.eventBus.on(GameEventType.PHASE_CHANGED, (e) => this.onPhaseChanged(e)),
+      this.eventBus.on(GameEventType.QUEST_ACCEPTED, (e) => this.onQuestAccepted(e)),
+      this.eventBus.on(GameEventType.ITEM_CRAFTED, (e) => this.onItemCrafted(e)),
+      this.eventBus.on(GameEventType.GOLD_CHANGED, (e) => this.onGoldChanged(e)),
+    );
   }
 
   shutdown(): void {
-    this.unbindEvents();
-  }
-
-  private unbindEvents(): void {
-    this.eventBus.unsubscribeAll();
+    // 全購読を解除
+    for (const unsub of this.unsubscribes) {
+      unsub();
+    }
+    this.unsubscribes = [];
   }
 }
 ```
@@ -255,8 +258,8 @@ class MainScene extends Phaser.Scene {
 
 ## 関連文書
 
-- [← 概要](architecture-overview.md) - 技術スタック、レイヤー構造、状態管理、通信パターン等
-- [→ コンポーネント設計](architecture-components.md) - サービス詳細、ディレクトリ構造
+- [← 概要](architecture-overview.md) - 技術スタック、Feature-Based Architecture、ディレクトリ構造
+- [→ コンポーネント設計](architecture-components.md) - サービス詳細
 - [UI設計](ui-design/)
 
 ---
@@ -268,3 +271,4 @@ class MainScene extends Phaser.Scene {
 | 2026-01-01 | 2.0.0 | Phaser版として初版作成 |
 | 2026-01-14 | 2.0.0 | 関連文書リンク更新 |
 | 2026-01-16 | 2.0.1 | 関連文書に説明追加 |
+| 2026-02-12 | 3.0.0 | Feature-Based Architecture移行に伴い、シーンライフサイクル・イベントバインディング例を更新 |
