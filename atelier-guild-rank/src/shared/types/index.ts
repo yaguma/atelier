@@ -34,6 +34,7 @@ export {
   QuestType,
   Rarity,
   SpecialRuleType,
+  VALID_GAME_PHASES,
 } from './common';
 // =============================================================================
 // 定数
@@ -48,6 +49,7 @@ export type {
   GameEndStats,
   GameOverReason,
   IAlchemyCompletedEvent,
+  IContributionAddedEvent,
   IGameClearedEvent,
   IGameEvent,
   IGameLoadedEvent,
