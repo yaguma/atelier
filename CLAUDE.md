@@ -131,11 +131,12 @@ import { MainScene } from '@scenes/MainScene';
 ```
 tests/
 ├── unit/           # ユニットテスト（src/と同じ階層構造）
-│   ├── domain/
-│   ├── application/
-│   ├── infrastructure/
-│   ├── presentation/
-│   └── shared/
+│   ├── features/   # 機能単位のテスト
+│   │   ├── quest/
+│   │   ├── alchemy/
+│   │   ├── deck/
+│   │   └── ...
+│   └── shared/     # 共通コードのテスト
 ├── integration/    # 統合テスト（サービス連携）
 └── mocks/          # テスト用モック
 
@@ -148,13 +149,13 @@ e2e/
 ### Test File Rules
 
 - **専用ディレクトリ配置**: テストファイルは `tests/` または `e2e/` に配置（`src/` 内に置かない）
-- **エイリアス使用**: テストファイルでは `@domain/`、`@shared/` 等の絶対パスを使用（相対パス禁止）
+- **エイリアス使用**: テストファイルでは `@features/`、`@shared/` 等の絶対パスを使用（相対パス禁止）
 - **命名規則**: `*.test.ts` または `*.spec.ts`
 
 ### Coverage Target
 
-- Global: 80%+ (branches, functions, lines, statements)
-- Domain層: 90%+
+- Global: 80%+ (statements, functions, lines), 60%+ (branches)
+- Functional Core (services): 90%+
 
 ---
 
