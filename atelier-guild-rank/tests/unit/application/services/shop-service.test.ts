@@ -8,11 +8,11 @@
  * ショップでの購入処理をテストする。
  */
 
-import { ShopService } from '@application/services/shop-service';
 import type { IDeckService } from '@domain/interfaces/deck-service.interface';
 import type { IInventoryService } from '@domain/interfaces/inventory-service.interface';
 import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
 import type { IShopItem } from '@domain/interfaces/shop-service.interface';
+import { ShopService } from '@shared/services/shop-service';
 import { GuildRank, toArtifactId, toCardId } from '@shared/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 

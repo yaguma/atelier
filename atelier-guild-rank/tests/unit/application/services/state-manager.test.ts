@@ -6,11 +6,10 @@
  * T-0005-01 〜 T-0005-09 を実装
  */
 
-import { EventBus } from '@application/events/event-bus';
-import type { IEventBus } from '@application/events/event-bus.interface';
-import { INITIAL_GAME_STATE } from '@application/services/initial-state';
-import { StateManager } from '@application/services/state-manager';
-import type { IStateManager } from '@application/services/state-manager.interface';
+import type { IEventBus } from '@shared/services/event-bus';
+import { EventBus } from '@shared/services/event-bus';
+import type { IStateManager } from '@shared/services/state-manager';
+import { INITIAL_GAME_STATE, StateManager } from '@shared/services/state-manager';
 import { GameEventType, GamePhase, GuildRank } from '@shared/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 

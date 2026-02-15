@@ -9,13 +9,13 @@
  * 合計: 16件
  */
 
-import type { IEventBus } from '@application/events/event-bus.interface';
-import { GatheringService } from '@application/services/gathering-service';
 import { Card } from '@domain/entities/Card';
 import { MaterialInstance } from '@domain/entities/MaterialInstance';
 import type { IGatheringService } from '@domain/interfaces/gathering-service.interface';
 import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
 import type { IMaterialService } from '@domain/interfaces/material-service.interface';
+import type { IEventBus } from '@shared/services/event-bus';
+import { GatheringService } from '@shared/services/gathering-service';
 import type {
   CardMaster,
   IGatheringCardMaster,

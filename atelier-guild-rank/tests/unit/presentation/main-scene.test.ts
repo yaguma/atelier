@@ -64,7 +64,7 @@ const mockContainerInstance = {
   }),
 };
 
-vi.mock('@infrastructure/di/container', () => ({
+vi.mock('@shared/services/di/container', () => ({
   Container: {
     getInstance: vi.fn(() => mockContainerInstance),
   },

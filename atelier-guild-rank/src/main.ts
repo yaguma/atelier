@@ -7,8 +7,6 @@
  * 【テスト対応】: T-0008-01, T-0008-03のテストケースを通すための実装 🔵
  */
 
-import type { IStateManager } from '@application/services/state-manager.interface';
-import { Container, ServiceKeys } from '@infrastructure/di/container';
 import {
   BootScene,
   GameClearScene,
@@ -16,6 +14,8 @@ import {
   MainScene,
   TitleScene,
 } from '@presentation/scenes';
+import { Container, ServiceKeys } from '@shared/services/di/container';
+import type { IStateManager } from '@shared/services/state-manager';
 // debug.ts でグローバル型 (window.game, window.gameState, window.debug) が定義されている
 import '@shared/utils/debug';
 import Phaser from 'phaser';

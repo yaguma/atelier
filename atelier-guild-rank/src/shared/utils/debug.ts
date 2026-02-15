@@ -7,8 +7,8 @@
  * @module debug
  */
 
-import type { IStateManager } from '@application/services/state-manager.interface';
-import { Container, ServiceKeys } from '@infrastructure/di/container';
+import { Container, ServiceKeys } from '@shared/services/di/container';
+import type { IStateManager } from '@shared/services/state-manager';
 import { GuildRank } from '@shared/types';
 import type Phaser from 'phaser';
 

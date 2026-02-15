@@ -13,7 +13,6 @@
  * - 選択個数に応じたコスト増加
  */
 
-import type { IEventBus } from '@application/events/event-bus.interface';
 import type { Card } from '@domain/entities/Card';
 import type { MaterialInstance } from '@domain/entities/MaterialInstance';
 import type {
@@ -25,6 +24,7 @@ import type {
 } from '@domain/interfaces/gathering-service.interface';
 import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
 import type { IMaterialService } from '@domain/interfaces/material-service.interface';
+import type { IEventBus } from '@shared/services/event-bus';
 import type { MaterialId } from '@shared/types';
 import { ApplicationError, ErrorCodes } from '@shared/types/errors';
 import { GameEventType } from '@shared/types/events';

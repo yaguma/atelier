@@ -7,13 +7,13 @@
  * TC-AVAILABLE-*, TC-CHECK-* を実装
  */
 
-import type { IEventBus } from '@application/events/event-bus.interface';
-import { AlchemyService } from '@application/services/alchemy-service';
 import { ItemInstance } from '@domain/entities/ItemInstance';
 import { MaterialInstance } from '@domain/entities/MaterialInstance';
 import type { IAlchemyService } from '@domain/interfaces/alchemy-service.interface';
 import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
 import type { IMaterialService } from '@domain/interfaces/material-service.interface';
+import { AlchemyService } from '@shared/services/alchemy-service';
+import type { IEventBus } from '@shared/services/event-bus';
 import type { CardId, IItem, IMaterial } from '@shared/types';
 import { ItemCategory, Quality, toCardId, toItemId, toMaterialId } from '@shared/types';
 import { ApplicationError } from '@shared/types/errors';

@@ -6,7 +6,7 @@
  * JSONローダーのテスト
  */
 
-import { JsonLoader } from '@infrastructure/loaders';
+import { JsonLoader } from '@shared/services/loaders';
 import { ApplicationError, ErrorCodes } from '@shared/types';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 

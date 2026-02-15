@@ -7,8 +7,8 @@
  */
 
 import type { IMasterDataRepository } from '@domain/interfaces';
-import type { IJsonLoader } from '@infrastructure/loaders';
-import { MasterDataRepository } from '@infrastructure/repositories';
+import type { IJsonLoader } from '@shared/services/loaders';
+import { MasterDataRepository } from '@shared/services/repositories';
 import {
   ApplicationError,
   Attribute,

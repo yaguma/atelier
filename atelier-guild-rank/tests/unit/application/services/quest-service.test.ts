@@ -9,11 +9,11 @@
  * 合計: 16件
  */
 
-import type { IEventBus } from '@application/events/event-bus.interface';
-import { QuestService } from '@application/services/quest-service';
 import { ItemInstance } from '@domain/entities/ItemInstance';
 import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
 import type { IQuestService } from '@domain/interfaces/quest-service.interface';
+import type { IEventBus } from '@shared/services/event-bus';
+import { QuestService } from '@shared/services/quest-service';
 import type {
   CardMaster,
   ClientMaster,

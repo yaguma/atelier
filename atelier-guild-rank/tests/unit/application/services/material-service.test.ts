@@ -6,10 +6,10 @@
  * T-0010-S01 〜 T-0010-S24 を実装（Phase 1 必須のみ）
  */
 
-import type { IEventBus } from '@application/events/event-bus.interface';
-import { MaterialService } from '@application/services/material-service';
 import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
 import type { IMaterialService } from '@domain/interfaces/material-service.interface';
+import type { IEventBus } from '@shared/services/event-bus';
+import { MaterialService } from '@shared/services/material-service';
 import type { IMaterial } from '@shared/types';
 import { Attribute, Quality, toMaterialId } from '@shared/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

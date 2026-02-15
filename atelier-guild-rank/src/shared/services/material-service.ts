@@ -13,11 +13,11 @@
  * - 平均品質は四捨五入で計算
  */
 
-import type { IEventBus } from '@application/events/event-bus.interface';
 import { MaterialInstance } from '@domain/entities/MaterialInstance';
 import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
 import type { IMaterialService } from '@domain/interfaces/material-service.interface';
 import { orderToQuality, QUALITY_ORDER } from '@domain/value-objects/Quality';
+import type { IEventBus } from '@shared/services/event-bus';
 import type { GuildRank, IMaterial, MaterialId, Quality } from '@shared/types';
 import { ApplicationError, ErrorCodes } from '@shared/types/errors';
 import { generateUniqueId } from '@shared/utils';

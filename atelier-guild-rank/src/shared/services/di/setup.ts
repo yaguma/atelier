@@ -5,19 +5,19 @@
  * 依存関係の順序を守り、全サービスを初期化してDIコンテナに登録する
  */
 
-import { EventBus } from '@application/events/event-bus';
-import { AlchemyService } from '@application/services/alchemy-service';
-import { ArtifactService } from '@application/services/artifact-service';
-import { DeckService } from '@application/services/deck-service';
-import { GameFlowManager } from '@application/services/game-flow-manager';
-import { GatheringService } from '@application/services/gathering-service';
-import { InventoryService } from '@application/services/inventory-service';
-import { MaterialService } from '@application/services/material-service';
-import { QuestService } from '@application/services/quest-service';
-import { RankService } from '@application/services/rank-service';
-import { ShopService } from '@application/services/shop-service';
-import { StateManager } from '@application/services/state-manager';
 import { ContributionCalculator } from '@domain/services/contribution-calculator';
+import { AlchemyService } from '@shared/services/alchemy-service';
+import { ArtifactService } from '@shared/services/artifact-service';
+import { DeckService } from '@shared/services/deck-service';
+import { EventBus } from '@shared/services/event-bus';
+import { GameFlowManager } from '@shared/services/game-flow';
+import { GatheringService } from '@shared/services/gathering-service';
+import { InventoryService } from '@shared/services/inventory-service';
+import { MaterialService } from '@shared/services/material-service';
+import { QuestService } from '@shared/services/quest-service';
+import { RankService } from '@shared/services/rank-service';
+import { ShopService } from '@shared/services/shop-service';
+import { StateManager } from '@shared/services/state-manager';
 import { ApplicationError, ErrorCodes } from '@shared/types';
 import { LocalStorageSaveRepository } from '../repositories/local-storage-save-repository';
 import { MasterDataRepository } from '../repositories/master-data-repository';

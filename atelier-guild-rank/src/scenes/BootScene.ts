@@ -7,7 +7,7 @@
  * 【テスト対応】: T-0008-01, T-0008-02, T-0008-03のテストケースを通すための実装 🔵
  */
 
-import { initializeServices } from '@infrastructure/di/setup';
+import { initializeServices } from '@shared/services/di/setup';
 import Phaser from 'phaser';
 
 /**

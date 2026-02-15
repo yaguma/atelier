@@ -32,7 +32,7 @@ vi.mock('phaser', () => {
 });
 
 // DIセットアップのモック（非同期関数）
-vi.mock('@infrastructure/di/setup', () => ({
+vi.mock('@shared/services/di/setup', () => ({
   initializeServices: vi.fn().mockResolvedValue(undefined),
 }));
 

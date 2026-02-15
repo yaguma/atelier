@@ -6,8 +6,8 @@
  * T-0004-01 〜 T-0004-05 を実装
  */
 
-import { EventBus } from '@application/events/event-bus';
-import type { IEventBus } from '@application/events/event-bus.interface';
+import type { IEventBus } from '@shared/services/event-bus';
+import { EventBus } from '@shared/services/event-bus';
 import { GameEventType, type IGameEvent } from '@shared/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 

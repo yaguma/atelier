@@ -5,7 +5,7 @@
     "module": "ESNext",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
-    "types": ["vitest/globals", "./src/presentation/types/rexui.d.ts"],
+    "types": ["vitest/globals", "./src/shared/presentation/types/rexui.d.ts"],
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -26,10 +26,8 @@
     /* Path Aliases */
     "baseUrl": ".",
     "paths": {
-      "@domain/*": ["src/domain/*"],
-      "@application/*": ["src/application/*"],
-      "@infrastructure/*": ["src/infrastructure/*"],
-      "@presentation/*": ["src/presentation/*"],
+      "@domain/*": ["src/shared/domain/*"],
+      "@presentation/*": ["src/shared/presentation/*"],
       "@shared/*": ["src/shared/*"],
       "@features/*": ["src/features/*"],
       "@scenes/*": ["src/scenes/*"]
