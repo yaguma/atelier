@@ -5,6 +5,7 @@
  * TASK-0066: shared/services移行
  * TASK-0102: infrastructure層からDI/リポジトリ/ローダーを移動
  * TASK-0104: application層からGameFlowManager/SaveLoadServiceを移動
+ * TASK-0105: presentation/inputからKeyboardManagerを移動
  */
 
 // DI Container
@@ -22,6 +23,14 @@ export { EventBus } from './event-bus';
 // Game Flow
 export type { GameEndCondition, IGameFlowManager } from './game-flow';
 export { GameFlowManager } from './game-flow';
+// Input
+export type {
+  ActionHandler,
+  FocusableElement,
+  KeyboardEventHandler,
+  SelectionHandler,
+} from './input';
+export { KeyboardManager } from './input';
 // Loaders
 export type { IJsonLoader } from './loaders';
 export { JsonLoader } from './loaders';

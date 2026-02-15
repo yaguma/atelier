@@ -1,17 +1,16 @@
 /**
- * Title Components エクスポート
- * TASK-0058 TitleSceneリファクタリング
+ * Title Components（後方互換性用再エクスポート）
  *
  * @description
- * TitleScene関連コンポーネントの一括エクスポート
+ * 実体は scenes/components/title/ に移動済み。
+ * 後方互換性のため再エクスポートを提供する。
+ *
+ * 新規コードでは @scenes/components/title を使用すること。
  */
+export { TitleDialog } from '@scenes/components/title/TitleDialog';
+export { TitleLogo } from '@scenes/components/title/TitleLogo';
+export { TitleMenu } from '@scenes/components/title/TitleMenu';
 
-// コンポーネントのエクスポート
-export { TitleDialog } from './TitleDialog';
-export { TitleLogo } from './TitleLogo';
-export { TitleMenu } from './TitleMenu';
-
-// 型定義のエクスポート
 export type {
   DialogType,
   ITitleDialogConfig,
@@ -22,9 +21,8 @@ export type {
   OnDialogConfirmCallback,
   OnNewGameCallback,
   OnSettingsCallback,
-} from './types';
+} from '@scenes/components/title/types';
 
-// 定数のエクスポート
 export {
   TITLE_ANIMATION,
   TITLE_DEPTH,
@@ -32,4 +30,4 @@ export {
   TITLE_SIZES,
   TITLE_STYLES,
   TITLE_TEXT,
-} from './types';
+} from '@scenes/components/title/types';
