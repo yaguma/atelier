@@ -4,9 +4,109 @@
  * TASK-0068: features/deck/types作成
  *
  * @description
- * domain/interfaces/deck-service.interface.tsのIDeckServiceを
- * features/deck/types経由でアクセス可能にする。
+ * デッキサービスの責務を定義するインターフェース。
+ * 山札・手札・捨て札の状態管理とカード操作を提供する。
+ *
+ * domain/interfaces/deck-service.interface.ts から移動。
  */
 
-// IDeckServiceインターフェース（domain層からの再エクスポート）
-export type { IDeckService } from '@domain/interfaces/deck-service.interface';
+import type { CardId } from '@shared/types';
+import type { Card } from './card';
+
+/**
+ * DeckServiceインターフェース
+ *
+ * デッキ操作、状態取得、デッキ構築、初期化メソッドを定義。
+ */
+export interface IDeckService {
+  // =============================================================================
+  // 初期化メソッド
+  // =============================================================================
+
+  /**
+   * 初期デッキを構築してシャッフル
+   * @param cardIds - 初期デッキのカードID配列
+   */
+  initialize(cardIds: CardId[]): void;
+
+  /**
+   * 山札・手札・捨て札をクリア
+   */
+  reset(): void;
+
+  // =============================================================================
+  // デッキ操作メソッド
+  // =============================================================================
+
+  /**
+   * 山札をFisher-Yatesアルゴリズムでシャッフル
+   */
+  shuffle(): void;
+
+  /**
+   * 山札から指定枚数をドロー
+   * @param count - ドローする枚数
+   * @returns ドローしたカードの配列
+   */
+  draw(count: number): Card[];
+
+  /**
+   * 手札からカードを使用し、捨て札に移動
+   * @param card - プレイするカード
+   */
+  playCard(card: Card): void;
+
+  /**
+   * 手札を全て捨て札に移動
+   */
+  discardHand(): void;
+
+  /**
+   * 手札が5枚になるまでドロー
+   */
+  refillHand(): void;
+
+  // =============================================================================
+  // 状態取得メソッド
+  // =============================================================================
+
+  /**
+   * 山札の内容を取得（読み取り専用）
+   * @returns 山札の配列（読み取り専用）
+   */
+  getDeck(): readonly Card[];
+
+  /**
+   * 手札の内容を取得（読み取り専用）
+   * @returns 手札の配列（読み取り専用）
+   */
+  getHand(): readonly Card[];
+
+  /**
+   * 捨て札の内容を取得（読み取り専用）
+   * @returns 捨て札の配列（読み取り専用）
+   */
+  getDiscard(): readonly Card[];
+
+  /**
+   * 手札の枚数を取得
+   * @returns 手札の枚数
+   */
+  getHandSize(): number;
+
+  // =============================================================================
+  // デッキ構築メソッド
+  // =============================================================================
+
+  /**
+   * デッキにカードを追加
+   * @param cardId - 追加するカードID
+   */
+  addCard(cardId: CardId): void;
+
+  /**
+   * デッキからカードを削除
+   * @param cardId - 削除するカードID
+   */
+  removeCard(cardId: CardId): void;
+}
