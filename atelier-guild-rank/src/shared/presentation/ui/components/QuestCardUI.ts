@@ -12,7 +12,6 @@
 import type { Quest } from '@domain/entities/Quest';
 import type Phaser from 'phaser';
 import { Colors } from '../theme';
-// Issue #118: AnimationPresetsはホバー拡大エフェクト削除により不要になった
 import { BaseComponent } from './BaseComponent';
 
 /**
