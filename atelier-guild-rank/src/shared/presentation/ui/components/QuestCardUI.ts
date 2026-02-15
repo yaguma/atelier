@@ -9,10 +9,9 @@
  * カードクリックで詳細モーダルを開き、そこから受注する。
  */
 
+import type { Quest } from '@domain/entities/Quest';
 import type Phaser from 'phaser';
-import type { Quest } from '../../../domain/entities/Quest';
 import { Colors } from '../theme';
-// Issue #118: AnimationPresetsはホバー拡大エフェクト削除により不要になった
 import { BaseComponent } from './BaseComponent';
 
 /**

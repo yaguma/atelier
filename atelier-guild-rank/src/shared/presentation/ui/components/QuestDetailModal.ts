@@ -18,8 +18,8 @@
  * ```
  */
 
+import type { Quest } from '@domain/entities/Quest';
 import type Phaser from 'phaser';
-import type { Quest } from '../../../domain/entities/Quest';
 import { BaseComponent } from './BaseComponent';
 
 /**

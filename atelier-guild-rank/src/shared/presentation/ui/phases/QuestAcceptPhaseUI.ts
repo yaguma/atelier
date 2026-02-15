@@ -15,15 +15,14 @@
  * ```
  */
 
+import type { Quest } from '@domain/entities/Quest';
 import { getSelectionIndexFromKey, isKeyForAction } from '@shared/constants/keybindings';
 import { GameEventType } from '@shared/types/events';
 import type Phaser from 'phaser';
-import type { Quest } from '../../../domain/entities/Quest';
 import type { RexScrollablePanel } from '../../types/rexui';
 import { BaseComponent } from '../components/BaseComponent';
 import { QuestCardUI } from '../components/QuestCardUI';
 import { QuestDetailModal } from '../components/QuestDetailModal';
-import { AnimationPresets } from '../utils/AnimationPresets';
 
 /**
  * テスト用モックScrollablePanel型
@@ -524,69 +523,6 @@ export class QuestAcceptPhaseUI extends BaseComponent {
     }
     super.setVisible(visible);
     return this;
-  }
-
-  // =============================================================================
-  // TASK-0043: サイドバー機能（将来実装用に保持）
-  // =============================================================================
-
-  /** 受注済み依頼リスト（状態管理用） */
-  private acceptedQuests: Quest[] = [];
-
-  /**
-   * 【サイドバー定数】: 受注済みカードのサイドバー表示に関する定数
-   * TASK-0054: AnimationPresets.sidebar を参照
-   */
-  private static readonly SIDEBAR_X = 80;
-  private static readonly SIDEBAR_SCALE = AnimationPresets.sidebar.moveToSidebar.scale;
-  private static readonly SIDEBAR_ANIM_DURATION = AnimationPresets.sidebar.moveToSidebar.duration;
-  private static readonly SIDEBAR_CARD_SPACING = 120;
-  private static readonly SIDEBAR_START_Y = 200;
-
-  /**
-   * 【カードをサイドバーへ移動するアニメーション】: 受注後のカード移動
-   *
-   * 【設計意図】:
-   * - カードを縮小しながらサイドバーへ移動
-   * - アニメーション完了後に受注済みリストを更新
-   *
-   * @param quest - 受注した依頼
-   * @param card - 移動するカード
-   */
-  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: テストから呼び出される将来機能
-  // @ts-expect-error テストから呼び出される将来機能のため、未使用警告を抑制
-  private animateCardToSidebar(quest: Quest, card: QuestCardUI): void {
-    this.scene.tweens.add({
-      targets: card.getContainer(),
-      x: QuestAcceptPhaseUI.SIDEBAR_X,
-      scale: QuestAcceptPhaseUI.SIDEBAR_SCALE,
-      duration: QuestAcceptPhaseUI.SIDEBAR_ANIM_DURATION,
-      ease: 'Power2',
-      onComplete: () => {
-        this.updateAcceptedList(quest);
-      },
-    });
-  }
-
-  /**
-   * 【受注済みリストに追加】: 受注した依頼をリストに追加
-   *
-   * @param quest - 受注した依頼
-   */
-  private updateAcceptedList(quest: Quest): void {
-    this.acceptedQuests.push(quest);
-  }
-
-  /**
-   * 【受注済みカードのY座標を計算】: インデックスに基づいて縦位置を計算
-   *
-   * @param index - 受注済みリスト内のインデックス
-   * @returns Y座標
-   */
-  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: テストから呼び出される将来機能
-  // @ts-expect-error テストから呼び出される将来機能のため、未使用警告を抑制
-  private calculateAcceptedCardY(index: number): number {
-    return QuestAcceptPhaseUI.SIDEBAR_START_Y + index * QuestAcceptPhaseUI.SIDEBAR_CARD_SPACING;
   }
 
   // =============================================================================

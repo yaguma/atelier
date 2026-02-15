@@ -7,7 +7,7 @@
  * カードのドラッグ＆ドロップ操作において、ドロップ先の判定に使用される。
  */
 
-import type { Card } from '../../../domain/entities/Card';
+import type { Card } from '@domain/entities/Card';
 import type { DropZone } from './DropZone';
 
 /**
