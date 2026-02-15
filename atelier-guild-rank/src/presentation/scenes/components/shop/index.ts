@@ -1,16 +1,15 @@
 /**
- * Shop Components エクスポート
- * TASK-0056 ShopSceneリファクタリング
+ * Shop Components（後方互換性用再エクスポート）
  *
  * @description
- * ShopScene関連コンポーネントの一括エクスポート
+ * 実体は scenes/components/shop/ に移動済み。
+ * 後方互換性のため再エクスポートを提供する。
+ *
+ * 新規コードでは @scenes/components/shop を使用すること。
  */
-
-// コンポーネントのエクスポート
-export { ShopHeader } from './ShopHeader';
-export { ShopItemCard } from './ShopItemCard';
-export { ShopItemGrid } from './ShopItemGrid';
-// 型定義のエクスポート
+export { ShopHeader } from '@scenes/components/shop/ShopHeader';
+export { ShopItemCard } from '@scenes/components/shop/ShopItemCard';
+export { ShopItemGrid } from '@scenes/components/shop/ShopItemGrid';
 export type {
   IShopItem,
   OnBackClickCallback,
@@ -19,4 +18,4 @@ export type {
   ShopHeaderConfig,
   ShopItemCardConfig,
   ShopItemGridConfig,
-} from './types';
+} from '@scenes/components/shop/types';
