@@ -7,8 +7,8 @@
  * 受け入れ判定ロジックとドロップ時の処理を定義する。
  */
 
+import type { Card } from '@domain/entities/Card';
 import type Phaser from 'phaser';
-import type { Card } from '../../../domain/entities/Card';
 
 /**
  * ドロップゾーンの設定
