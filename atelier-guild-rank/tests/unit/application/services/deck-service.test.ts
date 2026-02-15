@@ -6,11 +6,11 @@
  * T-0009-01 〜 T-0009-06, T-DECK-01 〜 T-DECK-05 を実装
  */
 
-import type { IEventBus } from '@application/events/event-bus.interface';
-import { DeckService } from '@application/services/deck-service';
 import { Card } from '@domain/entities/Card';
 import type { IDeckService } from '@domain/interfaces/deck-service.interface';
 import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
+import { DeckService } from '@shared/services/deck-service';
+import type { IEventBus } from '@shared/services/event-bus';
 import type { CardMaster } from '@shared/types';
 import { GuildRank, Rarity, toCardId } from '@shared/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

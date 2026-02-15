@@ -6,10 +6,10 @@
  * T-0015-01 〜 T-0015-06: InventoryServiceの単体テスト
  */
 
-import { InventoryService } from '@application/services/inventory-service';
 import { ItemInstance } from '@domain/entities/ItemInstance';
 import { MaterialInstance } from '@domain/entities/MaterialInstance';
 import type { IInventoryService } from '@domain/interfaces/inventory-service.interface';
+import { InventoryService } from '@shared/services/inventory-service';
 import type { IItem, IMaterial } from '@shared/types';
 import { Attribute, Quality, toArtifactId, toItemId, toMaterialId } from '@shared/types';
 import { beforeEach, describe, expect, it } from 'vitest';

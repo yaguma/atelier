@@ -51,10 +51,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@domain': path.resolve(__dirname, './src/domain'),
-      '@application': path.resolve(__dirname, './src/application'),
-      '@infrastructure': path.resolve(__dirname, './src/infrastructure'),
-      '@presentation': path.resolve(__dirname, './src/presentation'),
+      '@domain': path.resolve(__dirname, './src/shared/domain'),
+      '@presentation': path.resolve(__dirname, './src/shared/presentation'),
       '@shared': path.resolve(__dirname, './src/shared'),
       '@features': path.resolve(__dirname, './src/features'),
       '@scenes': path.resolve(__dirname, './src/scenes'),

@@ -13,7 +13,6 @@
  * - 報酬カード生成システム
  */
 
-import type { IEventBus } from '@application/events/event-bus.interface';
 import type { ItemInstance } from '@domain/entities/ItemInstance';
 import { Quest } from '@domain/entities/Quest';
 import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
@@ -24,6 +23,7 @@ import type {
   IQuestService,
   RewardCardCandidate,
 } from '@domain/interfaces/quest-service.interface';
+import type { IEventBus } from '@shared/services/event-bus';
 import type { CardId, ClientId, GuildRank, QuestId } from '@shared/types';
 import { toClientId, toQuestId } from '@shared/types';
 import { ApplicationError, ErrorCodes } from '@shared/types/errors';

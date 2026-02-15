@@ -10,11 +10,11 @@
  * 合計: 14件
  */
 
-import type { IEventBus } from '@application/events/event-bus.interface';
-import type { IGameFlowManager } from '@application/services/game-flow-manager.interface';
-import type { IStateManager } from '@application/services/state-manager.interface';
 import type { IDeckService } from '@domain/interfaces/deck-service.interface';
 import type { IQuestService } from '@domain/interfaces/quest-service.interface';
+import type { IEventBus } from '@shared/services/event-bus';
+import type { IGameFlowManager } from '@shared/services/game-flow';
+import type { IStateManager } from '@shared/services/state-manager';
 import {
   ApplicationError,
   ErrorCodes,
@@ -108,7 +108,7 @@ describe('GameFlowManager', () => {
     };
 
     // GameFlowManagerのインスタンス化
-    const { GameFlowManager } = await import('@application/services/game-flow-manager');
+    const { GameFlowManager } = await import('@shared/services/game-flow');
     gameFlowManager = new GameFlowManager(
       mockStateManager as IStateManager,
       mockDeckService as IDeckService,

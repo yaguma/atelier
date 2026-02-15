@@ -6,9 +6,9 @@
  * T-0014-05 〜 T-0014-06 およびRankServiceの追加テスト
  */
 
-import { RankService } from '@application/services/rank-service';
 import type { IMasterDataRepository } from '@domain/interfaces';
 import type { IRankService } from '@domain/interfaces/rank-service.interface';
+import { RankService } from '@shared/services/rank-service';
 import { GuildRank } from '@shared/types';
 import type { IGuildRankMaster } from '@shared/types/master-data';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

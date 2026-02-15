@@ -5,11 +5,11 @@
  * Container単体テスト＋統合テスト（T-0028-01〜04）
  */
 
-import type { IEventBus } from '@application/events/event-bus.interface';
-import type { IDeckService } from '@application/services/deck-service';
-import type { IStateManager } from '@application/services/state-manager.interface';
-import { Container, initializeServices, resetServices, ServiceKeys } from '@infrastructure/di';
-import type { IMasterDataRepository } from '@infrastructure/repositories/master-data-repository';
+import type { IDeckService } from '@domain/interfaces/deck-service.interface';
+import { Container, initializeServices, resetServices, ServiceKeys } from '@shared/services/di';
+import type { IEventBus } from '@shared/services/event-bus';
+import type { IMasterDataRepository } from '@shared/services/repositories/master-data-repository';
+import type { IStateManager } from '@shared/services/state-manager';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 describe('DI Container - サービス統合テスト', () => {

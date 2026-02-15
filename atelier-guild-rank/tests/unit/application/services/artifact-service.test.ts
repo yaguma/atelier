@@ -8,9 +8,9 @@
  * アーティファクト管理とボーナス計算をテストする。
  */
 
-import { ArtifactService } from '@application/services/artifact-service';
 import type { IInventoryService } from '@domain/interfaces/inventory-service.interface';
 import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
+import { ArtifactService } from '@shared/services/artifact-service';
 import type { IArtifactMaster } from '@shared/types';
 import { toArtifactId } from '@shared/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

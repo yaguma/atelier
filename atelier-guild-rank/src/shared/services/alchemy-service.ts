@@ -13,7 +13,6 @@
  * - 調合完了時にALCHEMY_COMPLETEDイベントを発行
  */
 
-import type { IEventBus } from '@application/events/event-bus.interface';
 import { ItemInstance } from '@domain/entities/ItemInstance';
 import type { MaterialInstance } from '@domain/entities/MaterialInstance';
 import type {
@@ -23,6 +22,7 @@ import type {
 import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
 import type { IMaterialService } from '@domain/interfaces/material-service.interface';
 import { compareQuality } from '@domain/value-objects/Quality';
+import type { IEventBus } from '@shared/services/event-bus';
 import type { CardId, Quality } from '@shared/types';
 import { ApplicationError, ErrorCodes } from '@shared/types/errors';
 import { GameEventType } from '@shared/types/events';

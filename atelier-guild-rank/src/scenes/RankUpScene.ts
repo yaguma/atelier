@@ -10,11 +10,11 @@
  */
 
 import type { IRankService, PromotionResult } from '@features/rank';
-import { Container, ServiceKeys } from '@infrastructure/di/container';
 import type { RexLabel, RexUIPlugin } from '@presentation/types/rexui';
 import { THEME } from '@presentation/ui/theme';
 import { isKeyForAction } from '@shared/constants/keybindings';
 import type { IEventBus } from '@shared/services';
+import { Container, ServiceKeys } from '@shared/services/di/container';
 import { GameEventType, type GuildRank } from '@shared/types';
 import Phaser from 'phaser';
 

@@ -26,7 +26,7 @@ vi.mock('phaser', () => {
 });
 
 // DIセットアップのモック
-vi.mock('@infrastructure/di/setup', () => ({
+vi.mock('@shared/services/di/setup', () => ({
   initializeServices: vi.fn().mockResolvedValue(undefined),
 }));
 

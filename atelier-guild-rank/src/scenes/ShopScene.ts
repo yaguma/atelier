@@ -10,9 +10,9 @@
  */
 
 import type { IPurchaseResult, IShopItem, IShopService } from '@features/shop';
-import { Container, ServiceKeys } from '@infrastructure/di/container';
 import type { RexLabel, RexUIPlugin } from '@presentation/types/rexui';
 import { THEME } from '@presentation/ui/theme';
+import { Container, ServiceKeys } from '@shared/services/di/container';
 import type { GuildRank } from '@shared/types';
 import Phaser from 'phaser';
 

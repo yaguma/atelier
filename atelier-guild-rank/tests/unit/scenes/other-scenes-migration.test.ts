@@ -33,7 +33,7 @@ vi.mock('phaser', () => {
 });
 
 // DIコンテナのモック
-vi.mock('@infrastructure/di/container', () => ({
+vi.mock('@shared/services/di/container', () => ({
   Container: {
     getInstance: vi.fn(() => ({
       resolve: vi.fn(),

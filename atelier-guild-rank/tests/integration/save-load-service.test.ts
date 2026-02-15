@@ -12,13 +12,13 @@
  * - バージョン互換性チェック
  */
 
-import type { IEventBus } from '@application/events/event-bus.interface';
-import { SaveLoadService } from '@application/services/save-load-service';
-import type { IStateManager } from '@application/services/state-manager.interface';
 import type { IDeckService } from '@domain/interfaces/deck-service.interface';
 import type { IInventoryService } from '@domain/interfaces/inventory-service.interface';
 import type { IQuestService } from '@domain/interfaces/quest-service.interface';
 import type { ISaveDataRepository } from '@domain/interfaces/save-data-repository.interface';
+import type { IEventBus } from '@shared/services/event-bus';
+import { SaveLoadService } from '@shared/services/save-load';
+import type { IStateManager } from '@shared/services/state-manager';
 import type { IGameState, ISaveData } from '@shared/types';
 import { ApplicationError, ErrorCodes, GameEventType } from '@shared/types';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';

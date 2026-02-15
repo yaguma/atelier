@@ -15,10 +15,10 @@
  * ```
  */
 
+import { getSelectionIndexFromKey, isKeyForAction } from '@shared/constants/keybindings';
+import { GameEventType } from '@shared/types/events';
 import type Phaser from 'phaser';
 import type { Quest } from '../../../domain/entities/Quest';
-import { getSelectionIndexFromKey, isKeyForAction } from '../../../shared/constants/keybindings';
-import { GameEventType } from '../../../shared/types/events';
 import type { RexScrollablePanel } from '../../types/rexui';
 import { BaseComponent } from '../components/BaseComponent';
 import { QuestCardUI } from '../components/QuestCardUI';

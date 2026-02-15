@@ -36,7 +36,7 @@ vi.mock('@domain/entities/Quest', () => ({
   Quest: class MockQuest {},
 }));
 
-vi.mock('@infrastructure/di/container', () => ({
+vi.mock('@shared/services/di/container', () => ({
   Container: {
     getInstance: vi.fn(() => ({
       resolve: vi.fn(),

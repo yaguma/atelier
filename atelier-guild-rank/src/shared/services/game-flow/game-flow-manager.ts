@@ -12,10 +12,10 @@
  * - ゲームフロー全体の統括機能
  */
 
-import type { IEventBus } from '@application/events/event-bus.interface';
-import type { IStateManager } from '@application/services/state-manager.interface';
 import type { IDeckService } from '@domain/interfaces/deck-service.interface';
 import type { IQuestService } from '@domain/interfaces/quest-service.interface';
+import type { IEventBus } from '@shared/services/event-bus';
+import type { IStateManager } from '@shared/services/state-manager';
 import type { ISaveData } from '@shared/types';
 import { ApplicationError, ErrorCodes, GameEventType, GamePhase, GuildRank } from '@shared/types';
 import type { CardId } from '@shared/types/ids';

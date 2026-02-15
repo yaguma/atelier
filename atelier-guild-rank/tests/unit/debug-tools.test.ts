@@ -15,7 +15,7 @@
  * - clearSaveData
  */
 
-import type { IStateManager } from '@application/services/state-manager.interface';
+import type { IStateManager } from '@shared/services/state-manager';
 import { GuildRank } from '@shared/types';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -25,7 +25,7 @@ let mockGetState: ReturnType<typeof vi.fn>;
 let mockUpdateState: ReturnType<typeof vi.fn>;
 
 // DIコンテナのモック（ファイルの先頭でホイスティングされる）
-vi.mock('@infrastructure/di/container', () => ({
+vi.mock('@shared/services/di/container', () => ({
   Container: {
     getInstance: vi.fn().mockReturnValue({
       resolve: vi.fn().mockImplementation(() => mockStateManager),

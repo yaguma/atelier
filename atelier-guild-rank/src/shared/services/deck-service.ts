@@ -13,10 +13,10 @@
  * - デッキ枯渇時の自動リシャッフル対応
  */
 
-import type { IEventBus } from '@application/events/event-bus.interface';
 import { Card } from '@domain/entities/Card';
 import type { IDeckService } from '@domain/interfaces/deck-service.interface';
 import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
+import type { IEventBus } from '@shared/services/event-bus';
 import type { CardId } from '@shared/types';
 import { ApplicationError, ErrorCodes } from '@shared/types/errors';
 import { GameEventType } from '@shared/types/events';
