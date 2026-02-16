@@ -284,8 +284,8 @@ export class MouseInteractionPage extends BasePage {
 
   /** UI要素の固定座標（1280x720基準） */
   static readonly COORDS = {
-    // フッター
-    NEXT_BUTTON: { x: 1144, y: 660 },
+    // フッター（サイドバー200px + フッター内ボタン位置744px = 944px）
+    NEXT_BUTTON: { x: 944, y: 660 },
     END_DAY_BUTTON: { x: 400, y: 630 },
 
     // サイドバー
