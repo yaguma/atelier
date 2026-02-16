@@ -72,6 +72,10 @@ const createMockScene = () => {
           destroy: vi.fn(),
         }),
       },
+      make: {
+        text: vi.fn().mockReturnValue(mockText),
+        container: vi.fn().mockReturnValue(mockContainer),
+      },
       tweens: {
         add: vi.fn(),
       },
@@ -176,7 +180,7 @@ describe('RankUpRequirements', () => {
       requirements.setTasks([mockTasks[0]]);
 
       // Then: テキストが作成される
-      expect(mockScene.add.text).toHaveBeenCalled();
+      expect(mockScene.make.text).toHaveBeenCalled();
     });
   });
 
@@ -198,7 +202,7 @@ describe('RankUpRequirements', () => {
       requirements.setTasks([mockTasks[1]]);
 
       // Then: 完了アイコンが表示される（実装で確認）
-      expect(mockScene.add.text).toHaveBeenCalled();
+      expect(mockScene.make.text).toHaveBeenCalled();
     });
   });
 

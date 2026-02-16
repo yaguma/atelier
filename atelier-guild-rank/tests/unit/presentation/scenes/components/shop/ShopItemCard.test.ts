@@ -96,6 +96,9 @@ const createMockScene = () => {
         text: vi.fn().mockReturnValue(mockText),
         graphics: vi.fn().mockReturnValue(mockGraphics),
       },
+      make: {
+        text: vi.fn().mockReturnValue(mockText),
+      },
       tweens: {
         add: vi.fn(),
         killTweensOf: vi.fn(),
@@ -195,11 +198,10 @@ describe('ShopItemCard', () => {
         card.create();
 
         // Then: 商品名テキストが表示される
-        expect(mockScene.add.text).toHaveBeenCalled();
-        const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+        expect(mockScene.make.text).toHaveBeenCalled();
+        const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
         const hasItemName = textCalls.some(
-          (call: unknown[]) =>
-            call[2] === '強化ポーション' || call[2]?.toString().includes('強化ポーション'),
+          (call: unknown[]) => (call[0] as Record<string, unknown>)?.text === '強化ポーション',
         );
         expect(hasItemName).toBe(true);
       });
@@ -232,10 +234,10 @@ describe('ShopItemCard', () => {
         card.create();
 
         // Then: 「[カード]」テキストが表示される
-        expect(mockScene.add.text).toHaveBeenCalled();
-        const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+        expect(mockScene.make.text).toHaveBeenCalled();
+        const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
         const hasCardType = textCalls.some((call: unknown[]) =>
-          call[2]?.toString().includes('[カード]'),
+          ((call[0] as Record<string, unknown>)?.text as string)?.includes('[カード]'),
         );
         expect(hasCardType).toBe(true);
       });
@@ -268,10 +270,10 @@ describe('ShopItemCard', () => {
         card.create();
 
         // Then: 「[素材]」テキストが表示される
-        expect(mockScene.add.text).toHaveBeenCalled();
-        const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+        expect(mockScene.make.text).toHaveBeenCalled();
+        const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
         const hasMaterialType = textCalls.some((call: unknown[]) =>
-          call[2]?.toString().includes('[素材]'),
+          ((call[0] as Record<string, unknown>)?.text as string)?.includes('[素材]'),
         );
         expect(hasMaterialType).toBe(true);
       });
@@ -304,10 +306,10 @@ describe('ShopItemCard', () => {
         card.create();
 
         // Then: 「[アーティファクト]」テキストが表示される
-        expect(mockScene.add.text).toHaveBeenCalled();
-        const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+        expect(mockScene.make.text).toHaveBeenCalled();
+        const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
         const hasArtifactType = textCalls.some((call: unknown[]) =>
-          call[2]?.toString().includes('[アーティファクト]'),
+          ((call[0] as Record<string, unknown>)?.text as string)?.includes('[アーティファクト]'),
         );
         expect(hasArtifactType).toBe(true);
       });
@@ -340,10 +342,10 @@ describe('ShopItemCard', () => {
         card.create();
 
         // Then: 「100G」が表示される
-        expect(mockScene.add.text).toHaveBeenCalled();
-        const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+        expect(mockScene.make.text).toHaveBeenCalled();
+        const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
         const hasPrice = textCalls.some(
-          (call: unknown[]) => call[2] === '100G' || call[2]?.toString().includes('100G'),
+          (call: unknown[]) => (call[0] as Record<string, unknown>)?.text === '100G',
         );
         expect(hasPrice).toBe(true);
       });
@@ -376,12 +378,12 @@ describe('ShopItemCard', () => {
         card.create();
 
         // Then: 「在庫: 3」が表示される
-        expect(mockScene.add.text).toHaveBeenCalled();
-        const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
-        const hasStock = textCalls.some(
-          (call: unknown[]) =>
-            call[2]?.toString().includes('在庫') && call[2]?.toString().includes('3'),
-        );
+        expect(mockScene.make.text).toHaveBeenCalled();
+        const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
+        const hasStock = textCalls.some((call: unknown[]) => {
+          const text = (call[0] as Record<string, unknown>)?.text as string;
+          return text?.includes('在庫') && text?.includes('3');
+        });
         expect(hasStock).toBe(true);
       });
     });
@@ -413,9 +415,11 @@ describe('ShopItemCard', () => {
         card.create();
 
         // Then: 「∞」が表示される
-        expect(mockScene.add.text).toHaveBeenCalled();
-        const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
-        const hasUnlimited = textCalls.some((call: unknown[]) => call[2]?.toString().includes('∞'));
+        expect(mockScene.make.text).toHaveBeenCalled();
+        const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
+        const hasUnlimited = textCalls.some((call: unknown[]) =>
+          ((call[0] as Record<string, unknown>)?.text as string)?.includes('∞'),
+        );
         expect(hasUnlimited).toBe(true);
       });
     });
@@ -719,10 +723,10 @@ describe('ShopItemCard', () => {
         card.create();
 
         // Then: 「0G」が表示される
-        expect(mockScene.add.text).toHaveBeenCalled();
-        const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+        expect(mockScene.make.text).toHaveBeenCalled();
+        const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
         const hasZeroPrice = textCalls.some(
-          (call: unknown[]) => call[2] === '0G' || call[2]?.toString().includes('0G'),
+          (call: unknown[]) => (call[0] as Record<string, unknown>)?.text === '0G',
         );
         expect(hasZeroPrice).toBe(true);
       });
@@ -756,7 +760,7 @@ describe('ShopItemCard', () => {
         card.create();
 
         // Then: テキストが表示される
-        expect(mockScene.add.text).toHaveBeenCalled();
+        expect(mockScene.make.text).toHaveBeenCalled();
       });
     });
 
@@ -787,12 +791,12 @@ describe('ShopItemCard', () => {
         card.create();
 
         // Then: 「在庫: 1」が表示され、ボタンが有効
-        expect(mockScene.add.text).toHaveBeenCalled();
-        const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
-        const hasStock1 = textCalls.some(
-          (call: unknown[]) =>
-            call[2]?.toString().includes('在庫') && call[2]?.toString().includes('1'),
-        );
+        expect(mockScene.make.text).toHaveBeenCalled();
+        const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
+        const hasStock1 = textCalls.some((call: unknown[]) => {
+          const text = (call[0] as Record<string, unknown>)?.text as string;
+          return text?.includes('在庫') && text?.includes('1');
+        });
         expect(hasStock1).toBe(true);
 
         const mockLabel = mockRexUI.add.label();

@@ -13,7 +13,7 @@ import { HandDisplay } from '@presentation/ui/components/HandDisplay';
 import type { CardId } from '@shared/types';
 import { CardType } from '@shared/types/common';
 import type { CardMaster } from '@shared/types/master-data';
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 interface MockTweens {
@@ -81,11 +81,18 @@ describe('HandDisplay', () => {
       add: vi.fn(),
     };
 
+    // Phaser.GameObjects のコンストラクタモックをオーバーライド
+    vi.mocked(Phaser.GameObjects.Rectangle).mockImplementation(function (this: unknown) {
+      Object.assign(this, mockRectangle);
+      return this as typeof mockRectangle;
+    });
+
     // Phaserシーンのモックを作成
     scene = {
       add: {
         container: vi.fn().mockReturnValue(mockContainer),
-        rectangle: vi.fn().mockReturnValue(mockRectangle),
+      },
+      make: {
         text: vi.fn().mockReturnValue(mockText),
       },
       tweens: mockTweens,

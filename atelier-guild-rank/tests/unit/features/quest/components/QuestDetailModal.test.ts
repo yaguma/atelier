@@ -45,6 +45,16 @@ function createMockContainer() {
 function createMockScene(): Phaser.Scene {
   const mockContainer = createMockContainer();
 
+  const mockText = {
+    setOrigin: vi.fn().mockReturnThis(),
+    setDepth: vi.fn().mockReturnThis(),
+    setScale: vi.fn().mockReturnThis(),
+    setInteractive: vi.fn().mockReturnThis(),
+    on: vi.fn().mockReturnThis(),
+    off: vi.fn().mockReturnThis(),
+    destroy: vi.fn(),
+  };
+
   const scene = {
     add: {
       container: vi.fn().mockReturnValue(mockContainer),
@@ -56,15 +66,11 @@ function createMockScene(): Phaser.Scene {
         off: vi.fn().mockReturnThis(),
         destroy: vi.fn(),
       }),
-      text: vi.fn().mockReturnValue({
-        setOrigin: vi.fn().mockReturnThis(),
-        setDepth: vi.fn().mockReturnThis(),
-        setScale: vi.fn().mockReturnThis(),
-        setInteractive: vi.fn().mockReturnThis(),
-        on: vi.fn().mockReturnThis(),
-        off: vi.fn().mockReturnThis(),
-        destroy: vi.fn(),
-      }),
+      text: vi.fn().mockReturnValue(mockText),
+    },
+    make: {
+      text: vi.fn().mockReturnValue(mockText),
+      container: vi.fn().mockReturnValue(mockContainer),
     },
     cameras: {
       main: { width: 1280, height: 720 },
@@ -193,10 +199,10 @@ describe('QuestDetailModal', () => {
       const modal = new QuestDetailModal(mockScene, config);
       modal.create();
 
-      // rectangleが呼ばれている（オーバーレイ + パネル背景）
-      expect(mockScene.add.rectangle).toHaveBeenCalled();
-      // textが呼ばれている（依頼者名、期限、報酬、ボタン2つ）
-      expect(mockScene.add.text).toHaveBeenCalled();
+      // make.textが呼ばれている（依頼者名、期限、報酬、ボタン2つ）
+      expect(mockScene.make.text).toHaveBeenCalled();
+      // make.containerが呼ばれている（パネル）
+      expect(mockScene.make.container).toHaveBeenCalled();
       // tweenが呼ばれている（アニメーション）
       expect(mockScene.tweens.add).toHaveBeenCalled();
     });

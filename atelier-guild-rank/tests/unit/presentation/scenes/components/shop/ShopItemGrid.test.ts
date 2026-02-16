@@ -94,6 +94,9 @@ const createMockScene = () => {
         text: vi.fn().mockReturnValue(mockText),
         graphics: vi.fn().mockReturnValue(mockGraphics),
       },
+      make: {
+        text: vi.fn().mockReturnValue(mockText),
+      },
       tweens: {
         add: vi.fn(),
       },

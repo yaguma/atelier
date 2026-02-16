@@ -87,6 +87,9 @@ const createMockScene = () => {
         text: vi.fn().mockReturnValue(mockText),
         graphics: vi.fn().mockReturnValue(mockGraphics),
       },
+      make: {
+        text: vi.fn().mockReturnValue(mockText),
+      },
       tweens: {
         add: vi.fn(),
       },
@@ -156,11 +159,11 @@ describe('ShopHeader', () => {
         header.create();
 
         // Then: タイトルテキストが「ショップ」で作成される
-        expect(mockScene.add.text).toHaveBeenCalled();
+        expect(mockScene.make.text).toHaveBeenCalled();
         // タイトル「ショップ」が含まれる呼び出しがあることを確認
-        const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+        const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
         const hasShopTitle = textCalls.some(
-          (call: unknown[]) => call[2] === 'ショップ' || call[2]?.toString().includes('ショップ'),
+          (call: unknown[]) => (call[0] as Record<string, unknown>)?.text === 'ショップ',
         );
         expect(hasShopTitle).toBe(true);
       });
@@ -186,7 +189,7 @@ describe('ShopHeader', () => {
         header.setGold(500);
 
         // Then: 所持金テキストが「所持金: 500G」形式で表示される
-        expect(mockScene.add.text).toHaveBeenCalled();
+        expect(mockScene.make.text).toHaveBeenCalled();
       });
     });
 
@@ -363,7 +366,7 @@ describe('ShopHeader', () => {
         header.setGold(0);
 
         // Then: テキストが「所持金: 0G」形式で表示される
-        expect(mockScene.add.text).toHaveBeenCalled();
+        expect(mockScene.make.text).toHaveBeenCalled();
       });
     });
 
@@ -387,7 +390,7 @@ describe('ShopHeader', () => {
         header.setGold(9999999);
 
         // Then: テキストが正しく表示される（オーバーフローなし）
-        expect(mockScene.add.text).toHaveBeenCalled();
+        expect(mockScene.make.text).toHaveBeenCalled();
       });
     });
 

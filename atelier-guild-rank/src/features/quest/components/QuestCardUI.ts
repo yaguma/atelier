@@ -10,7 +10,7 @@
 import { BaseComponent } from '@shared/components';
 import { Colors } from '@shared/theme';
 import type { IQuest } from '@shared/types/quests';
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 
 // =============================================================================
 // 定数
@@ -101,7 +101,8 @@ export class QuestCardUI extends BaseComponent {
   }
 
   private createBackground(): void {
-    this.background = this.scene.add.rectangle(
+    this.background = new Phaser.GameObjects.Rectangle(
+      this.scene,
       0,
       0,
       CARD.WIDTH,
@@ -119,10 +120,12 @@ export class QuestCardUI extends BaseComponent {
     const displayName = clientName.trim() === '' ? '不明な依頼者' : clientName;
     const nameY = -CARD.HEIGHT / 2 + CARD.PADDING;
 
-    this.clientNameText = this.scene.add.text(-CARD.WIDTH / 2 + CARD.PADDING, nameY, displayName, {
-      fontSize: '14px',
-      color: '#000000',
-      fontStyle: 'bold',
+    this.clientNameText = this.scene.make.text({
+      x: -CARD.WIDTH / 2 + CARD.PADDING,
+      y: nameY,
+      text: displayName,
+      style: { fontSize: '14px', color: '#000000', fontStyle: 'bold' },
+      add: false,
     });
     this.clientNameText.setOrigin(0, 0);
     this.container.add(this.clientNameText);
@@ -132,10 +135,16 @@ export class QuestCardUI extends BaseComponent {
     const dialogue = this.quest.flavorText || '';
     const dialogueY = -CARD.HEIGHT / 2 + CARD.PADDING + TEXT_OFFSET.DIALOGUE;
 
-    this.dialogueText = this.scene.add.text(-CARD.WIDTH / 2 + CARD.PADDING, dialogueY, dialogue, {
-      fontSize: '12px',
-      color: '#333333',
-      wordWrap: { width: CARD.WIDTH - CARD.PADDING * 2 },
+    this.dialogueText = this.scene.make.text({
+      x: -CARD.WIDTH / 2 + CARD.PADDING,
+      y: dialogueY,
+      text: dialogue,
+      style: {
+        fontSize: '12px',
+        color: '#333333',
+        wordWrap: { width: CARD.WIDTH - CARD.PADDING * 2 },
+      },
+      add: false,
     });
     this.dialogueText.setOrigin(0, 0);
     this.container.add(this.dialogueText);
@@ -147,9 +156,12 @@ export class QuestCardUI extends BaseComponent {
     const rewardLabel = `${contribution}貢献度 / ${gold}G`;
     const rewardY = CARD.HEIGHT / 2 - CARD.PADDING - TEXT_OFFSET.REWARD;
 
-    this.rewardText = this.scene.add.text(-CARD.WIDTH / 2 + CARD.PADDING, rewardY, rewardLabel, {
-      fontSize: '12px',
-      color: '#000000',
+    this.rewardText = this.scene.make.text({
+      x: -CARD.WIDTH / 2 + CARD.PADDING,
+      y: rewardY,
+      text: rewardLabel,
+      style: { fontSize: '12px', color: '#000000' },
+      add: false,
     });
     this.rewardText.setOrigin(0, 0);
     this.container.add(this.rewardText);
@@ -160,12 +172,13 @@ export class QuestCardUI extends BaseComponent {
     const deadlineLabel = `期限: ${deadline}日`;
     const deadlineY = CARD.HEIGHT / 2 - CARD.PADDING - TEXT_OFFSET.DEADLINE;
 
-    this.deadlineText = this.scene.add.text(
-      -CARD.WIDTH / 2 + CARD.PADDING,
-      deadlineY,
-      deadlineLabel,
-      { fontSize: '12px', color: '#666666' },
-    );
+    this.deadlineText = this.scene.make.text({
+      x: -CARD.WIDTH / 2 + CARD.PADDING,
+      y: deadlineY,
+      text: deadlineLabel,
+      style: { fontSize: '12px', color: '#666666' },
+      add: false,
+    });
     this.deadlineText.setOrigin(0, 0);
     this.container.add(this.deadlineText);
   }

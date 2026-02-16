@@ -150,12 +150,18 @@ export class AlchemyPhaseUI extends BaseComponent {
    * タイトルを作成
    */
   private createTitle(): void {
-    this.titleText = this.scene.add
-      .text(0, 0, '⚗️ 調合フェーズ', {
-        fontSize: `${THEME.sizes.xlarge}px`,
-        color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
-        fontFamily: THEME.fonts.primary,
-        fontStyle: 'bold',
+    this.titleText = this.scene.make
+      .text({
+        x: 0,
+        y: 0,
+        text: '⚗️ 調合フェーズ',
+        style: {
+          fontSize: `${THEME.sizes.xlarge}px`,
+          color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
+          fontFamily: THEME.fonts.primary,
+          fontStyle: 'bold',
+        },
+        add: false,
       })
       .setOrigin(0.5);
 

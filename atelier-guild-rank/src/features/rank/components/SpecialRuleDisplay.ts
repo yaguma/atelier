@@ -9,7 +9,7 @@
 import { BaseComponent } from '@shared/components';
 import { Colors, THEME } from '@shared/theme';
 import type { ISpecialRule } from '@shared/types/master-data';
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 
 // =============================================================================
 // 定数
@@ -97,12 +97,13 @@ export class SpecialRuleDisplay extends BaseComponent {
 
   private createHeader(): void {
     const headerStr = this.config.header ?? '特殊ルール';
-    const headerText = this.scene.add.text(
-      -(PANEL.WIDTH / 2) + PANEL.PADDING,
-      OFFSET.HEADER_Y,
-      headerStr,
-      TEXT_STYLES.HEADER,
-    );
+    const headerText = this.scene.make.text({
+      x: -(PANEL.WIDTH / 2) + PANEL.PADDING,
+      y: OFFSET.HEADER_Y,
+      text: headerStr,
+      style: TEXT_STYLES.HEADER,
+      add: false,
+    });
     headerText.setOrigin(0, 0);
     this.container.add(headerText);
   }
@@ -120,7 +121,8 @@ export class SpecialRuleDisplay extends BaseComponent {
 
     // アクティブインジケーター
     const indicatorColor = displayRule.active ? Colors.text.success : Colors.text.muted;
-    const indicator = this.scene.add.rectangle(
+    const indicator = new Phaser.GameObjects.Rectangle(
+      this.scene,
       -(PANEL.WIDTH / 2) + PANEL.PADDING,
       y + PANEL.ITEM_HEIGHT / 2,
       8,
@@ -131,12 +133,13 @@ export class SpecialRuleDisplay extends BaseComponent {
 
     // ルール説明テキスト
     const style = displayRule.active ? TEXT_STYLES.RULE_ACTIVE : TEXT_STYLES.RULE_INACTIVE;
-    const ruleText = this.scene.add.text(
-      -(PANEL.WIDTH / 2) + PANEL.PADDING + 16,
-      y + PANEL.ITEM_HEIGHT / 2,
-      displayRule.rule.description,
+    const ruleText = this.scene.make.text({
+      x: -(PANEL.WIDTH / 2) + PANEL.PADDING + 16,
+      y: y + PANEL.ITEM_HEIGHT / 2,
+      text: displayRule.rule.description,
       style,
-    );
+      add: false,
+    });
     ruleText.setOrigin(0, 0.5);
     this.container.add(ruleText);
   }

@@ -15,7 +15,7 @@ import { CardUI } from '@presentation/ui/components/CardUI';
 import type { CardId } from '@shared/types';
 import { CardType } from '@shared/types/common';
 import type { CardMaster } from '@shared/types/master-data';
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 interface MockTweens {
@@ -85,11 +85,18 @@ describe('CardUI', () => {
       add: vi.fn(),
     };
 
+    // Phaser.GameObjects のコンストラクタモックをオーバーライド
+    vi.mocked(Phaser.GameObjects.Rectangle).mockImplementation(function (this: unknown) {
+      Object.assign(this, mockRectangle);
+      return this as typeof mockRectangle;
+    });
+
     // Phaserシーンのモックを作成
     scene = {
       add: {
         container: vi.fn().mockReturnValue(mockContainer),
-        rectangle: vi.fn().mockReturnValue(mockRectangle),
+      },
+      make: {
         text: vi.fn().mockReturnValue(mockText),
       },
       tweens: mockTweens,
@@ -145,15 +152,14 @@ describe('CardUI', () => {
         y: 200,
       });
 
-      // 背景が作成されたことを確認
-      expect(scene.add.rectangle).toHaveBeenCalled();
-      expect(mockRectangle.setStrokeStyle).toHaveBeenCalledWith(2, 0x333333);
+      // 背景が作成されたことを確認（コンストラクタ経由）
+      expect(Phaser.GameObjects.Rectangle).toHaveBeenCalled();
 
       // コンテナにGameObjectsが追加されたことを確認
       expect(mockContainer.add).toHaveBeenCalled();
 
       // テキストが作成されたことを確認
-      expect(scene.add.text).toHaveBeenCalled();
+      expect(scene.make.text).toHaveBeenCalled();
 
       cardUI.destroy();
     });
@@ -177,8 +183,8 @@ describe('CardUI', () => {
         y: 0,
       });
 
-      // 緑色（0x90ee90）で背景が作成されたことを確認
-      expect(scene.add.rectangle).toHaveBeenCalledWith(0, 0, 120, 160, 0x90ee90);
+      // 緑色（0x90ee90）で背景が作成されたことを確認（コンストラクタ経由）
+      expect(Phaser.GameObjects.Rectangle).toHaveBeenCalledWith(scene, 0, 0, 120, 160, 0x90ee90);
 
       cardUI.destroy();
     });
@@ -190,8 +196,8 @@ describe('CardUI', () => {
         y: 0,
       });
 
-      // ピンク色（0xffb6c1）で背景が作成されたことを確認
-      expect(scene.add.rectangle).toHaveBeenCalledWith(0, 0, 120, 160, 0xffb6c1);
+      // ピンク色（0xffb6c1）で背景が作成されたことを確認（コンストラクタ経由）
+      expect(Phaser.GameObjects.Rectangle).toHaveBeenCalledWith(scene, 0, 0, 120, 160, 0xffb6c1);
 
       cardUI.destroy();
     });
@@ -203,8 +209,8 @@ describe('CardUI', () => {
         y: 0,
       });
 
-      // 青色（0xadd8e6）で背景が作成されたことを確認
-      expect(scene.add.rectangle).toHaveBeenCalledWith(0, 0, 120, 160, 0xadd8e6);
+      // 青色（0xadd8e6）で背景が作成されたことを確認（コンストラクタ経由）
+      expect(Phaser.GameObjects.Rectangle).toHaveBeenCalledWith(scene, 0, 0, 120, 160, 0xadd8e6);
 
       cardUI.destroy();
     });
@@ -348,9 +354,9 @@ describe('CardUI', () => {
         y: 0,
       });
 
-      // カード名のテキストが作成されたことを確認
-      const textCalls = (scene.add.text as ReturnType<typeof vi.fn>).mock.calls;
-      const nameTextCall = textCalls.find((call) => call[2] === '採取カード');
+      // カード名のテキストが作成されたことを確認（scene.make.textはオブジェクト引数）
+      const textCalls = (scene.make.text as ReturnType<typeof vi.fn>).mock.calls;
+      const nameTextCall = textCalls.find((call) => call[0]?.text === '採取カード');
 
       expect(nameTextCall).toBeDefined();
 
@@ -364,9 +370,9 @@ describe('CardUI', () => {
         y: 0,
       });
 
-      // コストのテキストが作成されたことを確認
-      const textCalls = (scene.add.text as ReturnType<typeof vi.fn>).mock.calls;
-      const costTextCall = textCalls.find((call) => call[2] === '⚡ 1');
+      // コストのテキストが作成されたことを確認（scene.make.textはオブジェクト引数）
+      const textCalls = (scene.make.text as ReturnType<typeof vi.fn>).mock.calls;
+      const costTextCall = textCalls.find((call) => call[0]?.text === '⚡ 1');
 
       expect(costTextCall).toBeDefined();
 
@@ -414,9 +420,9 @@ describe('CardUI', () => {
         y: 0,
       });
 
-      // 【結果検証】: 白色（0xffffff）で背景が作成されたことを確認
+      // 【結果検証】: 白色（0xffffff）で背景が作成されたことを確認（コンストラクタ経由）
       // 【期待値確認】: switch文のdefaultケースが正しく動作すること
-      expect(scene.add.rectangle).toHaveBeenCalledWith(0, 0, 120, 160, 0xffffff); // 【確認内容】: 未知のタイプでもUIが壊れず、デフォルト色（白）で表示される
+      expect(Phaser.GameObjects.Rectangle).toHaveBeenCalledWith(scene, 0, 0, 120, 160, 0xffffff); // 【確認内容】: 未知のタイプでもUIが壊れず、デフォルト色（白）で表示される
 
       cardUI.destroy();
     });

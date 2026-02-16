@@ -10,7 +10,7 @@ import { BaseComponent } from '@shared/components';
 import { Colors, THEME } from '@shared/theme';
 import type { GuildRank } from '@shared/types';
 import type { ISpecialRule } from '@shared/types/master-data';
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 
 // =============================================================================
 // 定数
@@ -102,7 +102,8 @@ export class PromotionDialog extends BaseComponent {
   // ===========================================================================
 
   private createBackground(): void {
-    const bg = this.scene.add.rectangle(
+    const bg = new Phaser.GameObjects.Rectangle(
+      this.scene,
       0,
       0,
       DIALOG.WIDTH,
@@ -114,21 +115,39 @@ export class PromotionDialog extends BaseComponent {
   }
 
   private createTitle(): void {
-    const titleText = this.scene.add.text(0, OFFSET.TITLE_Y, '昇格おめでとう!', TEXT_STYLES.TITLE);
+    const titleText = this.scene.make.text({
+      x: 0,
+      y: OFFSET.TITLE_Y,
+      text: '昇格おめでとう!',
+      style: TEXT_STYLES.TITLE,
+      add: false,
+    });
     titleText.setOrigin(0.5);
     this.container.add(titleText);
   }
 
   private createRankDisplay(): void {
     const rankStr = `${this.config.fromRank} → ${this.config.toRank}`;
-    const rankText = this.scene.add.text(0, OFFSET.RANK_Y, rankStr, TEXT_STYLES.RANK);
+    const rankText = this.scene.make.text({
+      x: 0,
+      y: OFFSET.RANK_Y,
+      text: rankStr,
+      style: TEXT_STYLES.RANK,
+      add: false,
+    });
     rankText.setOrigin(0.5);
     this.container.add(rankText);
   }
 
   private createBonusDisplay(): void {
     const bonusStr = `ボーナス: ${this.config.bonusGold} G`;
-    const bonusText = this.scene.add.text(0, OFFSET.BONUS_Y, bonusStr, TEXT_STYLES.BONUS);
+    const bonusText = this.scene.make.text({
+      x: 0,
+      y: OFFSET.BONUS_Y,
+      text: bonusStr,
+      style: TEXT_STYLES.BONUS,
+      add: false,
+    });
     bonusText.setOrigin(0.5);
     this.container.add(bonusText);
   }
@@ -139,24 +158,26 @@ export class PromotionDialog extends BaseComponent {
       return;
     }
 
-    const headerText = this.scene.add.text(
-      0,
-      OFFSET.RULES_HEADER_Y,
-      '解放された特殊ルール:',
-      TEXT_STYLES.RULE_HEADER,
-    );
+    const headerText = this.scene.make.text({
+      x: 0,
+      y: OFFSET.RULES_HEADER_Y,
+      text: '解放された特殊ルール:',
+      style: TEXT_STYLES.RULE_HEADER,
+      add: false,
+    });
     headerText.setOrigin(0.5);
     this.container.add(headerText);
 
     for (let i = 0; i < rules.length; i++) {
       const rule = rules[i];
       if (!rule) continue;
-      const ruleText = this.scene.add.text(
-        0,
-        OFFSET.RULES_START_Y + i * OFFSET.RULE_LINE_HEIGHT,
-        `・${rule.description}`,
-        TEXT_STYLES.RULE_ITEM,
-      );
+      const ruleText = this.scene.make.text({
+        x: 0,
+        y: OFFSET.RULES_START_Y + i * OFFSET.RULE_LINE_HEIGHT,
+        text: `・${rule.description}`,
+        style: TEXT_STYLES.RULE_ITEM,
+        add: false,
+      });
       ruleText.setOrigin(0.5);
       this.container.add(ruleText);
     }

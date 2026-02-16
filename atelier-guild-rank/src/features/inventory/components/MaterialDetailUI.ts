@@ -9,7 +9,7 @@
 import type { MaterialInstance } from '@domain/entities/MaterialInstance';
 import { BaseComponent } from '@shared/components';
 import { Colors, THEME } from '@shared/theme';
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 
 // =============================================================================
 // 定数
@@ -97,42 +97,68 @@ export class MaterialDetailUI extends BaseComponent {
   // ===========================================================================
 
   private createBackground(): void {
-    const bg = this.scene.add.rectangle(0, 0, PANEL.WIDTH, PANEL.HEIGHT, Colors.background.card);
+    const bg = new Phaser.GameObjects.Rectangle(
+      this.scene,
+      0,
+      0,
+      PANEL.WIDTH,
+      PANEL.HEIGHT,
+      Colors.background.card,
+    );
     bg.setStrokeStyle(1, Colors.border.primary);
     this.container.add(bg);
   }
 
   private createDetailContent(material: MaterialInstance): void {
     // 素材名
-    const nameText = this.scene.add.text(0, OFFSET.NAME_Y, material.name, TEXT_STYLES.NAME);
+    const nameText = this.scene.make.text({
+      x: 0,
+      y: OFFSET.NAME_Y,
+      text: material.name,
+      style: TEXT_STYLES.NAME,
+      add: false,
+    });
     nameText.setOrigin(0.5);
     this.container.add(nameText);
     this.detailElements.push(nameText);
 
     // 品質表示
     const qualityColor = THEME.qualityColors[material.quality] ?? Colors.text.muted;
-    const qualityText = this.scene.add.text(0, OFFSET.QUALITY_Y, `品質: ${material.quality}`, {
-      ...TEXT_STYLES.QUALITY,
-      color: `#${qualityColor.toString(16).padStart(6, '0')}`,
+    const qualityText = this.scene.make.text({
+      x: 0,
+      y: OFFSET.QUALITY_Y,
+      text: `品質: ${material.quality}`,
+      style: {
+        ...TEXT_STYLES.QUALITY,
+        color: `#${qualityColor.toString(16).padStart(6, '0')}`,
+      },
+      add: false,
     });
     qualityText.setOrigin(0.5);
     this.container.add(qualityText);
     this.detailElements.push(qualityText);
 
     // 属性ラベル
-    const attrLabel = this.scene.add.text(0, OFFSET.ATTR_LABEL_Y, '属性:', TEXT_STYLES.LABEL);
+    const attrLabel = this.scene.make.text({
+      x: 0,
+      y: OFFSET.ATTR_LABEL_Y,
+      text: '属性:',
+      style: TEXT_STYLES.LABEL,
+      add: false,
+    });
     attrLabel.setOrigin(0.5);
     this.container.add(attrLabel);
     this.detailElements.push(attrLabel);
 
     // 属性値
     const attrStr = material.attributes.join(', ');
-    const attrText = this.scene.add.text(
-      0,
-      OFFSET.ATTR_VALUE_Y,
-      attrStr || 'なし',
-      TEXT_STYLES.ATTRIBUTE,
-    );
+    const attrText = this.scene.make.text({
+      x: 0,
+      y: OFFSET.ATTR_VALUE_Y,
+      text: attrStr || 'なし',
+      style: TEXT_STYLES.ATTRIBUTE,
+      add: false,
+    });
     attrText.setOrigin(0.5);
     this.container.add(attrText);
     this.detailElements.push(attrText);

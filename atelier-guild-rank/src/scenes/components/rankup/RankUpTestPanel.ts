@@ -8,6 +8,7 @@
  */
 
 import { applyHoverAnimation } from '@presentation/ui/utils';
+import Phaser from 'phaser';
 import type { TestPanelCallbacks, TestState } from './types';
 
 // =============================================================================
@@ -179,7 +180,8 @@ export class RankUpTestPanel {
   private createNotStartedUI(): void {
     // 試験開始ボタン
     const startX = -LAYOUT.BUTTON_SPACING / 2;
-    this.startButton = this.scene.add.rectangle(
+    this.startButton = new Phaser.GameObjects.Rectangle(
+      this.scene,
       startX,
       0,
       LAYOUT.BUTTON_WIDTH,
@@ -191,18 +193,20 @@ export class RankUpTestPanel {
     applyHoverAnimation(this.startButton, this.scene);
     this.container.add(this.startButton);
 
-    this.startButtonText = this.scene.add.text(
-      startX,
-      0,
-      UI_TEXT.START_TEST_BUTTON,
-      UI_STYLES.BUTTON_TEXT,
-    );
+    this.startButtonText = this.scene.make.text({
+      x: startX,
+      y: 0,
+      text: UI_TEXT.START_TEST_BUTTON,
+      style: UI_STYLES.BUTTON_TEXT,
+      add: false,
+    });
     this.startButtonText.setOrigin(0.5);
     this.container.add(this.startButtonText);
 
     // 辞退ボタン
     const declineX = LAYOUT.BUTTON_SPACING / 2;
-    this.declineButton = this.scene.add.rectangle(
+    this.declineButton = new Phaser.GameObjects.Rectangle(
+      this.scene,
       declineX,
       0,
       LAYOUT.BUTTON_WIDTH,
@@ -214,12 +218,13 @@ export class RankUpTestPanel {
     applyHoverAnimation(this.declineButton, this.scene);
     this.container.add(this.declineButton);
 
-    this.declineButtonText = this.scene.add.text(
-      declineX,
-      0,
-      UI_TEXT.DECLINE_TEST_BUTTON,
-      UI_STYLES.BUTTON_TEXT,
-    );
+    this.declineButtonText = this.scene.make.text({
+      x: declineX,
+      y: 0,
+      text: UI_TEXT.DECLINE_TEST_BUTTON,
+      style: UI_STYLES.BUTTON_TEXT,
+      add: false,
+    });
     this.declineButtonText.setOrigin(0.5);
     this.container.add(this.declineButtonText);
   }
@@ -228,7 +233,13 @@ export class RankUpTestPanel {
    * InProgress状態のUIを作成
    */
   private createInProgressUI(): void {
-    this.statusText = this.scene.add.text(0, 0, UI_TEXT.TEST_IN_PROGRESS, UI_STYLES.STATUS_TEXT);
+    this.statusText = this.scene.make.text({
+      x: 0,
+      y: 0,
+      text: UI_TEXT.TEST_IN_PROGRESS,
+      style: UI_STYLES.STATUS_TEXT,
+      add: false,
+    });
     this.statusText.setOrigin(0.5);
     this.container.add(this.statusText);
   }
@@ -237,7 +248,13 @@ export class RankUpTestPanel {
    * Completed状態のUIを作成
    */
   private createCompletedUI(): void {
-    this.statusText = this.scene.add.text(0, 0, UI_TEXT.TEST_CLEAR_TITLE, UI_STYLES.CLEAR_TEXT);
+    this.statusText = this.scene.make.text({
+      x: 0,
+      y: 0,
+      text: UI_TEXT.TEST_CLEAR_TITLE,
+      style: UI_STYLES.CLEAR_TEXT,
+      add: false,
+    });
     this.statusText.setOrigin(0.5);
     this.container.add(this.statusText);
   }
@@ -247,17 +264,30 @@ export class RankUpTestPanel {
    */
   private createFailedUI(): void {
     // 失敗テキスト
-    this.statusText = this.scene.add.text(0, -30, UI_TEXT.TEST_FAILED_TITLE, UI_STYLES.FAILED_TEXT);
+    this.statusText = this.scene.make.text({
+      x: 0,
+      y: -30,
+      text: UI_TEXT.TEST_FAILED_TITLE,
+      style: UI_STYLES.FAILED_TEXT,
+      add: false,
+    });
     this.statusText.setOrigin(0.5);
     this.container.add(this.statusText);
 
     // ゲームオーバーテキスト
-    const gameOverText = this.scene.add.text(0, 10, UI_TEXT.GAME_OVER, UI_STYLES.STATUS_TEXT);
+    const gameOverText = this.scene.make.text({
+      x: 0,
+      y: 10,
+      text: UI_TEXT.GAME_OVER,
+      style: UI_STYLES.STATUS_TEXT,
+      add: false,
+    });
     gameOverText.setOrigin(0.5);
     this.container.add(gameOverText);
 
     // タイトルへボタン
-    this.toTitleButton = this.scene.add.rectangle(
+    this.toTitleButton = new Phaser.GameObjects.Rectangle(
+      this.scene,
       0,
       60,
       LAYOUT.BUTTON_WIDTH,
@@ -269,12 +299,13 @@ export class RankUpTestPanel {
     applyHoverAnimation(this.toTitleButton, this.scene);
     this.container.add(this.toTitleButton);
 
-    this.toTitleButtonText = this.scene.add.text(
-      0,
-      60,
-      UI_TEXT.TO_TITLE_BUTTON,
-      UI_STYLES.BUTTON_TEXT,
-    );
+    this.toTitleButtonText = this.scene.make.text({
+      x: 0,
+      y: 60,
+      text: UI_TEXT.TO_TITLE_BUTTON,
+      style: UI_STYLES.BUTTON_TEXT,
+      add: false,
+    });
     this.toTitleButtonText.setOrigin(0.5);
     this.container.add(this.toTitleButtonText);
   }

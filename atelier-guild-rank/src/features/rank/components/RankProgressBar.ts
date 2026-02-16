@@ -9,7 +9,7 @@
 import { BaseComponent } from '@shared/components';
 import { Colors, THEME } from '@shared/theme';
 import type { GuildRank } from '@shared/types';
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 
 // =============================================================================
 // 定数
@@ -117,7 +117,8 @@ export class RankProgressBar extends BaseComponent {
 
   private createBar(): void {
     // バー背景
-    this.barBg = this.scene.add.rectangle(
+    this.barBg = new Phaser.GameObjects.Rectangle(
+      this.scene,
       0,
       0,
       BAR.WIDTH,
@@ -128,7 +129,8 @@ export class RankProgressBar extends BaseComponent {
     this.container.add(this.barBg);
 
     // バー塗り部分（初期幅0）
-    this.barFill = this.scene.add.rectangle(
+    this.barFill = new Phaser.GameObjects.Rectangle(
+      this.scene,
       -(BAR.WIDTH / 2) + BAR.PADDING,
       0,
       0,
@@ -142,21 +144,23 @@ export class RankProgressBar extends BaseComponent {
   private createLabels(): void {
     const label = this.config.label ?? '昇格ゲージ';
 
-    this.labelText = this.scene.add.text(
-      -(BAR.WIDTH / 2),
-      OFFSET.LABEL_Y,
-      label,
-      TEXT_STYLES.LABEL,
-    );
+    this.labelText = this.scene.make.text({
+      x: -(BAR.WIDTH / 2),
+      y: OFFSET.LABEL_Y,
+      text: label,
+      style: TEXT_STYLES.LABEL,
+      add: false,
+    });
     this.labelText.setOrigin(0, 1);
     this.container.add(this.labelText);
 
-    this.gaugeText = this.scene.add.text(
-      BAR.WIDTH / 2,
-      OFFSET.GAUGE_Y,
-      `${Math.min(this.config.gaugePercent, 100)}%`,
-      TEXT_STYLES.GAUGE,
-    );
+    this.gaugeText = this.scene.make.text({
+      x: BAR.WIDTH / 2,
+      y: OFFSET.GAUGE_Y,
+      text: `${Math.min(this.config.gaugePercent, 100)}%`,
+      style: TEXT_STYLES.GAUGE,
+      add: false,
+    });
     this.gaugeText.setOrigin(1, 1);
     this.container.add(this.gaugeText);
   }

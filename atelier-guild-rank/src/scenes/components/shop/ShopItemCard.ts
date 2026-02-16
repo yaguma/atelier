@@ -79,35 +79,59 @@ export class ShopItemCard extends BaseComponent {
     this.container.add(this.background);
 
     // 商品名
-    const nameText = this.scene.add.text(10, 10, this.item.name, {
-      fontSize: `${THEME.sizes.medium}px`,
-      color: `#${Colors.text.primary.toString(16).padStart(6, '0')}`,
+    const nameText = this.scene.make.text({
+      x: 10,
+      y: 10,
+      text: this.item.name,
+      style: {
+        fontSize: `${THEME.sizes.medium}px`,
+        color: `#${Colors.text.primary.toString(16).padStart(6, '0')}`,
+      },
+      add: false,
     });
     nameText.setOrigin(0, 0);
     this.container.add(nameText);
 
     // タイプ表示
     const typeLabel = TYPE_LABELS[this.item.type] || this.item.type;
-    const typeText = this.scene.add.text(10, 35, `[${typeLabel}]`, {
-      fontSize: `${THEME.sizes.small}px`,
-      color: `#${Colors.text.secondary.toString(16).padStart(6, '0')}`,
+    const typeText = this.scene.make.text({
+      x: 10,
+      y: 35,
+      text: `[${typeLabel}]`,
+      style: {
+        fontSize: `${THEME.sizes.small}px`,
+        color: `#${Colors.text.secondary.toString(16).padStart(6, '0')}`,
+      },
+      add: false,
     });
     typeText.setOrigin(0, 0);
     this.container.add(typeText);
 
     // 価格表示
-    const priceText = this.scene.add.text(10, 60, `${this.item.price}G`, {
-      fontSize: `${THEME.sizes.medium}px`,
-      color: `#${Colors.text.accent.toString(16).padStart(6, '0')}`,
+    const priceText = this.scene.make.text({
+      x: 10,
+      y: 60,
+      text: `${this.item.price}G`,
+      style: {
+        fontSize: `${THEME.sizes.medium}px`,
+        color: `#${Colors.text.accent.toString(16).padStart(6, '0')}`,
+      },
+      add: false,
     });
     priceText.setOrigin(0, 0);
     this.container.add(priceText);
 
     // 在庫表示
     const stockDisplay = this.item.stock === -1 ? '∞' : this.item.stock.toString();
-    const stockText = this.scene.add.text(10, 85, `在庫: ${stockDisplay}`, {
-      fontSize: `${THEME.sizes.small}px`,
-      color: `#${Colors.text.secondary.toString(16).padStart(6, '0')}`,
+    const stockText = this.scene.make.text({
+      x: 10,
+      y: 85,
+      text: `在庫: ${stockDisplay}`,
+      style: {
+        fontSize: `${THEME.sizes.small}px`,
+        color: `#${Colors.text.secondary.toString(16).padStart(6, '0')}`,
+      },
+      add: false,
     });
     stockText.setOrigin(0, 0);
     this.container.add(stockText);

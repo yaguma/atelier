@@ -9,7 +9,7 @@
 import type { ItemInstance } from '@domain/entities/ItemInstance';
 import { BaseComponent } from '@shared/components';
 import { Colors, THEME } from '@shared/theme';
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 
 // =============================================================================
 // 定数
@@ -130,17 +130,24 @@ export class ItemInventoryUI extends BaseComponent {
   // ===========================================================================
 
   private createLabel(): void {
-    const label = this.scene.add.text(0, LAYOUT.LABEL_Y, '所持アイテム:', TEXT_STYLES.LABEL);
+    const label = this.scene.make.text({
+      x: 0,
+      y: LAYOUT.LABEL_Y,
+      text: '所持アイテム:',
+      style: TEXT_STYLES.LABEL,
+      add: false,
+    });
     this.container.add(label);
   }
 
   private createEmptyMessage(): void {
-    const msg = this.scene.add.text(
-      0,
-      LAYOUT.ITEM_LIST_Y,
-      'アイテムがありません',
-      TEXT_STYLES.EMPTY_MESSAGE,
-    );
+    const msg = this.scene.make.text({
+      x: 0,
+      y: LAYOUT.ITEM_LIST_Y,
+      text: 'アイテムがありません',
+      style: TEXT_STYLES.EMPTY_MESSAGE,
+      add: false,
+    });
     this.container.add(msg);
   }
 
@@ -156,10 +163,11 @@ export class ItemInventoryUI extends BaseComponent {
   }
 
   private createItemCard(item: ItemInstance, x: number, y: number): ItemCardEntry {
-    const cardContainer = this.scene.add.container(x, y);
+    const cardContainer = this.scene.make.container({ x, y, add: false });
 
     // カード背景
-    const background = this.scene.add.rectangle(
+    const background = new Phaser.GameObjects.Rectangle(
+      this.scene,
       0,
       0,
       CARD.WIDTH,
@@ -175,7 +183,8 @@ export class ItemInventoryUI extends BaseComponent {
 
     // 品質インジケーター
     const qualityColor = THEME.qualityColors[item.quality] ?? Colors.text.muted;
-    const indicator = this.scene.add.rectangle(
+    const indicator = new Phaser.GameObjects.Rectangle(
+      this.scene,
       0,
       -CARD.HEIGHT / 2 + LAYOUT.QUALITY_INDICATOR_MARGIN,
       CARD.WIDTH - 10,
@@ -185,18 +194,25 @@ export class ItemInventoryUI extends BaseComponent {
     cardContainer.add(indicator);
 
     // アイテム名
-    const nameText = this.scene.add.text(0, -15, item.name, TEXT_STYLES.ITEM_NAME);
+    const nameText = this.scene.make.text({
+      x: 0,
+      y: -15,
+      text: item.name,
+      style: TEXT_STYLES.ITEM_NAME,
+      add: false,
+    });
     nameText.setOrigin(0.5);
     nameText.setWordWrapWidth(CARD.WIDTH - 10);
     cardContainer.add(nameText);
 
     // 品質表示
-    const qualityText = this.scene.add.text(
-      0,
-      10,
-      `品質: ${item.quality}`,
-      TEXT_STYLES.ITEM_QUALITY,
-    );
+    const qualityText = this.scene.make.text({
+      x: 0,
+      y: 10,
+      text: `品質: ${item.quality}`,
+      style: TEXT_STYLES.ITEM_QUALITY,
+      add: false,
+    });
     qualityText.setOrigin(0.5);
     cardContainer.add(qualityText);
 

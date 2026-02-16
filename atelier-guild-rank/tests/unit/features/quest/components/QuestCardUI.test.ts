@@ -6,7 +6,7 @@
 import type { QuestCardUIConfig } from '@features/quest/components/QuestCardUI';
 import { QuestCardUI } from '@features/quest/components/QuestCardUI';
 import type { IQuest } from '@shared/types/quests';
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // =============================================================================
@@ -36,6 +36,11 @@ function createMockScene(): Phaser.Scene {
     y: 0,
   };
 
+  const mockText = {
+    setOrigin: vi.fn().mockReturnThis(),
+    destroy: vi.fn(),
+  };
+
   const scene = {
     add: {
       container: vi.fn().mockReturnValue(mockContainer),
@@ -47,10 +52,10 @@ function createMockScene(): Phaser.Scene {
         off: vi.fn().mockReturnThis(),
         destroy: vi.fn(),
       }),
-      text: vi.fn().mockReturnValue({
-        setOrigin: vi.fn().mockReturnThis(),
-        destroy: vi.fn(),
-      }),
+      text: vi.fn().mockReturnValue(mockText),
+    },
+    make: {
+      text: vi.fn().mockReturnValue(mockText),
     },
     cameras: {
       main: { width: 1280, height: 720 },
@@ -121,10 +126,8 @@ describe('QuestCardUI', () => {
       // コンストラクタ内でcreate()が自動呼び出し
       new QuestCardUI(mockScene, config);
 
-      // rectangleが呼ばれている（背景）
-      expect(mockScene.add.rectangle).toHaveBeenCalled();
       // textが呼ばれている（依頼者名、セリフ、報酬、期限）
-      expect(mockScene.add.text).toHaveBeenCalled();
+      expect(mockScene.make.text).toHaveBeenCalled();
     });
 
     it('create()が二重に呼ばれてもUI要素が二重作成されない', () => {
@@ -136,13 +139,13 @@ describe('QuestCardUI', () => {
       };
 
       const card = new QuestCardUI(mockScene, config);
-      const rectCallCount = (mockScene.add.rectangle as ReturnType<typeof vi.fn>).mock.calls.length;
+      const textCallCount = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls.length;
 
       card.create();
 
       // 2回目のcreateでは追加のUI要素が生成されない
-      expect((mockScene.add.rectangle as ReturnType<typeof vi.fn>).mock.calls.length).toBe(
-        rectCallCount,
+      expect((mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls.length).toBe(
+        textCallCount,
       );
     });
   });
@@ -158,8 +161,10 @@ describe('QuestCardUI', () => {
 
       new QuestCardUI(mockScene, config);
 
-      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
-      const clientNameCall = textCalls.find((call: unknown[]) => call[2] === '村人A');
+      const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
+      const clientNameCall = textCalls.find(
+        (call: unknown[]) => call[0] && (call[0] as Record<string, unknown>).text === '村人A',
+      );
       expect(clientNameCall).toBeDefined();
     });
 
@@ -173,8 +178,11 @@ describe('QuestCardUI', () => {
 
       new QuestCardUI(mockScene, config);
 
-      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
-      const clientNameCall = textCalls.find((call: unknown[]) => call[2] === '不明な依頼者');
+      const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
+      const clientNameCall = textCalls.find(
+        (call: unknown[]) =>
+          call[0] && (call[0] as Record<string, unknown>).text === '不明な依頼者',
+      );
       expect(clientNameCall).toBeDefined();
     });
   });
@@ -190,12 +198,13 @@ describe('QuestCardUI', () => {
 
       new QuestCardUI(mockScene, config);
 
-      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+      const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
       const rewardCall = textCalls.find(
         (call: unknown[]) =>
-          typeof call[2] === 'string' &&
-          (call[2] as string).includes('50貢献度') &&
-          (call[2] as string).includes('100G'),
+          call[0] &&
+          typeof (call[0] as Record<string, unknown>).text === 'string' &&
+          ((call[0] as Record<string, unknown>).text as string).includes('50貢献度') &&
+          ((call[0] as Record<string, unknown>).text as string).includes('100G'),
       );
       expect(rewardCall).toBeDefined();
     });
@@ -212,9 +221,10 @@ describe('QuestCardUI', () => {
 
       new QuestCardUI(mockScene, config);
 
-      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+      const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
       const flavorCall = textCalls.find(
-        (call: unknown[]) => call[2] === 'テスト用のフレーバーテキスト',
+        (call: unknown[]) =>
+          call[0] && (call[0] as Record<string, unknown>).text === 'テスト用のフレーバーテキスト',
       );
       expect(flavorCall).toBeDefined();
     });
@@ -231,7 +241,8 @@ describe('QuestCardUI', () => {
 
       new QuestCardUI(mockScene, config);
 
-      const mockRect = (mockScene.add.rectangle as ReturnType<typeof vi.fn>).mock.results[0]?.value;
+      const RectMock = Phaser.GameObjects.Rectangle as unknown as ReturnType<typeof vi.fn>;
+      const mockRect = RectMock.mock.results[0]?.value;
       expect(mockRect?.setInteractive).toHaveBeenCalled();
     });
 
@@ -246,7 +257,8 @@ describe('QuestCardUI', () => {
 
       new QuestCardUI(mockScene, config);
 
-      const mockRect = (mockScene.add.rectangle as ReturnType<typeof vi.fn>).mock.results[0]?.value;
+      const RectMock = Phaser.GameObjects.Rectangle as unknown as ReturnType<typeof vi.fn>;
+      const mockRect = RectMock.mock.results[0]?.value;
       expect(mockRect?.setInteractive).not.toHaveBeenCalled();
     });
   });

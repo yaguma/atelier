@@ -86,12 +86,18 @@ export class GatheringPhaseUI extends BaseComponent {
    * タイトルを作成
    */
   private createTitle(): void {
-    this.titleText = this.scene.add
-      .text(0, 0, '🌿 採取フェーズ', {
-        fontSize: `${THEME.sizes.xlarge}px`,
-        color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
-        fontFamily: THEME.fonts.primary,
-        fontStyle: 'bold',
+    this.titleText = this.scene.make
+      .text({
+        x: 0,
+        y: 0,
+        text: '🌿 採取フェーズ',
+        style: {
+          fontSize: `${THEME.sizes.xlarge}px`,
+          color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
+          fontFamily: THEME.fonts.primary,
+          fontStyle: 'bold',
+        },
+        add: false,
       })
       .setOrigin(0.5);
 
@@ -102,11 +108,17 @@ export class GatheringPhaseUI extends BaseComponent {
    * 残り選択回数カウンターを作成
    */
   private createRemainingCounter(): void {
-    this.remainingText = this.scene.add
-      .text(0, 40, '残り選択回数: 0/0', {
-        fontSize: `${THEME.sizes.medium}px`,
-        color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
-        fontFamily: THEME.fonts.primary,
+    this.remainingText = this.scene.make
+      .text({
+        x: 0,
+        y: 40,
+        text: '残り選択回数: 0/0',
+        style: {
+          fontSize: `${THEME.sizes.medium}px`,
+          color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
+          fontFamily: THEME.fonts.primary,
+        },
+        add: false,
       })
       .setOrigin(0.5);
 
@@ -145,16 +157,22 @@ export class GatheringPhaseUI extends BaseComponent {
     const titleY = 350;
     const displayY = 390;
 
-    const gatheredTitle = this.scene.add
-      .text(0, titleY, '獲得素材:', {
-        fontSize: `${THEME.sizes.medium}px`,
-        color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
-        fontFamily: THEME.fonts.primary,
-        fontStyle: 'bold',
+    const gatheredTitle = this.scene.make
+      .text({
+        x: 0,
+        y: titleY,
+        text: '獲得素材:',
+        style: {
+          fontSize: `${THEME.sizes.medium}px`,
+          color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
+          fontFamily: THEME.fonts.primary,
+          fontStyle: 'bold',
+        },
+        add: false,
       })
       .setOrigin(0.5);
 
-    this.gatheredDisplay = this.scene.add.container(0, displayY);
+    this.gatheredDisplay = this.scene.make.container({ x: 0, y: displayY, add: false });
 
     this.container.add(gatheredTitle);
     this.container.add(this.gatheredDisplay);
@@ -250,11 +268,17 @@ export class GatheringPhaseUI extends BaseComponent {
       const x = (index % 6) * 100 - 250;
       const y = Math.floor(index / 6) * 30;
 
-      const materialText = this.scene.add
-        .text(x, y, `[${this.getMaterialName(material.master.id)} ${material.quality}]`, {
-          fontSize: `${THEME.sizes.small}px`,
-          color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
-          fontFamily: THEME.fonts.primary,
+      const materialText = this.scene.make
+        .text({
+          x,
+          y,
+          text: `[${this.getMaterialName(material.master.id)} ${material.quality}]`,
+          style: {
+            fontSize: `${THEME.sizes.small}px`,
+            color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
+            fontFamily: THEME.fonts.primary,
+          },
+          add: false,
         })
         .setOrigin(0, 0.5);
 

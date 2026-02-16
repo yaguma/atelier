@@ -9,7 +9,7 @@
  */
 
 import { HeaderUI } from '@presentation/ui/components/HeaderUI';
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // =============================================================================
@@ -88,10 +88,9 @@ interface MockContainer {
 interface MockScene extends Phaser.Scene {
   add: {
     container: ReturnType<typeof vi.fn>;
+  };
+  make: {
     text: ReturnType<typeof vi.fn>;
-    graphics: ReturnType<typeof vi.fn>;
-    rectangle: ReturnType<typeof vi.fn>;
-    circle: ReturnType<typeof vi.fn>;
   };
   tweens: {
     add: ReturnType<typeof vi.fn>;
@@ -150,17 +149,23 @@ const createMockScene = (): {
     destroy: vi.fn(),
   };
 
+  // Phaser.GameObjects のコンストラクタモックをオーバーライド
+  // テスト内で生成されるインスタンスを追跡可能にする
+  vi.mocked(Phaser.GameObjects.Rectangle).mockImplementation(function (this: unknown) {
+    Object.assign(this, mockRectangle);
+    return this as typeof mockRectangle;
+  });
+  vi.mocked(Phaser.GameObjects.Graphics).mockImplementation(function (this: unknown) {
+    Object.assign(this, mockGraphics);
+    return this as typeof mockGraphics;
+  });
+
   const scene = {
     add: {
       container: vi.fn().mockReturnValue(mockContainer),
+    },
+    make: {
       text: vi.fn().mockReturnValue(mockText),
-      graphics: vi.fn().mockReturnValue(mockGraphics),
-      rectangle: vi.fn().mockReturnValue(mockRectangle),
-      circle: vi.fn().mockReturnValue({
-        setFillStyle: vi.fn().mockReturnThis(),
-        setStrokeStyle: vi.fn().mockReturnThis(),
-        destroy: vi.fn(),
-      }),
     },
     tweens: {
       add: vi.fn().mockReturnValue({ stop: vi.fn() }),
@@ -221,7 +226,7 @@ describe('HeaderUI 視覚実装テスト', () => {
         expect(rankText).toBeDefined();
         // - scene.add.textが呼び出される（視覚要素として生成される）
         // Note: 現在の実装では視覚要素は生成されないため、このテストは失敗する
-        expect(scene.add.text).toHaveBeenCalled();
+        expect(scene.make.text).toHaveBeenCalled();
       });
     });
 
@@ -268,9 +273,8 @@ describe('HeaderUI 視覚実装テスト', () => {
         headerUI.create();
 
         // Then:
-        // - scene.add.graphicsが呼び出される（背景バー用）
-        // Note: 現在の実装では視覚要素は生成されないため、このテストは失敗する
-        expect(scene.add.graphics).toHaveBeenCalled();
+        // - Phaser.GameObjects.Graphicsコンストラクタが呼び出される（背景バー用）
+        expect(Phaser.GameObjects.Graphics).toHaveBeenCalled();
       });
     });
 
@@ -284,9 +288,8 @@ describe('HeaderUI 視覚実装テスト', () => {
         headerUI.create();
 
         // Then:
-        // - scene.add.graphicsが少なくとも2回呼び出される（背景バー + フィルバー）
-        // Note: 現在の実装では視覚要素は生成されないため、このテストは失敗する
-        expect(scene.add.graphics).toHaveBeenCalledTimes(2);
+        // - Phaser.GameObjects.Graphicsコンストラクタが少なくとも2回呼び出される（背景バー + フィルバー）
+        expect(Phaser.GameObjects.Graphics).toHaveBeenCalledTimes(2);
       });
     });
 
@@ -447,7 +450,7 @@ describe('HeaderUI 視覚実装テスト', () => {
         expect(daysText).toBeDefined();
         // - scene.add.textが残り日数用に呼び出される
         // Note: 現在の実装では視覚要素は生成されないため、このテストは失敗する
-        expect(scene.add.text).toHaveBeenCalled();
+        expect(scene.make.text).toHaveBeenCalled();
       });
     });
 
@@ -610,7 +613,7 @@ describe('HeaderUI 視覚実装テスト', () => {
         expect(goldText).toBeDefined();
         // - scene.add.textが所持金用に呼び出される
         // Note: 現在の実装では視覚要素は生成されないため、このテストは失敗する
-        expect(scene.add.text).toHaveBeenCalled();
+        expect(scene.make.text).toHaveBeenCalled();
       });
 
       it('HUI-V-15b: 所持金更新時にテキストが変更される', () => {
@@ -651,7 +654,7 @@ describe('HeaderUI 視覚実装テスト', () => {
         expect(actionPointsText).toBeDefined();
         // - scene.add.textが行動ポイント用に呼び出される
         // Note: 現在の実装では視覚要素は生成されないため、このテストは失敗する
-        expect(scene.add.text).toHaveBeenCalled();
+        expect(scene.make.text).toHaveBeenCalled();
       });
 
       it('HUI-V-16b: 行動ポイント更新時にテキストが変更される', () => {
