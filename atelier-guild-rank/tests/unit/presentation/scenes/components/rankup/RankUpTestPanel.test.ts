@@ -9,6 +9,7 @@
  * - ホバーアニメーション
  */
 
+import Phaser from 'phaser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // =============================================================================
@@ -317,8 +318,10 @@ describe('RankUpTestPanel', () => {
       panel.create();
 
       // When: NotStarted状態に設定（ボタンが作成される）
-      // new Phaser.GameObjects.Rectangle() で作成されたボタンにsetInteractiveが呼び出される
-      expect(() => panel.setState('NotStarted')).not.toThrow();
+      panel.setState('NotStarted');
+
+      // Then: new Phaser.GameObjects.Rectangle() でボタン背景が作成される
+      expect(Phaser.GameObjects.Rectangle).toHaveBeenCalled();
     });
   });
 

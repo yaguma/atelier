@@ -10,6 +10,7 @@
  * - ホバーエフェクト
  */
 
+import Phaser from 'phaser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // =============================================================================
@@ -245,9 +246,8 @@ describe('RankUpRewards', () => {
       // When: 報酬を設定
       rewards.setReward(mockReward);
 
-      // Then: new Phaser.GameObjects.Rectangle() で作成されたRectangleにsetInteractiveが呼び出される
-      // Rectangleは global Phaser mock 経由で作成されるため、エラーなく完了することを確認
-      expect(() => rewards.setReward(mockReward)).not.toThrow();
+      // Then: new Phaser.GameObjects.Rectangle() でカード背景・選択ボタンが作成される
+      expect(Phaser.GameObjects.Rectangle).toHaveBeenCalled();
     });
   });
 
@@ -270,8 +270,9 @@ describe('RankUpRewards', () => {
       const emptyReward = { bonusGold: 100, artifacts: [] };
       rewards.setReward(emptyReward);
 
-      // Then: エラーなく処理が完了する
-      expect(() => rewards.setReward(emptyReward)).not.toThrow();
+      // Then: ボーナスゴールドのテキストは作成されるが、カードのRectangleは作成されない
+      expect(mockScene.make.text).toHaveBeenCalled();
+      expect(Phaser.GameObjects.Rectangle).not.toHaveBeenCalled();
     });
   });
 

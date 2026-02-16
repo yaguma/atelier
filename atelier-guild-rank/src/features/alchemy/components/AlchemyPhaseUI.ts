@@ -210,7 +210,7 @@ export class AlchemyPhaseUI extends BaseComponent {
       })
       .setFillStyle(THEME.colors.secondary);
 
-    // テキスト
+    // テキスト（rexUI labelのtext引数にはシーンに追加済みのGameObjectが必要なため scene.add.text を使用）
     const textObj = this.scene.add.text(0, 0, recipe.name, {
       fontSize: `${THEME.sizes.medium}px`,
       color: THEME.colors.textOnSecondary,

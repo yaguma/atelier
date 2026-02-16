@@ -166,6 +166,7 @@ export class ShopItemCard extends BaseComponent {
         .graphics()
         .fillStyle(buttonColor, 1)
         .fillRoundedRect(0, 0, 80, 28, 4),
+      // rexUI labelのtext引数にはシーンに追加済みのGameObjectが必要なため scene.add.text を使用
       text: this.scene.add.text(0, 0, buttonText, {
         fontSize: `${THEME.sizes.small}px`,
         color: `#${Colors.text.primary.toString(16).padStart(6, '0')}`,
