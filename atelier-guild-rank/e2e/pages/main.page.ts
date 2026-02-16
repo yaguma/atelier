@@ -186,6 +186,15 @@ export class MainPage extends BasePage {
     await this.executeDebugAction('clearSaveData');
   }
 
+  /**
+   * タイトル画面に戻る（デバッグ用）
+   *
+   * @throws デバッグツールが利用不可の場合
+   */
+  async returnToTitle(): Promise<void> {
+    await this.executeDebugAction('returnToTitle');
+  }
+
   // =============================================================================
   // プライベートヘルパーメソッド
   // =============================================================================

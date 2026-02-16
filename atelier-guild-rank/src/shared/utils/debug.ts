@@ -9,7 +9,7 @@
 
 import { Container, ServiceKeys } from '@shared/services/di/container';
 import type { IStateManager } from '@shared/services/state-manager';
-import { GuildRank } from '@shared/types';
+import { GamePhase, GuildRank } from '@shared/types';
 import type Phaser from 'phaser';
 
 // =============================================================================
@@ -386,6 +386,9 @@ export class DebugTools {
         DebugTools.transitionToGameOver(stateAfter);
         return;
       }
+
+      // ゲーム継続: フェーズをQUEST_ACCEPTに戻して次の日を開始
+      stateManager.setPhase(GamePhase.QUEST_ACCEPT);
     } catch (e) {
       console.warn('endDay failed:', e);
     }
