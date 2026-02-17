@@ -319,6 +319,7 @@ export class ShopScene extends Phaser.Scene {
     // アイテムコンテナを作成
     const contentY = LAYOUT.HEADER_HEIGHT + LAYOUT.ITEM_SPACING;
     this.itemContainer = this.add.container(0, contentY);
+    this.itemContainer.name = 'ShopScene.itemContainer';
 
     // グリッドでアイテムを配置
     const startX = LAYOUT.SIDE_PADDING + LAYOUT.ITEM_WIDTH / 2;

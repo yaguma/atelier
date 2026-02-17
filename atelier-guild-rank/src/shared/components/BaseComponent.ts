@@ -108,6 +108,9 @@ export abstract class BaseComponent {
     containerCoordinates.set(this.containerId, coordinates);
 
     // containerをProxyでラップして、x, yプロパティを各インスタンスごとに独立させる
+    // デバッグ用: コンテナにサブクラス名を自動設定
+    originalContainer.name = this.constructor.name;
+
     this.container = new Proxy(originalContainer, {
       get(target, prop) {
         if (prop === 'x') return coordinates.x;

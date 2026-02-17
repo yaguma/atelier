@@ -166,6 +166,7 @@ export class QuestDetailModal extends BaseComponent {
 
   private createPanel(): void {
     this.panel = this.scene.make.container({ x: 0, y: 0, add: false });
+    this.panel.name = 'QuestDetailModal.panel';
 
     if (this.panel.setDepth) {
       this.panel.setDepth(DEPTH.PANEL);

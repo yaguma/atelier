@@ -127,6 +127,7 @@ export class TooltipManager {
 
     // ツールチップコンテナを作成
     this.container = scene.add.container(0, 0);
+    this.container.name = 'TooltipManager';
     this.container.setVisible(false);
     this.container.setDepth(TOOLTIP_DEPTH);
 

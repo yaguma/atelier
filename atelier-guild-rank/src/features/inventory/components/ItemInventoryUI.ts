@@ -164,6 +164,7 @@ export class ItemInventoryUI extends BaseComponent {
 
   private createItemCard(item: ItemInstance, x: number, y: number): ItemCardEntry {
     const cardContainer = this.scene.make.container({ x, y, add: false });
+    cardContainer.name = 'ItemInventoryUI.card';
 
     // カード背景
     const background = new Phaser.GameObjects.Rectangle(

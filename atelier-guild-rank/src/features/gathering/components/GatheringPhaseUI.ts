@@ -173,6 +173,7 @@ export class GatheringPhaseUI extends BaseComponent {
       .setOrigin(0.5);
 
     this.gatheredDisplay = this.scene.make.container({ x: 0, y: displayY, add: false });
+    this.gatheredDisplay.name = 'GatheringPhaseUI.gatheredDisplay';
 
     this.container.add(gatheredTitle);
     this.container.add(this.gatheredDisplay);

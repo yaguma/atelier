@@ -164,6 +164,7 @@ export class MaterialListUI extends BaseComponent {
 
   private createMaterialCard(material: MaterialInstance, x: number, y: number): MaterialCardEntry {
     const cardContainer = this.scene.make.container({ x, y, add: false });
+    cardContainer.name = 'MaterialListUI.card';
 
     // カード背景
     const background = new Phaser.GameObjects.Rectangle(

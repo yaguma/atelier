@@ -111,6 +111,7 @@ export class MaterialSlotUI extends BaseComponent {
 
     // 品質バッジ(空のコンテナとして初期化)
     this.qualityBadge = this.scene.make.container({ x: 0, y: 0, add: false });
+    this.qualityBadge.name = 'MaterialSlotUI.qualityBadge';
     this.container.add(this.qualityBadge);
   }
 

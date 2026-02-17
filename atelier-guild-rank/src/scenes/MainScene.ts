@@ -318,6 +318,7 @@ export class MainScene extends Phaser.Scene {
 
     // コンテンツコンテナ（中央エリア）
     this._contentContainer = this.add.container(LAYOUT.SIDEBAR_WIDTH, LAYOUT.HEADER_HEIGHT);
+    this._contentContainer.name = 'MainScene.contentContainer';
   }
 
   /**
@@ -385,6 +386,7 @@ export class MainScene extends Phaser.Scene {
    */
   private createDummyPhaseUI(phaseName: string): IBasePhaseUI {
     const container = this.add.container(0, 0);
+    container.name = `MainScene.dummyPhase`;
     const text = this.add.text(200, 150, phaseName, {
       fontSize: '24px',
       color: '#ffffff',

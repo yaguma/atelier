@@ -278,6 +278,7 @@ export class FooterUI extends BaseComponent {
     const buttonX = FOOTER_LAYOUT.WIDTH - 80;
     const buttonY = FOOTER_LAYOUT.HEIGHT / 2;
     this._nextButtonContainer = this.scene.make.container({ x: buttonX, y: buttonY, add: false });
+    this._nextButtonContainer.name = 'FooterUI.nextButton';
     this.container.add(this._nextButtonContainer);
 
     // 次へボタン背景を作成（角丸風）
