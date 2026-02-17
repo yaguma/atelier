@@ -46,6 +46,13 @@ function createMockScene(): Phaser.Scene {
     y: 0,
   };
 
+  const mockText = {
+    setOrigin: vi.fn().mockReturnThis(),
+    setWordWrapWidth: vi.fn().mockReturnThis(),
+    setText: vi.fn().mockReturnThis(),
+    destroy: vi.fn(),
+  };
+
   const scene = {
     add: {
       container: vi.fn().mockReturnValue(mockContainer),
@@ -58,12 +65,11 @@ function createMockScene(): Phaser.Scene {
         off: vi.fn().mockReturnThis(),
         destroy: vi.fn(),
       }),
-      text: vi.fn().mockReturnValue({
-        setOrigin: vi.fn().mockReturnThis(),
-        setWordWrapWidth: vi.fn().mockReturnThis(),
-        setText: vi.fn().mockReturnThis(),
-        destroy: vi.fn(),
-      }),
+      text: vi.fn().mockReturnValue(mockText),
+    },
+    make: {
+      text: vi.fn().mockReturnValue(mockText),
+      container: vi.fn().mockReturnValue(mockContainer),
     },
     cameras: {
       main: { width: 1280, height: 720 },
@@ -117,8 +123,7 @@ describe('MaterialListUI', () => {
       const ui = new MaterialListUI(mockScene, 0, 0, config);
       ui.create();
 
-      expect(mockScene.add.text).toHaveBeenCalled();
-      expect(mockScene.add.rectangle).toHaveBeenCalled();
+      expect(mockScene.make.text).toHaveBeenCalled();
     });
 
     it('空の素材リストで空メッセージが表示される', () => {
@@ -130,9 +135,12 @@ describe('MaterialListUI', () => {
       const ui = new MaterialListUI(mockScene, 0, 0, config);
       ui.create();
 
-      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+      const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
       const emptyMessage = textCalls.find(
-        (call: unknown[]) => typeof call[2] === 'string' && (call[2] as string).includes('素材'),
+        (call: unknown[]) =>
+          call[0] &&
+          typeof (call[0] as Record<string, unknown>).text === 'string' &&
+          ((call[0] as Record<string, unknown>).text as string).includes('素材'),
       );
       expect(emptyMessage).toBeDefined();
     });
@@ -150,7 +158,7 @@ describe('MaterialListUI', () => {
       ui.create();
 
       // 素材名テキストが呼ばれている
-      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+      const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
       expect(textCalls.length).toBeGreaterThanOrEqual(2);
     });
   });
@@ -195,7 +203,7 @@ describe('MaterialListUI', () => {
       const newMaterials = [createMockMaterial('inst-002')];
       ui.updateMaterials(newMaterials);
 
-      expect(mockScene.add.rectangle).toHaveBeenCalled();
+      expect(mockScene.make.text).toHaveBeenCalled();
     });
   });
 

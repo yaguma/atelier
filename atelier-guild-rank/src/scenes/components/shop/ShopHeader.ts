@@ -58,17 +58,29 @@ export class ShopHeader extends BaseComponent {
    */
   create(): void {
     // タイトルテキスト
-    const titleText = this.scene.add.text(50, 20, 'ショップ', {
-      fontSize: `${THEME.sizes.xlarge}px`,
-      color: `#${Colors.text.primary.toString(16).padStart(6, '0')}`,
+    const titleText = this.scene.make.text({
+      x: 50,
+      y: 20,
+      text: 'ショップ',
+      style: {
+        fontSize: `${THEME.sizes.xlarge}px`,
+        color: `#${Colors.text.primary.toString(16).padStart(6, '0')}`,
+      },
+      add: false,
     });
     titleText.setOrigin(0, 0.5);
     this.container.add(titleText);
 
     // 所持金テキスト
-    this.goldText = this.scene.add.text(300, 20, `所持金: ${this.currentGold}G`, {
-      fontSize: `${THEME.sizes.medium}px`,
-      color: `#${Colors.text.accent.toString(16).padStart(6, '0')}`,
+    this.goldText = this.scene.make.text({
+      x: 300,
+      y: 20,
+      text: `所持金: ${this.currentGold}G`,
+      style: {
+        fontSize: `${THEME.sizes.medium}px`,
+        color: `#${Colors.text.accent.toString(16).padStart(6, '0')}`,
+      },
+      add: false,
     });
     this.goldText.setOrigin(0, 0.5);
     this.container.add(this.goldText);

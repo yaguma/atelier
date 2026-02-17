@@ -10,7 +10,7 @@
  */
 
 import { GuildRank, type GuildRank as GuildRankType } from '@shared/types/common';
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 import { BaseComponent } from './BaseComponent';
 
 // =============================================================================
@@ -190,7 +190,8 @@ export class HeaderUI extends BaseComponent {
    */
   create(): void {
     // 背景パネルを生成（半透明のダークグレー）
-    this._backgroundPanel = this.scene.add.rectangle(
+    this._backgroundPanel = new Phaser.GameObjects.Rectangle(
+      this.scene,
       HEADER_LAYOUT.WIDTH / 2,
       HEADER_LAYOUT.HEIGHT / 2,
       HEADER_LAYOUT.WIDTH,
@@ -201,7 +202,8 @@ export class HeaderUI extends BaseComponent {
     this.container.add(this._backgroundPanel);
 
     // 下部ボーダーライン
-    const borderLine = this.scene.add.rectangle(
+    const borderLine = new Phaser.GameObjects.Rectangle(
+      this.scene,
       HEADER_LAYOUT.WIDTH / 2,
       HEADER_LAYOUT.HEIGHT - 1,
       HEADER_LAYOUT.WIDTH,
@@ -212,73 +214,92 @@ export class HeaderUI extends BaseComponent {
     this.container.add(borderLine);
 
     // ランクラベルを生成
-    const rankLabel = this.scene.add.text(HEADER_LAYOUT.PADDING, 12, 'ランク:', {
-      fontSize: '14px',
-      color: '#9CA3AF',
+    const rankLabel = this.scene.make.text({
+      x: HEADER_LAYOUT.PADDING,
+      y: 12,
+      text: 'ランク:',
+      style: { fontSize: '14px', color: '#9CA3AF' },
+      add: false,
     });
     this.container.add(rankLabel);
 
     // ランクテキストを生成
-    this._rankTextElement = this.scene.add.text(HEADER_LAYOUT.PADDING + 60, 10, '', {
-      fontSize: '18px',
-      color: '#F9FAFB',
-      fontStyle: 'bold',
+    this._rankTextElement = this.scene.make.text({
+      x: HEADER_LAYOUT.PADDING + 60,
+      y: 10,
+      text: '',
+      style: { fontSize: '18px', color: '#F9FAFB', fontStyle: 'bold' },
+      add: false,
     });
     this.container.add(this._rankTextElement);
 
     // 昇格ゲージ背景を生成
-    this._gaugeBackground = this.scene.add.graphics();
+    this._gaugeBackground = new Phaser.GameObjects.Graphics(this.scene);
     this._gaugeBackground.fillStyle(0x374151, 1);
     this._gaugeBackground.fillRoundedRect(140, 14, this.GAUGE_WIDTH, this.GAUGE_HEIGHT, 4);
     this.container.add(this._gaugeBackground);
 
     // 昇格ゲージフィルを生成
-    this._gaugeFill = this.scene.add.graphics();
+    this._gaugeFill = new Phaser.GameObjects.Graphics(this.scene);
     this.container.add(this._gaugeFill);
 
     // 残り日数ラベル
-    const daysLabel = this.scene.add.text(260, 12, '残り:', {
-      fontSize: '14px',
-      color: '#9CA3AF',
+    const daysLabel = this.scene.make.text({
+      x: 260,
+      y: 12,
+      text: '残り:',
+      style: { fontSize: '14px', color: '#9CA3AF' },
+      add: false,
     });
     this.container.add(daysLabel);
 
     // 残り日数テキストを生成
-    this._daysTextElement = this.scene.add.text(310, 10, '', {
-      fontSize: '18px',
-      color: '#F9FAFB',
-      fontStyle: 'bold',
+    this._daysTextElement = this.scene.make.text({
+      x: 310,
+      y: 10,
+      text: '',
+      style: { fontSize: '18px', color: '#F9FAFB', fontStyle: 'bold' },
+      add: false,
     });
     this.container.add(this._daysTextElement);
 
     // 所持金アイコン（コインの絵文字の代わりにGマーク）
-    const goldIcon = this.scene.add.text(420, 12, 'G', {
-      fontSize: '16px',
-      color: '#FCD34D',
-      fontStyle: 'bold',
+    const goldIcon = this.scene.make.text({
+      x: 420,
+      y: 12,
+      text: 'G',
+      style: { fontSize: '16px', color: '#FCD34D', fontStyle: 'bold' },
+      add: false,
     });
     this.container.add(goldIcon);
 
     // 所持金テキストを生成
-    this._goldTextElement = this.scene.add.text(440, 10, '', {
-      fontSize: '18px',
-      color: '#FCD34D',
-      fontStyle: 'bold',
+    this._goldTextElement = this.scene.make.text({
+      x: 440,
+      y: 10,
+      text: '',
+      style: { fontSize: '18px', color: '#FCD34D', fontStyle: 'bold' },
+      add: false,
     });
     this.container.add(this._goldTextElement);
 
     // 行動ポイントラベル
-    const apLabel = this.scene.add.text(540, 12, 'AP:', {
-      fontSize: '14px',
-      color: '#9CA3AF',
+    const apLabel = this.scene.make.text({
+      x: 540,
+      y: 12,
+      text: 'AP:',
+      style: { fontSize: '14px', color: '#9CA3AF' },
+      add: false,
     });
     this.container.add(apLabel);
 
     // 行動ポイントテキストを生成
-    this._actionPointsTextElement = this.scene.add.text(580, 10, '', {
-      fontSize: '18px',
-      color: '#60A5FA',
-      fontStyle: 'bold',
+    this._actionPointsTextElement = this.scene.make.text({
+      x: 580,
+      y: 10,
+      text: '',
+      style: { fontSize: '18px', color: '#60A5FA', fontStyle: 'bold' },
+      add: false,
     });
     this.container.add(this._actionPointsTextElement);
   }

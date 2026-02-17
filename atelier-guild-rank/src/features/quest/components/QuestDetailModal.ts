@@ -12,7 +12,7 @@
 
 import { BaseComponent } from '@shared/components';
 import type { IQuest } from '@shared/types/quests';
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 
 // =============================================================================
 // 型定義
@@ -144,7 +144,15 @@ export class QuestDetailModal extends BaseComponent {
     const width = this.scene.cameras?.main?.width || 1280;
     const height = this.scene.cameras?.main?.height || 720;
 
-    this.overlay = this.scene.add.rectangle(0, 0, width, height, COLORS.OVERLAY, 0);
+    this.overlay = new Phaser.GameObjects.Rectangle(
+      this.scene,
+      0,
+      0,
+      width,
+      height,
+      COLORS.OVERLAY,
+      0,
+    );
     this.overlay.setOrigin(0.5);
 
     if (this.overlay.setDepth) {
@@ -157,7 +165,8 @@ export class QuestDetailModal extends BaseComponent {
   }
 
   private createPanel(): void {
-    this.panel = this.scene.add.container(0, 0);
+    this.panel = this.scene.make.container({ x: 0, y: 0, add: false });
+    this.panel.name = 'QuestDetailModal.panel';
 
     if (this.panel.setDepth) {
       this.panel.setDepth(DEPTH.PANEL);
@@ -176,7 +185,14 @@ export class QuestDetailModal extends BaseComponent {
   }
 
   private createPanelBackground(): void {
-    const panelBg = this.scene.add.rectangle(0, 0, PANEL.WIDTH, PANEL.HEIGHT, COLORS.PANEL_BG);
+    const panelBg = new Phaser.GameObjects.Rectangle(
+      this.scene,
+      0,
+      0,
+      PANEL.WIDTH,
+      PANEL.HEIGHT,
+      COLORS.PANEL_BG,
+    );
     this.panel.add(panelBg);
   }
 
@@ -184,31 +200,34 @@ export class QuestDetailModal extends BaseComponent {
     const { quest, clientName } = this.config;
     const displayName = clientName || '不明な依頼者';
 
-    const clientNameText = this.scene.add.text(
-      TEXT_POSITION.LEFT_MARGIN,
-      TEXT_POSITION.CLIENT_NAME_Y,
-      `依頼者: ${displayName}`,
-      { fontSize: FONT_SIZE.TITLE, color: '#000000', fontStyle: 'bold' },
-    );
+    const clientNameText = this.scene.make.text({
+      x: TEXT_POSITION.LEFT_MARGIN,
+      y: TEXT_POSITION.CLIENT_NAME_Y,
+      text: `依頼者: ${displayName}`,
+      style: { fontSize: FONT_SIZE.TITLE, color: '#000000', fontStyle: 'bold' },
+      add: false,
+    });
     this.panel.add(clientNameText);
 
     const deadline = quest.deadline || 0;
-    const deadlineText = this.scene.add.text(
-      TEXT_POSITION.LEFT_MARGIN,
-      TEXT_POSITION.DEADLINE_Y,
-      `期限: ${deadline}日以内`,
-      { fontSize: FONT_SIZE.BODY, color: '#333333' },
-    );
+    const deadlineText = this.scene.make.text({
+      x: TEXT_POSITION.LEFT_MARGIN,
+      y: TEXT_POSITION.DEADLINE_Y,
+      text: `期限: ${deadline}日以内`,
+      style: { fontSize: FONT_SIZE.BODY, color: '#333333' },
+      add: false,
+    });
     this.panel.add(deadlineText);
 
     const gold = quest.gold || 0;
     const contribution = quest.contribution || 0;
-    const rewardText = this.scene.add.text(
-      TEXT_POSITION.LEFT_MARGIN,
-      TEXT_POSITION.REWARD_Y,
-      `報酬: ${gold}G / ${contribution}貢献度`,
-      { fontSize: FONT_SIZE.BODY, color: '#333333' },
-    );
+    const rewardText = this.scene.make.text({
+      x: TEXT_POSITION.LEFT_MARGIN,
+      y: TEXT_POSITION.REWARD_Y,
+      text: `報酬: ${gold}G / ${contribution}貢献度`,
+      style: { fontSize: FONT_SIZE.BODY, color: '#333333' },
+      add: false,
+    });
     this.panel.add(rewardText);
   }
 
@@ -239,11 +258,17 @@ export class QuestDetailModal extends BaseComponent {
     bgColor: string,
     onClick: () => void,
   ): Phaser.GameObjects.Text {
-    const btn = this.scene.add.text(x, y, label, {
-      fontSize: FONT_SIZE.TITLE,
-      color: '#ffffff',
-      backgroundColor: bgColor,
-      padding: { x: 16, y: 8 },
+    const btn = this.scene.make.text({
+      x,
+      y,
+      text: label,
+      style: {
+        fontSize: FONT_SIZE.TITLE,
+        color: '#ffffff',
+        backgroundColor: bgColor,
+        padding: { x: 16, y: 8 },
+      },
+      add: false,
     });
     btn.setOrigin(0.5);
 

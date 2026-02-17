@@ -178,6 +178,7 @@ export class RewardCardDialog extends Phaser.Events.EventEmitter {
     const centerY = this.scene.cameras.main.centerY;
 
     this.container = this.scene.add.container(centerX, centerY);
+    this.container.name = 'RewardCardDialog';
     this.container.setDepth(1000);
 
     // オーバーレイを作成
@@ -292,6 +293,7 @@ export class RewardCardDialog extends Phaser.Events.EventEmitter {
    */
   private createCard(card: RewardCard, x: number, y: number): RewardCardUI {
     const cardContainer = this.scene.add.container(x, y);
+    cardContainer.name = 'RewardCardDialog.card';
 
     // カード背景
     const backgroundColor = this.getCardBackgroundColor(card.rarity);

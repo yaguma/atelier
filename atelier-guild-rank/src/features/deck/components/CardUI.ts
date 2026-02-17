@@ -12,7 +12,7 @@
 import { Colors } from '@presentation/ui/theme';
 import { AnimationPresets } from '@presentation/ui/utils/AnimationPresets';
 import { BaseComponent } from '@shared/components';
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 import type { Card } from '../types';
 
 /**
@@ -102,7 +102,14 @@ export class CardUI extends BaseComponent {
    */
   private createBackground(): void {
     const color = this.getCardTypeColor();
-    this.background = this.scene.add.rectangle(0, 0, CardUI.CARD_WIDTH, CardUI.CARD_HEIGHT, color);
+    this.background = new Phaser.GameObjects.Rectangle(
+      this.scene,
+      0,
+      0,
+      CardUI.CARD_WIDTH,
+      CardUI.CARD_HEIGHT,
+      color,
+    );
     this.background.setStrokeStyle(2, 0x333333);
     this.container.add(this.background);
   }
@@ -134,7 +141,8 @@ export class CardUI extends BaseComponent {
     const iconY = -CardUI.CARD_HEIGHT / 2 + CardUI.ICON_SIZE / 2 + CardUI.PADDING;
 
     // プレースホルダー：将来的には画像に置き換え
-    this.iconPlaceholder = this.scene.add.rectangle(
+    this.iconPlaceholder = new Phaser.GameObjects.Rectangle(
+      this.scene,
       0,
       iconY,
       CardUI.ICON_SIZE,
@@ -159,12 +167,18 @@ export class CardUI extends BaseComponent {
 
     // 【テキスト生成】: カード名を太字で中央揃えに表示
     // 【ワードラップ】: カード幅に収まるように自動改行
-    this.nameText = this.scene.add.text(0, nameY, this.card.name, {
-      fontSize: '14px',
-      color: '#000000',
-      fontStyle: 'bold',
-      align: 'center',
-      wordWrap: { width: CardUI.CARD_WIDTH - CardUI.PADDING * 2 },
+    this.nameText = this.scene.make.text({
+      x: 0,
+      y: nameY,
+      text: this.card.name,
+      style: {
+        fontSize: '14px',
+        color: '#000000',
+        fontStyle: 'bold',
+        align: 'center',
+        wordWrap: { width: CardUI.CARD_WIDTH - CardUI.PADDING * 2 },
+      },
+      add: false,
     });
     this.nameText.setOrigin(0.5, 0);
     this.container.add(this.nameText);
@@ -184,10 +198,16 @@ export class CardUI extends BaseComponent {
 
     // 【テキスト生成】: エネルギーアイコン（⚡）とコスト値を表示
     // 【ユーザビリティ】: アイコンにより直感的な理解を促進
-    this.costText = this.scene.add.text(0, costY, `⚡ ${this.card.cost}`, {
-      fontSize: '12px',
-      color: '#000000',
-      align: 'center',
+    this.costText = this.scene.make.text({
+      x: 0,
+      y: costY,
+      text: `⚡ ${this.card.cost}`,
+      style: {
+        fontSize: '12px',
+        color: '#000000',
+        align: 'center',
+      },
+      add: false,
     });
     this.costText.setOrigin(0.5, 0);
     this.container.add(this.costText);
@@ -212,11 +232,17 @@ export class CardUI extends BaseComponent {
     // 【テキスト生成】: 小さめのフォントで灰色の説明文を表示
     // 【ワードラップ】: カード幅に収まるように自動改行
     // 【可読性】: やや小さめのフォントで情報密度を確保
-    this.effectText = this.scene.add.text(0, effectY, effectDescription, {
-      fontSize: '10px',
-      color: '#333333',
-      align: 'center',
-      wordWrap: { width: CardUI.CARD_WIDTH - CardUI.PADDING * 2 },
+    this.effectText = this.scene.make.text({
+      x: 0,
+      y: effectY,
+      text: effectDescription,
+      style: {
+        fontSize: '10px',
+        color: '#333333',
+        align: 'center',
+        wordWrap: { width: CardUI.CARD_WIDTH - CardUI.PADDING * 2 },
+      },
+      add: false,
     });
     this.effectText.setOrigin(0.5, 0);
     this.container.add(this.effectText);

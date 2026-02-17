@@ -65,6 +65,10 @@ const createMockScene = () => {
         text: vi.fn().mockReturnValue(mockText),
         graphics: vi.fn().mockReturnValue(mockGraphics),
       },
+      make: {
+        text: vi.fn().mockReturnValue(mockText),
+        container: vi.fn().mockReturnValue(mockContainer),
+      },
       tweens: {
         add: vi.fn(),
       },
@@ -119,7 +123,7 @@ describe('RankUpHeader', () => {
       header.create();
 
       // Then: タイトルテキストが作成される
-      expect(mockScene.add.text).toHaveBeenCalled();
+      expect(mockScene.make.text).toHaveBeenCalled();
     });
   });
 
@@ -139,8 +143,8 @@ describe('RankUpHeader', () => {
       header.updateRank('F', 'E');
 
       // Then: テキストが作成される（最初の呼び出し時）
-      // add.textはcreate()で1回、updateRank()で1回呼ばれる
-      expect(mockScene.add.text).toHaveBeenCalledTimes(2);
+      // make.textはcreate()で1回、updateRank()で1回呼ばれる
+      expect(mockScene.make.text).toHaveBeenCalledTimes(2);
     });
 
     it('TC-H03b: updateRank()を2回呼び出すと2回目はsetTextで更新される', async () => {

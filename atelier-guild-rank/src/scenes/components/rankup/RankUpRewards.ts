@@ -8,6 +8,7 @@
  */
 
 import { applyHoverAnimation } from '@presentation/ui/utils';
+import Phaser from 'phaser';
 import type { Artifact, RankUpReward } from './types';
 
 // =============================================================================
@@ -174,7 +175,13 @@ export class RankUpRewards {
    */
   private createBonusDisplay(bonusGold: number): void {
     const bonusTextContent = UI_TEXT.REWARD_BONUS_FORMAT.replace('{gold}', bonusGold.toString());
-    this.bonusText = this.scene.add.text(0, 0, bonusTextContent, UI_STYLES.REWARD_TEXT);
+    this.bonusText = this.scene.make.text({
+      x: 0,
+      y: 0,
+      text: bonusTextContent,
+      style: UI_STYLES.REWARD_TEXT,
+      add: false,
+    });
     this.bonusText.setOrigin(0.5);
     this.container.add(this.bonusText);
   }
@@ -183,12 +190,13 @@ export class RankUpRewards {
    * 選択タイトルを作成
    */
   private createSelectTitle(): void {
-    this.selectTitleText = this.scene.add.text(
-      0,
-      LAYOUT.SELECT_TITLE_Y,
-      UI_TEXT.REWARD_SELECT_TITLE,
-      UI_STYLES.TASK_TITLE,
-    );
+    this.selectTitleText = this.scene.make.text({
+      x: 0,
+      y: LAYOUT.SELECT_TITLE_Y,
+      text: UI_TEXT.REWARD_SELECT_TITLE,
+      style: UI_STYLES.TASK_TITLE,
+      add: false,
+    });
     this.selectTitleText.setOrigin(0.5);
     this.container.add(this.selectTitleText);
   }
@@ -219,10 +227,11 @@ export class RankUpRewards {
     x: number,
     y: number,
   ): Phaser.GameObjects.Container {
-    const cardContainer = this.scene.add.container(x, y);
+    const cardContainer = this.scene.make.container({ x, y, add: false });
 
     // カード背景
-    const cardBg = this.scene.add.rectangle(
+    const cardBg = new Phaser.GameObjects.Rectangle(
+      this.scene,
       0,
       0,
       LAYOUT.CARD_WIDTH,
@@ -234,33 +243,59 @@ export class RankUpRewards {
     cardContainer.add(cardBg);
 
     // レアリティ表示
-    const rarityText = this.scene.add.text(0, -75, `★ ${artifact.rarity}`, UI_STYLES.ARTIFACT_NAME);
+    const rarityText = this.scene.make.text({
+      x: 0,
+      y: -75,
+      text: `★ ${artifact.rarity}`,
+      style: UI_STYLES.ARTIFACT_NAME,
+      add: false,
+    });
     rarityText.setOrigin(0.5);
     cardContainer.add(rarityText);
 
     // 名前
-    const nameText = this.scene.add.text(0, -50, artifact.name, UI_STYLES.ARTIFACT_NAME);
+    const nameText = this.scene.make.text({
+      x: 0,
+      y: -50,
+      text: artifact.name,
+      style: UI_STYLES.ARTIFACT_NAME,
+      add: false,
+    });
     nameText.setOrigin(0.5);
     cardContainer.add(nameText);
 
     // 効果
-    const effectText = this.scene.add.text(0, -10, artifact.effect, UI_STYLES.ARTIFACT_EFFECT);
+    const effectText = this.scene.make.text({
+      x: 0,
+      y: -10,
+      text: artifact.effect,
+      style: UI_STYLES.ARTIFACT_EFFECT,
+      add: false,
+    });
     effectText.setOrigin(0.5);
     cardContainer.add(effectText);
 
     // 選択ボタン
-    const selectButton = this.scene.add.rectangle(0, 60, 100, 30, CARD_COLORS.SELECT_BUTTON);
+    const selectButton = new Phaser.GameObjects.Rectangle(
+      this.scene,
+      0,
+      60,
+      100,
+      30,
+      CARD_COLORS.SELECT_BUTTON,
+    );
     selectButton.setInteractive({ useHandCursor: true });
     selectButton.on('pointerdown', () => this.handleSelectArtifact(artifact));
     applyHoverAnimation(selectButton, this.scene);
     cardContainer.add(selectButton);
 
-    const selectText = this.scene.add.text(
-      0,
-      60,
-      UI_TEXT.SELECT_ARTIFACT_BUTTON,
-      UI_STYLES.BUTTON_TEXT,
-    );
+    const selectText = this.scene.make.text({
+      x: 0,
+      y: 60,
+      text: UI_TEXT.SELECT_ARTIFACT_BUTTON,
+      style: UI_STYLES.BUTTON_TEXT,
+      add: false,
+    });
     selectText.setOrigin(0.5);
     cardContainer.add(selectText);
 

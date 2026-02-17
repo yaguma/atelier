@@ -10,7 +10,7 @@
 
 import { FooterUI } from '@presentation/ui/components/FooterUI';
 import { GamePhase } from '@shared/types/common';
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // =============================================================================
@@ -104,10 +104,10 @@ interface MockContainer {
 interface MockScene extends Phaser.Scene {
   add: {
     container: ReturnType<typeof vi.fn>;
+  };
+  make: {
     text: ReturnType<typeof vi.fn>;
-    graphics: ReturnType<typeof vi.fn>;
-    rectangle: ReturnType<typeof vi.fn>;
-    circle: ReturnType<typeof vi.fn>;
+    container: ReturnType<typeof vi.fn>;
   };
   tweens: {
     add: ReturnType<typeof vi.fn>;
@@ -184,13 +184,27 @@ const createMockScene = (): {
     destroy: vi.fn(),
   };
 
+  // Phaser.GameObjects のコンストラクタモックをオーバーライド
+  vi.mocked(Phaser.GameObjects.Rectangle).mockImplementation(function (this: unknown) {
+    Object.assign(this, mockRectangle);
+    return this as typeof mockRectangle;
+  });
+  vi.mocked(Phaser.GameObjects.Arc).mockImplementation(function (this: unknown) {
+    Object.assign(this, mockCircle);
+    return this as typeof mockCircle;
+  });
+  vi.mocked(Phaser.GameObjects.Graphics).mockImplementation(function (this: unknown) {
+    Object.assign(this, mockGraphics);
+    return this as typeof mockGraphics;
+  });
+
   const scene = {
     add: {
       container: vi.fn().mockReturnValue(mockContainer),
+    },
+    make: {
       text: vi.fn().mockReturnValue(mockText),
-      graphics: vi.fn().mockReturnValue(mockGraphics),
-      rectangle: vi.fn().mockReturnValue(mockRectangle),
-      circle: vi.fn().mockReturnValue(mockCircle),
+      container: vi.fn().mockReturnValue(mockContainer),
     },
     tweens: {
       add: vi.fn().mockReturnValue({ stop: vi.fn() }),
@@ -251,9 +265,8 @@ describe('FooterUI 視覚実装テスト', () => {
         // - getPhaseIndicators()の長さが4
         const phaseIndicators = footerUI.getPhaseIndicators();
         expect(phaseIndicators).toHaveLength(4);
-        // - scene.add.circleが4回呼び出される（各フェーズ用）
-        // Note: 現在の実装では視覚要素は生成されないため、このテストは失敗する
-        expect(scene.add.circle).toHaveBeenCalledTimes(4);
+        // - Phaser.GameObjects.Arcコンストラクタが4回呼び出される（各フェーズ用）
+        expect(Phaser.GameObjects.Arc).toHaveBeenCalledTimes(4);
       });
     });
 
@@ -337,9 +350,9 @@ describe('FooterUI 視覚実装テスト', () => {
         // Then:
         // - getHandDisplayAreaCapacity()が5を返す
         expect(footerUI.getHandDisplayAreaCapacity()).toBe(5);
-        // - scene.add.rectangleが少なくとも5回呼び出される
+        // - Phaser.GameObjects.Rectangleコンストラクタが少なくとも8回呼び出される
         //   Note: 背景パネル1回 + ボーダーライン1回 + 手札プレースホルダー5回 + 次へボタン背景1回 = 8回
-        expect(scene.add.rectangle).toHaveBeenCalledTimes(8);
+        expect(Phaser.GameObjects.Rectangle).toHaveBeenCalledTimes(8);
       });
     });
   });
@@ -362,9 +375,8 @@ describe('FooterUI 視覚実装テスト', () => {
         // - getNextButtonLabel()で値が取得できる
         const nextButtonLabel = footerUI.getNextButtonLabel();
         expect(nextButtonLabel).toBeDefined();
-        // - scene.add.containerがボタン用に呼び出される
-        // Note: 現在の実装では視覚要素は生成されないため、このテストは失敗する
-        expect(scene.add.container).toHaveBeenCalled();
+        // - scene.make.containerがボタン用に呼び出される
+        expect(scene.make.container).toHaveBeenCalled();
       });
     });
 

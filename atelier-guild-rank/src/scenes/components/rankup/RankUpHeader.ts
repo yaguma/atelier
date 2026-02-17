@@ -82,7 +82,13 @@ export class RankUpHeader {
    * タイトルを作成
    */
   private createTitle(): void {
-    this.titleText = this.scene.add.text(0, LAYOUT.TITLE_Y, UI_TEXT.PHASE_TITLE, UI_STYLES.TITLE);
+    this.titleText = this.scene.make.text({
+      x: 0,
+      y: LAYOUT.TITLE_Y,
+      text: UI_TEXT.PHASE_TITLE,
+      style: UI_STYLES.TITLE,
+      add: false,
+    });
     this.titleText.setOrigin(0.5, 0);
     this.container.add(this.titleText);
   }
@@ -101,12 +107,13 @@ export class RankUpHeader {
     if (this.rankDisplayText) {
       this.rankDisplayText.setText(rankText);
     } else {
-      this.rankDisplayText = this.scene.add.text(
-        0,
-        LAYOUT.RANK_Y,
-        rankText,
-        UI_STYLES.RANK_DISPLAY,
-      );
+      this.rankDisplayText = this.scene.make.text({
+        x: 0,
+        y: LAYOUT.RANK_Y,
+        text: rankText,
+        style: UI_STYLES.RANK_DISPLAY,
+        add: false,
+      });
       this.rankDisplayText.setOrigin(0.5, 0);
       this.container.add(this.rankDisplayText);
     }

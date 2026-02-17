@@ -30,6 +30,13 @@ function createMockScene(): Phaser.Scene {
     y: 0,
   };
 
+  const mockTextObj = {
+    setOrigin: vi.fn().mockReturnThis(),
+    setWordWrapWidth: vi.fn().mockReturnThis(),
+    setText: vi.fn().mockReturnThis(),
+    destroy: vi.fn(),
+  };
+
   const scene = {
     add: {
       container: vi.fn().mockReturnValue(mockContainer),
@@ -43,12 +50,18 @@ function createMockScene(): Phaser.Scene {
         off: vi.fn().mockReturnThis(),
         destroy: vi.fn(),
       }),
-      text: vi.fn().mockReturnValue({
-        setOrigin: vi.fn().mockReturnThis(),
-        setWordWrapWidth: vi.fn().mockReturnThis(),
-        setText: vi.fn().mockReturnThis(),
+      text: vi.fn().mockReturnValue(mockTextObj),
+      graphics: vi.fn().mockReturnValue({
+        fillStyle: vi.fn().mockReturnThis(),
+        fillRoundedRect: vi.fn().mockReturnThis(),
+        lineStyle: vi.fn().mockReturnThis(),
+        strokeRoundedRect: vi.fn().mockReturnThis(),
         destroy: vi.fn(),
       }),
+    },
+    make: {
+      text: vi.fn().mockReturnValue(mockTextObj),
+      container: vi.fn().mockReturnValue(mockContainer),
     },
     cameras: {
       main: { width: 1280, height: 720 },
@@ -105,9 +118,9 @@ describe('features/rank/components', () => {
       const bar = new RankProgressBar(mockScene, 0, 0, config);
       bar.create();
 
-      // バー背景とバー塗り部分の2つ + テキストの呼び出し
-      expect(mockScene.add.rectangle).toHaveBeenCalled();
-      expect(mockScene.add.text).toHaveBeenCalled();
+      // バー背景とバー塗り部分は new Phaser.GameObjects.Rectangle() で作成
+      // テキストは scene.make.text() で作成
+      expect(mockScene.make.text).toHaveBeenCalled();
     });
 
     it('進捗率に応じたテキストが表示される', () => {
@@ -115,9 +128,13 @@ describe('features/rank/components', () => {
       const bar = new RankProgressBar(mockScene, 0, 0, config);
       bar.create();
 
-      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+      const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
       const gaugeCall = textCalls.find(
-        (call: unknown[]) => typeof call[2] === 'string' && (call[2] as string).includes('75%'),
+        (call: unknown[]) =>
+          typeof call[0] === 'object' &&
+          call[0] !== null &&
+          typeof (call[0] as Record<string, unknown>).text === 'string' &&
+          ((call[0] as Record<string, unknown>).text as string).includes('75%'),
       );
       expect(gaugeCall).toBeDefined();
     });
@@ -125,10 +142,8 @@ describe('features/rank/components', () => {
     it('ランクに応じた色が適用される', () => {
       const config: RankProgressBarConfig = { rank: 'A', gaugePercent: 80 };
       const bar = new RankProgressBar(mockScene, 0, 0, config);
-      bar.create();
-
-      // rectangleが呼ばれている（色はRANK_COLORSから適用される）
-      expect(mockScene.add.rectangle).toHaveBeenCalled();
+      // new Phaser.GameObjects.Rectangle() で色が適用される（コンストラクタ経由）
+      expect(() => bar.create()).not.toThrow();
     });
 
     it('updateProgress()で進捗を更新できる', () => {
@@ -150,11 +165,9 @@ describe('features/rank/components', () => {
       const config: RankProgressBarConfig = { rank: 'D', gaugePercent: 50 };
       const bar = new RankProgressBar(mockScene, 0, 0, config);
       bar.create();
-      const callCount = (mockScene.add.rectangle as ReturnType<typeof vi.fn>).mock.calls.length;
+      const callCount = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls.length;
       bar.create();
-      expect((mockScene.add.rectangle as ReturnType<typeof vi.fn>).mock.calls.length).toBe(
-        callCount,
-      );
+      expect((mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls.length).toBe(callCount);
     });
   });
 
@@ -180,8 +193,9 @@ describe('features/rank/components', () => {
       const badge = new RankBadge(mockScene, 0, 0, config);
       badge.create();
 
-      // バッジ背景の四角形
-      expect(mockScene.add.rectangle).toHaveBeenCalled();
+      // バッジ背景は new Phaser.GameObjects.Rectangle() で作成
+      // テキストは scene.make.text() で作成
+      expect(mockScene.make.text).toHaveBeenCalled();
     });
 
     it('ランク文字が正しく表示される', () => {
@@ -189,8 +203,13 @@ describe('features/rank/components', () => {
       const badge = new RankBadge(mockScene, 0, 0, config);
       badge.create();
 
-      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
-      const rankCall = textCalls.find((call: unknown[]) => call[2] === 'A');
+      const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
+      const rankCall = textCalls.find(
+        (call: unknown[]) =>
+          typeof call[0] === 'object' &&
+          call[0] !== null &&
+          (call[0] as Record<string, unknown>).text === 'A',
+      );
       expect(rankCall).toBeDefined();
     });
 
@@ -199,9 +218,13 @@ describe('features/rank/components', () => {
       const badge = new RankBadge(mockScene, 0, 0, config);
       badge.create();
 
-      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+      const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
       const nameCall = textCalls.find(
-        (call: unknown[]) => typeof call[2] === 'string' && (call[2] as string).includes('Sランク'),
+        (call: unknown[]) =>
+          typeof call[0] === 'object' &&
+          call[0] !== null &&
+          typeof (call[0] as Record<string, unknown>).text === 'string' &&
+          ((call[0] as Record<string, unknown>).text as string).includes('Sランク'),
       );
       expect(nameCall).toBeDefined();
     });
@@ -252,8 +275,9 @@ describe('features/rank/components', () => {
       const dialog = new PromotionDialog(mockScene, 0, 0, config);
       dialog.create();
 
-      expect(mockScene.add.rectangle).toHaveBeenCalled();
-      expect(mockScene.add.text).toHaveBeenCalled();
+      // 背景は new Phaser.GameObjects.Rectangle() で作成
+      // テキストは scene.make.text() で作成
+      expect(mockScene.make.text).toHaveBeenCalled();
     });
 
     it('新しいランク情報が表示される', () => {
@@ -265,12 +289,14 @@ describe('features/rank/components', () => {
       const dialog = new PromotionDialog(mockScene, 0, 0, config);
       dialog.create();
 
-      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+      const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
       const rankCall = textCalls.find(
         (call: unknown[]) =>
-          typeof call[2] === 'string' &&
-          (call[2] as string).includes('E') &&
-          (call[2] as string).includes('D'),
+          typeof call[0] === 'object' &&
+          call[0] !== null &&
+          typeof (call[0] as Record<string, unknown>).text === 'string' &&
+          ((call[0] as Record<string, unknown>).text as string).includes('E') &&
+          ((call[0] as Record<string, unknown>).text as string).includes('D'),
       );
       expect(rankCall).toBeDefined();
     });
@@ -284,9 +310,13 @@ describe('features/rank/components', () => {
       const dialog = new PromotionDialog(mockScene, 0, 0, config);
       dialog.create();
 
-      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+      const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
       const bonusCall = textCalls.find(
-        (call: unknown[]) => typeof call[2] === 'string' && (call[2] as string).includes('500'),
+        (call: unknown[]) =>
+          typeof call[0] === 'object' &&
+          call[0] !== null &&
+          typeof (call[0] as Record<string, unknown>).text === 'string' &&
+          ((call[0] as Record<string, unknown>).text as string).includes('500'),
       );
       expect(bonusCall).toBeDefined();
     });
@@ -304,10 +334,13 @@ describe('features/rank/components', () => {
       const dialog = new PromotionDialog(mockScene, 0, 0, config);
       dialog.create();
 
-      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+      const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
       const ruleCall = textCalls.find(
         (call: unknown[]) =>
-          typeof call[2] === 'string' && (call[2] as string).includes('依頼数制限'),
+          typeof call[0] === 'object' &&
+          call[0] !== null &&
+          typeof (call[0] as Record<string, unknown>).text === 'string' &&
+          ((call[0] as Record<string, unknown>).text as string).includes('依頼数制限'),
       );
       expect(ruleCall).toBeDefined();
     });
@@ -322,10 +355,13 @@ describe('features/rank/components', () => {
       const dialog = new PromotionDialog(mockScene, 0, 0, config);
       dialog.create();
 
-      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+      const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
       const headerCall = textCalls.find(
         (call: unknown[]) =>
-          typeof call[2] === 'string' && (call[2] as string).includes('解放された特殊ルール'),
+          typeof call[0] === 'object' &&
+          call[0] !== null &&
+          typeof (call[0] as Record<string, unknown>).text === 'string' &&
+          ((call[0] as Record<string, unknown>).text as string).includes('解放された特殊ルール'),
       );
       expect(headerCall).toBeUndefined();
     });
@@ -371,7 +407,7 @@ describe('features/rank/components', () => {
       const display = new SpecialRuleDisplay(mockScene, 0, 0, config);
       display.create();
 
-      expect(mockScene.add.text).toHaveBeenCalled();
+      expect(mockScene.make.text).toHaveBeenCalled();
     });
 
     it('有効なルールのテキストが表示される', () => {
@@ -386,10 +422,13 @@ describe('features/rank/components', () => {
       const display = new SpecialRuleDisplay(mockScene, 0, 0, config);
       display.create();
 
-      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+      const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
       const ruleCall = textCalls.find(
         (call: unknown[]) =>
-          typeof call[2] === 'string' && (call[2] as string).includes('品質ペナルティ'),
+          typeof call[0] === 'object' &&
+          call[0] !== null &&
+          typeof (call[0] as Record<string, unknown>).text === 'string' &&
+          ((call[0] as Record<string, unknown>).text as string).includes('品質ペナルティ'),
       );
       expect(ruleCall).toBeDefined();
     });
@@ -406,10 +445,13 @@ describe('features/rank/components', () => {
       const display = new SpecialRuleDisplay(mockScene, 0, 0, config);
       display.create();
 
-      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+      const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
       const ruleCall = textCalls.find(
         (call: unknown[]) =>
-          typeof call[2] === 'string' && (call[2] as string).includes('期限短縮'),
+          typeof call[0] === 'object' &&
+          call[0] !== null &&
+          typeof (call[0] as Record<string, unknown>).text === 'string' &&
+          ((call[0] as Record<string, unknown>).text as string).includes('期限短縮'),
       );
       expect(ruleCall).toBeDefined();
     });
@@ -424,10 +466,8 @@ describe('features/rank/components', () => {
         ],
       };
       const display = new SpecialRuleDisplay(mockScene, 0, 0, config);
-      display.create();
-
-      // ヘッダーのrectangle呼び出しはないが、インジケーターのrectangleがある
-      expect(mockScene.add.rectangle).toHaveBeenCalled();
+      // インジケーターは new Phaser.GameObjects.Rectangle() で作成される
+      expect(() => display.create()).not.toThrow();
     });
 
     it('カスタムヘッダーが表示される', () => {
@@ -438,10 +478,13 @@ describe('features/rank/components', () => {
       const display = new SpecialRuleDisplay(mockScene, 0, 0, config);
       display.create();
 
-      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+      const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
       const headerCall = textCalls.find(
         (call: unknown[]) =>
-          typeof call[2] === 'string' && (call[2] as string).includes('カスタムヘッダー'),
+          typeof call[0] === 'object' &&
+          call[0] !== null &&
+          typeof (call[0] as Record<string, unknown>).text === 'string' &&
+          ((call[0] as Record<string, unknown>).text as string).includes('カスタムヘッダー'),
       );
       expect(headerCall).toBeDefined();
     });

@@ -28,13 +28,41 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
  * Phaserフレームワークをモック化してテストを可能にする
  */
 vi.mock('phaser', () => {
+  const fn = () => ({});
   return {
     default: {
       Scene: class MockScene {},
       GameObjects: {
         Container: class MockContainer {},
         Text: class MockText {},
-        Graphics: class MockGraphics {},
+        Graphics: class MockGraphics {
+          fillStyle = vi.fn().mockReturnThis();
+          fillRect = vi.fn().mockReturnThis();
+          fillRoundedRect = vi.fn().mockReturnThis();
+          clear = vi.fn().mockReturnThis();
+          lineStyle = vi.fn().mockReturnThis();
+          beginPath = vi.fn().mockReturnThis();
+          moveTo = vi.fn().mockReturnThis();
+          lineTo = vi.fn().mockReturnThis();
+          stroke = vi.fn().mockReturnThis();
+          strokePath = vi.fn().mockReturnThis();
+          destroy = vi.fn();
+        },
+        Rectangle: class MockRectangle {
+          setFillStyle = vi.fn().mockReturnThis();
+          setStrokeStyle = vi.fn().mockReturnThis();
+          setOrigin = vi.fn().mockReturnThis();
+          setInteractive = vi.fn().mockReturnThis();
+          disableInteractive = vi.fn().mockReturnThis();
+          setAlpha = vi.fn().mockReturnThis();
+          on = vi.fn().mockReturnThis();
+          destroy = vi.fn();
+        },
+        Arc: class MockArc {
+          setFillStyle = vi.fn().mockReturnThis();
+          setStrokeStyle = vi.fn().mockReturnThis();
+          destroy = vi.fn();
+        },
       },
     },
   };
@@ -205,6 +233,21 @@ const createMockScene = () => {
           destroy: vi.fn(),
         }),
       },
+      make: {
+        text: vi.fn().mockReturnValue({
+          ...mockText,
+          setOrigin: vi.fn().mockReturnThis(),
+          setColor: vi.fn().mockReturnThis(),
+          setAlpha: vi.fn().mockReturnThis(),
+        }),
+        container: vi
+          .fn()
+          .mockImplementation((config: { x?: number; y?: number; add?: boolean }) => ({
+            ...mockContainer,
+            x: config?.x ?? 0,
+            y: config?.y ?? 0,
+          })),
+      },
       cameras: {
         main: {
           centerX: 640,
@@ -228,6 +271,7 @@ const createMockScene = () => {
           }
           return {};
         }),
+        killTweensOf: vi.fn(),
       },
       scene: {
         start: vi.fn(),
@@ -440,6 +484,8 @@ describe('MainScene共通レイアウト', () => {
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.add = mockScene.add;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.make = mockScene.make;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.cameras = mockScene.cameras;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.rexUI = mockScene.rexUI;
@@ -490,6 +536,8 @@ describe('MainScene共通レイアウト', () => {
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.add = mockScene.add;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.make = mockScene.make;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.cameras = mockScene.cameras;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.rexUI = mockScene.rexUI;
@@ -537,6 +585,8 @@ describe('MainScene共通レイアウト', () => {
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.add = mockScene.add;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.make = mockScene.make;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.cameras = mockScene.cameras;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.rexUI = mockScene.rexUI;
@@ -575,6 +625,8 @@ describe('MainScene共通レイアウト', () => {
         const mainScene = new MainScene();
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.add = mockScene.add;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.make = mockScene.make;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.cameras = mockScene.cameras;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
@@ -621,6 +673,8 @@ describe('MainScene共通レイアウト', () => {
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.add = mockScene.add;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.make = mockScene.make;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.cameras = mockScene.cameras;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.rexUI = mockScene.rexUI;
@@ -658,6 +712,8 @@ describe('MainScene共通レイアウト', () => {
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.add = mockScene.add;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.make = mockScene.make;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.cameras = mockScene.cameras;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.rexUI = mockScene.rexUI;
@@ -692,6 +748,8 @@ describe('MainScene共通レイアウト', () => {
         const mainScene = new MainScene();
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.add = mockScene.add;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.make = mockScene.make;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.cameras = mockScene.cameras;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
@@ -738,6 +796,8 @@ describe('MainScene共通レイアウト', () => {
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.add = mockScene.add;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.make = mockScene.make;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.cameras = mockScene.cameras;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.rexUI = mockScene.rexUI;
@@ -772,6 +832,8 @@ describe('MainScene共通レイアウト', () => {
           const mainScene = new MainScene();
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.add = mockScene.add;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.make = mockScene.make;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.cameras = mockScene.cameras;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
@@ -808,6 +870,8 @@ describe('MainScene共通レイアウト', () => {
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.add = mockScene.add;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.make = mockScene.make;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.cameras = mockScene.cameras;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.rexUI = mockScene.rexUI;
@@ -843,6 +907,8 @@ describe('MainScene共通レイアウト', () => {
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.add = mockScene.add;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.make = mockScene.make;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.cameras = mockScene.cameras;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.rexUI = mockScene.rexUI;
@@ -877,6 +943,8 @@ describe('MainScene共通レイアウト', () => {
           const mainScene = new MainScene();
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.add = mockScene.add;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.make = mockScene.make;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.cameras = mockScene.cameras;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
@@ -918,6 +986,8 @@ describe('MainScene共通レイアウト', () => {
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.add = mockScene.add;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.make = mockScene.make;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.cameras = mockScene.cameras;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.rexUI = mockScene.rexUI;
@@ -955,6 +1025,8 @@ describe('MainScene共通レイアウト', () => {
           const mainScene = new MainScene();
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.add = mockScene.add;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.make = mockScene.make;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.cameras = mockScene.cameras;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
@@ -994,6 +1066,8 @@ describe('MainScene共通レイアウト', () => {
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.add = mockScene.add;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.make = mockScene.make;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.cameras = mockScene.cameras;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.rexUI = mockScene.rexUI;
@@ -1032,6 +1106,8 @@ describe('MainScene共通レイアウト', () => {
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.add = mockScene.add;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.make = mockScene.make;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.cameras = mockScene.cameras;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.rexUI = mockScene.rexUI;
@@ -1069,6 +1145,8 @@ describe('MainScene共通レイアウト', () => {
           const mainScene = new MainScene();
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.add = mockScene.add;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.make = mockScene.make;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.cameras = mockScene.cameras;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
@@ -1119,6 +1197,8 @@ describe('MainScene共通レイアウト', () => {
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.add = mockScene.add;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.make = mockScene.make;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.cameras = mockScene.cameras;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.rexUI = mockScene.rexUI;
@@ -1148,6 +1228,8 @@ describe('MainScene共通レイアウト', () => {
           const mainScene = new MainScene();
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.add = mockScene.add;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.make = mockScene.make;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.cameras = mockScene.cameras;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
@@ -1190,6 +1272,8 @@ describe('MainScene共通レイアウト', () => {
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.add = mockScene.add;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        mainScene.make = mockScene.make;
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.cameras = mockScene.cameras;
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.rexUI = mockScene.rexUI;
@@ -1230,6 +1314,8 @@ describe('MainScene共通レイアウト', () => {
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.add = mockScene.add;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.make = mockScene.make;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.cameras = mockScene.cameras;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.rexUI = mockScene.rexUI;
@@ -1263,6 +1349,8 @@ describe('MainScene共通レイアウト', () => {
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.add = mockScene.add;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.make = mockScene.make;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.cameras = mockScene.cameras;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.rexUI = mockScene.rexUI;
@@ -1295,6 +1383,8 @@ describe('MainScene共通レイアウト', () => {
           const mainScene = new MainScene();
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.add = mockScene.add;
+          // @ts-expect-error - テストのためにprivateプロパティにアクセス
+          mainScene.make = mockScene.make;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス
           mainScene.cameras = mockScene.cameras;
           // @ts-expect-error - テストのためにprivateプロパティにアクセス

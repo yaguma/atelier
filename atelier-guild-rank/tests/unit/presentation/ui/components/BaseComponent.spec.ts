@@ -191,6 +191,33 @@ describe('BaseComponent', () => {
     });
   });
 
+  describe('コンテナ自動命名の検証', () => {
+    // 【テスト目的】: BaseComponentのコンテナにサブクラス名が自動設定されることを確認
+    // 【テスト内容】: constructor.nameがコンテナのnameプロパティに設定されることを検証
+
+    test('コンテナにサブクラス名が自動設定される', () => {
+      // 【確認内容】: TestComponentのコンテナにクラス名「TestComponent」が設定されていることを確認
+      const mockContainer = (scene.add.container as ReturnType<typeof vi.fn>).mock.results.at(
+        -1,
+      )?.value;
+      expect(mockContainer.name).toBe('TestComponent');
+    });
+
+    test('別のサブクラスでも正しいクラス名が設定される', () => {
+      // 【確認内容】: 別のサブクラスでもそのクラス名が正しく設定されることを確認
+      class AnotherComponent extends BaseComponent {
+        create(): void {}
+        destroy(): void {}
+      }
+
+      new AnotherComponent(scene, 0, 0);
+      const mockContainer = (scene.add.container as ReturnType<typeof vi.fn>).mock.results.at(
+        -1,
+      )?.value;
+      expect(mockContainer.name).toBe('AnotherComponent');
+    });
+  });
+
   describe('T-0018-BASE-06: エッジケースの検証', () => {
     // 【テスト目的】: エッジケース（境界条件・異常値）での動作を確認
     // 【テスト内容】: rexUIがundefinedの場合、不正な座標が渡された場合の動作を検証

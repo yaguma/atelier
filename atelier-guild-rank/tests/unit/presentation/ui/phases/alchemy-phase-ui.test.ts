@@ -55,6 +55,10 @@ interface MockScene extends Phaser.Scene {
     rectangle: ReturnType<typeof vi.fn>;
     text: ReturnType<typeof vi.fn>;
   };
+  make: {
+    text: ReturnType<typeof vi.fn>;
+    container: ReturnType<typeof vi.fn>;
+  };
   cameras: {
     main: {
       centerX: number;
@@ -116,6 +120,14 @@ const createMockScene = (): { scene: MockScene; mockContainer: MockContainer } =
         setText: vi.fn().mockReturnThis(),
         destroy: vi.fn(),
       }),
+    },
+    make: {
+      text: vi.fn().mockReturnValue({
+        setOrigin: vi.fn().mockReturnThis(),
+        setText: vi.fn().mockReturnThis(),
+        destroy: vi.fn(),
+      }),
+      container: vi.fn().mockReturnValue(mockContainer),
     },
     cameras: {
       main: {
@@ -306,8 +318,8 @@ describe('AlchemyPhaseUI', () => {
         // Then:
         // - scene.add.containerが呼び出される
         expect(scene.add.container).toHaveBeenCalled();
-        // - タイトルテキストが作成される
-        expect(scene.add.text).toHaveBeenCalled();
+        // - タイトルテキストが作成される（scene.make.textを使用）
+        expect(scene.make.text).toHaveBeenCalled();
       });
     });
 

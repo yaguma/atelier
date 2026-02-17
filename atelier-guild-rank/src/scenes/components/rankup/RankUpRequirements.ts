@@ -119,12 +119,13 @@ export class RankUpRequirements {
    * タイトルを作成
    */
   private createTitle(): void {
-    this.titleText = this.scene.add.text(
-      LAYOUT.TITLE_OFFSET_X,
-      LAYOUT.TITLE_OFFSET_Y,
-      UI_TEXT.TEST_CONTENT_TITLE,
-      UI_STYLES.TASK_TITLE,
-    );
+    this.titleText = this.scene.make.text({
+      x: LAYOUT.TITLE_OFFSET_X,
+      y: LAYOUT.TITLE_OFFSET_Y,
+      text: UI_TEXT.TEST_CONTENT_TITLE,
+      style: UI_STYLES.TASK_TITLE,
+      add: false,
+    });
     this.container.add(this.titleText);
   }
 
@@ -132,12 +133,13 @@ export class RankUpRequirements {
    * 期限テキストを作成
    */
   private createTimeLimitText(): void {
-    this.timeLimitText = this.scene.add.text(
-      LAYOUT.TITLE_OFFSET_X,
-      LAYOUT.LIMIT_OFFSET_Y,
-      '',
-      UI_STYLES.TASK_ITEM,
-    );
+    this.timeLimitText = this.scene.make.text({
+      x: LAYOUT.TITLE_OFFSET_X,
+      y: LAYOUT.LIMIT_OFFSET_Y,
+      text: '',
+      style: UI_STYLES.TASK_ITEM,
+      add: false,
+    });
     this.container.add(this.timeLimitText);
   }
 
@@ -177,12 +179,13 @@ export class RankUpRequirements {
     const style = task.isCompleted ? UI_STYLES.TASK_COMPLETED : UI_STYLES.TASK_ITEM;
     const text = `${icon} ${task.description}`;
 
-    return this.scene.add.text(
-      LAYOUT.TITLE_OFFSET_X,
-      LAYOUT.TASK_START_Y + index * LAYOUT.TASK_SPACING,
+    return this.scene.make.text({
+      x: LAYOUT.TITLE_OFFSET_X,
+      y: LAYOUT.TASK_START_Y + index * LAYOUT.TASK_SPACING,
       text,
       style,
-    );
+      add: false,
+    });
   }
 
   /**

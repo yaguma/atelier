@@ -150,12 +150,18 @@ export class AlchemyPhaseUI extends BaseComponent {
    * タイトルを作成
    */
   private createTitle(): void {
-    this.titleText = this.scene.add
-      .text(0, 0, '⚗️ 調合フェーズ', {
-        fontSize: `${THEME.sizes.xlarge}px`,
-        color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
-        fontFamily: THEME.fonts.primary,
-        fontStyle: 'bold',
+    this.titleText = this.scene.make
+      .text({
+        x: 0,
+        y: 0,
+        text: '⚗️ 調合フェーズ',
+        style: {
+          fontSize: `${THEME.sizes.xlarge}px`,
+          color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
+          fontFamily: THEME.fonts.primary,
+          fontStyle: 'bold',
+        },
+        add: false,
       })
       .setOrigin(0.5);
 
@@ -204,7 +210,7 @@ export class AlchemyPhaseUI extends BaseComponent {
       })
       .setFillStyle(THEME.colors.secondary);
 
-    // テキスト
+    // テキスト（rexUI labelのtext引数にはシーンに追加済みのGameObjectが必要なため scene.add.text を使用）
     const textObj = this.scene.add.text(0, 0, recipe.name, {
       fontSize: `${THEME.sizes.medium}px`,
       color: THEME.colors.textOnSecondary,

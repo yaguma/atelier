@@ -9,7 +9,7 @@
 import { BaseComponent } from '@shared/components';
 import { Colors, THEME } from '@shared/theme';
 import type { GuildRank } from '@shared/types';
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 
 // =============================================================================
 // 定数
@@ -125,7 +125,8 @@ export class RankBadge extends BaseComponent {
 
   private createBadge(): void {
     // バッジ背景
-    this.badgeBg = this.scene.add.rectangle(
+    this.badgeBg = new Phaser.GameObjects.Rectangle(
+      this.scene,
       0,
       0,
       BADGE.SIZE,
@@ -136,14 +137,26 @@ export class RankBadge extends BaseComponent {
     this.container.add(this.badgeBg);
 
     // ランク文字
-    this.rankText = this.scene.add.text(0, 0, this.config.rank, TEXT_STYLES.RANK);
+    this.rankText = this.scene.make.text({
+      x: 0,
+      y: 0,
+      text: this.config.rank,
+      style: TEXT_STYLES.RANK,
+      add: false,
+    });
     this.rankText.setOrigin(0.5);
     this.container.add(this.rankText);
   }
 
   private createNameLabel(): void {
     const name = RANK_NAMES[this.config.rank] ?? this.config.rank;
-    this.nameText = this.scene.add.text(0, OFFSET.NAME_Y, name, TEXT_STYLES.NAME);
+    this.nameText = this.scene.make.text({
+      x: 0,
+      y: OFFSET.NAME_Y,
+      text: name,
+      style: TEXT_STYLES.NAME,
+      add: false,
+    });
     this.nameText.setOrigin(0.5, 0);
     this.container.add(this.nameText);
   }

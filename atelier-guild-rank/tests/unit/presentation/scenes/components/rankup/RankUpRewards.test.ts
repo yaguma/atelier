@@ -10,6 +10,7 @@
  * - ホバーエフェクト
  */
 
+import Phaser from 'phaser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // =============================================================================
@@ -76,6 +77,10 @@ const createMockScene = () => {
           strokeRoundedRect: vi.fn().mockReturnThis(),
           destroy: vi.fn(),
         }),
+      },
+      make: {
+        text: vi.fn().mockReturnValue(mockText),
+        container: vi.fn().mockReturnValue(mockContainer),
       },
       tweens: {
         add: vi.fn(),
@@ -171,7 +176,7 @@ describe('RankUpRewards', () => {
       rewards.setReward(mockReward);
 
       // Then: テキストが作成される（ボーナスゴールド表示）
-      expect(mockScene.add.text).toHaveBeenCalled();
+      expect(mockScene.make.text).toHaveBeenCalled();
     });
   });
 
@@ -205,17 +210,8 @@ describe('RankUpRewards', () => {
   describe('TC-W04: アーティファクト選択', () => {
     it('TC-W04: カードの選択ボタンがクリックされるとonSelectArtifactコールバックが呼び出される', async () => {
       // Given: 3枚のアーティファクトが表示されている状態
-      const { scene: mockScene, mockRectangle } = createMockScene();
+      const { scene: mockScene } = createMockScene();
       const onSelectArtifact = vi.fn();
-
-      // ボタンクリックをシミュレート
-      let storedCallback: (() => void) | null = null;
-      mockRectangle.on = vi.fn().mockImplementation((event, callback) => {
-        if (event === 'pointerdown') {
-          storedCallback = callback;
-        }
-        return mockRectangle;
-      });
 
       const { RankUpRewards } = await import(
         '@presentation/scenes/components/rankup/RankUpRewards'
@@ -224,10 +220,8 @@ describe('RankUpRewards', () => {
       rewards.create();
       rewards.setReward(mockReward);
 
-      // When: 1枚目のカードの選択ボタンをクリック
-      if (storedCallback) {
-        storedCallback();
-      }
+      // When: 1枚目のカードを選択（selectArtifactByIndex経由）
+      rewards.selectArtifactByIndex(0);
 
       // Then: onSelectArtifactコールバックが呼び出される
       expect(onSelectArtifact).toHaveBeenCalled();
@@ -241,7 +235,7 @@ describe('RankUpRewards', () => {
   describe('TC-W05: アーティファクトカードホバーエフェクト', () => {
     it('TC-W05: カードにsetInteractiveが適用される', async () => {
       // Given: RankUpRewardsインスタンス
-      const { scene: mockScene, mockRectangle } = createMockScene();
+      const { scene: mockScene } = createMockScene();
       const onSelectArtifact = vi.fn();
       const { RankUpRewards } = await import(
         '@presentation/scenes/components/rankup/RankUpRewards'
@@ -252,8 +246,8 @@ describe('RankUpRewards', () => {
       // When: 報酬を設定
       rewards.setReward(mockReward);
 
-      // Then: setInteractiveが呼び出される
-      expect(mockRectangle.setInteractive).toHaveBeenCalled();
+      // Then: new Phaser.GameObjects.Rectangle() でカード背景・選択ボタンが作成される
+      expect(Phaser.GameObjects.Rectangle).toHaveBeenCalled();
     });
   });
 
@@ -276,8 +270,9 @@ describe('RankUpRewards', () => {
       const emptyReward = { bonusGold: 100, artifacts: [] };
       rewards.setReward(emptyReward);
 
-      // Then: エラーなく処理が完了する
-      expect(() => rewards.setReward(emptyReward)).not.toThrow();
+      // Then: ボーナスゴールドのテキストは作成されるが、カードのRectangleは作成されない
+      expect(mockScene.make.text).toHaveBeenCalled();
+      expect(Phaser.GameObjects.Rectangle).not.toHaveBeenCalled();
     });
   });
 

@@ -42,6 +42,13 @@ function createMockScene(): Phaser.Scene {
     y: 0,
   };
 
+  const mockText = {
+    setOrigin: vi.fn().mockReturnThis(),
+    setWordWrapWidth: vi.fn().mockReturnThis(),
+    setText: vi.fn().mockReturnThis(),
+    destroy: vi.fn(),
+  };
+
   const scene = {
     add: {
       container: vi.fn().mockReturnValue(mockContainer),
@@ -54,12 +61,11 @@ function createMockScene(): Phaser.Scene {
         off: vi.fn().mockReturnThis(),
         destroy: vi.fn(),
       }),
-      text: vi.fn().mockReturnValue({
-        setOrigin: vi.fn().mockReturnThis(),
-        setWordWrapWidth: vi.fn().mockReturnThis(),
-        setText: vi.fn().mockReturnThis(),
-        destroy: vi.fn(),
-      }),
+      text: vi.fn().mockReturnValue(mockText),
+    },
+    make: {
+      text: vi.fn().mockReturnValue(mockText),
+      container: vi.fn().mockReturnValue(mockContainer),
     },
     cameras: {
       main: { width: 1280, height: 720 },
@@ -114,9 +120,7 @@ describe('ItemInventoryUI', () => {
       ui.create();
 
       // テキストが呼ばれている（ラベル + アイテム名 + 品質）
-      expect(mockScene.add.text).toHaveBeenCalled();
-      // rectangleが呼ばれている（カード背景 + 品質インジケーター）
-      expect(mockScene.add.rectangle).toHaveBeenCalled();
+      expect(mockScene.make.text).toHaveBeenCalled();
     });
 
     it('空のアイテムリストで空メッセージが表示される', () => {
@@ -128,10 +132,12 @@ describe('ItemInventoryUI', () => {
       const ui = new ItemInventoryUI(mockScene, 0, 0, config);
       ui.create();
 
-      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+      const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
       const emptyMessage = textCalls.find(
         (call: unknown[]) =>
-          typeof call[2] === 'string' && (call[2] as string).includes('アイテム'),
+          call[0] &&
+          typeof (call[0] as Record<string, unknown>).text === 'string' &&
+          ((call[0] as Record<string, unknown>).text as string).includes('アイテム'),
       );
       expect(emptyMessage).toBeDefined();
     });
@@ -178,8 +184,8 @@ describe('ItemInventoryUI', () => {
       ui.updateItems(newItems);
 
       // 更新後のUI再構築が行われたことを確認
-      // rectangleが追加で呼ばれている
-      expect(mockScene.add.rectangle).toHaveBeenCalled();
+      // make.textが追加で呼ばれている
+      expect(mockScene.make.text).toHaveBeenCalled();
     });
   });
 

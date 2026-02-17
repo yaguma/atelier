@@ -75,35 +75,43 @@ export class MaterialSlotUI extends BaseComponent {
    */
   create(): void {
     // 光彩用グラフィックス(枠の下に配置)
-    this.glowGraphics = this.scene.add.graphics();
+    this.glowGraphics = new Phaser.GameObjects.Graphics(this.scene);
     this.glowGraphics.setDepth(-1);
     this.container.add(this.glowGraphics);
 
     // 枠線
-    this.border = this.scene.add.graphics();
+    this.border = new Phaser.GameObjects.Graphics(this.scene);
     this.border.lineStyle(2, THEME.colors.disabled, 1);
     this.border.strokeRect(-this.slotSize / 2, -this.slotSize / 2, this.slotSize, this.slotSize);
     this.container.add(this.border);
 
     // アイコン(絵文字で代用)
-    this.iconText = this.scene.add
-      .text(0, -10, '', {
-        fontSize: '32px',
+    this.iconText = this.scene.make
+      .text({
+        x: 0,
+        y: -10,
+        text: '',
+        style: { fontSize: '32px' },
+        add: false,
       })
       .setOrigin(0.5);
     this.container.add(this.iconText);
 
     // 素材名
-    this.nameText = this.scene.add
-      .text(0, 15, '', {
-        fontSize: '12px',
-        color: '#333333',
+    this.nameText = this.scene.make
+      .text({
+        x: 0,
+        y: 15,
+        text: '',
+        style: { fontSize: '12px', color: '#333333' },
+        add: false,
       })
       .setOrigin(0.5);
     this.container.add(this.nameText);
 
     // 品質バッジ(空のコンテナとして初期化)
-    this.qualityBadge = this.scene.add.container(0, 0);
+    this.qualityBadge = this.scene.make.container({ x: 0, y: 0, add: false });
+    this.qualityBadge.name = 'MaterialSlotUI.qualityBadge';
     this.container.add(this.qualityBadge);
   }
 
@@ -270,16 +278,22 @@ export class MaterialSlotUI extends BaseComponent {
     const color = THEME.qualityColors[quality];
 
     // バッジ背景
-    const badge = this.scene.add.graphics();
+    const badge = new Phaser.GameObjects.Graphics(this.scene);
     badge.fillStyle(color, 1);
     badge.fillRoundedRect(-15, -15, 30, 20, 5);
 
     // バッジテキスト
-    const text = this.scene.add
-      .text(0, -5, quality, {
-        fontSize: '14px',
-        color: quality === 'D' ? '#FFFFFF' : '#000000',
-        fontStyle: 'bold',
+    const text = this.scene.make
+      .text({
+        x: 0,
+        y: -5,
+        text: quality,
+        style: {
+          fontSize: '14px',
+          color: quality === 'D' ? '#FFFFFF' : '#000000',
+          fontStyle: 'bold',
+        },
+        add: false,
       })
       .setOrigin(0.5);
 

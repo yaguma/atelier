@@ -10,7 +10,7 @@
  */
 
 import { GamePhase, VALID_GAME_PHASES } from '@shared/types/common';
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 import { BaseComponent } from './BaseComponent';
 
 // =============================================================================
@@ -172,7 +172,8 @@ export class FooterUI extends BaseComponent {
    */
   create(): void {
     // 背景パネルを生成（半透明のダークグレー）
-    this._backgroundPanel = this.scene.add.rectangle(
+    this._backgroundPanel = new Phaser.GameObjects.Rectangle(
+      this.scene,
       FOOTER_LAYOUT.WIDTH / 2,
       FOOTER_LAYOUT.HEIGHT / 2,
       FOOTER_LAYOUT.WIDTH,
@@ -183,7 +184,8 @@ export class FooterUI extends BaseComponent {
     this.container.add(this._backgroundPanel);
 
     // 上部ボーダーライン
-    const borderLine = this.scene.add.rectangle(
+    const borderLine = new Phaser.GameObjects.Rectangle(
+      this.scene,
       FOOTER_LAYOUT.WIDTH / 2,
       1,
       FOOTER_LAYOUT.WIDTH,
@@ -203,14 +205,26 @@ export class FooterUI extends BaseComponent {
       const x = phaseIndicatorStartX + index * phaseSpacing;
 
       // 円形インジケーター
-      const circle = this.scene.add.circle(x, phaseIndicatorY, 12, PHASE_COLORS.PENDING);
+      const circle = new Phaser.GameObjects.Arc(
+        this.scene,
+        x,
+        phaseIndicatorY,
+        12,
+        0,
+        360,
+        false,
+        PHASE_COLORS.PENDING,
+      );
       circle.setStrokeStyle(2, 0x4b5563);
       this.container.add(circle);
 
       // フェーズラベル
-      const label = this.scene.add.text(x - 12, phaseIndicatorY + 18, PHASE_LABELS[phase], {
-        fontSize: '11px',
-        color: '#9CA3AF',
+      const label = this.scene.make.text({
+        x: x - 12,
+        y: phaseIndicatorY + 18,
+        text: PHASE_LABELS[phase],
+        style: { fontSize: '11px', color: '#9CA3AF' },
+        add: false,
       });
       this.container.add(label);
       this._phaseLabels.push(label);
@@ -220,7 +234,7 @@ export class FooterUI extends BaseComponent {
     this._phaseIndicators = this._phaseIndicatorCircles;
 
     // 接続線を描画
-    const connectionLine = this.scene.add.graphics();
+    const connectionLine = new Phaser.GameObjects.Graphics(this.scene);
     connectionLine.lineStyle(2, 0x4b5563);
     connectionLine.beginPath();
     connectionLine.moveTo(phaseIndicatorStartX + 15, phaseIndicatorY);
@@ -245,7 +259,8 @@ export class FooterUI extends BaseComponent {
     this._handPlaceholders = [];
     for (let i = 0; i < HAND_DISPLAY_CAPACITY; i++) {
       // カードプレースホルダー背景
-      const placeholder = this.scene.add.rectangle(
+      const placeholder = new Phaser.GameObjects.Rectangle(
+        this.scene,
         handStartX + i * cardSpacing,
         handY,
         cardWidth,
@@ -262,11 +277,19 @@ export class FooterUI extends BaseComponent {
     // 次へボタンコンテナを作成
     const buttonX = FOOTER_LAYOUT.WIDTH - 80;
     const buttonY = FOOTER_LAYOUT.HEIGHT / 2;
-    this._nextButtonContainer = this.scene.add.container(buttonX, buttonY);
+    this._nextButtonContainer = this.scene.make.container({ x: buttonX, y: buttonY, add: false });
+    this._nextButtonContainer.name = 'FooterUI.nextButton';
     this.container.add(this._nextButtonContainer);
 
     // 次へボタン背景を作成（角丸風）
-    this._nextButtonBackground = this.scene.add.rectangle(0, 0, 120, 44, BUTTON_COLORS.PRIMARY);
+    this._nextButtonBackground = new Phaser.GameObjects.Rectangle(
+      this.scene,
+      0,
+      0,
+      120,
+      44,
+      BUTTON_COLORS.PRIMARY,
+    );
     this._nextButtonBackground.setInteractive({ useHandCursor: true });
     this._nextButtonBackground.on('pointerover', () => {
       if (this._nextButtonEnabled) {
@@ -285,10 +308,12 @@ export class FooterUI extends BaseComponent {
     this._nextButtonContainer.add(this._nextButtonBackground);
 
     // 次へボタンテキストを作成
-    this._nextButtonText = this.scene.add.text(-24, -10, '', {
-      fontSize: '16px',
-      color: '#FFFFFF',
-      fontStyle: 'bold',
+    this._nextButtonText = this.scene.make.text({
+      x: -24,
+      y: -10,
+      text: '',
+      style: { fontSize: '16px', color: '#FFFFFF', fontStyle: 'bold' },
+      add: false,
     });
     this._nextButtonContainer.add(this._nextButtonText);
   }
