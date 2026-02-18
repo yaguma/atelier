@@ -7,6 +7,7 @@
  * サブコンポーネント: QuestDeliveryList, ItemSelector, ContributionPreview, DeliveryResultPanel
  */
 
+import { THEME } from '@presentation/ui/theme';
 import type Phaser from 'phaser';
 import { BaseComponent } from '../components/BaseComponent';
 import {
@@ -30,13 +31,20 @@ const UI_LAYOUT = {
   // Issue #116: コンテンツコンテナが既にオフセット済みなので(0, 0)を使用
   COMPONENT_X: 0,
   COMPONENT_Y: 0,
+  /** タイトルX座標（コンテンツ領域の視覚的中央） */
+  TITLE_X: 440,
+  /** タイトルY座標 */
+  TITLE_Y: 20,
+  /** サブコンポーネントの左余白 */
+  CONTENT_PADDING_X: 20,
   QUEST_LIST_Y: 60,
-  ITEM_SELECTOR_Y: 450,
-  PREVIEW_Y: 350,
-  BUTTON_Y: 400,
-  END_DAY_BUTTON_Y: 550,
+  ITEM_SELECTOR_Y: 390,
+  PREVIEW_Y: 300,
+  /** 納品ボタンX座標 */
+  BUTTON_X: 250,
+  BUTTON_Y: 350,
   RESULT_PANEL_X: 400,
-  RESULT_PANEL_Y: 300,
+  RESULT_PANEL_Y: 250,
 } as const;
 
 const ERROR_MESSAGES = {
@@ -49,20 +57,32 @@ const ERROR_MESSAGES = {
 
 const UI_TEXT = {
   PHASE_TITLE: '📦 納品フェーズ',
-  END_DAY: '日を終了する',
   DELIVER_BUTTON: '納品する',
 } as const;
 
 const UI_STYLES = {
-  TITLE: { fontSize: '24px', color: '#ffffff' },
-  LABEL: { fontSize: '16px', color: '#ffffff' },
+  TITLE: {
+    fontSize: `${THEME.sizes.xlarge}px`,
+    color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
+    fontFamily: THEME.fonts.primary,
+    fontStyle: 'bold',
+  },
+  LABEL: {
+    fontSize: `${THEME.sizes.medium}px`,
+    color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
+    fontFamily: THEME.fonts.primary,
+  },
+  BUTTON_LABEL: {
+    fontSize: `${THEME.sizes.medium}px`,
+    color: THEME.colors.textOnPrimary,
+    fontFamily: THEME.fonts.primary,
+    fontStyle: 'bold',
+  },
 } as const;
 
 const KEYBOARD_KEYS = {
   DELIVER_UPPER: 'D',
   DELIVER_LOWER: 'd',
-  END_UPPER: 'E',
-  END_LOWER: 'e',
   CANCEL: 'Escape',
   CONFIRM: 'Enter',
 } as const;
@@ -100,7 +120,6 @@ export class DeliveryPhaseUI extends BaseComponent {
   private resultPanel: DeliveryResultPanel | null = null;
 
   private deliverButton: Button | null = null;
-  private endDayButton: Button | null = null;
   private keyboardHandler: ((event: { key: string }) => void) | null = null;
 
   constructor(scene: Phaser.Scene) {
@@ -131,24 +150,44 @@ export class DeliveryPhaseUI extends BaseComponent {
   }
 
   private createTitle(): void {
-    const title = this.scene.add.text(0, 0, UI_TEXT.PHASE_TITLE, UI_STYLES.TITLE);
+    const title = this.scene.add.text(
+      UI_LAYOUT.TITLE_X,
+      UI_LAYOUT.TITLE_Y,
+      UI_TEXT.PHASE_TITLE,
+      UI_STYLES.TITLE,
+    );
+    title.setOrigin(0.5, 0);
     this.container.add(title);
   }
 
   private createSubComponents(): void {
-    this.questList = new QuestDeliveryList(this.scene, 0, UI_LAYOUT.QUEST_LIST_Y, {
-      onQuestSelect: (quest: Quest) => this.onQuestSelect(quest),
-    });
+    this.questList = new QuestDeliveryList(
+      this.scene,
+      UI_LAYOUT.CONTENT_PADDING_X,
+      UI_LAYOUT.QUEST_LIST_Y,
+      {
+        onQuestSelect: (quest: Quest) => this.onQuestSelect(quest),
+      },
+    );
     this.questList.create();
     this.container.add(this.questList.getContainer());
 
-    this.itemSelector = new ItemSelector(this.scene, 0, UI_LAYOUT.ITEM_SELECTOR_Y, {
-      onItemSelect: (item: ItemInstance) => this.onItemSelect(item),
-    });
+    this.itemSelector = new ItemSelector(
+      this.scene,
+      UI_LAYOUT.CONTENT_PADDING_X,
+      UI_LAYOUT.ITEM_SELECTOR_Y,
+      {
+        onItemSelect: (item: ItemInstance) => this.onItemSelect(item),
+      },
+    );
     this.itemSelector.create();
     this.container.add(this.itemSelector.getContainer());
 
-    this.contributionPreview = new ContributionPreview(this.scene, 0, UI_LAYOUT.PREVIEW_Y);
+    this.contributionPreview = new ContributionPreview(
+      this.scene,
+      UI_LAYOUT.CONTENT_PADDING_X,
+      UI_LAYOUT.PREVIEW_Y,
+    );
     this.contributionPreview.create();
     this.container.add(this.contributionPreview.getContainer());
 
@@ -162,14 +201,20 @@ export class DeliveryPhaseUI extends BaseComponent {
   }
 
   private createButtons(): void {
-    const deliverRect = this.scene.add.rectangle(200, UI_LAYOUT.BUTTON_Y, 120, 40, 0x4caf50);
+    const deliverRect = this.scene.add.rectangle(
+      UI_LAYOUT.BUTTON_X,
+      UI_LAYOUT.BUTTON_Y,
+      120,
+      40,
+      0x4caf50,
+    );
     deliverRect.setInteractive({ useHandCursor: true });
     deliverRect.on('pointerdown', () => this.onDeliver());
     const deliverText = this.scene.add.text(
-      200,
+      UI_LAYOUT.BUTTON_X,
       UI_LAYOUT.BUTTON_Y,
       UI_TEXT.DELIVER_BUTTON,
-      UI_STYLES.LABEL,
+      UI_STYLES.BUTTON_LABEL,
     );
     deliverText.setOrigin(0.5);
     this.container.add([deliverRect, deliverText]);
@@ -184,27 +229,6 @@ export class DeliveryPhaseUI extends BaseComponent {
       destroy: () => {
         deliverRect.destroy();
         deliverText.destroy();
-      },
-    };
-
-    const endDayRect = this.scene.add.rectangle(200, UI_LAYOUT.END_DAY_BUTTON_Y, 200, 48, 0x9c27b0);
-    endDayRect.setInteractive({ useHandCursor: true });
-    endDayRect.on('pointerdown', () => this.onEndDay());
-    const endDayText = this.scene.add.text(
-      200,
-      UI_LAYOUT.END_DAY_BUTTON_Y,
-      UI_TEXT.END_DAY,
-      UI_STYLES.LABEL,
-    );
-    endDayText.setOrigin(0.5);
-    this.container.add([endDayRect, endDayText]);
-
-    this.endDayButton = {
-      isEnabled: () => true,
-      setEnabled: () => {},
-      destroy: () => {
-        endDayRect.destroy();
-        endDayText.destroy();
       },
     };
 
@@ -297,11 +321,6 @@ export class DeliveryPhaseUI extends BaseComponent {
     this.refreshData();
   }
 
-  private onEndDay(): void {
-    this.emitEvent(GameEventType.DAY_END_REQUESTED, {});
-    this.emitEvent(GameEventType.PHASE_TRANSITION_REQUESTED, { from: 'delivery', to: 'dayEnd' });
-  }
-
   private refreshData(): void {
     if (this.questService && this.questList)
       this.questList.setQuests(this.questService.getAcceptedQuests());
@@ -329,10 +348,6 @@ export class DeliveryPhaseUI extends BaseComponent {
       case KEYBOARD_KEYS.DELIVER_LOWER:
       case KEYBOARD_KEYS.CONFIRM:
         if (this.canDeliver()) this.onDeliver();
-        break;
-      case KEYBOARD_KEYS.END_UPPER:
-      case KEYBOARD_KEYS.END_LOWER:
-        this.onEndDay();
         break;
       case KEYBOARD_KEYS.CANCEL:
         this.reset();
@@ -363,7 +378,6 @@ export class DeliveryPhaseUI extends BaseComponent {
     this.contributionPreview?.destroy();
     this.resultPanel?.destroy();
     this.deliverButton?.destroy();
-    this.endDayButton?.destroy();
     this.container?.destroy();
   }
 }

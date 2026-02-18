@@ -29,9 +29,9 @@ import type Phaser from 'phaser';
 /** 調合フェーズUIレイアウト定数 */
 const ALCHEMY_PHASE_LAYOUT = {
   /** レシピリスト開始Y座標 */
-  RECIPE_LIST_START_Y: 60,
+  RECIPE_LIST_START_Y: 80,
   /** レシピリストX座標オフセット */
-  RECIPE_LIST_OFFSET_X: -100,
+  RECIPE_LIST_OFFSET_X: 200,
   /** レシピアイテム高さ */
   ITEM_HEIGHT: 50,
   /** レシピアイテム幅 */
@@ -152,8 +152,8 @@ export class AlchemyPhaseUI extends BaseComponent {
   private createTitle(): void {
     this.titleText = this.scene.make
       .text({
-        x: 0,
-        y: 0,
+        x: 440,
+        y: 20,
         text: '⚗️ 調合フェーズ',
         style: {
           fontSize: `${THEME.sizes.xlarge}px`,
@@ -497,6 +497,28 @@ export class AlchemyPhaseUI extends BaseComponent {
    */
   getQualityPreview(): Quality | null {
     return this.qualityPreview;
+  }
+
+  /**
+   * UIを再構築する（素材リスト更新後に呼び出す）
+   * 既存のレシピラベルを破棄し、レシピリストを再読み込み・再作成する。
+   */
+  refresh(): void {
+    // 既存のレシピラベルを破棄
+    for (const item of this.recipeLabels) {
+      item.label.destroy();
+    }
+    this.recipeLabels = [];
+
+    // 選択状態をリセット
+    this.selectedRecipeId = null;
+    this.selectedRecipe = null;
+    this.focusedRecipeIndex = 0;
+
+    // レシピを再読み込み・再作成
+    this.loadRecipes();
+    this.createRecipeList();
+    this.updateRecipeFocus();
   }
 
   /**

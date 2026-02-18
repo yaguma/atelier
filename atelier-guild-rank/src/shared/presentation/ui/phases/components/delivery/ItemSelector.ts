@@ -6,7 +6,7 @@
  * 納品するアイテムの一覧表示と選択を担当するコンポーネント
  */
 
-import { Colors } from '@presentation/ui/theme';
+import { Colors, THEME } from '@presentation/ui/theme';
 import type Phaser from 'phaser';
 import type { ItemInstance, ItemSelectorCallbacks, Quality } from './types';
 
@@ -29,12 +29,14 @@ const UI_TEXT = {
 /** UIスタイル定数 */
 const UI_STYLES = {
   LABEL: {
-    fontSize: '16px',
-    color: '#ffffff',
+    fontSize: `${THEME.sizes.medium}px`,
+    color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
+    fontFamily: THEME.fonts.primary,
   },
   DESCRIPTION: {
-    fontSize: '14px',
-    color: '#cccccc',
+    fontSize: `${THEME.sizes.small}px`,
+    color: `#${THEME.colors.textLight.toString(16).padStart(6, '0')}`,
+    fontFamily: THEME.fonts.primary,
   },
 } as const;
 

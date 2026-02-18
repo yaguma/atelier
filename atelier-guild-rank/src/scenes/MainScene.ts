@@ -651,6 +651,11 @@ export class MainScene extends Phaser.Scene {
       this.initializeGatheringSession();
     }
 
+    // ALCHEMYフェーズ遷移時に素材リストを渡す
+    if (phase === GamePhase.ALCHEMY) {
+      this.initializeAlchemyPhase();
+    }
+
     this._currentVisiblePhase = phase;
   }
 
@@ -699,6 +704,31 @@ export class MainScene extends Phaser.Scene {
       }
     } catch (error) {
       console.error('Failed to initialize gathering session:', error);
+    }
+  }
+
+  /**
+   * 調合フェーズを初期化
+   * InventoryServiceから素材を取得し、AlchemyPhaseUIに渡す
+   */
+  private initializeAlchemyPhase(): void {
+    const container = Container.getInstance();
+
+    // InventoryServiceを取得
+    if (!container.has(ServiceKeys.InventoryService)) {
+      console.warn('InventoryService is not available');
+      return;
+    }
+    const inventoryService = container.resolve<
+      import('@shared/domain/interfaces/inventory-service.interface').IInventoryService
+    >(ServiceKeys.InventoryService);
+
+    // 素材を取得してAlchemyPhaseUIに渡す
+    const materials = inventoryService.getMaterials();
+    const alchemyUI = this.phaseUIs.get(GamePhase.ALCHEMY);
+    if (alchemyUI && 'setAvailableMaterials' in alchemyUI) {
+      (alchemyUI as AlchemyPhaseUI).setAvailableMaterials(materials);
+      (alchemyUI as AlchemyPhaseUI).refresh();
     }
   }
 

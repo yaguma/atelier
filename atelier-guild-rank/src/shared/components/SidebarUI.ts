@@ -160,6 +160,18 @@ export class SidebarUI extends BaseComponent {
   /** 依頼リストのY座標開始位置 */
   private _questListStartY = 0;
 
+  /** 素材リスト表示用テキスト要素 */
+  private _materialsListTexts: Phaser.GameObjects.Text[] = [];
+
+  /** 素材リストのY座標開始位置 */
+  private _materialsListStartY = 0;
+
+  /** 完成品リスト表示用テキスト要素 */
+  private _craftedItemsListTexts: Phaser.GameObjects.Text[] = [];
+
+  /** 完成品リストのY座標開始位置 */
+  private _craftedItemsListStartY = 0;
+
   /** ショップボタン背景 */
   private _shopButtonBackground: Phaser.GameObjects.Rectangle | null = null;
   /** ショップボタンテキスト */
@@ -297,6 +309,9 @@ export class SidebarUI extends BaseComponent {
     );
     this.container.add(this._materialsHeaderText);
 
+    // 素材リストの開始位置を記録
+    this._materialsListStartY = currentY + SIDEBAR_LAYOUT.SECTION_HEADER_HEIGHT;
+
     currentY += SIDEBAR_LAYOUT.SECTION_HEADER_HEIGHT + 80 + SIDEBAR_LAYOUT.SECTION_GAP;
 
     // 完成品セクションヘッダー背景
@@ -334,6 +349,9 @@ export class SidebarUI extends BaseComponent {
       },
     );
     this.container.add(this._craftedItemsHeaderText);
+
+    // 完成品リストの開始位置を記録
+    this._craftedItemsListStartY = currentY + SIDEBAR_LAYOUT.SECTION_HEADER_HEIGHT;
 
     currentY += SIDEBAR_LAYOUT.SECTION_HEADER_HEIGHT + 80 + SIDEBAR_LAYOUT.SECTION_GAP;
 
@@ -395,6 +413,18 @@ export class SidebarUI extends BaseComponent {
     }
     this._questListTexts = [];
 
+    // 素材リストのテキスト要素を破棄
+    for (const text of this._materialsListTexts) {
+      text.destroy();
+    }
+    this._materialsListTexts = [];
+
+    // 完成品リストのテキスト要素を破棄
+    for (const text of this._craftedItemsListTexts) {
+      text.destroy();
+    }
+    this._craftedItemsListTexts = [];
+
     this.container.destroy();
   }
 
@@ -428,6 +458,20 @@ export class SidebarUI extends BaseComponent {
 
     // Issue #137: 依頼リストUIを更新
     this.updateQuestListUI();
+
+    // 素材リストUIを更新
+    this.updateMaterialsListUI();
+
+    // 完成品リストUIを更新
+    this.updateCraftedItemsListUI();
+
+    // セクションヘッダーに件数を反映
+    if (this._materialsHeaderText) {
+      this._materialsHeaderText.setText(`素材 (${this._materials.length})`);
+    }
+    if (this._craftedItemsHeaderText) {
+      this._craftedItemsHeaderText.setText(`完成品 (${this._craftedItems.length})`);
+    }
   }
 
   /**
@@ -498,6 +542,108 @@ export class SidebarUI extends BaseComponent {
       );
       this.container.add(moreText);
       this._questListTexts.push(moreText);
+    }
+  }
+
+  /**
+   * 素材リストのUI要素を更新
+   */
+  private updateMaterialsListUI(): void {
+    // 既存のリスト要素を削除
+    for (const text of this._materialsListTexts) {
+      text.destroy();
+    }
+    this._materialsListTexts = [];
+
+    // セクションが折りたたまれている場合は表示しない
+    if (this._sectionCollapsed.materials) {
+      return;
+    }
+
+    // 素材リストを表示（最大3件）
+    const displayMaterials = this._materials.slice(0, 3);
+    let y = this._materialsListStartY + 4;
+
+    for (const material of displayMaterials) {
+      const matText = this.scene.add.text(
+        SIDEBAR_LAYOUT.PADDING + 4,
+        y,
+        `${material.materialId} (${material.quality})`,
+        {
+          fontSize: '12px',
+          color: '#D1D5DB',
+        },
+      );
+      this.container.add(matText);
+      this._materialsListTexts.push(matText);
+
+      y += 20;
+    }
+
+    // 3件を超える場合は「...」を表示
+    if (this._materials.length > 3) {
+      const moreText = this.scene.add.text(
+        SIDEBAR_LAYOUT.PADDING + 4,
+        y,
+        `他${this._materials.length - 3}件...`,
+        {
+          fontSize: '11px',
+          color: '#9CA3AF',
+        },
+      );
+      this.container.add(moreText);
+      this._materialsListTexts.push(moreText);
+    }
+  }
+
+  /**
+   * 完成品リストのUI要素を更新
+   */
+  private updateCraftedItemsListUI(): void {
+    // 既存のリスト要素を削除
+    for (const text of this._craftedItemsListTexts) {
+      text.destroy();
+    }
+    this._craftedItemsListTexts = [];
+
+    // セクションが折りたたまれている場合は表示しない
+    if (this._sectionCollapsed.craftedItems) {
+      return;
+    }
+
+    // 完成品リストを表示（最大3件）
+    const displayItems = this._craftedItems.slice(0, 3);
+    let y = this._craftedItemsListStartY + 4;
+
+    for (const item of displayItems) {
+      const itemText = this.scene.add.text(
+        SIDEBAR_LAYOUT.PADDING + 4,
+        y,
+        `${item.itemId} (${item.quality})`,
+        {
+          fontSize: '12px',
+          color: '#D1D5DB',
+        },
+      );
+      this.container.add(itemText);
+      this._craftedItemsListTexts.push(itemText);
+
+      y += 20;
+    }
+
+    // 3件を超える場合は「...」を表示
+    if (this._craftedItems.length > 3) {
+      const moreText = this.scene.add.text(
+        SIDEBAR_LAYOUT.PADDING + 4,
+        y,
+        `他${this._craftedItems.length - 3}件...`,
+        {
+          fontSize: '11px',
+          color: '#9CA3AF',
+        },
+      );
+      this.container.add(moreText);
+      this._craftedItemsListTexts.push(moreText);
     }
   }
 
@@ -622,11 +768,13 @@ export class SidebarUI extends BaseComponent {
         if (this._materialsIconText) {
           this._materialsIconText.setText(iconText);
         }
+        this.updateMaterialsListUI();
         break;
       case 'craftedItems':
         if (this._craftedItemsIconText) {
           this._craftedItemsIconText.setText(iconText);
         }
+        this.updateCraftedItemsListUI();
         break;
     }
   }

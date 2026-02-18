@@ -172,12 +172,12 @@ export class QuestAcceptPhaseUI extends BaseComponent {
    * - 定数化されたスタイルで統一感を保つ
    */
   private createTitle(): void {
-    this.titleText = this.scene.add.text(0, 0, QuestAcceptPhaseUI.TITLE_TEXT, {
+    this.titleText = this.scene.add.text(440, 20, QuestAcceptPhaseUI.TITLE_TEXT, {
       fontSize: QuestAcceptPhaseUI.TITLE_FONT_SIZE,
       color: QuestAcceptPhaseUI.TITLE_COLOR,
       fontStyle: 'bold',
     });
-    this.titleText.setOrigin(0, 0);
+    this.titleText.setOrigin(0.5, 0);
     this.container.add(this.titleText);
   }
 

@@ -41,6 +41,7 @@ export class QuestCardUI extends BaseComponent {
   private background!: Phaser.GameObjects.Rectangle;
   private clientNameText!: Phaser.GameObjects.Text;
   private dialogueText!: Phaser.GameObjects.Text;
+  private conditionText!: Phaser.GameObjects.Text;
   private rewardText!: Phaser.GameObjects.Text;
   private deadlineText!: Phaser.GameObjects.Text;
 
@@ -63,6 +64,7 @@ export class QuestCardUI extends BaseComponent {
    * 🔵 信頼性レベル: 既存実装のマジックナンバーを定数化
    */
   private static readonly TEXT_DIALOGUE_OFFSET = 25; // 【セリフの追加オフセット】: 依頼者名の下
+  private static readonly TEXT_CONDITION_OFFSET = 80; // 【条件の追加オフセット】: カード下部からの位置
   private static readonly TEXT_REWARD_OFFSET = 60; // 【報酬の追加オフセット】: カード下部からの位置
   private static readonly TEXT_DEADLINE_OFFSET = 40; // 【期限の追加オフセット】: カード下部からの位置
 
@@ -103,6 +105,7 @@ export class QuestCardUI extends BaseComponent {
     this.createBackground();
     this.createClientName();
     this.createDialogue();
+    this.createConditionInfo();
     this.createRewardInfo();
     this.createDeadline();
     this.setupInteraction();
@@ -191,6 +194,66 @@ export class QuestCardUI extends BaseComponent {
     );
     this.dialogueText.setOrigin(0, 0);
     this.container.add(this.dialogueText);
+  }
+
+  /**
+   * 【条件情報の作成】: 依頼の達成条件を表示するテキスト要素を生成
+   * 【配置位置】: セリフの下、報酬の上に配置
+   * 【設計意図】: プレイヤーが何を納品すべきか即座に判断できるよう表示
+   */
+  private createConditionInfo(): void {
+    const conditionLabel = QuestCardUI.formatCondition(this.quest.condition);
+
+    const conditionY =
+      QuestCardUI.CARD_HEIGHT / 2 - QuestCardUI.PADDING - QuestCardUI.TEXT_CONDITION_OFFSET;
+
+    this.conditionText = this.scene.add.text(
+      -QuestCardUI.CARD_WIDTH / 2 + QuestCardUI.PADDING,
+      conditionY,
+      conditionLabel,
+      {
+        fontSize: '12px',
+        color: '#1a5276',
+        fontStyle: 'bold',
+      },
+    );
+    this.conditionText.setOrigin(0, 0);
+    this.container.add(this.conditionText);
+  }
+
+  /**
+   * 【条件フォーマット】: IQuestConditionから表示用テキストを生成
+   *
+   * @param condition - 依頼条件
+   * @returns フォーマット済み条件テキスト
+   */
+  private static formatCondition(condition: {
+    type: string;
+    itemId?: string;
+    category?: string;
+    minQuality?: string;
+    quantity?: number;
+  }): string {
+    switch (condition.type) {
+      case 'SPECIFIC':
+        return `条件: ${condition.itemId ?? '指定品'}を納品`;
+      case 'CATEGORY':
+        return `条件: ${condition.category ?? 'カテゴリ'}の品を納品`;
+      case 'QUALITY':
+        return `条件: 品質${condition.minQuality ?? 'D'}以上`;
+      case 'QUANTITY':
+        return `条件: ${condition.quantity ?? 1}個納品`;
+      case 'ATTRIBUTE':
+        return '条件: 特定属性が必要';
+      case 'EFFECT':
+        return '条件: 特定効果が必要';
+      case 'MATERIAL':
+        return '条件: レア素材を使用';
+      case 'COMPOUND':
+        return '条件: 複合条件';
+      default:
+        return `条件: ${condition.type}`;
+    }
   }
 
   /**
@@ -289,6 +352,9 @@ export class QuestCardUI extends BaseComponent {
     }
     if (this.dialogueText) {
       this.dialogueText.destroy();
+    }
+    if (this.conditionText) {
+      this.conditionText.destroy();
     }
     if (this.rewardText) {
       this.rewardText.destroy();
