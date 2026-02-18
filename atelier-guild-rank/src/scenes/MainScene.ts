@@ -262,6 +262,9 @@ export class MainScene extends Phaser.Scene {
 
     // 初期フェーズUIを表示
     this.showPhase(initialPhase);
+
+    // サイドバーの初期更新
+    this.updateSidebar();
   }
 
   // ===========================================================================
@@ -630,6 +633,11 @@ export class MainScene extends Phaser.Scene {
       return;
     }
 
+    // GATHERINGフェーズから離脱する場合、採取セッションを終了して素材をインベントリに保存
+    if (this._currentVisiblePhase === GamePhase.GATHERING) {
+      this.finalizeGatheringSession();
+    }
+
     // 全フェーズUIを非表示に
     for (const p of VALID_GAME_PHASES) {
       this._phaseUIVisibility[p] = false;
@@ -657,6 +665,9 @@ export class MainScene extends Phaser.Scene {
     }
 
     this._currentVisiblePhase = phase;
+
+    // サイドバーを更新（インベントリの最新状態を反映）
+    this.updateSidebar();
   }
 
   /**
@@ -705,6 +716,79 @@ export class MainScene extends Phaser.Scene {
     } catch (error) {
       console.error('Failed to initialize gathering session:', error);
     }
+  }
+
+  /**
+   * 採取セッションを終了し、獲得素材をインベントリに保存する
+   * GATHERINGフェーズから別フェーズに遷移する際に呼び出される
+   */
+  private finalizeGatheringSession(): void {
+    const container = Container.getInstance();
+
+    // GatheringServiceを取得
+    if (!container.has(ServiceKeys.GatheringService)) return;
+    const gatheringService = container.resolve<IGatheringService>(ServiceKeys.GatheringService);
+
+    // 現在のセッションを取得
+    const session = gatheringService.getCurrentSession();
+    if (!session) return;
+
+    try {
+      // 採取を終了して結果を取得
+      const result = gatheringService.endGathering(session.sessionId);
+
+      // InventoryServiceに素材を追加
+      if (container.has(ServiceKeys.InventoryService)) {
+        const inventoryService = container.resolve<
+          import('@shared/domain/interfaces/inventory-service.interface').IInventoryService
+        >(ServiceKeys.InventoryService);
+        inventoryService.addMaterials(result.materials);
+      }
+    } catch (error) {
+      console.error('Failed to finalize gathering session:', error);
+    }
+  }
+
+  /**
+   * サイドバーを更新
+   * InventoryServiceとQuestServiceから最新データを取得して表示する
+   */
+  private updateSidebar(): void {
+    const container = Container.getInstance();
+
+    // InventoryServiceを取得
+    if (!container.has(ServiceKeys.InventoryService)) return;
+    const inventoryService = container.resolve<
+      import('@shared/domain/interfaces/inventory-service.interface').IInventoryService
+    >(ServiceKeys.InventoryService);
+
+    // 素材をIMaterialInstance形式に変換
+    const materials = inventoryService.getMaterials().map((m) => ({
+      materialId: m.materialId,
+      quality: m.quality,
+      quantity: 1,
+    }));
+
+    // アイテムをICraftedItem形式に変換
+    const craftedItems = inventoryService.getItems().map((i) => ({
+      itemId: i.itemId,
+      quality: i.quality,
+      attributeValues: [] as import('@shared/types/materials').IAttributeValue[],
+      effectValues: [] as import('@shared/types/materials').IEffectValue[],
+      usedMaterials: [] as import('@shared/types/materials').IUsedMaterial[],
+    }));
+
+    // 受注依頼を取得
+    const activeQuests = this.questService.getActiveQuests();
+
+    // サイドバーを更新
+    this.sidebarUI.update({
+      activeQuests,
+      materials,
+      craftedItems,
+      currentStorage: materials.length + craftedItems.length,
+      maxStorage: inventoryService.getMaterialCapacity(),
+    });
   }
 
   /**
