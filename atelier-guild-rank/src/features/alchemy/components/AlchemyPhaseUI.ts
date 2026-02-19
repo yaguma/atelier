@@ -57,8 +57,6 @@ const ALCHEMY_PHASE_LAYOUT = {
 interface RecipeLabelInfo {
   cardContainer: Phaser.GameObjects.Container;
   background: RexRoundRectangle;
-  /** フォーカス枠線（rexUI roundRectangle、ストロークのみ） */
-  focusBorder: RexRoundRectangle;
   nameText: Phaser.GameObjects.Text;
   recipe: IRecipeCardMaster;
   /** 調合可能かどうか */
@@ -271,18 +269,6 @@ export class AlchemyPhaseUI extends BaseComponent {
     background.setPosition(ALCHEMY_PHASE_LAYOUT.ITEM_WIDTH / 2, cardHeight / 2);
     cardContainer.add(background);
 
-    // フォーカス枠線（初期状態は非表示）
-    const focusBorder = this.rexUI.add
-      .roundRectangle({
-        width: ALCHEMY_PHASE_LAYOUT.ITEM_WIDTH + 4,
-        height: cardHeight + 4,
-        radius: ALCHEMY_PHASE_LAYOUT.BORDER_RADIUS + 2,
-      })
-      .setStrokeStyle(2, 0xffd700);
-    focusBorder.setPosition(ALCHEMY_PHASE_LAYOUT.ITEM_WIDTH / 2, cardHeight / 2);
-    focusBorder.setVisible(false);
-    cardContainer.add(focusBorder);
-
     // レシピ名テキスト
     const textColor = craftable ? THEME.colors.textOnSecondary : '#cccccc';
     const nameText = this.scene.make.text({
@@ -336,7 +322,7 @@ export class AlchemyPhaseUI extends BaseComponent {
       });
     }
 
-    return { cardContainer, background, focusBorder, nameText, recipe, craftable, materialTexts };
+    return { cardContainer, background, nameText, recipe, craftable, materialTexts };
   }
 
   /**
@@ -685,9 +671,12 @@ export class AlchemyPhaseUI extends BaseComponent {
    * レシピフォーカスを視覚的に更新
    */
   private updateRecipeFocus(): void {
+    const FOCUSED_SCALE = 1.05;
+    const DEFAULT_SCALE = 1.0;
+
     this.recipeLabels.forEach((item, index) => {
-      const focused = index === this.focusedRecipeIndex;
-      item.focusBorder.setVisible(focused);
+      const scale = index === this.focusedRecipeIndex ? FOCUSED_SCALE : DEFAULT_SCALE;
+      item.cardContainer.setScale(scale);
     });
   }
 }
