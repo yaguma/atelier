@@ -185,15 +185,19 @@ export class AlchemyPhaseUI extends BaseComponent {
       const y =
         ALCHEMY_PHASE_LAYOUT.RECIPE_LIST_START_Y +
         index * (ALCHEMY_PHASE_LAYOUT.ITEM_HEIGHT + ALCHEMY_PHASE_LAYOUT.ITEM_SPACING);
-      const craftable = this.alchemyService.checkRecipeRequirements(
+      const checkResult = this.alchemyService.checkRecipeRequirements(
         recipe.id,
         this.availableMaterials,
-      ).canCraft;
+      );
+      const missingText = checkResult.canCraft
+        ? ''
+        : checkResult.missingMaterials.map((m) => `${m.materialId}×${m.quantity}`).join(', ');
       const labelInfo = this.createRecipeLabel(
         recipe,
         ALCHEMY_PHASE_LAYOUT.RECIPE_LIST_OFFSET_X,
         y,
-        craftable,
+        checkResult.canCraft,
+        missingText,
       );
       this.recipeLabels.push(labelInfo);
     });
@@ -206,6 +210,7 @@ export class AlchemyPhaseUI extends BaseComponent {
    * @param x - X座標
    * @param y - Y座標
    * @param craftable - 調合可能かどうか
+   * @param missingText - 不足素材テキスト（調合不可時のみ）
    * @returns レシピラベル情報
    */
   private createRecipeLabel(
@@ -213,6 +218,7 @@ export class AlchemyPhaseUI extends BaseComponent {
     x: number,
     y: number,
     craftable: boolean,
+    missingText = '',
   ): RecipeLabelInfo {
     // 背景（rexUI roundRectangle）- 調合不可はグレーアウト
     const bgColor = craftable ? THEME.colors.secondary : 0x555555;
@@ -224,9 +230,9 @@ export class AlchemyPhaseUI extends BaseComponent {
       })
       .setFillStyle(bgColor);
 
-    // テキスト - 調合不可は薄い色で表示
+    // テキスト - 調合不可は不足素材を表示
     const textColor = craftable ? THEME.colors.textOnSecondary : '#888888';
-    const displayName = craftable ? recipe.name : `${recipe.name} (素材不足)`;
+    const displayName = craftable ? recipe.name : `${recipe.name} (不足: ${missingText})`;
     const textObj = this.scene.add.text(0, 0, displayName, {
       fontSize: `${THEME.sizes.medium}px`,
       color: textColor,
@@ -248,6 +254,10 @@ export class AlchemyPhaseUI extends BaseComponent {
 
     // 位置設定
     this.setLabelPosition(label, x, y);
+
+    // コンテナに追加（rexUIラベルはscene直下に作成されるため、
+    // コンテナに追加しないとフェーズ切替時にsetVisibleが効かない）
+    this.container.add(label);
 
     // インタラクション設定（調合可能なレシピのみ）
     if (craftable) {
