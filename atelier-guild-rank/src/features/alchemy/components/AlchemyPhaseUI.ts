@@ -33,7 +33,7 @@ const ALCHEMY_PHASE_LAYOUT = {
   /** レシピリストX座標オフセット（ラベル中心位置） */
   RECIPE_LIST_OFFSET_X: 120,
   /** レシピアイテム高さ */
-  ITEM_HEIGHT: 40,
+  ITEM_HEIGHT: 30,
   /** レシピアイテム幅 */
   ITEM_WIDTH: 200,
   /** アイテム間スペーシング */

@@ -26,5 +26,12 @@
     "baseQuality": "C",
     "attributes": ["WATER"],
     "description": "澄んだ水"
+  },
+  {
+    "id": "poison_mushroom",
+    "name": "毒キノコ",
+    "baseQuality": "C",
+    "attributes": ["MUSHROOM"],
+    "description": "毒を持つキノコ"
   }
 ]
