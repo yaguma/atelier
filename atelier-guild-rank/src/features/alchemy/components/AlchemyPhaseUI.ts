@@ -30,20 +30,24 @@ import type Phaser from 'phaser';
 const ALCHEMY_PHASE_LAYOUT = {
   /** レシピリスト開始Y座標 */
   RECIPE_LIST_START_Y: 80,
-  /** レシピリストX座標オフセット */
-  RECIPE_LIST_OFFSET_X: 200,
+  /** レシピリストX座標オフセット（ラベル中心位置） */
+  RECIPE_LIST_OFFSET_X: 120,
   /** レシピアイテム高さ */
-  ITEM_HEIGHT: 50,
+  ITEM_HEIGHT: 40,
   /** レシピアイテム幅 */
-  ITEM_WIDTH: 380,
+  ITEM_WIDTH: 200,
   /** アイテム間スペーシング */
-  ITEM_SPACING: 10,
+  ITEM_SPACING: 12,
   /** 角丸半径 */
   BORDER_RADIUS: 8,
   /** パディング(水平) */
   PADDING_HORIZONTAL: 10,
   /** パディング(垂直) */
   PADDING_VERTICAL: 5,
+  /** 素材行の高さ */
+  MATERIAL_LINE_HEIGHT: 22,
+  /** 素材行のインデント（左端からのオフセット） */
+  MATERIAL_INDENT: 30,
 } as const;
 
 /**
@@ -56,6 +60,8 @@ interface RecipeLabelInfo {
   recipe: IRecipeCardMaster;
   /** 調合可能かどうか */
   craftable: boolean;
+  /** 必要素材テキストオブジェクト（破棄用） */
+  materialTexts: Phaser.GameObjects.Text[];
 }
 
 /**
@@ -73,6 +79,9 @@ export class AlchemyPhaseUI extends BaseComponent {
 
   /** 調合完了コールバック */
   private onCraftCompleteCallback?: (item: ItemInstance) => void;
+
+  /** 素材名解決関数（materialId → 表示名） */
+  private materialNameResolver?: (materialId: string) => string;
 
   /** 利用可能なレシピリスト */
   private recipes: IRecipeCardMaster[] = [];
@@ -120,6 +129,7 @@ export class AlchemyPhaseUI extends BaseComponent {
     scene: Phaser.Scene,
     alchemyService: IAlchemyService,
     onCraftComplete?: (item: ItemInstance) => void,
+    materialNameResolver?: (materialId: string) => string,
   ) {
     // 入力バリデーション
     if (!scene) {
@@ -135,6 +145,7 @@ export class AlchemyPhaseUI extends BaseComponent {
     super(scene, 0, 0, { addToScene: false });
     this.alchemyService = alchemyService;
     this.onCraftCompleteCallback = onCraftComplete;
+    this.materialNameResolver = materialNameResolver;
   }
 
   /**
@@ -178,39 +189,68 @@ export class AlchemyPhaseUI extends BaseComponent {
   }
 
   /**
-   * レシピリストを作成（調合可否に応じたスタイルで表示）
+   * レシピリストを作成（レシピ名 + 必要素材行を表示）
    */
   private createRecipeList(): void {
-    this.recipes.forEach((recipe, index) => {
-      const y =
-        ALCHEMY_PHASE_LAYOUT.RECIPE_LIST_START_Y +
-        index * (ALCHEMY_PHASE_LAYOUT.ITEM_HEIGHT + ALCHEMY_PHASE_LAYOUT.ITEM_SPACING);
+    let currentY = ALCHEMY_PHASE_LAYOUT.RECIPE_LIST_START_Y;
+
+    for (const recipe of this.recipes) {
       const checkResult = this.alchemyService.checkRecipeRequirements(
         recipe.id,
         this.availableMaterials,
       );
-      const missingText = checkResult.canCraft
-        ? ''
-        : checkResult.missingMaterials.map((m) => `${m.materialId}×${m.quantity}`).join(', ');
+
+      // レシピ名ラベルを作成
       const labelInfo = this.createRecipeLabel(
         recipe,
         ALCHEMY_PHASE_LAYOUT.RECIPE_LIST_OFFSET_X,
-        y,
+        currentY,
         checkResult.canCraft,
-        missingText,
       );
       this.recipeLabels.push(labelInfo);
-    });
+      currentY += ALCHEMY_PHASE_LAYOUT.ITEM_HEIGHT;
+
+      // 不足素材のマップを作成
+      const missingMap = new Map<string, number>();
+      for (const m of checkResult.missingMaterials) {
+        missingMap.set(m.materialId, m.quantity);
+      }
+
+      // 各必要素材を個別行で表示
+      for (const req of recipe.requiredMaterials) {
+        const isMissing = missingMap.has(req.materialId);
+        const colorHex = isMissing ? '#ff4444' : '#333333';
+        const materialName = this.resolveMaterialName(req.materialId);
+        const displayText = `${materialName}: ${req.quantity}`;
+
+        const materialText = this.scene.make.text({
+          x: ALCHEMY_PHASE_LAYOUT.MATERIAL_INDENT,
+          y: currentY,
+          text: displayText,
+          style: {
+            fontSize: `${THEME.sizes.small}px`,
+            color: colorHex,
+            fontFamily: THEME.fonts.primary,
+          },
+          add: false,
+        });
+
+        this.container.add(materialText);
+        labelInfo.materialTexts.push(materialText);
+        currentY += ALCHEMY_PHASE_LAYOUT.MATERIAL_LINE_HEIGHT;
+      }
+
+      currentY += ALCHEMY_PHASE_LAYOUT.ITEM_SPACING;
+    }
   }
 
   /**
-   * 単一レシピラベルを作成
+   * 単一レシピラベルを作成（レシピ名のみ表示）
    *
    * @param recipe - レシピデータ
-   * @param x - X座標
+   * @param x - X座標（ラベル中心位置）
    * @param y - Y座標
    * @param craftable - 調合可能かどうか
-   * @param missingText - 不足素材テキスト（調合不可時のみ）
    * @returns レシピラベル情報
    */
   private createRecipeLabel(
@@ -218,7 +258,6 @@ export class AlchemyPhaseUI extends BaseComponent {
     x: number,
     y: number,
     craftable: boolean,
-    missingText = '',
   ): RecipeLabelInfo {
     // 背景（rexUI roundRectangle）- 調合不可はダークグレー
     const bgColor = craftable ? THEME.colors.secondary : 0x3a3a3a;
@@ -230,10 +269,9 @@ export class AlchemyPhaseUI extends BaseComponent {
       })
       .setFillStyle(bgColor);
 
-    // テキスト - 調合不可は明るいグレーで高コントラスト表示
+    // テキスト - レシピ名のみ表示
     const textColor = craftable ? THEME.colors.textOnSecondary : '#cccccc';
-    const displayName = craftable ? recipe.name : `${recipe.name} (不足: ${missingText})`;
-    const textObj = this.scene.add.text(0, 0, displayName, {
+    const textObj = this.scene.add.text(0, 0, recipe.name, {
       fontSize: `${THEME.sizes.medium}px`,
       color: textColor,
       fontFamily: THEME.fonts.primary,
@@ -264,7 +302,14 @@ export class AlchemyPhaseUI extends BaseComponent {
       this.setupLabelInteraction(label, recipe.id);
     }
 
-    return { label, background, recipe, craftable };
+    return { label, background, recipe, craftable, materialTexts: [] };
+  }
+
+  /**
+   * 素材IDを表示名に解決
+   */
+  private resolveMaterialName(materialId: string): string {
+    return this.materialNameResolver ? this.materialNameResolver(materialId) : materialId;
   }
 
   /**
@@ -533,8 +578,11 @@ export class AlchemyPhaseUI extends BaseComponent {
    * 既存のレシピラベルを破棄し、レシピリストを再読み込み・再作成する。
    */
   refresh(): void {
-    // 既存のレシピラベルを破棄
+    // 既存のレシピラベルと素材テキストを破棄
     for (const item of this.recipeLabels) {
+      for (const text of item.materialTexts) {
+        text.destroy();
+      }
       item.label.destroy();
     }
     this.recipeLabels = [];
@@ -556,6 +604,9 @@ export class AlchemyPhaseUI extends BaseComponent {
   destroy(): void {
     this.removeKeyboardListener();
     for (const item of this.recipeLabels) {
+      for (const text of item.materialTexts) {
+        text.destroy();
+      }
       item.label.destroy();
     }
     this.recipeLabels = [];

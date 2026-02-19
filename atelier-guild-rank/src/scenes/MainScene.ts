@@ -28,6 +28,7 @@ import { Container, ServiceKeys } from '@shared/services/di/container';
 import { GamePhase, type GuildRank, VALID_GAME_PHASES } from '@shared/types/common';
 import type { IPhaseChangedEvent } from '@shared/types/events';
 import { GameEventType } from '@shared/types/events';
+import { toMaterialId } from '@shared/types/ids';
 import type { IClient, IQuest } from '@shared/types/quests';
 import { generateUniqueId } from '@shared/utils';
 import Phaser from 'phaser';
@@ -360,7 +361,18 @@ export class MainScene extends Phaser.Scene {
       alchemyService = container.resolve<IAlchemyService>(ServiceKeys.AlchemyService);
     }
     if (alchemyService) {
-      const alchemyUI = new AlchemyPhaseUI(this, alchemyService);
+      // 素材名解決関数を作成（materialId → 日本語表示名）
+      let materialNameResolver: ((materialId: string) => string) | undefined;
+      if (container.has(ServiceKeys.MasterDataRepository)) {
+        const masterDataRepo = container.resolve<IMasterDataRepository>(
+          ServiceKeys.MasterDataRepository,
+        );
+        materialNameResolver = (materialId: string) => {
+          const material = masterDataRepo.getMaterialById(toMaterialId(materialId));
+          return material?.name ?? materialId;
+        };
+      }
+      const alchemyUI = new AlchemyPhaseUI(this, alchemyService, undefined, materialNameResolver);
       alchemyUI.create();
       this._contentContainer.add(alchemyUI.getContainer());
       this.phaseUIs.set(GamePhase.ALCHEMY, alchemyUI);
