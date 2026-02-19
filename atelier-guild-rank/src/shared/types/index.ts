@@ -69,10 +69,13 @@ export { GameEventType } from './events';
 // ゲーム状態型
 // =============================================================================
 export type {
+  IBoardQuest,
   IDeckState,
   IGameState,
   IInventoryState,
+  IQuestBoardState,
   IQuestState,
+  IVisitorQuest,
 } from './game-state';
 // =============================================================================
 // ID型

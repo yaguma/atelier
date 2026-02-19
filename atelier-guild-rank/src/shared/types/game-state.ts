@@ -10,6 +10,52 @@ import type { ICraftedItem, IMaterialInstance } from './materials';
 import type { IActiveQuest, IQuest } from './quests';
 
 // =============================================================================
+// 掲示板関連型
+// =============================================================================
+
+/**
+ * 掲示板依頼
+ *
+ * 掲示板に累積的に掲載される依頼。期限切れで消える。
+ */
+export interface IBoardQuest {
+  /** 依頼ID */
+  questId: string;
+  /** 掲示日 */
+  postedDay: number;
+  /** 掲示期限（この日を過ぎると消える） */
+  expiryDay: number;
+}
+
+/**
+ * 訪問依頼
+ *
+ * 訪問者が持ち込む依頼。数日ごとに更新される。
+ */
+export interface IVisitorQuest {
+  /** 依頼ID */
+  questId: string;
+  /** 訪問開始日 */
+  visitStartDay: number;
+  /** 訪問終了日（次回更新日） */
+  visitEndDay: number;
+}
+
+/**
+ * 掲示板管理状態
+ *
+ * 掲示板依頼と訪問依頼の管理状態
+ */
+export interface IQuestBoardState {
+  /** 掲示板の依頼リスト */
+  boardQuests: IBoardQuest[];
+  /** 訪問者の依頼リスト */
+  visitorQuests: IVisitorQuest[];
+  /** 訪問依頼の最終更新日 */
+  lastVisitorUpdateDay: number;
+}
+
+// =============================================================================
 // ゲーム状態
 // =============================================================================
 
@@ -39,6 +85,10 @@ export interface IGameState {
   isPromotionTest: boolean;
   /** 昇格試験残り日数（オプション） */
   promotionTestRemainingDays?: number;
+  /** 前日のAP超過分（翌日AP回復時に差し引き） */
+  apOverflow: number;
+  /** 掲示板状態 */
+  questBoard: IQuestBoardState;
 }
 
 // =============================================================================

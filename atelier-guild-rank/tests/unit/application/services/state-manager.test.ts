@@ -133,37 +133,37 @@ describe('StateManager', () => {
   // =============================================================================
 
   describe('canTransitionTo / invalid transitions', () => {
-    it('T-0005-04: 無効なフェーズ遷移はエラーになる', () => {
-      // QUEST_ACCEPT -> ALCHEMY (無効)
-      expect(() => stateManager.setPhase(GamePhase.ALCHEMY)).toThrow();
-
-      // QUEST_ACCEPT -> DELIVERY (無効)
-      expect(() => stateManager.setPhase(GamePhase.DELIVERY)).toThrow();
+    it('T-0005-04: 自フェーズへの遷移はエラーになる', () => {
+      // QUEST_ACCEPT -> QUEST_ACCEPT (自フェーズは無効)
+      expect(() => stateManager.setPhase(GamePhase.QUEST_ACCEPT)).toThrow();
     });
 
-    it('canTransitionToで遷移可能性をチェックできる', () => {
-      // QUEST_ACCEPT からの遷移
+    it('canTransitionToで遷移可能性をチェックできる（自由遷移対応）', () => {
+      // QUEST_ACCEPT からの遷移（全フェーズへ遷移可能、自フェーズ除く）
       expect(stateManager.canTransitionTo(GamePhase.GATHERING)).toBe(true);
-      expect(stateManager.canTransitionTo(GamePhase.ALCHEMY)).toBe(false);
-      expect(stateManager.canTransitionTo(GamePhase.DELIVERY)).toBe(false);
+      expect(stateManager.canTransitionTo(GamePhase.ALCHEMY)).toBe(true);
+      expect(stateManager.canTransitionTo(GamePhase.DELIVERY)).toBe(true);
       expect(stateManager.canTransitionTo(GamePhase.QUEST_ACCEPT)).toBe(false);
     });
 
-    it('各フェーズからの有効な遷移先を検証', () => {
-      // GATHERING からの遷移
+    it('各フェーズからの有効な遷移先を検証（自由遷移対応）', () => {
+      // GATHERING からの遷移（全フェーズへ遷移可能、自フェーズ除く）
       stateManager.setPhase(GamePhase.GATHERING);
+      expect(stateManager.canTransitionTo(GamePhase.QUEST_ACCEPT)).toBe(true);
       expect(stateManager.canTransitionTo(GamePhase.ALCHEMY)).toBe(true);
-      expect(stateManager.canTransitionTo(GamePhase.DELIVERY)).toBe(false);
+      expect(stateManager.canTransitionTo(GamePhase.DELIVERY)).toBe(true);
 
       // ALCHEMY からの遷移
       stateManager.setPhase(GamePhase.ALCHEMY);
+      expect(stateManager.canTransitionTo(GamePhase.QUEST_ACCEPT)).toBe(true);
+      expect(stateManager.canTransitionTo(GamePhase.GATHERING)).toBe(true);
       expect(stateManager.canTransitionTo(GamePhase.DELIVERY)).toBe(true);
-      expect(stateManager.canTransitionTo(GamePhase.GATHERING)).toBe(false);
 
       // DELIVERY からの遷移
       stateManager.setPhase(GamePhase.DELIVERY);
       expect(stateManager.canTransitionTo(GamePhase.QUEST_ACCEPT)).toBe(true);
-      expect(stateManager.canTransitionTo(GamePhase.GATHERING)).toBe(false);
+      expect(stateManager.canTransitionTo(GamePhase.GATHERING)).toBe(true);
+      expect(stateManager.canTransitionTo(GamePhase.ALCHEMY)).toBe(true);
     });
   });
 
