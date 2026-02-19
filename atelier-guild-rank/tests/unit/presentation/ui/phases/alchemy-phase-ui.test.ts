@@ -144,7 +144,9 @@ const createMockScene = (): { scene: MockScene; mockContainer: MockContainer } =
       add: {
         roundRectangle: vi.fn().mockReturnValue({
           setFillStyle: vi.fn().mockReturnThis(),
+          setStrokeStyle: vi.fn().mockReturnThis(),
           setPosition: vi.fn().mockReturnThis(),
+          setVisible: vi.fn().mockReturnThis(),
           setInteractive: vi.fn().mockReturnThis(),
           on: vi.fn().mockReturnThis(),
         }),
