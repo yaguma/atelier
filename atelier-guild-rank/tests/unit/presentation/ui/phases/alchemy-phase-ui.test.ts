@@ -30,6 +30,7 @@ interface MockContainer {
   setPosition: ReturnType<typeof vi.fn>;
   setVisible: ReturnType<typeof vi.fn>;
   setDepth: ReturnType<typeof vi.fn>;
+  setScale: ReturnType<typeof vi.fn>;
   add: ReturnType<typeof vi.fn>;
   destroy: ReturnType<typeof vi.fn>;
   x: number;
@@ -96,6 +97,7 @@ const createMockScene = (): { scene: MockScene; mockContainer: MockContainer } =
     setPosition: vi.fn().mockReturnThis(),
     setVisible: vi.fn().mockReturnThis(),
     setDepth: vi.fn().mockReturnThis(),
+    setScale: vi.fn().mockReturnThis(),
     add: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
     x: 0,
@@ -142,6 +144,9 @@ const createMockScene = (): { scene: MockScene; mockContainer: MockContainer } =
       add: {
         roundRectangle: vi.fn().mockReturnValue({
           setFillStyle: vi.fn().mockReturnThis(),
+          setPosition: vi.fn().mockReturnThis(),
+          setInteractive: vi.fn().mockReturnThis(),
+          on: vi.fn().mockReturnThis(),
         }),
         label: vi.fn().mockReturnValue(mockLabel),
         scrollablePanel: vi.fn().mockReturnValue({
