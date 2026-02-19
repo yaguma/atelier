@@ -30,6 +30,7 @@ interface MockContainer {
   setPosition: ReturnType<typeof vi.fn>;
   setVisible: ReturnType<typeof vi.fn>;
   setDepth: ReturnType<typeof vi.fn>;
+  setScale: ReturnType<typeof vi.fn>;
   add: ReturnType<typeof vi.fn>;
   destroy: ReturnType<typeof vi.fn>;
   x: number;
@@ -83,6 +84,7 @@ interface MockAlchemyService extends IAlchemyService {
   craft: ReturnType<typeof vi.fn>;
   canCraft: ReturnType<typeof vi.fn>;
   previewQuality: ReturnType<typeof vi.fn>;
+  getAllRecipes: ReturnType<typeof vi.fn>;
   getAvailableRecipes: ReturnType<typeof vi.fn>;
   checkRecipeRequirements: ReturnType<typeof vi.fn>;
 }
@@ -95,6 +97,7 @@ const createMockScene = (): { scene: MockScene; mockContainer: MockContainer } =
     setPosition: vi.fn().mockReturnThis(),
     setVisible: vi.fn().mockReturnThis(),
     setDepth: vi.fn().mockReturnThis(),
+    setScale: vi.fn().mockReturnThis(),
     add: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
     x: 0,
@@ -141,6 +144,9 @@ const createMockScene = (): { scene: MockScene; mockContainer: MockContainer } =
       add: {
         roundRectangle: vi.fn().mockReturnValue({
           setFillStyle: vi.fn().mockReturnThis(),
+          setPosition: vi.fn().mockReturnThis(),
+          setInteractive: vi.fn().mockReturnThis(),
+          on: vi.fn().mockReturnThis(),
         }),
         label: vi.fn().mockReturnValue(mockLabel),
         scrollablePanel: vi.fn().mockReturnValue({
@@ -161,6 +167,7 @@ const createMockAlchemyService = (): MockAlchemyService => ({
   craft: vi.fn(),
   canCraft: vi.fn().mockReturnValue(true),
   previewQuality: vi.fn().mockReturnValue('B' as Quality),
+  getAllRecipes: vi.fn().mockReturnValue([]),
   getAvailableRecipes: vi.fn().mockReturnValue([]),
   checkRecipeRequirements: vi.fn().mockReturnValue({
     canCraft: true,
@@ -280,8 +287,8 @@ describe('AlchemyPhaseUI', () => {
 
         // Then:
         // - alchemyServiceが内部で使用可能である（canCraftなどを呼び出せる）
-        // - 初期状態でgetAvailableRecipesが呼び出される
-        expect(alchemyService.getAvailableRecipes).toHaveBeenCalled();
+        // - 初期状態でgetAllRecipesが呼び出される
+        expect(alchemyService.getAllRecipes).toHaveBeenCalled();
       });
     });
 
@@ -356,7 +363,7 @@ describe('AlchemyPhaseUI', () => {
       it('TC-010: 調合フェーズ開始時にレシピ一覧が表示される', () => {
         // Given: AlchemyPhaseUIが初期化済み、レシピが存在
         const recipe = createMockRecipe();
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         const ui = new AlchemyPhaseUI(scene, alchemyService);
 
         // When: create()を呼び出す
@@ -376,7 +383,7 @@ describe('AlchemyPhaseUI', () => {
       it('TC-011: レシピクリックで選択状態が変更される', () => {
         // Given: AlchemyPhaseUIが初期化済み、レシピ一覧が表示されている
         const recipe = createMockRecipe();
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         const ui = new AlchemyPhaseUI(scene, alchemyService);
         ui.create();
 
@@ -402,7 +409,7 @@ describe('AlchemyPhaseUI', () => {
             { materialId: 'mat-002', quantity: 1 },
           ],
         });
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         const ui = new AlchemyPhaseUI(scene, alchemyService);
         ui.create();
 
@@ -425,7 +432,7 @@ describe('AlchemyPhaseUI', () => {
         const recipe = createMockRecipe({
           requiredMaterials: [{ materialId: 'mat-001', quantity: 1 }],
         });
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         const ui = new AlchemyPhaseUI(scene, alchemyService);
         ui.create();
 
@@ -453,7 +460,7 @@ describe('AlchemyPhaseUI', () => {
         // Given: AlchemyPhaseUIが初期化済み、レシピが選択済み
         const recipe = createMockRecipe();
         const material = createMockMaterial();
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         const ui = new AlchemyPhaseUI(scene, alchemyService);
         ui.create();
         ui.setAvailableMaterials([material]);
@@ -479,7 +486,7 @@ describe('AlchemyPhaseUI', () => {
         // Given: AlchemyPhaseUIが初期化済み、レシピが選択済み
         const recipe = createMockRecipe();
         const material = createMockMaterial();
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         const ui = new AlchemyPhaseUI(scene, alchemyService);
         ui.create();
         ui.setAvailableMaterials([material]);
@@ -503,7 +510,7 @@ describe('AlchemyPhaseUI', () => {
         // Given: AlchemyPhaseUIが初期化済み、素材が配置済み
         const recipe = createMockRecipe();
         const material = createMockMaterial();
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         const ui = new AlchemyPhaseUI(scene, alchemyService);
         ui.create();
         ui.setAvailableMaterials([material]);
@@ -528,7 +535,7 @@ describe('AlchemyPhaseUI', () => {
         // Given: AlchemyPhaseUIが初期化済み、レシピが選択済み
         const recipe = createMockRecipe();
         const material = createMockMaterial();
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         alchemyService.previewQuality.mockReturnValue('A' as Quality);
         const ui = new AlchemyPhaseUI(scene, alchemyService);
         ui.create();
@@ -559,7 +566,7 @@ describe('AlchemyPhaseUI', () => {
         // Given: AlchemyPhaseUIが初期化済み
         const recipe = createMockRecipe();
         const material = createMockMaterial();
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         alchemyService.previewQuality.mockReturnValue('B' as Quality);
         const ui = new AlchemyPhaseUI(scene, alchemyService);
         ui.create();
@@ -583,7 +590,7 @@ describe('AlchemyPhaseUI', () => {
         const recipe = createMockRecipe();
         const material1 = createMockMaterial({ instanceId: 'inst-001', quality: 'B' as Quality });
         const material2 = createMockMaterial({ instanceId: 'inst-002', quality: 'A' as Quality });
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         alchemyService.previewQuality
           .mockReturnValueOnce('B' as Quality)
           .mockReturnValueOnce('A' as Quality);
@@ -611,7 +618,7 @@ describe('AlchemyPhaseUI', () => {
       it('TC-032: 素材不足時に品質プレビューが「-」になる', () => {
         // Given: AlchemyPhaseUIが初期化済み、素材未配置
         const recipe = createMockRecipe();
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         const ui = new AlchemyPhaseUI(scene, alchemyService);
         ui.create();
         ui.selectRecipe(recipe.id);
@@ -638,7 +645,7 @@ describe('AlchemyPhaseUI', () => {
         const recipe = createMockRecipe();
         const material = createMockMaterial();
         const craftedItem = createMockItem();
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         alchemyService.canCraft.mockReturnValue(true);
         alchemyService.craft.mockReturnValue(craftedItem);
         const ui = new AlchemyPhaseUI(scene, alchemyService);
@@ -667,7 +674,7 @@ describe('AlchemyPhaseUI', () => {
         const material = createMockMaterial();
         const craftedItem = createMockItem();
         const onCraftComplete = vi.fn();
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         alchemyService.canCraft.mockReturnValue(true);
         alchemyService.craft.mockReturnValue(craftedItem);
         const ui = new AlchemyPhaseUI(scene, alchemyService, onCraftComplete);
@@ -695,7 +702,7 @@ describe('AlchemyPhaseUI', () => {
         const recipe = createMockRecipe();
         const material = createMockMaterial();
         const craftedItem = createMockItem();
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         alchemyService.canCraft.mockReturnValue(true);
         alchemyService.craft.mockReturnValue(craftedItem);
         const ui = new AlchemyPhaseUI(scene, alchemyService);
@@ -723,7 +730,7 @@ describe('AlchemyPhaseUI', () => {
         const recipe = createMockRecipe();
         const material = createMockMaterial();
         const craftedItem = createMockItem();
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         alchemyService.canCraft.mockReturnValue(true);
         alchemyService.craft.mockReturnValue(craftedItem);
         const ui = new AlchemyPhaseUI(scene, alchemyService);
@@ -756,7 +763,7 @@ describe('AlchemyPhaseUI', () => {
         // Given: AlchemyPhaseUIが初期化済み、レシピ選択済み
         const recipe = createMockRecipe();
         const material = createMockMaterial();
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         alchemyService.canCraft.mockReturnValue(true);
         const ui = new AlchemyPhaseUI(scene, alchemyService);
         ui.create();
@@ -779,7 +786,7 @@ describe('AlchemyPhaseUI', () => {
       it('TC-051: 素材不足時に調合ボタンが無効になる', () => {
         // Given: AlchemyPhaseUIが初期化済み、レシピ選択済み、素材未配置
         const recipe = createMockRecipe();
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         alchemyService.canCraft.mockReturnValue(false);
         const ui = new AlchemyPhaseUI(scene, alchemyService);
         ui.create();
@@ -889,7 +896,7 @@ describe('AlchemyPhaseUI', () => {
       it('TC-204: 素材不足時にcraft()が呼び出されない', () => {
         // Given: AlchemyPhaseUIが初期化済み、素材不足状態
         const recipe = createMockRecipe();
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         alchemyService.canCraft.mockReturnValue(false);
         const ui = new AlchemyPhaseUI(scene, alchemyService);
         ui.create();
@@ -917,7 +924,7 @@ describe('AlchemyPhaseUI', () => {
 
       it('TC-300: 空のレシピリストでも正常に表示される', () => {
         // Given: AlchemyPhaseUIが初期化、レシピ0件
-        alchemyService.getAvailableRecipes.mockReturnValue([]);
+        alchemyService.getAllRecipes.mockReturnValue([]);
         const ui = new AlchemyPhaseUI(scene, alchemyService);
 
         // When: create()を呼び出す
@@ -937,7 +944,7 @@ describe('AlchemyPhaseUI', () => {
       it('TC-301: レシピ1件で正常に表示・選択できる', () => {
         // Given: AlchemyPhaseUIが初期化、レシピ1件
         const recipe = createMockRecipe();
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         const ui = new AlchemyPhaseUI(scene, alchemyService);
         ui.create();
 
@@ -960,7 +967,7 @@ describe('AlchemyPhaseUI', () => {
         const recipes = Array.from({ length: 20 }, (_, i) =>
           createMockRecipe({ id: toCardId(`recipe-${i}`), name: `レシピ${i}` }),
         );
-        alchemyService.getAvailableRecipes.mockReturnValue(recipes);
+        alchemyService.getAllRecipes.mockReturnValue(recipes);
         const ui = new AlchemyPhaseUI(scene, alchemyService);
 
         // When: create()を呼び出す
@@ -998,7 +1005,7 @@ describe('AlchemyPhaseUI', () => {
         // Given: AlchemyPhaseUIが初期化、D品質素材
         const recipe = createMockRecipe();
         const material = createMockMaterial({ quality: 'D' as Quality });
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         alchemyService.previewQuality.mockReturnValue('D' as Quality);
         const ui = new AlchemyPhaseUI(scene, alchemyService);
         ui.create();
@@ -1021,7 +1028,7 @@ describe('AlchemyPhaseUI', () => {
         // Given: AlchemyPhaseUIが初期化、S品質素材
         const recipe = createMockRecipe();
         const material = createMockMaterial({ instanceId: 'inst-s', quality: 'S' as Quality });
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         alchemyService.previewQuality.mockReturnValue('S' as Quality);
         const ui = new AlchemyPhaseUI(scene, alchemyService);
         ui.create();
@@ -1052,7 +1059,7 @@ describe('AlchemyPhaseUI', () => {
         const craftedItem = createMockItem();
         const onCraftComplete = vi.fn();
 
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         alchemyService.canCraft.mockReturnValue(true);
         alchemyService.previewQuality.mockReturnValue('B' as Quality);
         alchemyService.craft.mockReturnValue(craftedItem);
@@ -1087,7 +1094,7 @@ describe('AlchemyPhaseUI', () => {
         const recipe = createMockRecipe();
         const material = createMockMaterial();
 
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         alchemyService.previewQuality.mockReturnValue('B' as Quality);
         alchemyService.canCraft.mockReturnValue(false);
 
@@ -1118,7 +1125,7 @@ describe('AlchemyPhaseUI', () => {
 
         // Step 1: 初期化
         const recipe = createMockRecipe();
-        alchemyService.getAvailableRecipes.mockReturnValue([recipe]);
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
         const ui1 = new AlchemyPhaseUI(mocks1.scene, alchemyService);
         ui1.create();
 

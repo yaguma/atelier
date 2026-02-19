@@ -39,6 +39,9 @@ export interface IAlchemyService {
   /** 調合前に品質をプレビュー */
   previewQuality(recipeId: CardId, materials: MaterialInstance[]): Quality;
 
+  /** 全レシピリストを取得 */
+  getAllRecipes(): IRecipeCardMaster[];
+
   /** 利用可能なレシピリストを取得 */
   getAvailableRecipes(materials: MaterialInstance[]): IRecipeCardMaster[];
 

@@ -6,6 +6,7 @@
  * 貢献度計算結果のプレビュー表示を担当するコンポーネント
  */
 
+import { THEME } from '@presentation/ui/theme';
 import type Phaser from 'phaser';
 import type { ContributionPreviewData, ItemInstance, Quest } from './types';
 
@@ -22,8 +23,9 @@ const UI_TEXT = {
 /** UIスタイル定数 */
 const UI_STYLES = {
   PREVIEW: {
-    fontSize: '14px',
-    color: '#cccccc',
+    fontSize: `${THEME.sizes.small}px`,
+    color: `#${THEME.colors.textLight.toString(16).padStart(6, '0')}`,
+    fontFamily: THEME.fonts.primary,
   },
 } as const;
 

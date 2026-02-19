@@ -74,6 +74,15 @@ export interface IAlchemyService {
   previewQuality(recipeId: CardId, materials: MaterialInstance[]): Quality;
 
   /**
+   * 【機能概要】: 全レシピリストを取得
+   * 【実装方針】: フィルタリングなしで全レシピカードを返す
+   * 🔵 信頼性レベル: note.md・設計文書に明記
+   *
+   * @returns 全レシピマスターリスト
+   */
+  getAllRecipes(): IRecipeCardMaster[];
+
+  /**
    * 【機能概要】: 利用可能なレシピリストを取得
    * 【実装方針】: 与えられた素材で調合可能なレシピをフィルタリング
    * 🔵 信頼性レベル: note.md・設計文書に明記

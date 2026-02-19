@@ -6,7 +6,7 @@
  * 納品成功時の結果パネル表示を担当するコンポーネント
  */
 
-import { Colors } from '@presentation/ui/theme';
+import { Colors, THEME } from '@presentation/ui/theme';
 import { AnimationPresets } from '@presentation/ui/utils/AnimationPresets';
 import type Phaser from 'phaser';
 import type { DeliveryResult, DeliveryResultPanelCallbacks } from './types';
@@ -33,16 +33,20 @@ const UI_TEXT = {
 /** UIスタイル定数 */
 const UI_STYLES = {
   TITLE: {
-    fontSize: '20px',
-    color: '#ffffff',
+    fontSize: `${THEME.sizes.large}px`,
+    color: THEME.colors.textOnPrimary,
+    fontFamily: THEME.fonts.primary,
+    fontStyle: 'bold',
   },
   CONTENT: {
-    fontSize: '16px',
-    color: '#ffffff',
+    fontSize: `${THEME.sizes.medium}px`,
+    color: THEME.colors.textOnPrimary,
+    fontFamily: THEME.fonts.primary,
   },
   BUTTON: {
-    fontSize: '14px',
-    color: '#ffffff',
+    fontSize: `${THEME.sizes.small}px`,
+    color: THEME.colors.textOnPrimary,
+    fontFamily: THEME.fonts.primary,
   },
 } as const;
 

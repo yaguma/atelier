@@ -26,6 +26,30 @@ import type { MaterialId, Quality } from '@shared/types';
 import type Phaser from 'phaser';
 import { type MaterialDisplay, MaterialSlotUI } from './MaterialSlotUI';
 
+/** 採取フェーズUIレイアウト定数 */
+const GATHERING_LAYOUT = {
+  /** コンテンツ領域の視覚的中央X（画面全体の中央1280/2=640からサイドバー200を引く） */
+  CONTENT_CENTER_X: 440,
+  /** 素材プール開始X（3列を中央揃え: 440 - 120 = 320） */
+  POOL_START_X: 320,
+  /** 素材プール開始Y */
+  POOL_START_Y: 130,
+  /** 素材プール列間隔 */
+  POOL_SPACING_X: 120,
+  /** 素材プール行間隔 */
+  POOL_SPACING_Y: 120,
+  /** 獲得素材タイトルY */
+  GATHERED_TITLE_Y: 370,
+  /** 獲得素材表示Y */
+  GATHERED_DISPLAY_Y: 410,
+  /** 獲得素材アイテム開始X（6列を中央揃え: 440 - 250 = 190） */
+  GATHERED_ITEM_START_X: 190,
+  /** 採取終了ボタンX */
+  END_BUTTON_X: 440,
+  /** 採取終了ボタンY */
+  END_BUTTON_Y: 470,
+} as const;
+
 /**
  * GatheringPhaseUI - 採取フェーズUIコンポーネント
  *
@@ -88,8 +112,8 @@ export class GatheringPhaseUI extends BaseComponent {
   private createTitle(): void {
     this.titleText = this.scene.make
       .text({
-        x: 0,
-        y: 0,
+        x: GATHERING_LAYOUT.CONTENT_CENTER_X,
+        y: 20,
         text: '🌿 採取フェーズ',
         style: {
           fontSize: `${THEME.sizes.xlarge}px`,
@@ -110,8 +134,8 @@ export class GatheringPhaseUI extends BaseComponent {
   private createRemainingCounter(): void {
     this.remainingText = this.scene.make
       .text({
-        x: 0,
-        y: 40,
+        x: GATHERING_LAYOUT.CONTENT_CENTER_X,
+        y: 60,
         text: '残り選択回数: 0/0',
         style: {
           fontSize: `${THEME.sizes.medium}px`,
@@ -129,10 +153,10 @@ export class GatheringPhaseUI extends BaseComponent {
    * 素材プールを作成(2行3列のグリッド)
    */
   private createMaterialPool(): void {
-    const startX = -200;
-    const startY = 100;
-    const spacingX = 120;
-    const spacingY = 120;
+    const startX = GATHERING_LAYOUT.POOL_START_X;
+    const startY = GATHERING_LAYOUT.POOL_START_Y;
+    const spacingX = GATHERING_LAYOUT.POOL_SPACING_X;
+    const spacingY = GATHERING_LAYOUT.POOL_SPACING_Y;
 
     for (let row = 0; row < 2; row++) {
       for (let col = 0; col < 3; col++) {
@@ -154,13 +178,10 @@ export class GatheringPhaseUI extends BaseComponent {
    * 獲得素材表示エリアを作成
    */
   private createGatheredDisplay(): void {
-    const titleY = 350;
-    const displayY = 390;
-
     const gatheredTitle = this.scene.make
       .text({
-        x: 0,
-        y: titleY,
+        x: GATHERING_LAYOUT.CONTENT_CENTER_X,
+        y: GATHERING_LAYOUT.GATHERED_TITLE_Y,
         text: '獲得素材:',
         style: {
           fontSize: `${THEME.sizes.medium}px`,
@@ -172,7 +193,11 @@ export class GatheringPhaseUI extends BaseComponent {
       })
       .setOrigin(0.5);
 
-    this.gatheredDisplay = this.scene.make.container({ x: 0, y: displayY, add: false });
+    this.gatheredDisplay = this.scene.make.container({
+      x: 0,
+      y: GATHERING_LAYOUT.GATHERED_DISPLAY_Y,
+      add: false,
+    });
     this.gatheredDisplay.name = 'GatheringPhaseUI.gatheredDisplay';
 
     this.container.add(gatheredTitle);
@@ -183,14 +208,19 @@ export class GatheringPhaseUI extends BaseComponent {
    * 採取終了ボタンを作成
    */
   private createEndButton(): void {
-    this.endButton = new Button(this.scene, 250, 450, {
-      text: '採取終了',
-      onClick: () => {
-        this.endGathering();
+    this.endButton = new Button(
+      this.scene,
+      GATHERING_LAYOUT.END_BUTTON_X,
+      GATHERING_LAYOUT.END_BUTTON_Y,
+      {
+        text: '採取終了',
+        onClick: () => {
+          this.endGathering();
+        },
+        width: 120,
+        height: 40,
       },
-      width: 120,
-      height: 40,
-    });
+    );
     this.endButton.create();
 
     this.container.add(this.endButton.getContainer());
@@ -266,7 +296,7 @@ export class GatheringPhaseUI extends BaseComponent {
 
     // 素材を表示
     materials.forEach((material, index) => {
-      const x = (index % 6) * 100 - 250;
+      const x = (index % 6) * 100 + GATHERING_LAYOUT.GATHERED_ITEM_START_X;
       const y = Math.floor(index / 6) * 30;
 
       const materialText = this.scene.make
