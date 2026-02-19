@@ -2,7 +2,7 @@
 
 ## ブランチ命名規則
 
-- **形式**: `<type>/<YYYYMMDD>-<description>`
+- **形式**: `<type>/<TASK-ID or issue-no>-<description>`
 - **タイプ一覧**:
   - `feat/` - 新機能追加
   - `fix/` - バグ修正
@@ -10,7 +10,7 @@
   - `docs/` - ドキュメント更新
   - `test/` - テスト追加・修正
   - `chore/` - 設定・ビルド関連
-- **例**: `feat/20260203-add-deck-builder`, `fix/20260203-quest-completion-error`
+- **例**: `feat/#18-add-deck-import`, `fix/task-0018-login-error`
 
 ---
 
