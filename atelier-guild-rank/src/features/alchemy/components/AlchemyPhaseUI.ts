@@ -35,7 +35,7 @@ const ALCHEMY_PHASE_LAYOUT = {
   /** レシピアイテム高さ */
   ITEM_HEIGHT: 50,
   /** レシピアイテム幅 */
-  ITEM_WIDTH: 200,
+  ITEM_WIDTH: 380,
   /** アイテム間スペーシング */
   ITEM_SPACING: 10,
   /** 角丸半径 */
@@ -220,8 +220,8 @@ export class AlchemyPhaseUI extends BaseComponent {
     craftable: boolean,
     missingText = '',
   ): RecipeLabelInfo {
-    // 背景（rexUI roundRectangle）- 調合不可はグレーアウト
-    const bgColor = craftable ? THEME.colors.secondary : 0x555555;
+    // 背景（rexUI roundRectangle）- 調合不可はダークグレー
+    const bgColor = craftable ? THEME.colors.secondary : 0x3a3a3a;
     const background = this.rexUI.add
       .roundRectangle({
         width: ALCHEMY_PHASE_LAYOUT.ITEM_WIDTH,
@@ -230,8 +230,8 @@ export class AlchemyPhaseUI extends BaseComponent {
       })
       .setFillStyle(bgColor);
 
-    // テキスト - 調合不可は不足素材を表示
-    const textColor = craftable ? THEME.colors.textOnSecondary : '#888888';
+    // テキスト - 調合不可は明るいグレーで高コントラスト表示
+    const textColor = craftable ? THEME.colors.textOnSecondary : '#cccccc';
     const displayName = craftable ? recipe.name : `${recipe.name} (不足: ${missingText})`;
     const textObj = this.scene.add.text(0, 0, displayName, {
       fontSize: `${THEME.sizes.medium}px`,
@@ -342,7 +342,7 @@ export class AlchemyPhaseUI extends BaseComponent {
    */
   private clearRecipeSelection(): void {
     for (const item of this.recipeLabels) {
-      const color = item.craftable ? THEME.colors.secondary : 0x555555;
+      const color = item.craftable ? THEME.colors.secondary : 0x3a3a3a;
       item.background.setFillStyle(color);
     }
   }
