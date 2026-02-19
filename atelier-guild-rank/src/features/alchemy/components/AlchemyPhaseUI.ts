@@ -54,6 +54,8 @@ interface RecipeLabelInfo {
   label: RexLabel;
   background: RexRoundRectangle;
   recipe: IRecipeCardMaster;
+  /** 調合可能かどうか */
+  craftable: boolean;
 }
 
 /**
@@ -169,24 +171,29 @@ export class AlchemyPhaseUI extends BaseComponent {
   }
 
   /**
-   * レシピを読み込む
+   * レシピを読み込む（全レシピを取得し、調合可否はUI表示で区別する）
    */
   private loadRecipes(): void {
-    this.recipes = this.alchemyService.getAvailableRecipes(this.availableMaterials);
+    this.recipes = this.alchemyService.getAllRecipes();
   }
 
   /**
-   * レシピリストを作成
+   * レシピリストを作成（調合可否に応じたスタイルで表示）
    */
   private createRecipeList(): void {
     this.recipes.forEach((recipe, index) => {
       const y =
         ALCHEMY_PHASE_LAYOUT.RECIPE_LIST_START_Y +
         index * (ALCHEMY_PHASE_LAYOUT.ITEM_HEIGHT + ALCHEMY_PHASE_LAYOUT.ITEM_SPACING);
+      const craftable = this.alchemyService.checkRecipeRequirements(
+        recipe.id,
+        this.availableMaterials,
+      ).canCraft;
       const labelInfo = this.createRecipeLabel(
         recipe,
         ALCHEMY_PHASE_LAYOUT.RECIPE_LIST_OFFSET_X,
         y,
+        craftable,
       );
       this.recipeLabels.push(labelInfo);
     });
@@ -198,22 +205,31 @@ export class AlchemyPhaseUI extends BaseComponent {
    * @param recipe - レシピデータ
    * @param x - X座標
    * @param y - Y座標
+   * @param craftable - 調合可能かどうか
    * @returns レシピラベル情報
    */
-  private createRecipeLabel(recipe: IRecipeCardMaster, x: number, y: number): RecipeLabelInfo {
-    // 背景（rexUI roundRectangle）
+  private createRecipeLabel(
+    recipe: IRecipeCardMaster,
+    x: number,
+    y: number,
+    craftable: boolean,
+  ): RecipeLabelInfo {
+    // 背景（rexUI roundRectangle）- 調合不可はグレーアウト
+    const bgColor = craftable ? THEME.colors.secondary : 0x555555;
     const background = this.rexUI.add
       .roundRectangle({
         width: ALCHEMY_PHASE_LAYOUT.ITEM_WIDTH,
         height: ALCHEMY_PHASE_LAYOUT.ITEM_HEIGHT,
         radius: ALCHEMY_PHASE_LAYOUT.BORDER_RADIUS,
       })
-      .setFillStyle(THEME.colors.secondary);
+      .setFillStyle(bgColor);
 
-    // テキスト（rexUI labelのtext引数にはシーンに追加済みのGameObjectが必要なため scene.add.text を使用）
-    const textObj = this.scene.add.text(0, 0, recipe.name, {
+    // テキスト - 調合不可は薄い色で表示
+    const textColor = craftable ? THEME.colors.textOnSecondary : '#888888';
+    const displayName = craftable ? recipe.name : `${recipe.name} (素材不足)`;
+    const textObj = this.scene.add.text(0, 0, displayName, {
       fontSize: `${THEME.sizes.medium}px`,
-      color: THEME.colors.textOnSecondary,
+      color: textColor,
       fontFamily: THEME.fonts.primary,
     });
 
@@ -233,10 +249,12 @@ export class AlchemyPhaseUI extends BaseComponent {
     // 位置設定
     this.setLabelPosition(label, x, y);
 
-    // インタラクション設定
-    this.setupLabelInteraction(label, recipe.id);
+    // インタラクション設定（調合可能なレシピのみ）
+    if (craftable) {
+      this.setupLabelInteraction(label, recipe.id);
+    }
 
-    return { label, background, recipe };
+    return { label, background, recipe, craftable };
   }
 
   /**
@@ -310,11 +328,12 @@ export class AlchemyPhaseUI extends BaseComponent {
   }
 
   /**
-   * レシピ選択をクリア
+   * レシピ選択をクリア（調合不可レシピはグレーのまま維持）
    */
   private clearRecipeSelection(): void {
     for (const item of this.recipeLabels) {
-      item.background.setFillStyle(THEME.colors.secondary);
+      const color = item.craftable ? THEME.colors.secondary : 0x555555;
+      item.background.setFillStyle(color);
     }
   }
 
@@ -561,14 +580,14 @@ export class AlchemyPhaseUI extends BaseComponent {
    * @param event - キーボードイベント
    */
   private handleKeyboardInput(event: { key: string }): void {
-    // 数字キーでレシピを直接選択
+    // 数字キーでレシピを直接選択（調合可能なもののみ）
     const selectionIndex = getSelectionIndexFromKey(event.key);
     if (selectionIndex !== null && selectionIndex <= this.recipes.length) {
       this.focusedRecipeIndex = selectionIndex - 1;
       this.updateRecipeFocus();
-      const recipe = this.recipes[this.focusedRecipeIndex];
-      if (recipe) {
-        this.selectRecipe(recipe.id);
+      const labelInfo = this.recipeLabels[this.focusedRecipeIndex];
+      if (labelInfo?.craftable) {
+        this.selectRecipe(labelInfo.recipe.id);
       }
       return;
     }
@@ -579,12 +598,12 @@ export class AlchemyPhaseUI extends BaseComponent {
     } else if (isKeyForAction(event.key, 'DOWN')) {
       this.moveFocus(1);
     }
-    // Enter/Spaceでフォーカス中のレシピを選択
+    // Enter/Spaceでフォーカス中のレシピを選択（調合可能なもののみ）
     else if (isKeyForAction(event.key, 'CONFIRM')) {
       if (this.focusedRecipeIndex >= 0 && this.focusedRecipeIndex < this.recipes.length) {
-        const recipe = this.recipes[this.focusedRecipeIndex];
-        if (recipe) {
-          this.selectRecipe(recipe.id);
+        const labelInfo = this.recipeLabels[this.focusedRecipeIndex];
+        if (labelInfo?.craftable) {
+          this.selectRecipe(labelInfo.recipe.id);
         }
       }
     }
