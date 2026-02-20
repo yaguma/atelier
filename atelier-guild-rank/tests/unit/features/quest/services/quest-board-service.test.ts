@@ -236,6 +236,41 @@ describe('updateBoard', () => {
     });
   });
 
+  describe('重複questIdの除外', () => {
+    it('既存依頼と同じquestIdの候補は追加されない', () => {
+      const existing = createBoardQuest({ questId: 'q1', expiryDay: 10 });
+      const board = createBoardState({ boardQuests: [existing] });
+      const duplicate = createBoardQuest({ questId: 'q1' });
+      const unique = createBoardQuest({ questId: 'q2' });
+
+      const result = updateBoard({
+        currentDay: 1,
+        currentBoard: board,
+        newBoardQuestCandidates: [duplicate, unique],
+        boardCapacity: 5,
+      });
+
+      expect(result.addedBoardQuests).toHaveLength(1);
+      expect(result.addedBoardQuests[0].questId).toBe('q2');
+      expect(result.newBoard.boardQuests).toHaveLength(2);
+    });
+
+    it('候補が全て重複する場合、追加されない', () => {
+      const existing = createBoardQuest({ questId: 'q1', expiryDay: 10 });
+      const board = createBoardState({ boardQuests: [existing] });
+
+      const result = updateBoard({
+        currentDay: 1,
+        currentBoard: board,
+        newBoardQuestCandidates: [createBoardQuest({ questId: 'q1' })],
+        boardCapacity: 5,
+      });
+
+      expect(result.addedBoardQuests).toHaveLength(0);
+      expect(result.newBoard.boardQuests).toHaveLength(1);
+    });
+  });
+
   describe('複合シナリオ', () => {
     it('期限切れ除去・訪問更新・新規追加が同時に行われる', () => {
       const board = createBoardState({

@@ -42,7 +42,7 @@ export interface IQuestBoardUpdateInput {
   readonly newBoardQuestCandidates?: readonly IBoardQuest[];
   /** 新規訪問依頼候補（更新タイミングであれば差し替えられる） */
   readonly newVisitorQuestCandidates?: readonly IVisitorQuest[];
-  /** 掲示板の最大依頼数（デフォルト: DEFAULT_BOARD_CAPACITY） */
+  /** 掲示板の最大依頼数（正の整数、デフォルト: DEFAULT_BOARD_CAPACITY） */
   readonly boardCapacity?: number;
   /** 訪問依頼の更新間隔日数（デフォルト: DEFAULT_VISITOR_UPDATE_INTERVAL） */
   readonly visitorUpdateInterval?: number;

@@ -24,10 +24,10 @@ import {
  *
  * 処理内容:
  * 1. 期限切れ掲示板依頼の除去（expiryDay < currentDay）
- * 2. 訪問依頼の更新判定（lastVisitorUpdateDayからの経過日数が更新間隔以上）
- * 3. 掲示板枠に空きがあれば新規依頼追加
+ * 2. 掲示板枠に空きがあれば新規依頼追加（既存と重複するquestIdは除外）
+ * 3. 訪問依頼の更新判定（lastVisitorUpdateDayからの経過日数が更新間隔以上）
  *
- * @param input - 掲示板更新入力
+ * @param input - 掲示板更新入力（boardCapacityは正の整数を想定）
  * @returns 掲示板更新結果
  */
 export function updateBoard(input: IQuestBoardUpdateInput): IQuestBoardUpdateResult {
@@ -46,9 +46,13 @@ export function updateBoard(input: IQuestBoardUpdateInput): IQuestBoardUpdateRes
     .filter((quest) => quest.expiryDay < currentDay)
     .map((quest) => quest.questId);
 
-  // 2. 掲示板枠に空きがあれば新規依頼追加
+  // 2. 掲示板枠に空きがあれば新規依頼追加（既存と重複するquestIdは除外）
+  const existingQuestIds = new Set(activeQuests.map((q) => q.questId));
+  const deduplicatedCandidates = newBoardQuestCandidates.filter(
+    (q) => !existingQuestIds.has(q.questId),
+  );
   const availableSlots = Math.max(0, boardCapacity - activeQuests.length);
-  const addedBoardQuests = newBoardQuestCandidates.slice(0, availableSlots);
+  const addedBoardQuests = deduplicatedCandidates.slice(0, availableSlots);
   const finalBoardQuests = [...activeQuests, ...addedBoardQuests];
 
   // 3. 訪問依頼の更新判定
@@ -99,14 +103,15 @@ export function acceptBoardQuest(
 }
 
 /**
- * 訪問依頼を受注する純粋関数
+ * 訪問依頼が掲示板に存在するか判定する純粋関数
  *
  * 訪問依頼は受注しても掲示板から消えない（訪問期間中は継続表示）。
- * 呼び出し側で受注済みフラグの管理を行う。
+ * この関数は訪問依頼リストに存在するかのみを判定する。
+ * 受注済みかどうかの判定は呼び出し側で別途管理すること。
  *
  * @param board - 現在の掲示板状態
- * @param questId - 受注する依頼ID
- * @returns 受注可能な場合true（訪問依頼リストに存在するか）
+ * @param questId - 確認する依頼ID
+ * @returns 訪問依頼リストに存在する場合true
  */
 export function canAcceptVisitorQuest(board: IQuestBoardState, questId: string): boolean {
   return board.visitorQuests.some((q) => q.questId === questId);
