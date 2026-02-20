@@ -12,9 +12,15 @@
 export { calculateOverflow } from './ap-overflow-service';
 // --- 採取コスト計算 ---
 export { calculateGatheringCost } from './calculate-materials';
+// --- 採取実行 ---
 export type { GatherInput, GatherResult } from './gather';
-// --- 採取素材オプション生成 ---
 export { gather } from './gather';
-export type { SelectionError, SelectionResult } from './select-option';
+// --- 採取場所 ---
+export {
+  getAvailableLocations,
+  getLocationDetail,
+  getSelectableLocations,
+} from './gathering-location-service';
 // --- ドラフト選択 ---
+export type { SelectionError, SelectionResult } from './select-option';
 export { selectGatheringOption } from './select-option';

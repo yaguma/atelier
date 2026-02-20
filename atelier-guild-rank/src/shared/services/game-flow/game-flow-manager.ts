@@ -14,10 +14,23 @@
 
 import type { IDeckService } from '@domain/interfaces/deck-service.interface';
 import type { IQuestService } from '@domain/interfaces/quest-service.interface';
+import type { IAPOverflowResult } from '@features/gathering';
 import type { IEventBus } from '@shared/services/event-bus';
 import type { IStateManager } from '@shared/services/state-manager';
-import type { ISaveData } from '@shared/types';
-import { ApplicationError, ErrorCodes, GameEventType, GamePhase, GuildRank } from '@shared/types';
+import type {
+  IAutoAdvanceDayResult,
+  IPhaseSwitchRequest,
+  IPhaseSwitchResult,
+  ISaveData,
+} from '@shared/types';
+import {
+  ApplicationError,
+  ErrorCodes,
+  GameEventType,
+  GamePhase,
+  GuildRank,
+  PhaseSwitchFailureReason,
+} from '@shared/types';
 import type { CardId } from '@shared/types/ids';
 import type { GameEndCondition, IGameFlowManager } from './game-flow-manager.interface';
 
@@ -59,12 +72,14 @@ export class GameFlowManager implements IGameFlowManager {
    * @param deckService - デッキ管理サービス
    * @param questService - 依頼管理サービス
    * @param eventBus - イベントバス
+   * @param activeOperationChecker - 進行中操作チェック（採取セッション等）
    */
   constructor(
     private readonly stateManager: IStateManager,
     private readonly deckService: IDeckService,
     private readonly questService: IQuestService,
     private readonly eventBus: IEventBus,
+    private readonly activeOperationChecker?: () => boolean,
   ) {
     // 【実装内容】: 依存性注入のみ、初期化処理はstartNewGame()またはcontinueGame()で行う
     // 🔵 信頼性レベル: 設計文書に明記
@@ -279,8 +294,132 @@ export class GameFlowManager implements IGameFlowManager {
   }
 
   // =============================================================================
+  // AP超過処理
+  // =============================================================================
+
+  /**
+   * 【機能概要】: AP超過による自動日進行処理（TASK-0107）
+   * 【実装方針】:
+   *   1. overflowResult.daysConsumed分のendDay()相当処理を順次実行
+   *   2. 各日の終了後にゲームオーバー判定
+   *   3. 途中でゲームオーバーなら停止
+   *   4. 最終的にnextDayAPを設定
+   *   5. IAutoAdvanceDayResultを返却
+   *
+   * 設計文書: architecture.md, dataflow.md セクション3
+   * 要件: REQ-003, REQ-003-01〜REQ-003-06, EDGE-002
+   * 🔵 信頼性レベル: 設計文書に明記
+   */
+  async processAPOverflow(overflowResult: IAPOverflowResult): Promise<IAutoAdvanceDayResult> {
+    let daysAdvanced = 0;
+
+    for (let i = 0; i < overflowResult.daysConsumed; i++) {
+      // 期限切れ依頼を処理
+      const failedQuests = this.questService.updateDeadlines();
+
+      // 日数を更新
+      const state = this.stateManager.getState();
+      const newRemainingDays = state.remainingDays - 1;
+      const newCurrentDay = state.currentDay + 1;
+
+      this.stateManager.updateState({
+        remainingDays: newRemainingDays,
+        currentDay: newCurrentDay,
+      });
+
+      // DAY_ENDEDイベント発行
+      this.eventBus.emit(GameEventType.DAY_ENDED, {
+        failedQuests,
+        remainingDays: newRemainingDays,
+        currentDay: newCurrentDay,
+      });
+
+      daysAdvanced++;
+
+      // ゲームオーバー判定
+      const gameOver = this.checkGameOver();
+      if (gameOver) {
+        this.eventBus.emit(GameEventType.GAME_OVER, gameOver);
+        const finalState = this.stateManager.getState();
+        return {
+          daysAdvanced,
+          newCurrentDay: finalState.currentDay,
+          newRemainingDays: finalState.remainingDays,
+          newActionPoints: 0,
+          isGameOver: true,
+        };
+      }
+
+      // 手札補充
+      this.deckService.refillHand();
+    }
+
+    // 最終的なAPを設定
+    this.stateManager.updateState({
+      actionPoints: overflowResult.nextDayAP,
+    });
+
+    const finalState = this.stateManager.getState();
+    return {
+      daysAdvanced,
+      newCurrentDay: finalState.currentDay,
+      newRemainingDays: finalState.remainingDays,
+      newActionPoints: overflowResult.nextDayAP,
+      isGameOver: false,
+    };
+  }
+
+  // =============================================================================
   // フェーズ進行
   // =============================================================================
+
+  /**
+   * 【機能概要】: フェーズを自由に切り替える（TASK-0106）
+   * 【実装方針】:
+   *   1. 同一フェーズの場合はno-op（成功として返却）
+   *   2. 進行中操作チェック（採取セッション中断確認）
+   *   3. StateManager.setPhase()でフェーズ変更
+   *   4. IPhaseSwitchResultを返却
+   *
+   * 設計文書: architecture.md, dataflow.md セクション2
+   * 要件: REQ-001, REQ-001-01〜REQ-001-03
+   * 🔵 信頼性レベル: 設計文書に明記
+   */
+  async switchPhase(request: IPhaseSwitchRequest): Promise<IPhaseSwitchResult> {
+    const currentPhase = this.stateManager.getState().currentPhase;
+    const { targetPhase, forceAbort = false } = request;
+
+    // 同一フェーズへの切り替えはno-op
+    if (currentPhase === targetPhase) {
+      return {
+        success: true,
+        previousPhase: currentPhase,
+        newPhase: currentPhase,
+      };
+    }
+
+    // 進行中操作チェック
+    const hasActiveOperation = this.activeOperationChecker?.() ?? false;
+    if (hasActiveOperation && !forceAbort) {
+      return {
+        success: false,
+        previousPhase: currentPhase,
+        newPhase: currentPhase,
+        failureReason: PhaseSwitchFailureReason.SESSION_ABORT_REJECTED,
+      };
+    }
+
+    // フェーズ遷移（StateManagerがバリデーションとPHASE_CHANGEDイベント発行を行う）
+    // 注意: 現在のVALID_PHASE_TRANSITIONSは全フェーズ間自由遷移のため例外は発生しない。
+    // 将来的に遷移制限が追加された場合はtry-catchでのエラーハンドリングが必要。
+    this.stateManager.setPhase(targetPhase);
+
+    return {
+      success: true,
+      previousPhase: currentPhase,
+      newPhase: targetPhase,
+    };
+  }
 
   /**
    * 【機能概要】: 指定されたフェーズに遷移

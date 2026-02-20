@@ -12,7 +12,15 @@
  * - ゲームフロー全体の統括機能
  */
 
-import type { GamePhase, GuildRank, ISaveData } from '@shared/types';
+import type { IAPOverflowResult } from '@features/gathering';
+import type {
+  GamePhase,
+  GuildRank,
+  IAutoAdvanceDayResult,
+  IPhaseSwitchRequest,
+  IPhaseSwitchResult,
+  ISaveData,
+} from '@shared/types';
 
 // =============================================================================
 // ゲーム終了条件
@@ -99,6 +107,17 @@ export interface IGameFlowManager {
   // =============================================================================
 
   /**
+   * 【機能概要】: フェーズを自由に切り替える（TASK-0106）
+   * 【実装方針】: 進行中操作チェック→StateManager.setPhase()→結果返却
+   * 【設計文書】: architecture.md「endPhase() → switchPhase(targetPhase)」
+   * 🔵 信頼性レベル: 設計文書に明記
+   *
+   * @param request - フェーズ切り替えリクエスト
+   * @returns フェーズ切り替え結果
+   */
+  switchPhase(request: IPhaseSwitchRequest): Promise<IPhaseSwitchResult>;
+
+  /**
    * 【機能概要】: 指定されたフェーズに遷移
    * 【実装方針】: StateManager.setPhase()を呼び出す
    * 【例外】: ApplicationError(ErrorCodes.INVALID_PHASE_TRANSITION) - 無効なフェーズ遷移の場合
@@ -124,6 +143,21 @@ export interface IGameFlowManager {
    * 🟡 信頼性レベル: 要件定義書から推測
    */
   skipPhase(): void;
+
+  // =============================================================================
+  // AP超過処理
+  // =============================================================================
+
+  /**
+   * 【機能概要】: AP超過による自動日進行処理（TASK-0107）
+   * 【実装方針】: overflowResult.daysConsumed分のendDay()を順次実行
+   * 【設計文書】: architecture.md・dataflow.md セクション3
+   * 🔵 信頼性レベル: 設計文書に明記
+   *
+   * @param overflowResult - AP超過計算結果
+   * @returns 自動日進行結果
+   */
+  processAPOverflow(overflowResult: IAPOverflowResult): Promise<IAutoAdvanceDayResult>;
 
   // =============================================================================
   // ゲーム終了判定
