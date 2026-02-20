@@ -26,6 +26,7 @@ import {
   GatheringPhaseUI,
   gather,
   isGatheringCard,
+  LocationSelectUI,
   MaterialSlotUI,
   selectGatheringOption,
 } from '@features/gathering';
@@ -132,6 +133,11 @@ describe('features/gathering 公開API', () => {
       expect(MaterialSlotUI).toBeDefined();
       expect(typeof MaterialSlotUI).toBe('function');
     });
+
+    it('LocationSelectUIがエクスポートされている', () => {
+      expect(LocationSelectUI).toBeDefined();
+      expect(typeof LocationSelectUI).toBe('function');
+    });
   });
 
   describe('動的インポートの検証', () => {
@@ -146,6 +152,7 @@ describe('features/gathering 公開API', () => {
 
       // コンポーネントエクスポート
       expect(typeof mod.GatheringPhaseUI).toBe('function');
+      expect(typeof mod.LocationSelectUI).toBe('function');
       expect(typeof mod.MaterialSlotUI).toBe('function');
     });
   });
