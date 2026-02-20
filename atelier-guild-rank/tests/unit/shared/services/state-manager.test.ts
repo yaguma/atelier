@@ -15,7 +15,7 @@ import {
   StateManager,
   VALID_PHASE_TRANSITIONS,
 } from '@shared/services/state-manager';
-import { GameEventType, GamePhase, GuildRank } from '@shared/types';
+import { GameEventType, GamePhase, GuildRank, VALID_GAME_PHASES } from '@shared/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('shared/services/state-manager', () => {
@@ -168,6 +168,160 @@ describe('shared/services/state-manager', () => {
       expect(state.gold).toBe(1000);
       expect(state.currentRank).toBe(GuildRank.A);
       expect(state.currentPhase).toBe(GamePhase.QUEST_ACCEPT); // デフォルト値
+    });
+  });
+
+  describe('フェーズ自由遷移（TASK-0102）', () => {
+    let eventBus: IEventBus;
+    let stateManager: IStateManager;
+
+    beforeEach(() => {
+      eventBus = new EventBus();
+      stateManager = new StateManager(eventBus);
+    });
+
+    describe('VALID_PHASE_TRANSITIONS', () => {
+      it('全フェーズから他の全フェーズへの遷移が許可されている', () => {
+        const phases = VALID_GAME_PHASES;
+        for (const from of phases) {
+          const allowed = VALID_PHASE_TRANSITIONS[from];
+          const otherPhases = phases.filter((p) => p !== from);
+          expect(allowed).toEqual(expect.arrayContaining(otherPhases));
+        }
+      });
+
+      it('自フェーズへの遷移は含まれない', () => {
+        const phases = VALID_GAME_PHASES;
+        for (const phase of phases) {
+          expect(VALID_PHASE_TRANSITIONS[phase]).not.toContain(phase);
+        }
+      });
+
+      it('各フェーズから3つの遷移先がある', () => {
+        const phases = VALID_GAME_PHASES;
+        for (const phase of phases) {
+          expect(VALID_PHASE_TRANSITIONS[phase]).toHaveLength(3);
+        }
+      });
+    });
+
+    describe('StateManager.canTransitionTo()が自由遷移に対応', () => {
+      it.each([
+        [GamePhase.QUEST_ACCEPT, GamePhase.GATHERING],
+        [GamePhase.QUEST_ACCEPT, GamePhase.ALCHEMY],
+        [GamePhase.QUEST_ACCEPT, GamePhase.DELIVERY],
+        [GamePhase.GATHERING, GamePhase.QUEST_ACCEPT],
+        [GamePhase.GATHERING, GamePhase.ALCHEMY],
+        [GamePhase.GATHERING, GamePhase.DELIVERY],
+        [GamePhase.ALCHEMY, GamePhase.QUEST_ACCEPT],
+        [GamePhase.ALCHEMY, GamePhase.GATHERING],
+        [GamePhase.ALCHEMY, GamePhase.DELIVERY],
+        [GamePhase.DELIVERY, GamePhase.QUEST_ACCEPT],
+        [GamePhase.DELIVERY, GamePhase.GATHERING],
+        [GamePhase.DELIVERY, GamePhase.ALCHEMY],
+      ])('%sから%sへの遷移が可能', (from, to) => {
+        stateManager.updateState({ currentPhase: from });
+        expect(stateManager.canTransitionTo(to)).toBe(true);
+      });
+
+      it('現在のフェーズと同じフェーズへの遷移はfalse', () => {
+        for (const phase of VALID_GAME_PHASES) {
+          stateManager.updateState({ currentPhase: phase });
+          expect(stateManager.canTransitionTo(phase)).toBe(false);
+        }
+      });
+    });
+
+    describe('setPhase()で自由遷移が動作する', () => {
+      it('GATHERINGからQUEST_ACCEPTへの逆遷移ができる', () => {
+        stateManager.setPhase(GamePhase.GATHERING);
+        stateManager.setPhase(GamePhase.QUEST_ACCEPT);
+        expect(stateManager.getState().currentPhase).toBe(GamePhase.QUEST_ACCEPT);
+      });
+
+      it('ALCHEMYからGATHERINGへの逆遷移ができる', () => {
+        stateManager.setPhase(GamePhase.ALCHEMY);
+        stateManager.setPhase(GamePhase.GATHERING);
+        expect(stateManager.getState().currentPhase).toBe(GamePhase.GATHERING);
+      });
+
+      it('QUEST_ACCEPTからDELIVERYへの直接遷移ができる', () => {
+        stateManager.setPhase(GamePhase.DELIVERY);
+        expect(stateManager.getState().currentPhase).toBe(GamePhase.DELIVERY);
+      });
+
+      it('遷移ごとにPHASE_CHANGEDイベントが発行される', () => {
+        const handler = vi.fn();
+        eventBus.on(GameEventType.PHASE_CHANGED, handler);
+
+        stateManager.setPhase(GamePhase.DELIVERY);
+
+        expect(handler).toHaveBeenCalledWith(
+          expect.objectContaining({
+            payload: {
+              previousPhase: GamePhase.QUEST_ACCEPT,
+              newPhase: GamePhase.DELIVERY,
+            },
+          }),
+        );
+      });
+    });
+  });
+
+  describe('IGameState拡張フィールド（TASK-0102）', () => {
+    let eventBus: IEventBus;
+    let stateManager: IStateManager;
+
+    beforeEach(() => {
+      eventBus = new EventBus();
+      stateManager = new StateManager(eventBus);
+    });
+
+    it('初期状態にapOverflowフィールドが含まれる（デフォルト: 0）', () => {
+      expect(INITIAL_GAME_STATE.apOverflow).toBe(0);
+      expect(stateManager.getState().apOverflow).toBe(0);
+    });
+
+    it('初期状態にquestBoardフィールドが含まれる', () => {
+      const state = stateManager.getState();
+      expect(state.questBoard).toBeDefined();
+      expect(state.questBoard.boardQuests).toEqual([]);
+      expect(state.questBoard.visitorQuests).toEqual([]);
+      expect(state.questBoard.lastVisitorUpdateDay).toBe(0);
+    });
+
+    it('INITIAL_GAME_STATEのquestBoardにデフォルト値が設定されている', () => {
+      expect(INITIAL_GAME_STATE.questBoard).toEqual({
+        boardQuests: [],
+        visitorQuests: [],
+        lastVisitorUpdateDay: 0,
+      });
+    });
+
+    it('apOverflowをupdateStateで更新できる', () => {
+      stateManager.updateState({ apOverflow: 2 });
+      expect(stateManager.getState().apOverflow).toBe(2);
+    });
+
+    it('questBoardをupdateStateで更新できる', () => {
+      stateManager.updateState({
+        questBoard: {
+          boardQuests: [{ questId: 'q1', postedDay: 1, expiryDay: 5 }],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 1,
+        },
+      });
+      const state = stateManager.getState();
+      expect(state.questBoard.boardQuests).toHaveLength(1);
+      expect(state.questBoard.boardQuests[0]?.questId).toBe('q1');
+      expect(state.questBoard.lastVisitorUpdateDay).toBe(1);
+    });
+
+    it('リセット後にapOverflowとquestBoardが初期値に戻る', () => {
+      stateManager.updateState({ apOverflow: 5 });
+      stateManager.reset();
+      expect(stateManager.getState().apOverflow).toBe(0);
+      expect(stateManager.getState().questBoard.boardQuests).toEqual([]);
     });
   });
 });

@@ -34,7 +34,15 @@ export const INITIAL_GAME_STATE: IGameState = {
   actionPoints: InitialParameters.ACTION_POINTS_PER_DAY,
   /** 昇格試験中: false */
   isPromotionTest: false,
-} as const;
+  /** AP超過分: 0 */
+  apOverflow: 0,
+  /** 掲示板状態: 初期値 */
+  questBoard: {
+    boardQuests: [],
+    visitorQuests: [],
+    lastVisitorUpdateDay: 0,
+  },
+};
 
 /**
  * 最大行動ポイント
@@ -42,13 +50,13 @@ export const INITIAL_GAME_STATE: IGameState = {
 export const MAX_ACTION_POINTS = InitialParameters.ACTION_POINTS_PER_DAY;
 
 /**
- * フェーズ遷移ルール
+ * フェーズ遷移ルール（TASK-0102: 自由遷移対応）
  *
- * 各フェーズから遷移可能なフェーズのリスト
+ * 各フェーズから他の全フェーズへ遷移可能（自フェーズ除く）
  */
 export const VALID_PHASE_TRANSITIONS: Record<GamePhase, GamePhase[]> = {
-  [GamePhase.QUEST_ACCEPT]: [GamePhase.GATHERING],
-  [GamePhase.GATHERING]: [GamePhase.ALCHEMY],
-  [GamePhase.ALCHEMY]: [GamePhase.DELIVERY],
-  [GamePhase.DELIVERY]: [GamePhase.QUEST_ACCEPT],
-} as const;
+  [GamePhase.QUEST_ACCEPT]: [GamePhase.GATHERING, GamePhase.ALCHEMY, GamePhase.DELIVERY],
+  [GamePhase.GATHERING]: [GamePhase.QUEST_ACCEPT, GamePhase.ALCHEMY, GamePhase.DELIVERY],
+  [GamePhase.ALCHEMY]: [GamePhase.QUEST_ACCEPT, GamePhase.GATHERING, GamePhase.DELIVERY],
+  [GamePhase.DELIVERY]: [GamePhase.QUEST_ACCEPT, GamePhase.GATHERING, GamePhase.ALCHEMY],
+};
