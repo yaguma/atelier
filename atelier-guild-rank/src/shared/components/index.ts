@@ -14,9 +14,11 @@ export { Button, type ButtonConfig, ButtonType } from './Button';
 // Dialog
 export { Dialog, type DialogAction, type DialogConfig, DialogType } from './Dialog';
 // Footer
-export { FooterUI, type PhaseIndicatorState } from './FooterUI';
+export { FooterUI } from './FooterUI';
 // Header
 export { HeaderUI, type IHeaderUIData } from './HeaderUI';
+// PhaseTabUI
+export { PhaseTabUI } from './PhaseTabUI';
 // RewardCardDialog: Phaser.Events.EventEmitter継承のため、バレルエクスポートから除外
 // 直接インポートを使用: import { RewardCardDialog } from '@shared/components/RewardCardDialog';
 // Sidebar

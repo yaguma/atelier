@@ -49,15 +49,7 @@ const LAYOUT = {
   FOOTER_HEIGHT: 120,
 } as const;
 
-/**
- * フェーズごとのボタンラベルマッピング
- */
-const PHASE_BUTTON_LABELS: Record<GamePhase, string> = {
-  [GamePhase.QUEST_ACCEPT]: '採取へ',
-  [GamePhase.GATHERING]: '調合へ',
-  [GamePhase.ALCHEMY]: '納品へ',
-  [GamePhase.DELIVERY]: '日終了',
-};
+// TASK-0112: PHASE_BUTTON_LABELS削除（「次へ」ボタン廃止のため不要）
 
 // =============================================================================
 // 型定義
@@ -244,8 +236,7 @@ export class MainScene extends Phaser.Scene {
     // QUEST_GENERATEDイベントを確実に受信できるようにする
     this.setupEventSubscriptions();
 
-    // Footerの「次へ」ボタンにコールバック設定
-    this.setupFooterNextButtonCallback();
+    // TASK-0112: 「次へ」ボタン廃止のためコールバック設定を削除（PhaseTabUIに移行済み）
 
     // Issue #111: 新規ゲーム開始の場合、イベント購読後にstartNewGame()を呼ぶ
     // これにより、QUEST_GENERATEDイベントが正しくハンドリングされる
@@ -259,7 +250,7 @@ export class MainScene extends Phaser.Scene {
     // 初期状態の反映
     this.updateHeader();
     const initialPhase = this.stateManager.getState().currentPhase;
-    this.updateFooterForPhase(initialPhase);
+    // TASK-0112: updateFooterForPhase()は「次へ」ボタン・プログレスバー廃止により不要（TASK-0116で完全削除予定）
 
     // 初期フェーズUIを表示
     this.showPhase(initialPhase);
@@ -316,8 +307,17 @@ export class MainScene extends Phaser.Scene {
     this.sidebarUI.create();
 
     // フッターUI（画面下部、サイドバー右側から開始）
+    // TASK-0112: PhaseTabUI統合のため、gameFlowManager・eventBus・initialPhaseを渡す
     const footerY = this.cameras.main.height - LAYOUT.FOOTER_HEIGHT;
-    this.footerUI = new FooterUI(this, LAYOUT.SIDEBAR_WIDTH, footerY);
+    this.footerUI = new FooterUI(
+      this,
+      LAYOUT.SIDEBAR_WIDTH,
+      footerY,
+      this
+        .gameFlowManager as unknown as import('@shared/services/game-flow/game-flow-manager.interface').IGameFlowManager,
+      this.eventBus as unknown as import('@shared/services/event-bus/types').IEventBus,
+      GamePhase.QUEST_ACCEPT,
+    );
     this.footerUI.create();
 
     // コンテンツコンテナ（中央エリア）
@@ -420,24 +420,8 @@ export class MainScene extends Phaser.Scene {
     };
   }
 
-  /**
-   * Footerの「次へ」ボタンにコールバックを設定
-   * TASK-0052: フェーズ遷移連携
-   */
-  private setupFooterNextButtonCallback(): void {
-    this.footerUI.onNextClick(() => {
-      this.onNextPhaseButtonClick();
-    });
-  }
-
-  /**
-   * 「次へ」ボタンクリック時の処理
-   * TASK-0052: GameFlowManagerと連携してフェーズを進める
-   */
-  private onNextPhaseButtonClick(): void {
-    // GameFlowManagerでフェーズを終了
-    this.gameFlowManager.endPhase();
-  }
+  // TASK-0112: setupFooterNextButtonCallback()とonNextPhaseButtonClick()を削除
+  // PhaseTabUIがタブクリックで直接switchPhase()を呼び出すため不要
 
   /**
    * イベント購読を設定
@@ -485,19 +469,16 @@ export class MainScene extends Phaser.Scene {
    * @param event - フェーズ変更イベント
    */
   private handlePhaseChanged(event: IPhaseChangedEvent): void {
-    // 完了フェーズの追加
+    // TASK-0112: プログレスバー・「次へ」ボタン廃止のため、footerUI呼び出しを削除
+    // PhaseTabUIがPHASE_CHANGEDイベントを直接購読してタブ表示を更新する
+
+    // 完了フェーズの追加（TASK-0116で廃止予定）
     if (!this._completedPhases.includes(event.previousPhase)) {
       this._completedPhases.push(event.previousPhase);
     }
 
-    // フェーズインジケーターの更新
-    this.footerUI.updatePhaseIndicator(event.newPhase, this._completedPhases);
-
     // フェーズUIの表示切り替え
     this.showPhase(event.newPhase);
-
-    // 次へボタンの更新
-    this.updateFooterForPhase(event.newPhase);
   }
 
   /**
@@ -611,16 +592,8 @@ export class MainScene extends Phaser.Scene {
     });
   }
 
-  /**
-   * フッターをフェーズに応じて更新
-   *
-   * @param phase - 現在のフェーズ
-   */
-  private updateFooterForPhase(phase: GamePhase): void {
-    const label = PHASE_BUTTON_LABELS[phase];
-    this.footerUI.updateNextButton(label, true);
-    this.footerUI.updatePhaseIndicator(phase, this._completedPhases);
-  }
+  // TASK-0112: updateFooterForPhase()を削除
+  // プログレスバーと「次へ」ボタンの廃止により不要（PhaseTabUIに移行済み）
 
   // ===========================================================================
   // フェーズUI管理

@@ -693,9 +693,8 @@ describe('MainScene共通レイアウト', () => {
           timestamp: Date.now(),
         });
 
-        // Then: フェーズインジケーターとコンテンツエリアが更新される
-        // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        expect(mainScene.footerUI.getPhaseIndicatorState(GamePhase.GATHERING)).toBe('CURRENT');
+        // Then: コンテンツエリアが更新される
+        // TASK-0112: PhaseTabUIがEventBus経由で内部的にタブ表示を更新するため、footerUI直接テストは不要
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         expect(mainScene.isPhaseUIVisible(GamePhase.GATHERING)).toBe(true);
       });
@@ -1185,37 +1184,8 @@ describe('MainScene共通レイアウト', () => {
       });
 
       describe('フェーズ遷移', () => {
-        it('TC-0052-020: Footerの「次へ」ボタンクリックでフェーズが遷移すること', async () => {
-          // 【テスト目的】: Footerの次へボタンでフェーズ遷移が行われることを確認
-          // 【対応要件】: REQ-052-07
-          // 🔵 信頼性レベル
-
-          const { MainScene } = await import('@presentation/scenes/MainScene');
-          const { scene: mockScene } = createMockScene();
-
-          const mainScene = new MainScene();
-          // @ts-expect-error - テストのためにprivateプロパティにアクセス
-          mainScene.add = mockScene.add;
-          // @ts-expect-error - テストのためにprivateプロパティにアクセス
-          mainScene.make = mockScene.make;
-          // @ts-expect-error - テストのためにprivateプロパティにアクセス
-          mainScene.cameras = mockScene.cameras;
-          // @ts-expect-error - テストのためにprivateプロパティにアクセス
-          mainScene.rexUI = mockScene.rexUI;
-          // @ts-expect-error - テストのためにprivateプロパティにアクセス
-          mainScene.data = mockScene.data;
-          // @ts-expect-error - テストのためにprivateプロパティにアクセス
-          mainScene.input = mockScene.input;
-
-          mainScene.create();
-
-          // 次へボタンをシミュレート
-          // @ts-expect-error - テストのためにprivateプロパティにアクセス
-          mainScene.footerUI.simulateNextButtonClick();
-
-          // GameFlowManager.endPhase()が呼ばれることを確認（グローバルモックを使用）
-          expect(mockGameFlowManagerInstance.endPhase).toHaveBeenCalled();
-        });
+        // TC-0052-020: TASK-0112で「次へ」ボタンが廃止されたため削除
+        // PhaseTabUIによるフェーズ切り替えはPhaseTabUI単体テストでカバー
 
         it('TC-0052-021: PHASE_CHANGEDイベントで正しいUIに切り替わること', async () => {
           // 【テスト目的】: PHASE_CHANGEDイベントでUIが正しく切り替わることを確認
@@ -2052,7 +2022,8 @@ describe('MainScene共通レイアウト', () => {
   });
 
   // ===========================================================================
-  // FooterUI テスト
+  // FooterUI テスト（TASK-0112: PhaseTabUI統合後）
+  // 詳細テストは footer-ui-visual.test.ts でカバー
   // ===========================================================================
 
   describe('FooterUI', () => {
@@ -2065,26 +2036,24 @@ describe('MainScene共通レイアウト', () => {
         const { FooterUI } = await import('@presentation/ui/components/FooterUI');
         const { scene: mockScene } = createMockScene();
 
-        const footerUI = new FooterUI(mockScene, 0, 600);
+        const mockGameFlowManager = { switchPhase: vi.fn(), endDay: vi.fn() };
+        const mockEventBus = { on: vi.fn().mockReturnValue(vi.fn()), emit: vi.fn() };
+
+        const footerUI = new FooterUI(
+          mockScene,
+          0,
+          600,
+          mockGameFlowManager as unknown as import('@shared/services/game-flow/game-flow-manager.interface').IGameFlowManager,
+          mockEventBus as unknown as import('@shared/services/event-bus/types').IEventBus,
+          GamePhase.QUEST_ACCEPT,
+        );
         footerUI.create();
 
         expect(footerUI).toBeInstanceOf(BaseComponent);
         expect(footerUI.getContainer()).toBeDefined();
       });
 
-      it('TC-0046-041: 4フェーズのインジケーターが表示される', async () => {
-        // 【テスト目的】: 4フェーズインジケーターが正しく表示されることを確認
-        // 【対応要件】: REQ-0046-030
-        // 🔵 信頼性レベル: requirements.md セクション2.4に明記
-
-        const { FooterUI } = await import('@presentation/ui/components/FooterUI');
-        const { scene: mockScene } = createMockScene();
-
-        const footerUI = new FooterUI(mockScene, 0, 600);
-        footerUI.create();
-
-        expect(footerUI.getPhaseIndicators()).toHaveLength(4);
-      });
+      // TC-0046-041: TASK-0112でプログレスバー廃止のため削除（PhaseTabUIタブに置き換え）
 
       it('TC-0046-044: 手札表示エリアが配置される', async () => {
         // 【テスト目的】: 手札表示エリアが正しく配置されることを確認
@@ -2094,7 +2063,17 @@ describe('MainScene共通レイアウト', () => {
         const { FooterUI } = await import('@presentation/ui/components/FooterUI');
         const { scene: mockScene } = createMockScene();
 
-        const footerUI = new FooterUI(mockScene, 0, 600);
+        const mockGameFlowManager = { switchPhase: vi.fn(), endDay: vi.fn() };
+        const mockEventBus = { on: vi.fn().mockReturnValue(vi.fn()), emit: vi.fn() };
+
+        const footerUI = new FooterUI(
+          mockScene,
+          0,
+          600,
+          mockGameFlowManager as unknown as import('@shared/services/game-flow/game-flow-manager.interface').IGameFlowManager,
+          mockEventBus as unknown as import('@shared/services/event-bus/types').IEventBus,
+          GamePhase.QUEST_ACCEPT,
+        );
         footerUI.create();
 
         expect(footerUI.getHandDisplayArea()).toBeDefined();
@@ -2102,143 +2081,9 @@ describe('MainScene共通レイアウト', () => {
       });
     });
 
-    describe('updatePhaseIndicator()', () => {
-      it('TC-0046-042: QUEST_ACCEPTフェーズがハイライトされる', async () => {
-        // 【テスト目的】: QUEST_ACCEPTフェーズが現在フェーズとしてハイライトされることを確認
-        // 【対応要件】: REQ-0046-031
-        // 🔵 信頼性レベル: requirements.md セクション2.4に明記
-
-        const { FooterUI } = await import('@presentation/ui/components/FooterUI');
-        const { scene: mockScene } = createMockScene();
-
-        const footerUI = new FooterUI(mockScene, 0, 600);
-        footerUI.create();
-
-        footerUI.updatePhaseIndicator(GamePhase.QUEST_ACCEPT, []);
-
-        expect(footerUI.getCurrentPhaseIndicatorState()).toBe('CURRENT');
-        expect(footerUI.getPhaseIndicatorState(GamePhase.QUEST_ACCEPT)).toBe('CURRENT');
-      });
-
-      it('TC-0046-043: 完了したフェーズにチェックマークが表示される', async () => {
-        // 【テスト目的】: 完了フェーズがCOMPLETED状態になることを確認
-        // 【対応要件】: REQ-0046-030
-        // 🔵 信頼性レベル: requirements.md セクション2.4に明記
-
-        const { FooterUI } = await import('@presentation/ui/components/FooterUI');
-        const { scene: mockScene } = createMockScene();
-
-        const footerUI = new FooterUI(mockScene, 0, 600);
-        footerUI.create();
-
-        footerUI.updatePhaseIndicator(GamePhase.GATHERING, [GamePhase.QUEST_ACCEPT]);
-
-        expect(footerUI.getPhaseIndicatorState(GamePhase.QUEST_ACCEPT)).toBe('COMPLETED');
-        expect(footerUI.getPhaseIndicatorState(GamePhase.GATHERING)).toBe('CURRENT');
-      });
-
-      it('TC-0046-E02: 無効なフェーズでインジケーター更新時にエラー処理される', async () => {
-        // 【テスト目的】: 無効なフェーズでエラーがスローされることを確認
-        // 【対応要件】: REQ-0046-031（異常系）
-        // 🔵 信頼性レベル: testcases.md セクション3.1に明記
-
-        const { FooterUI } = await import('@presentation/ui/components/FooterUI');
-        const { scene: mockScene } = createMockScene();
-
-        const footerUI = new FooterUI(mockScene, 0, 600);
-        footerUI.create();
-
-        expect(() => {
-          footerUI.updatePhaseIndicator('INVALID' as GamePhase, []);
-        }).toThrow();
-      });
-    });
-
-    describe('updateNextButton()', () => {
-      it('TC-0046-045: QUEST_ACCEPTフェーズで「採取へ」ボタンが表示される', async () => {
-        // 【テスト目的】: QUEST_ACCEPTフェーズで正しいボタンラベルが表示されることを確認
-        // 【対応要件】: REQ-0046-033
-        // 🔵 信頼性レベル: requirements.md セクション2.4に明記
-
-        const { FooterUI } = await import('@presentation/ui/components/FooterUI');
-        const { scene: mockScene } = createMockScene();
-
-        const footerUI = new FooterUI(mockScene, 0, 600);
-        footerUI.create();
-
-        footerUI.updateNextButton('採取へ', true);
-
-        expect(footerUI.getNextButtonLabel()).toBe('採取へ');
-      });
-
-      it('TC-0046-046: GATHERINGフェーズで「調合へ」ボタンが表示される', async () => {
-        // 【テスト目的】: GATHERINGフェーズで正しいボタンラベルが表示されることを確認
-        // 【対応要件】: REQ-0046-033
-        // 🔵 信頼性レベル: requirements.md セクション2.4に明記
-
-        const { FooterUI } = await import('@presentation/ui/components/FooterUI');
-        const { scene: mockScene } = createMockScene();
-
-        const footerUI = new FooterUI(mockScene, 0, 600);
-        footerUI.create();
-
-        footerUI.updateNextButton('調合へ', true);
-
-        expect(footerUI.getNextButtonLabel()).toBe('調合へ');
-      });
-
-      it('TC-0046-047: ALCHEMYフェーズで「納品へ」ボタンが表示される', async () => {
-        // 【テスト目的】: ALCHEMYフェーズで正しいボタンラベルが表示されることを確認
-        // 【対応要件】: REQ-0046-033
-        // 🔵 信頼性レベル: requirements.md セクション2.4に明記
-
-        const { FooterUI } = await import('@presentation/ui/components/FooterUI');
-        const { scene: mockScene } = createMockScene();
-
-        const footerUI = new FooterUI(mockScene, 0, 600);
-        footerUI.create();
-
-        footerUI.updateNextButton('納品へ', true);
-
-        expect(footerUI.getNextButtonLabel()).toBe('納品へ');
-      });
-
-      it('TC-0046-048: DELIVERYフェーズで「日終了」ボタンが表示される', async () => {
-        // 【テスト目的】: DELIVERYフェーズで正しいボタンラベルが表示されることを確認
-        // 【対応要件】: REQ-0046-033
-        // 🔵 信頼性レベル: requirements.md セクション2.4に明記
-
-        const { FooterUI } = await import('@presentation/ui/components/FooterUI');
-        const { scene: mockScene } = createMockScene();
-
-        const footerUI = new FooterUI(mockScene, 0, 600);
-        footerUI.create();
-
-        footerUI.updateNextButton('日終了', true);
-
-        expect(footerUI.getNextButtonLabel()).toBe('日終了');
-      });
-    });
-
-    describe('onNextClick()', () => {
-      it('TC-0046-049: 次へボタンのクリックハンドラが呼び出される', async () => {
-        // 【テスト目的】: 次へボタンクリック時にコールバックが呼ばれることを確認
-        // 【対応要件】: REQ-0046-033
-        // 🔵 信頼性レベル: requirements.md セクション2.4に明記
-
-        const { FooterUI } = await import('@presentation/ui/components/FooterUI');
-        const { scene: mockScene } = createMockScene();
-
-        const footerUI = new FooterUI(mockScene, 0, 600);
-        footerUI.create();
-        const mockCallback = vi.fn();
-
-        footerUI.onNextClick(mockCallback);
-        footerUI.simulateNextButtonClick();
-
-        expect(mockCallback).toHaveBeenCalled();
-      });
-    });
+    // TASK-0112: updatePhaseIndicator()テスト削除（PhaseTabUIに移行）
+    // TASK-0112: updateNextButton()テスト削除（「次へ」ボタン廃止）
+    // TASK-0112: onNextClick()テスト削除（「次へ」ボタン廃止）
 
     describe('Error Handling', () => {
       it('TC-0046-E08: 無効な座標でFooterUI生成時にエラーが発生する', async () => {
@@ -2249,7 +2094,20 @@ describe('MainScene共通レイアウト', () => {
         const { FooterUI } = await import('@presentation/ui/components/FooterUI');
         const { scene: mockScene } = createMockScene();
 
-        expect(() => new FooterUI(mockScene, NaN, 600)).toThrow('Invalid position');
+        const mockGameFlowManager = { switchPhase: vi.fn(), endDay: vi.fn() };
+        const mockEventBus = { on: vi.fn().mockReturnValue(vi.fn()), emit: vi.fn() };
+
+        expect(
+          () =>
+            new FooterUI(
+              mockScene,
+              NaN,
+              600,
+              mockGameFlowManager as unknown as import('@shared/services/game-flow/game-flow-manager.interface').IGameFlowManager,
+              mockEventBus as unknown as import('@shared/services/event-bus/types').IEventBus,
+              GamePhase.QUEST_ACCEPT,
+            ),
+        ).toThrow('Invalid position');
       });
     });
   });
