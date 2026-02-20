@@ -68,6 +68,22 @@ const DAILY_QUEST_COUNT_BY_RANK: Record<GuildRank, number> = {
 };
 
 /**
+ * 【機能概要】: ランク別訪問依頼生成数（TASK-0109）
+ * 【実装方針】: ランクに応じて訪問依頼の生成数を設定
+ * 🔵 信頼性レベル: REQ-005より
+ */
+const VISITOR_QUEST_COUNT_BY_RANK: Record<GuildRank, number> = {
+  G: 1,
+  F: 1,
+  E: 1,
+  D: 2,
+  C: 2,
+  B: 2,
+  A: 3,
+  S: 3,
+};
+
+/**
  * 【機能概要】: ランク別依頼者出現数
  * 【実装方針】: ランクに応じて出現する依頼者数を設定
  * 🔵 信頼性レベル: 設計文書に明記
@@ -196,6 +212,47 @@ export class QuestService implements IQuestService {
       clients: clients.map((c) => c),
       quests: quests.map((q) => q.data),
     };
+  }
+
+  // =============================================================================
+  // 掲示板・訪問依頼生成（TASK-0109）
+  // =============================================================================
+
+  /**
+   * 【機能概要】: 掲示板用依頼を生成（TASK-0109）
+   * 【実装方針】: 空き枠数に応じた依頼を生成しavailableQuestsに追加
+   * 🔵 信頼性レベル: REQ-005・architecture.mdより
+   */
+  generateBoardQuests(rank: GuildRank, vacancies: number): IQuest[] {
+    if (!this.masterDataRepo.isLoaded()) {
+      throw new ApplicationError(ErrorCodes.DATA_NOT_LOADED, 'Master data not loaded');
+    }
+
+    if (vacancies <= 0) {
+      return [];
+    }
+
+    this.currentRank = rank;
+    const clients = this.ensureClients(rank);
+    const quests = this.generateQuests(clients, vacancies);
+    return quests.map((q) => q.data);
+  }
+
+  /**
+   * 【機能概要】: 訪問依頼を生成（TASK-0109）
+   * 【実装方針】: ランクに応じた訪問依頼を生成しavailableQuestsに追加
+   * 🔵 信頼性レベル: REQ-005・architecture.mdより
+   */
+  generateVisitorQuests(rank: GuildRank): IQuest[] {
+    if (!this.masterDataRepo.isLoaded()) {
+      throw new ApplicationError(ErrorCodes.DATA_NOT_LOADED, 'Master data not loaded');
+    }
+
+    this.currentRank = rank;
+    const clients = this.ensureClients(rank);
+    const visitorCount = VISITOR_QUEST_COUNT_BY_RANK[rank];
+    const quests = this.generateQuests(clients, visitorCount);
+    return quests.map((q) => q.data);
   }
 
   // =============================================================================
@@ -490,6 +547,19 @@ export class QuestService implements IQuestService {
   // =============================================================================
   // プライベートメソッド
   // =============================================================================
+
+  /**
+   * 【機能概要】: 依頼者を確保（TASK-0109）
+   * 【実装方針】: todayClientsが空の場合は新規生成、既に存在する場合は再利用
+   * 🔵 信頼性レベル: REQ-005より
+   */
+  private ensureClients(rank: GuildRank): IClient[] {
+    if (this.todayClients.size === 0) {
+      const clientCount = CLIENT_COUNT_BY_RANK[rank];
+      this.generateClients(clientCount);
+    }
+    return Array.from(this.todayClients.values());
+  }
 
   /**
    * 【機能概要】: 依頼者を生成
