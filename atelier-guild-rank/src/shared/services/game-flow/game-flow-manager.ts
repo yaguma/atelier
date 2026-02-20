@@ -307,6 +307,8 @@ export class GameFlowManager implements IGameFlowManager {
     }
 
     // フェーズ遷移（StateManagerがバリデーションとPHASE_CHANGEDイベント発行を行う）
+    // 注意: 現在のVALID_PHASE_TRANSITIONSは全フェーズ間自由遷移のため例外は発生しない。
+    // 将来的に遷移制限が追加された場合はtry-catchでのエラーハンドリングが必要。
     this.stateManager.setPhase(targetPhase);
 
     return {
