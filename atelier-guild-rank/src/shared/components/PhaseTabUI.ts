@@ -1,0 +1,359 @@
+/**
+ * フェーズタブUIコンポーネント
+ * TASK-0111: PhaseTabUI実装
+ *
+ * @description
+ * フェーズ切り替え用のタブUIコンポーネント。
+ * 依頼・採取・調合・納品の4タブ、アクティブタブ強調、クリックによるフェーズ切り替え、
+ * 日終了ボタンを含む。
+ *
+ * @信頼性レベル 🔵 REQ-006・architecture.mdより
+ */
+
+import type { IEventBus } from '@shared/services/event-bus/types';
+import type { IGameFlowManager } from '@shared/services/game-flow/game-flow-manager.interface';
+import type { GamePhase, IPhaseSwitchRequest } from '@shared/types';
+import { VALID_GAME_PHASES } from '@shared/types/common';
+import { GameEventType } from '@shared/types/events';
+import Phaser from 'phaser';
+import { BaseComponent } from './BaseComponent';
+
+// =============================================================================
+// 定数
+// =============================================================================
+
+/**
+ * タブ用フェーズカラー定数
+ * 🔵 信頼性レベル: REQ-006-02・既存PHASE_COLORSより
+ */
+const TAB_COLORS = {
+  /** アクティブタブ背景 */
+  ACTIVE: 0x6366f1,
+  /** 非アクティブタブ背景 */
+  INACTIVE: 0x374151,
+  /** アクティブタブテキスト */
+  ACTIVE_TEXT: '#FFFFFF',
+  /** 非アクティブタブテキスト */
+  INACTIVE_TEXT: '#9CA3AF',
+  /** 日終了ボタン背景 */
+  END_DAY_BUTTON: 0xef4444,
+  /** 日終了ボタンホバー */
+  END_DAY_BUTTON_HOVER: 0xf87171,
+} as const;
+
+/**
+ * タブレイアウト定数
+ */
+const TAB_LAYOUT = {
+  /** タブ幅 */
+  TAB_WIDTH: 100,
+  /** タブ高さ */
+  TAB_HEIGHT: 40,
+  /** タブ間のスペース */
+  TAB_SPACING: 8,
+  /** タブ開始X座標 */
+  TAB_START_X: 16,
+  /** タブY座標 */
+  TAB_Y: 20,
+  /** 日終了ボタン幅 */
+  END_DAY_WIDTH: 80,
+  /** 日終了ボタン高さ */
+  END_DAY_HEIGHT: 36,
+} as const;
+
+/**
+ * フェーズ名ラベル
+ * 🔵 信頼性レベル: 既存FooterUIから流用
+ */
+const PHASE_LABELS: Record<string, string> = {
+  QUEST_ACCEPT: '依頼',
+  GATHERING: '採取',
+  ALCHEMY: '調合',
+  DELIVERY: '納品',
+};
+
+// =============================================================================
+// PhaseTabUIクラス
+// =============================================================================
+
+/**
+ * フェーズタブUIコンポーネント
+ *
+ * 画面上部に配置され、以下の機能を提供する:
+ * - 4つのフェーズタブ（依頼・採取・調合・納品）
+ * - アクティブタブの視覚的強調
+ * - タブクリックによるフェーズ切り替え
+ * - 日終了ボタン
+ *
+ * @信頼性レベル 🔵 REQ-006-01〜REQ-006-03・architecture.md「PhaseTabUI」より
+ */
+export class PhaseTabUI extends BaseComponent {
+  // ===========================================================================
+  // 依存サービス
+  // ===========================================================================
+
+  /** GameFlowManagerへの参照 */
+  private readonly gameFlowManager: IGameFlowManager;
+
+  /** EventBusへの参照 */
+  private readonly eventBus: IEventBus;
+
+  // ===========================================================================
+  // 内部状態
+  // ===========================================================================
+
+  /** 現在のアクティブフェーズ */
+  private _activePhase: GamePhase;
+
+  /** EventBus購読解除関数 */
+  private _unsubscribePhaseChanged: (() => void) | null = null;
+
+  // ===========================================================================
+  // 視覚要素
+  // ===========================================================================
+
+  /** タブ背景の配列 */
+  private _tabBackgrounds: Phaser.GameObjects.Rectangle[] = [];
+
+  /** タブテキストの配列 */
+  private _tabTexts: Phaser.GameObjects.Text[] = [];
+
+  /** 日終了ボタン背景 */
+  private _endDayBackground: Phaser.GameObjects.Rectangle | null = null;
+
+  /** 日終了ボタンテキスト */
+  private _endDayText: Phaser.GameObjects.Text | null = null;
+
+  // ===========================================================================
+  // コンストラクタ
+  // ===========================================================================
+
+  /**
+   * コンストラクタ
+   *
+   * @param scene - Phaserシーンインスタンス
+   * @param x - X座標
+   * @param y - Y座標
+   * @param gameFlowManager - GameFlowManagerインスタンス
+   * @param eventBus - EventBusインスタンス
+   * @param initialPhase - 初期フェーズ
+   */
+  constructor(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    gameFlowManager: IGameFlowManager,
+    eventBus: IEventBus,
+    initialPhase: GamePhase,
+  ) {
+    super(scene, x, y);
+    this.gameFlowManager = gameFlowManager;
+    this.eventBus = eventBus;
+    this._activePhase = initialPhase;
+  }
+
+  // ===========================================================================
+  // ライフサイクルメソッド
+  // ===========================================================================
+
+  /**
+   * コンポーネントの初期化処理
+   * 🔵 信頼性レベル: REQ-006-01より
+   */
+  create(): void {
+    // 4つのフェーズタブを生成
+    this._tabBackgrounds = [];
+    this._tabTexts = [];
+
+    for (let i = 0; i < VALID_GAME_PHASES.length; i++) {
+      const phase = VALID_GAME_PHASES[i];
+      const tabX =
+        TAB_LAYOUT.TAB_START_X +
+        i * (TAB_LAYOUT.TAB_WIDTH + TAB_LAYOUT.TAB_SPACING) +
+        TAB_LAYOUT.TAB_WIDTH / 2;
+      const isActive = phase === this._activePhase;
+
+      // タブ背景
+      const bg = new Phaser.GameObjects.Rectangle(
+        this.scene,
+        tabX,
+        TAB_LAYOUT.TAB_Y,
+        TAB_LAYOUT.TAB_WIDTH,
+        TAB_LAYOUT.TAB_HEIGHT,
+        isActive ? TAB_COLORS.ACTIVE : TAB_COLORS.INACTIVE,
+      );
+      bg.setInteractive({ useHandCursor: true });
+      bg.on('pointerdown', () => this.handleTabClick(phase));
+      this.container.add(bg);
+      this._tabBackgrounds.push(bg);
+
+      // タブテキスト
+      const label = PHASE_LABELS[phase] ?? phase;
+      const text = this.scene.make.text({
+        x: tabX - 12,
+        y: TAB_LAYOUT.TAB_Y - 8,
+        text: label,
+        style: {
+          fontSize: '14px',
+          color: isActive ? TAB_COLORS.ACTIVE_TEXT : TAB_COLORS.INACTIVE_TEXT,
+          fontStyle: isActive ? 'bold' : 'normal',
+        },
+        add: false,
+      });
+      this.container.add(text);
+      this._tabTexts.push(text);
+    }
+
+    // 日終了ボタン
+    const endDayX =
+      TAB_LAYOUT.TAB_START_X +
+      VALID_GAME_PHASES.length * (TAB_LAYOUT.TAB_WIDTH + TAB_LAYOUT.TAB_SPACING) +
+      TAB_LAYOUT.END_DAY_WIDTH / 2 +
+      16;
+
+    this._endDayBackground = new Phaser.GameObjects.Rectangle(
+      this.scene,
+      endDayX,
+      TAB_LAYOUT.TAB_Y,
+      TAB_LAYOUT.END_DAY_WIDTH,
+      TAB_LAYOUT.END_DAY_HEIGHT,
+      TAB_COLORS.END_DAY_BUTTON,
+    );
+    this._endDayBackground.setInteractive({ useHandCursor: true });
+    this._endDayBackground.on('pointerover', () => {
+      this._endDayBackground?.setFillStyle(TAB_COLORS.END_DAY_BUTTON_HOVER);
+    });
+    this._endDayBackground.on('pointerout', () => {
+      this._endDayBackground?.setFillStyle(TAB_COLORS.END_DAY_BUTTON);
+    });
+    this._endDayBackground.on('pointerdown', () => this.handleEndDayClick());
+    this.container.add(this._endDayBackground);
+
+    this._endDayText = this.scene.make.text({
+      x: endDayX - 24,
+      y: TAB_LAYOUT.TAB_Y - 8,
+      text: '日終了',
+      style: { fontSize: '14px', color: '#FFFFFF', fontStyle: 'bold' },
+      add: false,
+    });
+    this.container.add(this._endDayText);
+
+    // PHASE_CHANGEDイベントの購読
+    this._unsubscribePhaseChanged = this.eventBus.on<{ newPhase: GamePhase }>(
+      GameEventType.PHASE_CHANGED,
+      (event) => {
+        this.updateActiveTab(event.payload.newPhase);
+      },
+    );
+  }
+
+  /**
+   * コンポーネントの破棄処理
+   * EventBus購読を確実に解除する
+   */
+  destroy(): void {
+    // EventBus購読解除
+    this._unsubscribePhaseChanged?.();
+    this._unsubscribePhaseChanged = null;
+
+    // コンテナ破棄
+    this.container.destroy(true);
+  }
+
+  // ===========================================================================
+  // 公開メソッド
+  // ===========================================================================
+
+  /**
+   * 現在のアクティブフェーズを取得
+   *
+   * @returns 現在のアクティブフェーズ
+   */
+  getActivePhase(): GamePhase {
+    return this._activePhase;
+  }
+
+  /**
+   * タブ数を取得
+   *
+   * @returns タブ数
+   */
+  getTabCount(): number {
+    return this._tabBackgrounds.length;
+  }
+
+  /**
+   * タブクリックをシミュレート（テスト用）
+   *
+   * @param phase - クリックするフェーズ
+   */
+  simulateTabClick(phase: GamePhase): void {
+    this.handleTabClick(phase);
+  }
+
+  /**
+   * 日終了ボタンクリックをシミュレート（テスト用）
+   */
+  simulateEndDayClick(): void {
+    this.handleEndDayClick();
+  }
+
+  // ===========================================================================
+  // プライベートメソッド
+  // ===========================================================================
+
+  /**
+   * タブクリック時の処理
+   * 🔵 信頼性レベル: REQ-006-03「タブクリックで即座にフェーズ切り替え」より
+   *
+   * @param targetPhase - 遷移先フェーズ
+   */
+  private handleTabClick(targetPhase: GamePhase): void {
+    // 同じフェーズへの遷移はスキップ
+    if (targetPhase === this._activePhase) {
+      return;
+    }
+
+    const request: IPhaseSwitchRequest = { targetPhase };
+    this.gameFlowManager.switchPhase(request);
+  }
+
+  /**
+   * 日終了ボタンクリック時の処理
+   * 🔵 信頼性レベル: REQ-004・architecture.md「日終了ボタン」より
+   */
+  private handleEndDayClick(): void {
+    this.gameFlowManager.endDay();
+  }
+
+  /**
+   * アクティブタブを更新
+   * 🔵 信頼性レベル: 既存EventBusパターンより
+   *
+   * @param newPhase - 新しいアクティブフェーズ
+   */
+  private updateActiveTab(newPhase: GamePhase): void {
+    this._activePhase = newPhase;
+
+    for (let i = 0; i < VALID_GAME_PHASES.length; i++) {
+      const phase = VALID_GAME_PHASES[i];
+      const isActive = phase === newPhase;
+      const bg = this._tabBackgrounds[i];
+      const text = this._tabTexts[i];
+
+      // 背景色の更新
+      if (bg?.setFillStyle) {
+        bg.setFillStyle(isActive ? TAB_COLORS.ACTIVE : TAB_COLORS.INACTIVE);
+      }
+
+      // テキストスタイルの更新
+      if (text?.setStyle) {
+        text.setStyle({
+          fontSize: '14px',
+          color: isActive ? TAB_COLORS.ACTIVE_TEXT : TAB_COLORS.INACTIVE_TEXT,
+          fontStyle: isActive ? 'bold' : 'normal',
+        });
+      }
+    }
+  }
+}
