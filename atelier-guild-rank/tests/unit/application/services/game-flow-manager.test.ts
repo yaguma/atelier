@@ -86,6 +86,7 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.QUEST_ACCEPT,
         contribution: 0,
+        apOverflow: 0,
       })),
       setPhase: vi.fn(),
       advanceDay: vi.fn(),
@@ -171,6 +172,7 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.DELIVERY, // 日終了後の状態
         contribution: 0,
+        apOverflow: 0,
       }));
 
       // 【実際の処理実行】: gameFlowManager.startDay()を呼び出す
@@ -264,6 +266,7 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.QUEST_ACCEPT,
         contribution: 0,
+        apOverflow: 0,
       }));
 
       // 【実際の処理実行】: endPhase()を呼び出す
@@ -293,6 +296,7 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.DELIVERY,
         contribution: 0,
+        apOverflow: 0,
       }));
 
       // 【実際の処理実行】: gameFlowManager.endDay()を呼び出す
@@ -341,6 +345,7 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.QUEST_ACCEPT,
         contribution: 0,
+        apOverflow: 0,
       }));
 
       // 【実際の処理実行】: checkGameClear()を呼び出す
@@ -374,6 +379,7 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.DELIVERY,
         contribution: 0,
+        apOverflow: 0,
       }));
 
       // モックのリセット（初期化呼び出しをカウントしないように）
@@ -421,6 +427,7 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.GATHERING,
         contribution: 0,
+        apOverflow: 0,
       }));
 
       // 【実際の処理実行】: getCurrentPhase()を呼び出す
@@ -450,6 +457,7 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.GATHERING,
         contribution: 0,
+        apOverflow: 0,
       }));
 
       // 【実際の処理実行】: skipPhase()を呼び出す
@@ -479,6 +487,7 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.QUEST_ACCEPT,
         contribution: 0,
+        apOverflow: 0,
       }));
 
       // 【実際の処理実行】: rest()を呼び出す
@@ -519,6 +528,7 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.QUEST_ACCEPT,
         contribution: 0,
+        apOverflow: 0,
       }));
 
       // 【実際の処理実行】: 無効なフェーズ遷移を試みる（依頼受注→納品）
@@ -587,6 +597,7 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.QUEST_ACCEPT,
         contribution: 0,
+        apOverflow: 0,
       }));
 
       // 【実際の処理実行】: checkGameOver()を呼び出す
@@ -620,6 +631,7 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.QUEST_ACCEPT,
         contribution: 0,
+        apOverflow: 0,
       }));
 
       // 【実際の処理実行】: checkGameOver()を呼び出す
@@ -668,6 +680,7 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.GATHERING,
         contribution: 0,
+        apOverflow: 0,
       }));
 
       // activeOperationChecker付きでGameFlowManagerを再作成
@@ -707,6 +720,7 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.GATHERING,
         contribution: 0,
+        apOverflow: 0,
       }));
 
       const { GameFlowManager } = await import('@shared/services/game-flow');
@@ -832,6 +846,7 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.QUEST_ACCEPT,
         contribution: 0,
+        apOverflow: 0,
       }));
       mockStateManager.updateState = vi.fn((update) => {
         if (update.currentDay !== undefined) {
@@ -872,6 +887,7 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.QUEST_ACCEPT,
         contribution: 0,
+        apOverflow: 0,
       }));
       mockStateManager.updateState = vi.fn((update) => {
         if (update.currentDay !== undefined) {
@@ -920,6 +936,7 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.QUEST_ACCEPT,
         contribution: 0,
+        apOverflow: 0,
       }));
       mockStateManager.updateState = vi.fn((update) => {
         if (update.currentDay !== undefined) {
@@ -941,6 +958,144 @@ describe('GameFlowManager', () => {
       expect(mockDeckService.refillHand).toHaveBeenCalledTimes(3);
       expect(result.daysAdvanced).toBe(3);
       expect(result.newActionPoints).toBe(1);
+    });
+  });
+
+  // =============================================================================
+  // startDay() AP超過対応 / requestEndDay() テストケース（TASK-0108）
+  // =============================================================================
+
+  describe('startDay() AP超過対応とrequestEndDay()（TASK-0108）', () => {
+    it('T-0108-01: AP超過なしの場合はMAX_APで回復する', () => {
+      // 🔵 信頼性レベル: REQ-003-01に明記
+      mockStateManager.getState = vi.fn(() => ({
+        currentRank: GuildRank.G,
+        rankHp: 100,
+        remainingDays: 150,
+        currentDay: 1,
+        gold: 100,
+        actionPoints: 0,
+        maxActionPoints: 3,
+        comboCount: 0,
+        currentPhase: GamePhase.DELIVERY,
+        contribution: 0,
+        apOverflow: 0,
+      }));
+
+      gameFlowManager.startDay();
+
+      expect(mockStateManager.updateState).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actionPoints: 3,
+          apOverflow: 0,
+        }),
+      );
+    });
+
+    it('T-0108-02: AP超過ありの場合はMAX_AP - apOverflowで回復する', () => {
+      // 🔵 信頼性レベル: REQ-003-01「AP超過分は翌日のAPから差し引かれる」
+      mockStateManager.getState = vi.fn(() => ({
+        currentRank: GuildRank.G,
+        rankHp: 100,
+        remainingDays: 150,
+        currentDay: 2,
+        gold: 100,
+        actionPoints: 0,
+        maxActionPoints: 3,
+        comboCount: 0,
+        currentPhase: GamePhase.DELIVERY,
+        contribution: 0,
+        apOverflow: 1,
+      }));
+
+      gameFlowManager.startDay();
+
+      expect(mockStateManager.updateState).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actionPoints: 2,
+          apOverflow: 0,
+        }),
+      );
+    });
+
+    it('T-0108-03: requestEndDay()で残AP破棄してendDay()が実行される', () => {
+      // 🔵 信頼性レベル: REQ-004・REQ-004-01
+      mockStateManager.getState = vi.fn(() => ({
+        currentRank: GuildRank.G,
+        rankHp: 100,
+        remainingDays: 150,
+        currentDay: 1,
+        gold: 100,
+        actionPoints: 2,
+        maxActionPoints: 3,
+        comboCount: 0,
+        currentPhase: GamePhase.DELIVERY,
+        contribution: 0,
+        apOverflow: 0,
+      }));
+
+      gameFlowManager.requestEndDay();
+
+      // APが0にリセットされる
+      expect(mockStateManager.updateState).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actionPoints: 0,
+          apOverflow: 0,
+        }),
+      );
+      // endDay()が実行される（updateDeadlines呼び出しで確認）
+      expect(mockQuestService.updateDeadlines).toHaveBeenCalledTimes(1);
+      // DAY_ENDEDイベントが発行される
+      expect(mockEventBus.emit).toHaveBeenCalledWith(GameEventType.DAY_ENDED, expect.anything());
+    });
+
+    it('T-0108-04: requestEndDay()でapOverflowがリセットされ次日はMAX_APで開始', () => {
+      // 🔵 信頼性レベル: REQ-004・REQ-003-01
+      let currentApOverflow = 1;
+      let currentDay = 1;
+      let remainingDays = 150;
+      const currentPhase: GamePhase = GamePhase.DELIVERY;
+
+      mockStateManager.getState = vi.fn(() => ({
+        currentRank: GuildRank.G,
+        rankHp: 100,
+        remainingDays,
+        currentDay,
+        gold: 100,
+        actionPoints: 2,
+        maxActionPoints: 3,
+        comboCount: 0,
+        currentPhase,
+        contribution: 0,
+        apOverflow: currentApOverflow,
+      }));
+      mockStateManager.updateState = vi.fn((update) => {
+        if (update.apOverflow !== undefined) {
+          currentApOverflow = update.apOverflow;
+        }
+        if (update.currentDay !== undefined) {
+          currentDay = update.currentDay;
+        }
+        if (update.remainingDays !== undefined) {
+          remainingDays = update.remainingDays;
+        }
+      });
+
+      gameFlowManager.requestEndDay();
+
+      // requestEndDay内でapOverflowが0にリセットされる
+      // その後endDay()→startDay()が呼ばれる
+      // startDay()でapOverflow=0なのでMAX_AP(3)で回復する
+      const updateCalls = mockStateManager.updateState.mock.calls;
+
+      // 最初のupdateState: requestEndDay()でAP=0, apOverflow=0
+      expect(updateCalls[0][0]).toEqual(
+        expect.objectContaining({ actionPoints: 0, apOverflow: 0 }),
+      );
+
+      // startDay()のupdateState: actionPoints=3（apOverflow=0のため）
+      const startDayCall = updateCalls.find((call) => call[0].actionPoints === 3);
+      expect(startDayCall).toBeDefined();
     });
   });
 });
