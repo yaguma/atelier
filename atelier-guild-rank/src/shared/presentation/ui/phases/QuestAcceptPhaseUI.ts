@@ -88,6 +88,25 @@ export class QuestAcceptPhaseUI extends BaseComponent {
   private focusedCardIndex = -1;
 
   // =============================================================================
+  // 掲示板・訪問依頼管理（TASK-0117）
+  // =============================================================================
+
+  /** アクティブなタブ（'board': 掲示板 / 'visitor': 訪問） */
+  private _activeTab: 'board' | 'visitor' = 'board';
+
+  /** 掲示板依頼リスト */
+  private _boardQuests: Quest[] = [];
+
+  /** 訪問依頼リスト */
+  private _visitorQuests: Quest[] = [];
+
+  /** 受注済み依頼数 */
+  private _acceptedCount = 0;
+
+  /** 受注上限 */
+  private static readonly QUEST_ACCEPT_LIMIT = 3;
+
+  // =============================================================================
   // レイアウト定数
   // =============================================================================
 
@@ -523,6 +542,86 @@ export class QuestAcceptPhaseUI extends BaseComponent {
     }
     super.setVisible(visible);
     return this;
+  }
+
+  // =============================================================================
+  // 掲示板・訪問依頼管理メソッド（TASK-0117）
+  // =============================================================================
+
+  /**
+   * 【機能概要】: 掲示板依頼リストを更新
+   * 【実装方針】: 掲示板依頼を保持し、掲示板タブがアクティブなら表示更新
+   * 🟡 信頼性レベル: REQ-005・dataflow.md セクション6から妥当な推測
+   *
+   * @param quests - 掲示板依頼リスト
+   */
+  public updateBoardQuests(quests: Quest[]): void {
+    this._boardQuests = quests || [];
+    if (this._activeTab === 'board') {
+      this.updateQuests(this._boardQuests);
+    }
+  }
+
+  /**
+   * 【機能概要】: 訪問依頼リストを更新
+   * 【実装方針】: 訪問依頼を保持し、訪問タブがアクティブなら表示更新
+   * 🟡 信頼性レベル: REQ-005・dataflow.md セクション6から妥当な推測
+   *
+   * @param quests - 訪問依頼リスト
+   */
+  public updateVisitorQuests(quests: Quest[]): void {
+    this._visitorQuests = quests || [];
+    if (this._activeTab === 'visitor') {
+      this.updateQuests(this._visitorQuests);
+    }
+  }
+
+  /**
+   * 【機能概要】: タブ切り替え
+   * 【実装方針】: アクティブタブを変更し、対応する依頼リストを表示
+   * 🟡 信頼性レベル: REQ-005から妥当な推測
+   *
+   * @param tab - 切り替え先のタブ
+   */
+  public switchTab(tab: 'board' | 'visitor'): void {
+    this._activeTab = tab;
+    const quests = tab === 'board' ? this._boardQuests : this._visitorQuests;
+    this.updateQuests(quests);
+  }
+
+  /**
+   * 【機能概要】: アクティブタブを取得
+   * @returns アクティブなタブ名
+   */
+  public getActiveTab(): 'board' | 'visitor' {
+    return this._activeTab;
+  }
+
+  /**
+   * 【機能概要】: 表示中の依頼件数を取得
+   * @returns 表示中の依頼カード数
+   */
+  public getDisplayedQuestCount(): number {
+    return this.questCards.length;
+  }
+
+  /**
+   * 【機能概要】: 受注済み数を設定
+   * 【実装方針】: 外部から受注済み数を受け取り、上限チェックに使用
+   * 🟡 信頼性レベル: REQ-005から妥当な推測
+   *
+   * @param count - 受注済み依頼数
+   */
+  public setAcceptedCount(count: number): void {
+    this._acceptedCount = count;
+  }
+
+  /**
+   * 【機能概要】: 追加受注が可能かどうかを判定
+   * @returns 受注可能ならtrue
+   */
+  public canAcceptMore(): boolean {
+    return this._acceptedCount < QuestAcceptPhaseUI.QUEST_ACCEPT_LIMIT;
   }
 
   // =============================================================================
