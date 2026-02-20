@@ -50,9 +50,9 @@ export const INITIAL_GAME_STATE: IGameState = {
 export const MAX_ACTION_POINTS = InitialParameters.ACTION_POINTS_PER_DAY;
 
 /**
- * フェーズ遷移ルール
+ * フェーズ遷移ルール（TASK-0102: 自由遷移対応）
  *
- * 各フェーズから遷移可能なフェーズのリスト
+ * 各フェーズから他の全フェーズへ遷移可能（自フェーズ除く）
  */
 export const VALID_PHASE_TRANSITIONS: Record<GamePhase, GamePhase[]> = {
   [GamePhase.QUEST_ACCEPT]: [GamePhase.GATHERING, GamePhase.ALCHEMY, GamePhase.DELIVERY],
