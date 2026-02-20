@@ -14,9 +14,10 @@
 
 import type { IDeckService } from '@domain/interfaces/deck-service.interface';
 import type { IQuestService } from '@domain/interfaces/quest-service.interface';
+import type { IAPOverflowResult } from '@features/gathering';
 import type { IEventBus } from '@shared/services/event-bus';
 import type { IStateManager } from '@shared/services/state-manager';
-import type { ISaveData } from '@shared/types';
+import type { IAutoAdvanceDayResult, ISaveData } from '@shared/types';
 import { ApplicationError, ErrorCodes, GameEventType, GamePhase, GuildRank } from '@shared/types';
 import type { CardId } from '@shared/types/ids';
 import type { GameEndCondition, IGameFlowManager } from './game-flow-manager.interface';
@@ -255,6 +256,82 @@ export class GameFlowManager implements IGameFlowManager {
       // 🔵 信頼性レベル: 設計文書に明記
       this.startDay();
     }
+  }
+
+  // =============================================================================
+  // AP超過処理
+  // =============================================================================
+
+  /**
+   * 【機能概要】: AP超過による自動日進行処理（TASK-0107）
+   * 【実装方針】:
+   *   1. overflowResult.daysConsumed分のendDay()相当処理を順次実行
+   *   2. 各日の終了後にゲームオーバー判定
+   *   3. 途中でゲームオーバーなら停止
+   *   4. 最終的にnextDayAPを設定
+   *   5. IAutoAdvanceDayResultを返却
+   *
+   * 設計文書: architecture.md, dataflow.md セクション3
+   * 要件: REQ-003, REQ-003-01〜REQ-003-06, EDGE-002
+   * 🔵 信頼性レベル: 設計文書に明記
+   */
+  async processAPOverflow(overflowResult: IAPOverflowResult): Promise<IAutoAdvanceDayResult> {
+    let daysAdvanced = 0;
+
+    for (let i = 0; i < overflowResult.daysConsumed; i++) {
+      // 期限切れ依頼を処理
+      this.questService.updateDeadlines();
+
+      // 日数を更新
+      const state = this.stateManager.getState();
+      const newRemainingDays = state.remainingDays - 1;
+      const newCurrentDay = state.currentDay + 1;
+
+      this.stateManager.updateState({
+        remainingDays: newRemainingDays,
+        currentDay: newCurrentDay,
+      });
+
+      // DAY_ENDEDイベント発行
+      this.eventBus.emit(GameEventType.DAY_ENDED, {
+        failedQuests: [],
+        remainingDays: newRemainingDays,
+        currentDay: newCurrentDay,
+      });
+
+      daysAdvanced++;
+
+      // ゲームオーバー判定
+      const gameOver = this.checkGameOver();
+      if (gameOver) {
+        this.eventBus.emit(GameEventType.GAME_OVER, gameOver);
+        const finalState = this.stateManager.getState();
+        return {
+          daysAdvanced,
+          newCurrentDay: finalState.currentDay,
+          newRemainingDays: finalState.remainingDays,
+          newActionPoints: 0,
+          isGameOver: true,
+        };
+      }
+
+      // 手札補充
+      this.deckService.refillHand();
+    }
+
+    // 最終的なAPを設定
+    this.stateManager.updateState({
+      actionPoints: overflowResult.nextDayAP,
+    });
+
+    const finalState = this.stateManager.getState();
+    return {
+      daysAdvanced,
+      newCurrentDay: finalState.currentDay,
+      newRemainingDays: finalState.remainingDays,
+      newActionPoints: overflowResult.nextDayAP,
+      isGameOver: false,
+    };
   }
 
   // =============================================================================
