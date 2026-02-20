@@ -14,7 +14,12 @@
 
 import type { IDeckService } from '@domain/interfaces/deck-service.interface';
 import type { IQuestService } from '@domain/interfaces/quest-service.interface';
-import { DEFAULT_BOARD_QUEST_DURATION, updateBoard } from '@features/quest';
+import {
+  DEFAULT_BOARD_CAPACITY,
+  DEFAULT_BOARD_QUEST_DURATION,
+  DEFAULT_VISITOR_UPDATE_INTERVAL,
+  updateBoard,
+} from '@features/quest';
 import type { IEventBus } from '@shared/services/event-bus';
 import type { IStateManager } from '@shared/services/state-manager';
 import type {
@@ -474,7 +479,7 @@ export class GameFlowManager implements IGameFlowManager {
 
     // 掲示板の空き枠を計算（期限切れ除去後の空き）
     const activeCount = currentBoard.boardQuests.filter((q) => q.expiryDay >= currentDay).length;
-    const vacancies = Math.max(0, 5 - activeCount);
+    const vacancies = Math.max(0, DEFAULT_BOARD_CAPACITY - activeCount);
 
     // 掲示板依頼候補を生成してIBoardQuestに変換
     const boardQuestCandidates: IBoardQuest[] =
@@ -492,7 +497,7 @@ export class GameFlowManager implements IGameFlowManager {
       .map((quest) => ({
         questId: quest.id,
         visitStartDay: currentDay,
-        visitEndDay: currentDay + 3,
+        visitEndDay: currentDay + DEFAULT_VISITOR_UPDATE_INTERVAL,
       }));
 
     // updateBoard()純粋関数で掲示板を更新
