@@ -4,7 +4,12 @@
  *
  * TASK-0074: features/gathering/components作成
  * TASK-0113: LocationSelectUI追加
+ * TASK-0115: APOverflowPreview追加
  */
+
+// APOverflowPreview
+export type { IAPOverflowPreviewData } from './APOverflowPreview';
+export { APOverflowPreview } from './APOverflowPreview';
 
 // GatheringPhaseUI
 export { GatheringPhaseUI } from './GatheringPhaseUI';
