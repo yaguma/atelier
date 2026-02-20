@@ -11,7 +11,7 @@
  */
 
 import { BaseComponent } from '@shared/components';
-import { THEME } from '@shared/theme/theme';
+import { Colors, THEME } from '@shared/theme/theme';
 import type { CardId } from '@shared/types';
 import type {
   IGatheringLocation,
@@ -33,22 +33,20 @@ const CARD_LAYOUT = {
   GAP: 12,
   /** カード内パディング */
   PADDING: 12,
-  /** カード角丸 */
-  RADIUS: 8,
 } as const;
 
-/** カード色定数 */
+/** カード色定数（Colors統一カラーパレットを参照） */
 const CARD_COLORS = {
   /** 選択可能カード背景 */
-  SELECTABLE_BG: 0x3a3a4d,
-  /** 選択可能カードボーダー */
-  SELECTABLE_BORDER: 0x90ee90,
+  SELECTABLE_BG: Colors.background.card,
+  /** 選択可能カードボーダー（採取カード色） */
+  SELECTABLE_BORDER: Colors.cardType.gathering,
   /** 選択不可カード背景 */
-  UNSELECTABLE_BG: 0x2a2a3d,
+  UNSELECTABLE_BG: Colors.background.primary,
   /** 選択不可カードボーダー */
-  UNSELECTABLE_BORDER: 0x4a4a5d,
+  UNSELECTABLE_BORDER: Colors.border.primary,
   /** ホバー時ボーダー */
-  HOVER_BORDER: 0xffd700,
+  HOVER_BORDER: Colors.border.gold,
 } as const;
 
 /** 選択不可時のアルファ値 */
