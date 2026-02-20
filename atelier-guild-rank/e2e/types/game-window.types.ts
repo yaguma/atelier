@@ -42,6 +42,12 @@ export interface GameState {
   contribution?: number;
   /** 現在の日数（経過日数） */
   currentDay?: number;
+  /** AP超過分（翌日持ち越し） */
+  apOverflow?: number;
+  /** 掲示板依頼数 */
+  boardQuestCount?: number;
+  /** 訪問依頼数 */
+  visitorQuestCount?: number;
 }
 
 /**
@@ -78,6 +84,8 @@ export interface DebugTools {
   clickNewGame?: () => void;
   /** コンティニュー */
   clickContinue?: () => void;
+  /** フェーズを直接切り替え（自由遷移） */
+  switchPhase?: (phase: string) => void;
 }
 
 /**

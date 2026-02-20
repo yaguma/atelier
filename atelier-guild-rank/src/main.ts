@@ -130,6 +130,11 @@ window.gameState = () => {
     gold: number;
     currentRank: string;
     actionPoints: number;
+    currentDay: number;
+    apOverflow: number;
+    acceptedQuestCount: number;
+    boardQuestCount: number;
+    visitorQuestCount: number;
   }> = {};
 
   try {
@@ -143,6 +148,10 @@ window.gameState = () => {
         gold: state.gold,
         currentRank: state.currentRank,
         actionPoints: state.actionPoints,
+        currentDay: state.currentDay,
+        apOverflow: state.apOverflow,
+        boardQuestCount: state.questBoard?.boardQuests?.length ?? 0,
+        visitorQuestCount: state.questBoard?.visitorQuests?.length ?? 0,
       };
     }
   } catch {
@@ -161,6 +170,10 @@ window.gameState = () => {
     gold: stateFromManager.gold,
     currentRank: stateFromManager.currentRank,
     actionPoints: stateFromManager.actionPoints,
+    currentDay: stateFromManager.currentDay,
+    apOverflow: stateFromManager.apOverflow,
+    boardQuestCount: stateFromManager.boardQuestCount,
+    visitorQuestCount: stateFromManager.visitorQuestCount,
     isGameClear,
     isGameOver,
   };
