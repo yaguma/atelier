@@ -42,6 +42,10 @@ const DEFAULT_MAX_AP = InitialParameters.ACTION_POINTS_PER_DAY;
 export function calculateOverflow(input: IAPConsumptionInput): IAPOverflowResult {
   const { currentAP, consumeAP, maxAP = DEFAULT_MAX_AP } = input;
 
+  if (maxAP <= 0) {
+    throw new Error(`maxAP must be a positive integer (received: ${maxAP})`);
+  }
+
   const overflowAP = Math.max(0, consumeAP - currentAP);
   const hasOverflow = overflowAP > 0;
 

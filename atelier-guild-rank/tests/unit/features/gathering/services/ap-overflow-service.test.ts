@@ -229,6 +229,20 @@ describe('calculateOverflow', () => {
     });
   });
 
+  describe('異常系: 不正なmaxAP', () => {
+    it('maxAPが0の場合、エラーを投げる', () => {
+      const input = { currentAP: 3, consumeAP: 4, maxAP: 0 };
+
+      expect(() => calculateOverflow(input)).toThrow('maxAP must be a positive integer');
+    });
+
+    it('maxAPが負の場合、エラーを投げる', () => {
+      const input = { currentAP: 3, consumeAP: 4, maxAP: -1 };
+
+      expect(() => calculateOverflow(input)).toThrow('maxAP must be a positive integer');
+    });
+  });
+
   describe('純粋関数の検証', () => {
     it('同じ入力に対して常に同じ結果を返す', () => {
       const input = { currentAP: 3, consumeAP: 4 };

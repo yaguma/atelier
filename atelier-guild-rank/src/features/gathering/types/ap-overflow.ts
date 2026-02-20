@@ -19,7 +19,7 @@ export interface IAPConsumptionInput {
   readonly currentAP: number;
   /** 消費するAP */
   readonly consumeAP: number;
-  /** AP上限（デフォルト: MAX_ACTION_POINTS = 3） */
+  /** AP上限（正の整数、デフォルト: MAX_ACTION_POINTS = 3） */
   readonly maxAP?: number;
 }
 
@@ -37,7 +37,7 @@ export interface IAPOverflowResult {
   readonly overflowAP: number;
   /** 消費する日数 */
   readonly daysConsumed: number;
-  /** 翌日開始時のAP（超過なしの場合は0） */
+  /** 翌日開始時のAP（hasOverflow=trueの場合のみ有効、falseの場合は0） */
   readonly nextDayAP: number;
   /** 行動後の残りAP（超過なしの場合のみ意味あり） */
   readonly remainingAP: number;
