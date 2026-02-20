@@ -57,9 +57,16 @@ vi.mock('@shared/services/di/container', () => ({
 vi.mock('@presentation/ui/components/FooterUI', () => ({
   FooterUI: class MockFooterUI {
     create() {}
-    onNextClick() {}
-    updateNextButton() {}
-    updatePhaseIndicator() {}
+    destroy() {}
+    getPhaseTabUI() {
+      return null;
+    }
+    getHandDisplayArea() {
+      return [];
+    }
+    getHandDisplayAreaCapacity() {
+      return 5;
+    }
   },
 }));
 

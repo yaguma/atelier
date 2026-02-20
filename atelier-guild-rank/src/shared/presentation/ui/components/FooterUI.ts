@@ -7,4 +7,4 @@
  *
  * 新規コードでは @shared/components を使用すること。
  */
-export { FooterUI, type PhaseIndicatorState } from '@shared/components/FooterUI';
+export { FooterUI } from '@shared/components/FooterUI';

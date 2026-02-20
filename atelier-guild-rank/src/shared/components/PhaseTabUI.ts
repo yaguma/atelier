@@ -16,6 +16,7 @@ import type { GamePhase, IPhaseChangedEvent, IPhaseSwitchRequest } from '@shared
 import { VALID_GAME_PHASES } from '@shared/types/common';
 import { GameEventType } from '@shared/types/events';
 import Phaser from 'phaser';
+import type { BaseComponentOptions } from './BaseComponent';
 import { BaseComponent } from './BaseComponent';
 
 // =============================================================================
@@ -156,8 +157,9 @@ export class PhaseTabUI extends BaseComponent {
     gameFlowManager: IGameFlowManager,
     eventBus: IEventBus,
     initialPhase: GamePhase,
+    options?: BaseComponentOptions,
   ) {
-    super(scene, x, y);
+    super(scene, x, y, options);
     this.gameFlowManager = gameFlowManager;
     this.eventBus = eventBus;
     this._activePhase = initialPhase;
