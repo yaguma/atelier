@@ -94,11 +94,8 @@ export class FooterUI extends BaseComponent {
   /** PhaseTabUIインスタンス */
   private _phaseTabUI: PhaseTabUI | null = null;
 
-  /** 手札表示エリア（プレースホルダー） */
+  /** 手札表示エリア（プレースホルダー矩形の配列） */
   private _handDisplayArea: Phaser.GameObjects.Rectangle[] = [];
-
-  /** 手札プレースホルダー（視覚要素） */
-  private _handPlaceholders: Phaser.GameObjects.Rectangle[] = [];
 
   /** 背景パネル */
   private _backgroundPanel: Phaser.GameObjects.Rectangle | null = null;
@@ -183,7 +180,6 @@ export class FooterUI extends BaseComponent {
     // 5つの手札プレースホルダー（矩形）を作成
     const handY = FOOTER_LAYOUT.HEIGHT / 2;
 
-    this._handPlaceholders = [];
     for (let i = 0; i < HAND_DISPLAY_CAPACITY; i++) {
       const placeholder = new Phaser.GameObjects.Rectangle(
         this.scene,
@@ -196,9 +192,8 @@ export class FooterUI extends BaseComponent {
       );
       placeholder.setStrokeStyle(2, FOOTER_COLORS.CARD_PLACEHOLDER_BORDER);
       this.container.add(placeholder);
-      this._handPlaceholders.push(placeholder);
+      this._handDisplayArea.push(placeholder);
     }
-    this._handDisplayArea = this._handPlaceholders;
   }
 
   /**
