@@ -62,5 +62,10 @@ export { GATHERING_LOCATIONS } from './data/locations';
 // Components
 // =============================================================================
 
-export type { MaterialDisplay } from './components';
-export { GatheringPhaseUI, LocationSelectUI, MaterialSlotUI } from './components';
+export type { IAPOverflowPreviewData, MaterialDisplay } from './components';
+export {
+  APOverflowPreview,
+  GatheringPhaseUI,
+  LocationSelectUI,
+  MaterialSlotUI,
+} from './components';
