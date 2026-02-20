@@ -24,3 +24,11 @@ export type {
 
 // --- 依頼者関連型（features/quest固有） ---
 export type { Client, ClientDialogue, ClientPersonality } from './client';
+
+// --- 掲示板管理関連型 ---
+export type { IQuestBoardUpdateInput, IQuestBoardUpdateResult } from './quest-board';
+export {
+  DEFAULT_BOARD_CAPACITY,
+  DEFAULT_BOARD_QUEST_DURATION,
+  DEFAULT_VISITOR_UPDATE_INTERVAL,
+} from './quest-board';
