@@ -13,11 +13,17 @@
 // Types
 // =============================================================================
 
+// AP超過計算関連
+// 採取カード関連
+// GatheringService関連
+// 素材関連
 export type {
   DraftSession,
   DropRateLabel,
   GatheringCostResult,
   GatheringResult,
+  IAPConsumptionInput,
+  IAPOverflowResult,
   IGatheringCard,
   IGatheringLocation,
   IGatheringLocationData,
@@ -38,6 +44,7 @@ export { GatheringStage, isGatheringCard } from './types';
 export type { GatherInput, GatherResult, SelectionError, SelectionResult } from './services';
 export {
   calculateGatheringCost,
+  calculateOverflow,
   gather,
   getAvailableLocations,
   getLocationDetail,
