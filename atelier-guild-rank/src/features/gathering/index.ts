@@ -13,6 +13,7 @@
 // Types
 // =============================================================================
 
+// AP超過計算関連
 // 採取カード関連
 // GatheringService関連
 // 素材関連
@@ -20,6 +21,8 @@ export type {
   DraftSession,
   GatheringCostResult,
   GatheringResult,
+  IAPConsumptionInput,
+  IAPOverflowResult,
   IGatheringCard,
   IGatheringMaterial,
   IGatheringService,
@@ -34,7 +37,12 @@ export { isGatheringCard } from './types';
 // =============================================================================
 
 export type { GatherInput, GatherResult, SelectionError, SelectionResult } from './services';
-export { calculateGatheringCost, gather, selectGatheringOption } from './services';
+export {
+  calculateGatheringCost,
+  calculateOverflow,
+  gather,
+  selectGatheringOption,
+} from './services';
 
 // =============================================================================
 // Components
