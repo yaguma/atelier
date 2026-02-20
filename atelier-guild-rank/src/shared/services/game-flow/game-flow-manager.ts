@@ -280,7 +280,7 @@ export class GameFlowManager implements IGameFlowManager {
 
     for (let i = 0; i < overflowResult.daysConsumed; i++) {
       // 期限切れ依頼を処理
-      this.questService.updateDeadlines();
+      const failedQuests = this.questService.updateDeadlines();
 
       // 日数を更新
       const state = this.stateManager.getState();
@@ -294,7 +294,7 @@ export class GameFlowManager implements IGameFlowManager {
 
       // DAY_ENDEDイベント発行
       this.eventBus.emit(GameEventType.DAY_ENDED, {
-        failedQuests: [],
+        failedQuests,
         remainingDays: newRemainingDays,
         currentDay: newCurrentDay,
       });
