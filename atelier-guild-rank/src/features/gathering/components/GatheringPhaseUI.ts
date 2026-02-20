@@ -91,6 +91,10 @@ export class GatheringPhaseUI extends BaseComponent {
   /** LocationSelectUIコンポーネント */
   private _locationSelectUI: LocationSelectUI | null = null;
 
+  /** フェーズ離脱確認のコールバック */
+  private _pendingLeaveConfirm: (() => void) | null = null;
+  private _pendingLeaveCancel: (() => void) | null = null;
+
   /**
    * コンストラクタ
    * Issue #116: コンテンツコンテナが既にオフセット済みなので(0, 0)を使用
@@ -474,14 +478,21 @@ export class GatheringPhaseUI extends BaseComponent {
     // ドラフト採取セッションを開始
     // cardIdからCardオブジェクトを取得する処理は上位層が担当
     // ここではサービスに直接委譲
+    // TODO(TASK-0114): startDraftGatheringの引数型をcardId直接受け取りに拡張する
     const draftSession = this.gatheringService.startDraftGathering({ id: result.cardId } as never);
 
-    if (draftSession) {
-      this.session = draftSession;
-      this._currentStage = GatheringStage.DRAFT_SESSION;
-      this.showDraftSessionStage();
-      this.updateSession(draftSession);
+    if (!draftSession) {
+      console.warn(
+        'GatheringPhaseUI: startDraftGathering returned null for cardId:',
+        result.cardId,
+      );
+      return;
     }
+
+    this.session = draftSession;
+    this._currentStage = GatheringStage.DRAFT_SESSION;
+    this.showDraftSessionStage();
+    this.updateSession(draftSession);
   }
 
   /**
@@ -551,10 +562,6 @@ export class GatheringPhaseUI extends BaseComponent {
   // =============================================================================
   // TASK-0114: ステージ表示切り替え プライベートメソッド
   // =============================================================================
-
-  /** フェーズ離脱確認のコールバック */
-  private _pendingLeaveConfirm: (() => void) | null = null;
-  private _pendingLeaveCancel: (() => void) | null = null;
 
   /**
    * LOCATION_SELECTステージの表示

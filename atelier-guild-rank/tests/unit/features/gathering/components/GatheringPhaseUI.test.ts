@@ -304,6 +304,54 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
       expect(needsConfirmation).toBe(false);
       expect(onConfirm).toHaveBeenCalledTimes(1);
     });
+
+    it('confirmLeavePhase()でonConfirmが発火しセッションが破棄される', () => {
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      ui.create();
+      ui.show();
+
+      // セッション開始
+      ui.handleLocationSelected({
+        cardId: 'gathering-forest' as never,
+        locationName: '近くの森',
+        movementAPCost: 1,
+      });
+
+      const onConfirm = vi.fn();
+      const onCancel = vi.fn();
+      ui.requestLeavePhase(onConfirm, onCancel);
+
+      // 中断を確認
+      ui.confirmLeavePhase();
+
+      expect(onConfirm).toHaveBeenCalledTimes(1);
+      expect(ui.hasActiveSession()).toBe(false);
+      expect(ui.getCurrentStage()).toBe(GatheringStage.LOCATION_SELECT);
+    });
+
+    it('cancelLeavePhase()でonCancelが発火しセッションが維持される', () => {
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      ui.create();
+      ui.show();
+
+      // セッション開始
+      ui.handleLocationSelected({
+        cardId: 'gathering-forest' as never,
+        locationName: '近くの森',
+        movementAPCost: 1,
+      });
+
+      const onConfirm = vi.fn();
+      const onCancel = vi.fn();
+      ui.requestLeavePhase(onConfirm, onCancel);
+
+      // キャンセル
+      ui.cancelLeavePhase();
+
+      expect(onCancel).toHaveBeenCalledTimes(1);
+      expect(ui.hasActiveSession()).toBe(true);
+      expect(ui.getCurrentStage()).toBe(GatheringStage.DRAFT_SESSION);
+    });
   });
 
   // ===========================================================================
