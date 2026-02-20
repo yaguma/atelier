@@ -1,13 +1,15 @@
 /**
  * GatheringPhaseUI.ts - 採取フェーズUIコンポーネント
  * TASK-0044: 品質に応じた視覚効果
+ * TASK-0114: GatheringStage状態遷移、LocationSelectUI統合、セッション中断確認
  *
  * @description
- * ドラフト採取フェーズのUI実装。
- * 素材プールから選択、獲得素材の表示を行う。
+ * 採取フェーズのUI実装。
+ * 場所選択ステージ（LocationSelectUI）→ドラフト採取セッション→採取結果の
+ * GatheringStage状態遷移を管理する。
  *
  * @信頼性レベル
- * 🔵 TASK-0023の設計に基づく実装
+ * 🔵 TASK-0023・REQ-002・dataflow.md セクション4に基づく
  *
  * TODO(TASK-0074): このファイルは507行で300行上限を超過している。
  * キーボード操作関連のメソッドを別ファイル（gathering-keyboard-handler.ts等）に分離を検討する。
@@ -24,6 +26,9 @@ import { BaseComponent } from '@shared/components';
 import { getSelectionIndexFromKey, isKeyForAction } from '@shared/constants/keybindings';
 import type { MaterialId, Quality } from '@shared/types';
 import type Phaser from 'phaser';
+import type { ILocationSelectResult } from '../types/gathering-location';
+import { GatheringStage } from '../types/gathering-location';
+import { LocationSelectUI } from './LocationSelectUI';
 import { type MaterialDisplay, MaterialSlotUI } from './MaterialSlotUI';
 
 /** 採取フェーズUIレイアウト定数 */
@@ -75,6 +80,20 @@ export class GatheringPhaseUI extends BaseComponent {
 
   /** 現在のフォーカスインデックス（キーボードナビゲーション用） */
   private focusedSlotIndex = 0;
+
+  // ===========================================================================
+  // TASK-0114: GatheringStage状態遷移
+  // ===========================================================================
+
+  /** 現在のGatheringStage */
+  private _currentStage: GatheringStage = GatheringStage.LOCATION_SELECT;
+
+  /** LocationSelectUIコンポーネント */
+  private _locationSelectUI: LocationSelectUI | null = null;
+
+  /** フェーズ離脱確認のコールバック */
+  private _pendingLeaveConfirm: (() => void) | null = null;
+  private _pendingLeaveCancel: (() => void) | null = null;
 
   /**
    * コンストラクタ
@@ -416,11 +435,203 @@ export class GatheringPhaseUI extends BaseComponent {
     return materialId;
   }
 
+  // =============================================================================
+  // TASK-0114: GatheringStage管理 公開メソッド
+  // =============================================================================
+
+  /**
+   * 採取フェーズを表示し、LOCATION_SELECTステージで開始する
+   *
+   * 【機能概要】: 採取フェーズ進入時の初期表示
+   * 【実装方針】: GatheringStageをLOCATION_SELECTに設定し、LocationSelectUIを表示
+   * 🔵 dataflow.md セクション4.2に基づく
+   */
+  show(): void {
+    this._currentStage = GatheringStage.LOCATION_SELECT;
+    this.showLocationSelectStage();
+  }
+
+  /**
+   * 現在のGatheringStageを取得する
+   */
+  getCurrentStage(): GatheringStage {
+    return this._currentStage;
+  }
+
+  /**
+   * アクティブなドラフトセッションがあるかを判定する
+   */
+  hasActiveSession(): boolean {
+    return this.session !== null && !this.session.isComplete;
+  }
+
+  /**
+   * 場所選択結果を処理し、DRAFT_SESSIONに遷移する
+   *
+   * 【機能概要】: LocationSelectUIからの場所選択をハンドリング
+   * 【実装方針】: GatheringServiceでセッションを開始し、ステージを遷移
+   * 🔵 dataflow.md セクション4.2に基づく
+   *
+   * @param result - 場所選択結果
+   */
+  handleLocationSelected(result: ILocationSelectResult): void {
+    // ドラフト採取セッションを開始
+    // cardIdからCardオブジェクトを取得する処理は上位層が担当
+    // ここではサービスに直接委譲
+    // TODO(TASK-0114): startDraftGatheringの引数型をcardId直接受け取りに拡張する
+    const draftSession = this.gatheringService.startDraftGathering({ id: result.cardId } as never);
+
+    if (!draftSession) {
+      console.warn(
+        'GatheringPhaseUI: startDraftGathering returned null for cardId:',
+        result.cardId,
+      );
+      return;
+    }
+
+    this.session = draftSession;
+    this._currentStage = GatheringStage.DRAFT_SESSION;
+    this.showDraftSessionStage();
+    this.updateSession(draftSession);
+  }
+
+  /**
+   * フェーズ離脱を要求する
+   *
+   * 【機能概要】: フェーズ切り替え時のセッション中断確認
+   * 【実装方針】: アクティブセッション中は確認が必要、それ以外は即座にコールバック
+   * 🟡 EDGE-001・REQ-001-03・design-interview.md D3から妥当な推測
+   *
+   * @param onConfirm - 離脱確定時のコールバック
+   * @param onCancel - 離脱キャンセル時のコールバック
+   * @returns 確認が必要な場合はtrue
+   */
+  requestLeavePhase(onConfirm: () => void, onCancel: () => void): boolean {
+    if (!this.hasActiveSession()) {
+      onConfirm();
+      return false;
+    }
+
+    // アクティブセッション中は確認が必要
+    // ダイアログ表示はrexUI依存のため、コールバックを保持して上位層に委譲
+    this._pendingLeaveConfirm = onConfirm;
+    this._pendingLeaveCancel = onCancel;
+    return true;
+  }
+
+  /**
+   * セッション中断確認に「中断する」で応答する
+   */
+  confirmLeavePhase(): void {
+    if (this._pendingLeaveConfirm) {
+      this.discardSession();
+      const callback = this._pendingLeaveConfirm;
+      this._pendingLeaveConfirm = null;
+      this._pendingLeaveCancel = null;
+      callback();
+    }
+  }
+
+  /**
+   * セッション中断確認に「キャンセル」で応答する
+   */
+  cancelLeavePhase(): void {
+    if (this._pendingLeaveCancel) {
+      const callback = this._pendingLeaveCancel;
+      this._pendingLeaveConfirm = null;
+      this._pendingLeaveCancel = null;
+      callback();
+    }
+  }
+
+  /**
+   * 現在のドラフトセッションを破棄し、LOCATION_SELECTに戻る
+   *
+   * 【機能概要】: セッション破棄時のステージリセット
+   * 🔵 完了条件「セッション破棄時にLOCATION_SELECTに戻る」に基づく
+   */
+  discardSession(): void {
+    if (this.session) {
+      this.gatheringService.endGathering(this.session.sessionId);
+    }
+    this.session = null;
+    this._currentStage = GatheringStage.LOCATION_SELECT;
+    this.showLocationSelectStage();
+  }
+
+  // =============================================================================
+  // TASK-0114: ステージ表示切り替え プライベートメソッド
+  // =============================================================================
+
+  /**
+   * LOCATION_SELECTステージの表示
+   */
+  private showLocationSelectStage(): void {
+    // ドラフトセッションUIを非表示
+    this.hideDraftSessionUI();
+
+    // LocationSelectUIを表示（未作成の場合は作成）
+    if (!this._locationSelectUI) {
+      this._locationSelectUI = new LocationSelectUI(this.scene, 0, 0, { addToScene: false });
+      this._locationSelectUI.create();
+      this._locationSelectUI.onLocationSelect((result) => {
+        this.handleLocationSelected(result);
+      });
+      this.container.add(this._locationSelectUI.getContainer());
+    }
+    this._locationSelectUI.setVisible(true);
+  }
+
+  /**
+   * DRAFT_SESSIONステージの表示
+   */
+  private showDraftSessionStage(): void {
+    // LocationSelectUIを非表示
+    if (this._locationSelectUI) {
+      this._locationSelectUI.setVisible(false);
+    }
+
+    // ドラフトセッションUIを表示
+    this.showDraftSessionUI();
+  }
+
+  /**
+   * ドラフトセッションUI要素を表示する
+   */
+  private showDraftSessionUI(): void {
+    // 既存のUI要素（タイトル、カウンター、素材プール、獲得表示、ボタン）を表示
+    if (this.titleText) this.titleText.setVisible(true);
+    if (this.remainingText) this.remainingText.setVisible(true);
+    for (const slot of this.materialSlots) {
+      slot.setVisible(true);
+    }
+    if (this.endButton) this.endButton.setVisible(true);
+  }
+
+  /**
+   * ドラフトセッションUI要素を非表示にする
+   */
+  private hideDraftSessionUI(): void {
+    if (this.titleText) this.titleText.setVisible(false);
+    if (this.remainingText) this.remainingText.setVisible(false);
+    for (const slot of this.materialSlots) {
+      slot.setVisible(false);
+    }
+    if (this.endButton) this.endButton.setVisible(false);
+  }
+
   /**
    * コンポーネントを破棄
    */
   destroy(): void {
     this.removeKeyboardListener();
+    // TASK-0114: LocationSelectUIの破棄
+    if (this._locationSelectUI) {
+      this._locationSelectUI.destroy();
+      this._locationSelectUI = null;
+    }
+    this._pendingLeaveConfirm = null;
+    this._pendingLeaveCancel = null;
     for (const slot of this.materialSlots) {
       slot.destroy();
     }
