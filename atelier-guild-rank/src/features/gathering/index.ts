@@ -13,9 +13,6 @@
 // Types
 // =============================================================================
 
-// 採取カード関連
-// GatheringService関連
-// 素材関連
 export type {
   DraftSession,
   DropRateLabel,

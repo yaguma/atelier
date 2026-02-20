@@ -6,15 +6,15 @@
  * getAvailableLocations(), getLocationDetail(), getSelectableLocations()の動作を検証する。
  */
 
-import { GATHERING_LOCATIONS } from '@features/gathering/data/locations';
+import type { IGatheringLocationData } from '@features/gathering';
 import {
+  GATHERING_LOCATIONS,
   getAvailableLocations,
   getLocationDetail,
   getSelectableLocations,
-} from '@features/gathering/services/gathering-location-service';
-import type { IGatheringLocationData } from '@features/gathering/types/gathering-location';
-import type { Card, IGatheringCard } from '@shared/types';
-import { CardType, GuildRank, Rarity, toCardId } from '@shared/types';
+} from '@features/gathering';
+import type { Card, IGatheringCard, IRecipeCard } from '@shared/types';
+import { CardType, GuildRank, ItemCategory, Rarity, toCardId } from '@shared/types';
 import { describe, expect, it } from 'vitest';
 
 // =============================================================================
@@ -34,17 +34,18 @@ function createGatheringCard(overrides: Partial<IGatheringCard> = {}): IGatherin
   };
 }
 
-function createNonGatheringCard(): Card {
+function createNonGatheringCard(): IRecipeCard {
   return {
     id: toCardId('recipe-potion'),
     name: '回復薬レシピ',
     type: CardType.RECIPE,
     rarity: Rarity.COMMON,
     unlockRank: GuildRank.G,
-    category: 'consumable',
+    cost: 1,
     requiredMaterials: [],
-    resultItem: { itemId: 'potion', name: '回復薬' },
-  } as Card;
+    outputItemId: 'potion',
+    category: ItemCategory.MEDICINE,
+  };
 }
 
 const testLocations: readonly IGatheringLocationData[] = [

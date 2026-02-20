@@ -18,6 +18,7 @@ import type { CardId } from '@shared/types';
  * 採取フェーズの状態
  *
  * 場所選択→場所詳細→ドラフトセッション→結果の順に遷移する。
+ * GatheringPhaseUI実装時に使用予定。
  */
 export const GatheringStage = {
   /** 場所選択（新規追加） */
@@ -47,37 +48,50 @@ export type DropRateLabel = 'high' | 'medium' | 'low';
 export interface IMaterialPreview {
   /** 素材名 */
   readonly name: string;
-  /** レアリティ */
+  /** レアリティ（表示用文字列。設計文書でstring型として定義） */
   readonly rarity: string;
   /** 出現確率（表示用） */
   readonly dropRate: DropRateLabel;
 }
 
 // =============================================================================
-// 採取場所
+// 場所マスタデータ定義
 // =============================================================================
 
 /**
- * 採取場所情報
+ * 採取場所マスタデータ
  *
- * 採取地カードに対応する場所の詳細情報。
- * 場所選択UIで一覧表示するために使用する。
+ * 場所の基本情報。ゲームデータとして定義し、
+ * カードIDとの対応付けはサービス層で行う。
  */
-export interface IGatheringLocation {
+export interface IGatheringLocationData {
   /** 採取地カードID */
   readonly cardId: CardId;
   /** 採取地名 */
   readonly name: string;
-  /** 移動APコスト（基本コスト） */
+  /** 移動APコスト */
   readonly movementAPCost: number;
   /** 採取可能素材プレビュー */
   readonly availableMaterials: readonly IMaterialPreview[];
-  /** 手札に該当カードがあるか */
-  readonly isSelectable: boolean;
   /** マップ上のX座標 */
   readonly mapX: number;
   /** マップ上のY座標 */
   readonly mapY: number;
+}
+
+// =============================================================================
+// 採取場所（UI用）
+// =============================================================================
+
+/**
+ * 採取場所情報（UI表示用）
+ *
+ * IGatheringLocationDataにisSelectableフラグを追加したUI用インターフェース。
+ * 場所選択UIで一覧表示するために使用する。
+ */
+export interface IGatheringLocation extends IGatheringLocationData {
+  /** 手札に該当カードがあるか */
+  readonly isSelectable: boolean;
 }
 
 // =============================================================================
@@ -97,29 +111,4 @@ export interface ILocationSelectResult {
   readonly locationName: string;
   /** 移動APコスト */
   readonly movementAPCost: number;
-}
-
-// =============================================================================
-// 場所マスタデータ定義
-// =============================================================================
-
-/**
- * 採取場所マスタデータ
- *
- * 場所の基本情報（カードIDとの対応付けを除く静的データ）。
- * ゲームデータとして定義し、カードIDとの対応はサービス層で行う。
- */
-export interface IGatheringLocationData {
-  /** 採取地カードID */
-  readonly cardId: CardId;
-  /** 採取地名 */
-  readonly name: string;
-  /** 移動APコスト */
-  readonly movementAPCost: number;
-  /** 採取可能素材プレビュー */
-  readonly availableMaterials: readonly IMaterialPreview[];
-  /** マップ上のX座標 */
-  readonly mapX: number;
-  /** マップ上のY座標 */
-  readonly mapY: number;
 }

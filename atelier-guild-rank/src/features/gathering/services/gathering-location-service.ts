@@ -55,6 +55,7 @@ export function getLocationDetail(
  * 手札カードから選択可能な場所のみを取得する純粋関数
  *
  * getAvailableLocationsと異なり、手札に対応するカードがある場所のみ返す。
+ * getAvailableLocationsを再利用し、一貫性のあるisSelectable判定ロジックを保証する。
  *
  * @param hand - 現在の手札カード配列
  * @param locations - 採取場所マスタデータ
