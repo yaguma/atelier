@@ -12,6 +12,7 @@
 
 import type { IDeckService } from '@domain/interfaces/deck-service.interface';
 import type { IQuestService } from '@domain/interfaces/quest-service.interface';
+import type { IAPOverflowResult } from '@features/gathering';
 import type { IEventBus } from '@shared/services/event-bus';
 import type { IGameFlowManager } from '@shared/services/game-flow';
 import type { IStateManager } from '@shared/services/state-manager';
@@ -991,6 +992,366 @@ describe('GameFlowManager', () => {
         (call) => call[0]?.questBoard !== undefined,
       );
       expect(questBoardCalls.length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  // =============================================================================
+  // processAPOverflow() テストケース（TASK-0107）
+  // =============================================================================
+
+  describe('processAPOverflow() - AP超過自動日進行（TASK-0107）', () => {
+    /** テスト用のIAPOverflowResult生成ヘルパー */
+    function createOverflowResult(overrides: Partial<IAPOverflowResult> = {}): IAPOverflowResult {
+      return {
+        hasOverflow: true,
+        overflowAP: 1,
+        daysConsumed: 1,
+        nextDayAP: 2,
+        remainingAP: 0,
+        ...overrides,
+      };
+    }
+
+    it('T-0107-01: 1日分のAP超過処理が正しく実行される', async () => {
+      // 【テスト目的】: daysConsumed=1の場合にendDay相当処理が1回実行されることを確認
+      // 🔵 信頼性レベル: 設計文書に明記
+
+      const overflowResult = createOverflowResult({
+        daysConsumed: 1,
+        nextDayAP: 2,
+      });
+
+      const result = await gameFlowManager.processAPOverflow(overflowResult);
+
+      expect(result.daysAdvanced).toBe(1);
+      expect(result.newActionPoints).toBe(2);
+      expect(result.isGameOver).toBe(false);
+      expect(mockQuestService.updateDeadlines).toHaveBeenCalledTimes(1);
+      expect(mockStateManager.updateState).toHaveBeenCalledWith(
+        expect.objectContaining({
+          remainingDays: 149,
+          currentDay: 2,
+        }),
+      );
+    });
+
+    it('T-0107-02: 複数日分のAP超過処理が正しく実行される', async () => {
+      // 【テスト目的】: daysConsumed=2の場合にendDay相当処理が2回実行されることを確認
+      // 🟡 信頼性レベル: タスク仕様から妥当な推測
+
+      // getState()が呼ばれるたびに日数が進むようモックを設定
+      let currentDay = 1;
+      let remainingDays = 150;
+      mockStateManager.getState = vi.fn(() => ({
+        currentRank: GuildRank.G,
+        rankHp: 100,
+        remainingDays,
+        currentDay,
+        gold: 100,
+        actionPoints: 3,
+        maxActionPoints: 3,
+        comboCount: 0,
+        currentPhase: GamePhase.QUEST_ACCEPT,
+        contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
+      }));
+      mockStateManager.updateState = vi.fn((update) => {
+        if (update.currentDay !== undefined) {
+          currentDay = update.currentDay;
+        }
+        if (update.remainingDays !== undefined) {
+          remainingDays = update.remainingDays;
+        }
+      });
+
+      const overflowResult = createOverflowResult({
+        daysConsumed: 2,
+        nextDayAP: 2,
+      });
+
+      const result = await gameFlowManager.processAPOverflow(overflowResult);
+
+      expect(result.daysAdvanced).toBe(2);
+      expect(result.isGameOver).toBe(false);
+      expect(mockQuestService.updateDeadlines).toHaveBeenCalledTimes(2);
+      expect(mockEventBus.emit).toHaveBeenCalledWith(GameEventType.DAY_ENDED, expect.anything());
+    });
+
+    it('T-0107-03: AP超過中にゲームオーバーになった場合途中で停止する', async () => {
+      // 【テスト目的】: remainingDays=1でdaysConsumed=2の場合、1回目のendDay後にゲームオーバーで停止
+      // 🔵 信頼性レベル: 設計文書に明記
+
+      let currentDay = 149;
+      let remainingDays = 1;
+      mockStateManager.getState = vi.fn(() => ({
+        currentRank: GuildRank.A,
+        rankHp: 100,
+        remainingDays,
+        currentDay,
+        gold: 100,
+        actionPoints: 3,
+        maxActionPoints: 3,
+        comboCount: 0,
+        currentPhase: GamePhase.QUEST_ACCEPT,
+        contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
+      }));
+      mockStateManager.updateState = vi.fn((update) => {
+        if (update.currentDay !== undefined) {
+          currentDay = update.currentDay;
+        }
+        if (update.remainingDays !== undefined) {
+          remainingDays = update.remainingDays;
+        }
+      });
+
+      const overflowResult = createOverflowResult({
+        daysConsumed: 2,
+        nextDayAP: 2,
+      });
+
+      const result = await gameFlowManager.processAPOverflow(overflowResult);
+
+      expect(result.daysAdvanced).toBe(1);
+      expect(result.isGameOver).toBe(true);
+      expect(result.newActionPoints).toBe(0);
+      // endDay相当処理は1回のみ（2回目は実行されない）
+      expect(mockQuestService.updateDeadlines).toHaveBeenCalledTimes(1);
+      // GAME_OVERイベントが発行される
+      expect(mockEventBus.emit).toHaveBeenCalledWith(
+        GameEventType.GAME_OVER,
+        expect.objectContaining({
+          type: 'game_over',
+        }),
+      );
+    });
+
+    it('T-0107-04: 各endDay()で依頼期限が更新される', async () => {
+      // 【テスト目的】: processAPOverflow中の各日でupdateDeadlines()が呼ばれることを確認
+      // 🔵 信頼性レベル: 設計文書に明記
+
+      let currentDay = 1;
+      let remainingDays = 150;
+      mockStateManager.getState = vi.fn(() => ({
+        currentRank: GuildRank.G,
+        rankHp: 100,
+        remainingDays,
+        currentDay,
+        gold: 100,
+        actionPoints: 3,
+        maxActionPoints: 3,
+        comboCount: 0,
+        currentPhase: GamePhase.QUEST_ACCEPT,
+        contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
+      }));
+      mockStateManager.updateState = vi.fn((update) => {
+        if (update.currentDay !== undefined) {
+          currentDay = update.currentDay;
+        }
+        if (update.remainingDays !== undefined) {
+          remainingDays = update.remainingDays;
+        }
+      });
+
+      const overflowResult = createOverflowResult({
+        daysConsumed: 3,
+        nextDayAP: 1,
+      });
+
+      const result = await gameFlowManager.processAPOverflow(overflowResult);
+
+      expect(mockQuestService.updateDeadlines).toHaveBeenCalledTimes(3);
+      expect(mockDeckService.refillHand).toHaveBeenCalledTimes(3);
+      expect(result.daysAdvanced).toBe(3);
+      expect(result.newActionPoints).toBe(1);
+    });
+  });
+
+  // =============================================================================
+  // startDay() AP超過対応 / requestEndDay() テストケース（TASK-0108）
+  // =============================================================================
+
+  describe('startDay() AP超過対応とrequestEndDay()（TASK-0108）', () => {
+    it('T-0108-01: AP超過なしの場合はMAX_APで回復する', () => {
+      // 🔵 信頼性レベル: REQ-003-01に明記
+      mockStateManager.getState = vi.fn(() => ({
+        currentRank: GuildRank.G,
+        rankHp: 100,
+        remainingDays: 150,
+        currentDay: 1,
+        gold: 100,
+        actionPoints: 0,
+        maxActionPoints: 3,
+        comboCount: 0,
+        currentPhase: GamePhase.DELIVERY,
+        contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
+      }));
+
+      gameFlowManager.startDay();
+
+      expect(mockStateManager.updateState).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actionPoints: 3,
+          apOverflow: 0,
+        }),
+      );
+    });
+
+    it('T-0108-02: AP超過ありの場合はMAX_AP - apOverflowで回復する', () => {
+      // 🔵 信頼性レベル: REQ-003-01「AP超過分は翌日のAPから差し引かれる」
+      mockStateManager.getState = vi.fn(() => ({
+        currentRank: GuildRank.G,
+        rankHp: 100,
+        remainingDays: 150,
+        currentDay: 2,
+        gold: 100,
+        actionPoints: 0,
+        maxActionPoints: 3,
+        comboCount: 0,
+        currentPhase: GamePhase.DELIVERY,
+        contribution: 0,
+        apOverflow: 1,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
+      }));
+
+      gameFlowManager.startDay();
+
+      expect(mockStateManager.updateState).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actionPoints: 2,
+          apOverflow: 0,
+        }),
+      );
+    });
+
+    it('T-0108-03: requestEndDay()で残AP破棄してendDay()が実行される', () => {
+      // 🔵 信頼性レベル: REQ-004・REQ-004-01
+      mockStateManager.getState = vi.fn(() => ({
+        currentRank: GuildRank.G,
+        rankHp: 100,
+        remainingDays: 150,
+        currentDay: 1,
+        gold: 100,
+        actionPoints: 2,
+        maxActionPoints: 3,
+        comboCount: 0,
+        currentPhase: GamePhase.DELIVERY,
+        contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
+      }));
+
+      gameFlowManager.requestEndDay();
+
+      // APが0にリセットされる
+      expect(mockStateManager.updateState).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actionPoints: 0,
+          apOverflow: 0,
+        }),
+      );
+      // endDay()が実行される（updateDeadlines呼び出しで確認）
+      expect(mockQuestService.updateDeadlines).toHaveBeenCalledTimes(1);
+      // DAY_ENDEDイベントが発行される
+      expect(mockEventBus.emit).toHaveBeenCalledWith(GameEventType.DAY_ENDED, expect.anything());
+    });
+
+    it('T-0108-04: requestEndDay()でapOverflowがリセットされ次日はMAX_APで開始', () => {
+      // 🔵 信頼性レベル: REQ-004・REQ-003-01
+      let currentApOverflow = 1;
+      let currentDay = 1;
+      let remainingDays = 150;
+      const currentPhase: GamePhase = GamePhase.DELIVERY;
+
+      mockStateManager.getState = vi.fn(() => ({
+        currentRank: GuildRank.G,
+        rankHp: 100,
+        remainingDays,
+        currentDay,
+        gold: 100,
+        actionPoints: 2,
+        maxActionPoints: 3,
+        comboCount: 0,
+        currentPhase,
+        contribution: 0,
+        apOverflow: currentApOverflow,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
+      }));
+      mockStateManager.updateState = vi.fn((update) => {
+        if (update.apOverflow !== undefined) {
+          currentApOverflow = update.apOverflow;
+        }
+        if (update.currentDay !== undefined) {
+          currentDay = update.currentDay;
+        }
+        if (update.remainingDays !== undefined) {
+          remainingDays = update.remainingDays;
+        }
+      });
+
+      gameFlowManager.requestEndDay();
+
+      // requestEndDay内でapOverflowが0にリセットされる
+      // その後endDay()→startDay()が呼ばれる
+      // startDay()でapOverflow=0なのでMAX_AP(3)で回復する
+      const updateCalls = mockStateManager.updateState.mock.calls;
+
+      // 最初のupdateState: requestEndDay()でAP=0, apOverflow=0
+      expect(updateCalls[0][0]).toEqual(
+        expect.objectContaining({ actionPoints: 0, apOverflow: 0 }),
+      );
+
+      // startDay()のupdateState: actionPoints=3（apOverflow=0のため）
+      const startDayCall = updateCalls.find((call) => call[0].actionPoints === 3);
+      expect(startDayCall).toBeDefined();
     });
   });
 });

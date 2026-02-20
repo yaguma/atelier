@@ -14,6 +14,7 @@
 
 import type { IDeckService } from '@domain/interfaces/deck-service.interface';
 import type { IQuestService } from '@domain/interfaces/quest-service.interface';
+import type { IAPOverflowResult } from '@features/gathering';
 import {
   DEFAULT_BOARD_CAPACITY,
   DEFAULT_BOARD_QUEST_DURATION,
@@ -23,6 +24,7 @@ import {
 import type { IEventBus } from '@shared/services/event-bus';
 import type { IStateManager } from '@shared/services/state-manager';
 import type {
+  IAutoAdvanceDayResult,
   IBoardQuest,
   IPhaseSwitchRequest,
   IPhaseSwitchResult,
@@ -179,11 +181,14 @@ export class GameFlowManager implements IGameFlowManager {
     // 🔵 信頼性レベル: 設計文書に明記
     const state = this.stateManager.getState();
 
-    // 【実装内容】: 行動ポイントを最大値に回復
-    // 【処理方針】: MAX_ACTION_POINTS定数を使用してAPを更新
+    // 【実装内容】: 行動ポイントをAP超過分を差し引いて回復（TASK-0108）
+    // 【処理方針】: MAX_ACTION_POINTS - apOverflowでAPを更新し、apOverflowをリセット
+    // 【要件】: REQ-003-01「AP超過分は翌日のAPから差し引かれる」
     // 🔵 信頼性レベル: 設計文書に明記
+    const recoveredAP = Math.max(0, MAX_ACTION_POINTS - state.apOverflow);
     this.stateManager.updateState({
-      actionPoints: MAX_ACTION_POINTS,
+      actionPoints: recoveredAP,
+      apOverflow: 0,
     });
 
     // 【実装内容】: 現在のランクに応じた日次依頼を生成
@@ -281,6 +286,100 @@ export class GameFlowManager implements IGameFlowManager {
       // 🔵 信頼性レベル: 設計文書に明記
       this.startDay();
     }
+  }
+
+  /**
+   * 【機能概要】: 明示的日終了リクエスト（TASK-0108）
+   * 【実装方針】: 残りAPを破棄→apOverflowリセット→endDay()実行
+   * 【要件】: REQ-004・REQ-004-01・dataflow.md セクション5
+   * 【テスト対応】: T-0108-03, T-0108-04
+   * 🔵 信頼性レベル: 設計文書に明記
+   */
+  requestEndDay(): void {
+    // 残りAPを破棄し、apOverflowをリセット
+    this.stateManager.updateState({
+      actionPoints: 0,
+      apOverflow: 0,
+    });
+
+    // endDay()を実行（内部でstartDay()が呼ばれ、次の日が開始される）
+    this.endDay();
+  }
+
+  // =============================================================================
+  // AP超過処理
+  // =============================================================================
+
+  /**
+   * 【機能概要】: AP超過による自動日進行処理（TASK-0107）
+   * 【実装方針】:
+   *   1. overflowResult.daysConsumed分のendDay()相当処理を順次実行
+   *   2. 各日の終了後にゲームオーバー判定
+   *   3. 途中でゲームオーバーなら停止
+   *   4. 最終的にnextDayAPを設定
+   *   5. IAutoAdvanceDayResultを返却
+   *
+   * 設計文書: architecture.md, dataflow.md セクション3
+   * 要件: REQ-003, REQ-003-01〜REQ-003-06, EDGE-002
+   * 🔵 信頼性レベル: 設計文書に明記
+   */
+  async processAPOverflow(overflowResult: IAPOverflowResult): Promise<IAutoAdvanceDayResult> {
+    let daysAdvanced = 0;
+
+    for (let i = 0; i < overflowResult.daysConsumed; i++) {
+      // 期限切れ依頼を処理
+      const failedQuests = this.questService.updateDeadlines();
+
+      // 日数を更新
+      const state = this.stateManager.getState();
+      const newRemainingDays = state.remainingDays - 1;
+      const newCurrentDay = state.currentDay + 1;
+
+      this.stateManager.updateState({
+        remainingDays: newRemainingDays,
+        currentDay: newCurrentDay,
+      });
+
+      // DAY_ENDEDイベント発行
+      this.eventBus.emit(GameEventType.DAY_ENDED, {
+        failedQuests,
+        remainingDays: newRemainingDays,
+        currentDay: newCurrentDay,
+      });
+
+      daysAdvanced++;
+
+      // ゲームオーバー判定
+      const gameOver = this.checkGameOver();
+      if (gameOver) {
+        this.eventBus.emit(GameEventType.GAME_OVER, gameOver);
+        const finalState = this.stateManager.getState();
+        return {
+          daysAdvanced,
+          newCurrentDay: finalState.currentDay,
+          newRemainingDays: finalState.remainingDays,
+          newActionPoints: 0,
+          isGameOver: true,
+        };
+      }
+
+      // 手札補充
+      this.deckService.refillHand();
+    }
+
+    // 最終的なAPを設定
+    this.stateManager.updateState({
+      actionPoints: overflowResult.nextDayAP,
+    });
+
+    const finalState = this.stateManager.getState();
+    return {
+      daysAdvanced,
+      newCurrentDay: finalState.currentDay,
+      newRemainingDays: finalState.remainingDays,
+      newActionPoints: overflowResult.nextDayAP,
+      isGameOver: false,
+    };
   }
 
   // =============================================================================
