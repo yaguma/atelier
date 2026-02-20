@@ -63,4 +63,4 @@ export { GATHERING_LOCATIONS } from './data/locations';
 // =============================================================================
 
 export type { MaterialDisplay } from './components';
-export { GatheringPhaseUI, MaterialSlotUI } from './components';
+export { GatheringPhaseUI, LocationSelectUI, MaterialSlotUI } from './components';
