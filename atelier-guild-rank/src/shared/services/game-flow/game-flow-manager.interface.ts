@@ -12,9 +12,11 @@
  * - ゲームフロー全体の統括機能
  */
 
+import type { IAPOverflowResult } from '@features/gathering';
 import type {
   GamePhase,
   GuildRank,
+  IAutoAdvanceDayResult,
   IPhaseSwitchRequest,
   IPhaseSwitchResult,
   ISaveData,
@@ -133,6 +135,21 @@ export interface IGameFlowManager {
    * 🟡 信頼性レベル: 要件定義書から推測
    */
   skipPhase(): void;
+
+  // =============================================================================
+  // AP超過処理
+  // =============================================================================
+
+  /**
+   * 【機能概要】: AP超過による自動日進行処理（TASK-0107）
+   * 【実装方針】: overflowResult.daysConsumed分のendDay()を順次実行
+   * 【設計文書】: architecture.md・dataflow.md セクション3
+   * 🔵 信頼性レベル: 設計文書に明記
+   *
+   * @param overflowResult - AP超過計算結果
+   * @returns 自動日進行結果
+   */
+  processAPOverflow(overflowResult: IAPOverflowResult): Promise<IAutoAdvanceDayResult>;
 
   // =============================================================================
   // ゲーム終了判定
