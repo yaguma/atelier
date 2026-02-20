@@ -189,9 +189,6 @@ export class MainScene extends Phaser.Scene {
     [GamePhase.DELIVERY]: false,
   };
 
-  /** 完了したフェーズの配列 */
-  private _completedPhases: GamePhase[] = [];
-
   // ===========================================================================
   // コンストラクタ
   // ===========================================================================
@@ -472,11 +469,6 @@ export class MainScene extends Phaser.Scene {
     // TASK-0112: プログレスバー・「次へ」ボタン廃止のため、footerUI呼び出しを削除
     // PhaseTabUIがPHASE_CHANGEDイベントを直接購読してタブ表示を更新する
 
-    // 完了フェーズの追加（TASK-0116で廃止予定）
-    if (!this._completedPhases.includes(event.previousPhase)) {
-      this._completedPhases.push(event.previousPhase);
-    }
-
     // フェーズUIの表示切り替え
     this.showPhase(event.newPhase);
   }
@@ -487,9 +479,6 @@ export class MainScene extends Phaser.Scene {
    * @param event - 日開始イベント
    */
   private handleDayStarted(event: { remainingDays: number }): void {
-    // 完了フェーズをリセット
-    this._completedPhases = [];
-
     // ヘッダーの更新（残り日数を反映）
     const state = this.stateManager.getState();
     this.headerUI.update({
