@@ -18,23 +18,41 @@
 // 素材関連
 export type {
   DraftSession,
+  DropRateLabel,
   GatheringCostResult,
   GatheringResult,
   IGatheringCard,
+  IGatheringLocation,
+  IGatheringLocationData,
   IGatheringMaterial,
   IGatheringService,
+  ILocationSelectResult,
   IMaterial,
   IMaterialInstance,
+  IMaterialPreview,
   MaterialOption,
 } from './types';
-export { isGatheringCard } from './types';
+export { GatheringStage, isGatheringCard } from './types';
 
 // =============================================================================
 // Services（純粋関数）
 // =============================================================================
 
 export type { GatherInput, GatherResult, SelectionError, SelectionResult } from './services';
-export { calculateGatheringCost, gather, selectGatheringOption } from './services';
+export {
+  calculateGatheringCost,
+  gather,
+  getAvailableLocations,
+  getLocationDetail,
+  getSelectableLocations,
+  selectGatheringOption,
+} from './services';
+
+// =============================================================================
+// Data（マスタデータ）
+// =============================================================================
+
+export { GATHERING_LOCATIONS } from './data/locations';
 
 // =============================================================================
 // Components

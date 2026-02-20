@@ -12,6 +12,12 @@ export { calculateGatheringCost } from './calculate-materials';
 export type { GatherInput, GatherResult } from './gather';
 // --- 採取素材オプション生成 ---
 export { gather } from './gather';
+// --- 採取場所 ---
+export {
+  getAvailableLocations,
+  getLocationDetail,
+  getSelectableLocations,
+} from './gathering-location-service';
 export type { SelectionError, SelectionResult } from './select-option';
 // --- ドラフト選択 ---
 export { selectGatheringOption } from './select-option';
