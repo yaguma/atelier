@@ -158,11 +158,14 @@ export class GameFlowManager implements IGameFlowManager {
     // 🔵 信頼性レベル: 設計文書に明記
     const state = this.stateManager.getState();
 
-    // 【実装内容】: 行動ポイントを最大値に回復
-    // 【処理方針】: MAX_ACTION_POINTS定数を使用してAPを更新
+    // 【実装内容】: 行動ポイントをAP超過分を差し引いて回復（TASK-0108）
+    // 【処理方針】: MAX_ACTION_POINTS - apOverflowでAPを更新し、apOverflowをリセット
+    // 【要件】: REQ-003-01「AP超過分は翌日のAPから差し引かれる」
     // 🔵 信頼性レベル: 設計文書に明記
+    const recoveredAP = Math.max(0, MAX_ACTION_POINTS - state.apOverflow);
     this.stateManager.updateState({
-      actionPoints: MAX_ACTION_POINTS,
+      actionPoints: recoveredAP,
+      apOverflow: 0,
     });
 
     // 【実装内容】: 現在のランクに応じた日次依頼を生成
@@ -255,6 +258,24 @@ export class GameFlowManager implements IGameFlowManager {
       // 🔵 信頼性レベル: 設計文書に明記
       this.startDay();
     }
+  }
+
+  /**
+   * 【機能概要】: 明示的日終了リクエスト（TASK-0108）
+   * 【実装方針】: 残りAPを破棄→apOverflowリセット→endDay()実行
+   * 【要件】: REQ-004・REQ-004-01・dataflow.md セクション5
+   * 【テスト対応】: T-0108-03, T-0108-04
+   * 🔵 信頼性レベル: 設計文書に明記
+   */
+  requestEndDay(): void {
+    // 残りAPを破棄し、apOverflowをリセット
+    this.stateManager.updateState({
+      actionPoints: 0,
+      apOverflow: 0,
+    });
+
+    // endDay()を実行（内部でstartDay()が呼ばれ、次の日が開始される）
+    this.endDay();
   }
 
   // =============================================================================
