@@ -41,10 +41,17 @@ export type {
   IActiveQuest,
   IClient,
   IQuest,
+  IQuestBoardUpdateInput,
+  IQuestBoardUpdateResult,
   IQuestCondition,
   IQuestService,
   QuestDifficulty,
   RewardCardCandidate,
+} from './types';
+export {
+  DEFAULT_BOARD_CAPACITY,
+  DEFAULT_BOARD_QUEST_DURATION,
+  DEFAULT_VISITOR_UPDATE_INTERVAL,
 } from './types';
 
 // =============================================================================
@@ -61,9 +68,11 @@ export type {
   ValidationResult,
 } from './services';
 export {
+  acceptBoardQuest,
   CLIENT_COUNT_BY_RANK,
   calculateAverageQualityMultiplier,
   calculateReward,
+  canAcceptVisitorQuest,
   DAILY_QUEST_COUNT_BY_RANK,
   generateQuests,
   getDefaultClientCount,
@@ -72,6 +81,7 @@ export {
   QUALITY_REWARD_MULTIPLIER,
   QUEST_LIMIT_BY_RANK,
   QUEST_TYPE_CONTRIBUTION_MULTIPLIER,
+  updateBoard,
   validateQuest,
   validateQuestWithMultipleItems,
 } from './services';

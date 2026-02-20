@@ -24,7 +24,12 @@ export {
   getQuestLimitForRank,
   QUEST_LIMIT_BY_RANK,
 } from './generate-quests';
-
+// --- 掲示板管理 ---
+export {
+  acceptBoardQuest,
+  canAcceptVisitorQuest,
+  updateBoard,
+} from './quest-board-service';
 // --- 依頼バリデーション ---
 export type { ValidatableItem, ValidationError, ValidationResult } from './validate-quest';
 export { validateQuest, validateQuestWithMultipleItems } from './validate-quest';
