@@ -47,6 +47,8 @@ interface MockedDeckService extends Partial<IDeckService> {
 
 interface MockedQuestService extends Partial<IQuestService> {
   generateDailyQuests: MockedFunction<IQuestService['generateDailyQuests']>;
+  generateBoardQuests: MockedFunction<IQuestService['generateBoardQuests']>;
+  generateVisitorQuests: MockedFunction<IQuestService['generateVisitorQuests']>;
   updateDeadlines: MockedFunction<IQuestService['updateDeadlines']>;
 }
 
@@ -85,6 +87,14 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.QUEST_ACCEPT,
         contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
       })),
       setPhase: vi.fn(),
       advanceDay: vi.fn(),
@@ -99,6 +109,8 @@ describe('GameFlowManager', () => {
     // モックQuestServiceの作成
     mockQuestService = {
       generateDailyQuests: vi.fn(),
+      generateBoardQuests: vi.fn(() => []),
+      generateVisitorQuests: vi.fn(() => []),
       updateDeadlines: vi.fn(() => []),
     };
 
@@ -170,6 +182,14 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.DELIVERY, // 日終了後の状態
         contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
       }));
 
       // 【実際の処理実行】: gameFlowManager.startDay()を呼び出す
@@ -263,6 +283,14 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.QUEST_ACCEPT,
         contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
       }));
 
       // 【実際の処理実行】: endPhase()を呼び出す
@@ -292,6 +320,14 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.DELIVERY,
         contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
       }));
 
       // 【実際の処理実行】: gameFlowManager.endDay()を呼び出す
@@ -340,6 +376,14 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.QUEST_ACCEPT,
         contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
       }));
 
       // 【実際の処理実行】: checkGameClear()を呼び出す
@@ -373,6 +417,14 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.DELIVERY,
         contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
       }));
 
       // モックのリセット（初期化呼び出しをカウントしないように）
@@ -420,6 +472,14 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.GATHERING,
         contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
       }));
 
       // 【実際の処理実行】: getCurrentPhase()を呼び出す
@@ -449,6 +509,14 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.GATHERING,
         contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
       }));
 
       // 【実際の処理実行】: skipPhase()を呼び出す
@@ -478,6 +546,14 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.QUEST_ACCEPT,
         contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
       }));
 
       // 【実際の処理実行】: rest()を呼び出す
@@ -518,6 +594,14 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.QUEST_ACCEPT,
         contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
       }));
 
       // 【実際の処理実行】: 無効なフェーズ遷移を試みる（依頼受注→納品）
@@ -586,6 +670,14 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.QUEST_ACCEPT,
         contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
       }));
 
       // 【実際の処理実行】: checkGameOver()を呼び出す
@@ -619,6 +711,14 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.QUEST_ACCEPT,
         contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
       }));
 
       // 【実際の処理実行】: checkGameOver()を呼び出す
@@ -667,6 +767,14 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.GATHERING,
         contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
       }));
 
       // activeOperationChecker付きでGameFlowManagerを再作成
@@ -706,6 +814,14 @@ describe('GameFlowManager', () => {
         comboCount: 0,
         currentPhase: GamePhase.GATHERING,
         contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
       }));
 
       const { GameFlowManager } = await import('@shared/services/game-flow');
@@ -770,6 +886,111 @@ describe('GameFlowManager', () => {
 
       expect(result.success).toBe(true);
       expect(result.newPhase).toBe(GamePhase.DELIVERY);
+    });
+  });
+
+  // =============================================================================
+  // 掲示板連携テストケース（TASK-0110）
+  // =============================================================================
+
+  describe('掲示板連携 - startDay()での掲示板更新（TASK-0110）', () => {
+    it('T-0110-01: startDay()で掲示板が更新される（期限切れ依頼が除去される）', () => {
+      // 【テスト目的】: startDay()呼び出し時にupdateBoard()が実行され、期限切れ依頼が除去されることを確認
+      // 🟡 信頼性レベル: dataflow.md セクション6.1から妥当な推測
+
+      mockStateManager.getState = vi.fn(() => ({
+        currentRank: GuildRank.G,
+        rankHp: 100,
+        remainingDays: 148,
+        currentDay: 3,
+        gold: 100,
+        actionPoints: 3,
+        maxActionPoints: 3,
+        comboCount: 0,
+        currentPhase: GamePhase.DELIVERY,
+        contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [
+            { questId: 'expired-q1', postedDay: 1, expiryDay: 2 },
+            { questId: 'active-q1', postedDay: 1, expiryDay: 5 },
+          ],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 1,
+        },
+      }));
+
+      gameFlowManager.startDay();
+
+      // updateStateがquestBoardを含む呼び出しを持つことを確認
+      const questBoardCalls = mockStateManager.updateState.mock.calls.filter(
+        (call) => call[0]?.questBoard !== undefined,
+      );
+      expect(questBoardCalls.length).toBeGreaterThanOrEqual(1);
+
+      // 更新された掲示板に期限切れ依頼（expiryDay=2 < currentDay=3）が含まれないことを確認
+      const lastBoardUpdate = questBoardCalls[questBoardCalls.length - 1]?.[0]?.questBoard;
+      expect(lastBoardUpdate).toBeDefined();
+      const expiredQuestIds = lastBoardUpdate.boardQuests
+        .filter((q: { expiryDay: number }) => q.expiryDay < 3)
+        .map((q: { questId: string }) => q.questId);
+      expect(expiredQuestIds).not.toContain('expired-q1');
+
+      // アクティブ依頼は残っていることを確認
+      const activeQuestIds = lastBoardUpdate.boardQuests.map((q: { questId: string }) => q.questId);
+      expect(activeQuestIds).toContain('active-q1');
+    });
+
+    it('T-0110-02: startDay()でgenerateBoardQuestsとgenerateVisitorQuestsが呼ばれる', () => {
+      // 【テスト目的】: startDay()でQuestServiceの掲示板候補生成メソッドが呼ばれることを確認
+      // 🟡 信頼性レベル: dataflow.md セクション6.1から妥当な推測
+
+      gameFlowManager.startDay();
+
+      expect(mockQuestService.generateBoardQuests).toHaveBeenCalledTimes(1);
+      expect(mockQuestService.generateBoardQuests).toHaveBeenCalledWith(GuildRank.G, 5);
+      expect(mockQuestService.generateVisitorQuests).toHaveBeenCalledTimes(1);
+      expect(mockQuestService.generateVisitorQuests).toHaveBeenCalledWith(GuildRank.G);
+    });
+
+    it('T-0110-03: endDay()後のstartDay()でも掲示板が更新される', () => {
+      // 【テスト目的】: endDay()→startDay()の自動日進行でも掲示板が正しく更新されることを確認
+      // 🟡 信頼性レベル: dataflow.md セクション3.3から妥当な推測
+
+      mockStateManager.getState = vi.fn(() => ({
+        currentRank: GuildRank.G,
+        rankHp: 100,
+        remainingDays: 148,
+        currentDay: 3,
+        gold: 100,
+        actionPoints: 3,
+        maxActionPoints: 3,
+        comboCount: 0,
+        currentPhase: GamePhase.DELIVERY,
+        contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
+      }));
+
+      gameFlowManager.endDay();
+
+      // endDay()後にstartDay()が呼ばれ、その中でgenerateBoardQuestsが呼ばれることを確認
+      expect(mockQuestService.generateBoardQuests).toHaveBeenCalled();
+      expect(mockQuestService.generateVisitorQuests).toHaveBeenCalled();
+
+      // questBoardの更新がStateに反映されることを確認
+      const questBoardCalls = mockStateManager.updateState.mock.calls.filter(
+        (call) => call[0]?.questBoard !== undefined,
+      );
+      expect(questBoardCalls.length).toBeGreaterThanOrEqual(1);
     });
   });
 });
