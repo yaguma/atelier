@@ -15,13 +15,21 @@
 import type { IDeckService } from '@domain/interfaces/deck-service.interface';
 import type { IQuestService } from '@domain/interfaces/quest-service.interface';
 import type { IAPOverflowResult } from '@features/gathering';
+import {
+  DEFAULT_BOARD_CAPACITY,
+  DEFAULT_BOARD_QUEST_DURATION,
+  DEFAULT_VISITOR_UPDATE_INTERVAL,
+  updateBoard,
+} from '@features/quest';
 import type { IEventBus } from '@shared/services/event-bus';
 import type { IStateManager } from '@shared/services/state-manager';
 import type {
   IAutoAdvanceDayResult,
+  IBoardQuest,
   IPhaseSwitchRequest,
   IPhaseSwitchResult,
   ISaveData,
+  IVisitorQuest,
 } from '@shared/types';
 import {
   ApplicationError,
@@ -187,6 +195,11 @@ export class GameFlowManager implements IGameFlowManager {
     // 【処理方針】: 取得した状態から現在のランクを使用してQuestServiceを呼び出す
     // 🔵 信頼性レベル: 設計文書に明記
     this.questService.generateDailyQuests(state.currentRank);
+
+    // 【実装内容】: 掲示板を更新（TASK-0110）
+    // 【処理方針】: QuestBoardService.updateBoard()で期限切れ除去・新規追加・訪問依頼更新
+    // 🟡 信頼性レベル: dataflow.md セクション6.1から妥当な推測
+    this.updateQuestBoard(state);
 
     // 【実装内容】: DAY_STARTEDイベントを発行
     // 【処理方針】: 取得した状態から現在の日数と残り日数を使用してイベントを発行
@@ -548,6 +561,56 @@ export class GameFlowManager implements IGameFlowManager {
     }
 
     return null;
+  }
+
+  // =============================================================================
+  // 掲示板更新（TASK-0110）
+  // =============================================================================
+
+  /**
+   * 【機能概要】: 掲示板の更新処理
+   * 【実装方針】: QuestServiceで候補を生成し、updateBoard()で掲示板を更新してStateに反映
+   * 🟡 信頼性レベル: dataflow.md セクション6.1から妥当な推測
+   */
+  private updateQuestBoard(state: Readonly<ReturnType<IStateManager['getState']>>): void {
+    const currentDay = state.currentDay;
+    const currentBoard = state.questBoard;
+
+    // 掲示板の空き枠を計算（期限切れ除去後の空き）
+    const activeCount = currentBoard.boardQuests.filter((q) => q.expiryDay >= currentDay).length;
+    const vacancies = Math.max(0, DEFAULT_BOARD_CAPACITY - activeCount);
+
+    // 掲示板依頼候補を生成してIBoardQuestに変換
+    const boardQuestCandidates: IBoardQuest[] =
+      vacancies > 0
+        ? this.questService.generateBoardQuests(state.currentRank, vacancies).map((quest) => ({
+            questId: quest.id,
+            postedDay: currentDay,
+            expiryDay: currentDay + DEFAULT_BOARD_QUEST_DURATION,
+          }))
+        : [];
+
+    // 訪問依頼候補を生成してIVisitorQuestに変換
+    const visitorQuestCandidates: IVisitorQuest[] = this.questService
+      .generateVisitorQuests(state.currentRank)
+      .map((quest) => ({
+        questId: quest.id,
+        visitStartDay: currentDay,
+        visitEndDay: currentDay + DEFAULT_VISITOR_UPDATE_INTERVAL,
+      }));
+
+    // updateBoard()純粋関数で掲示板を更新
+    const boardResult = updateBoard({
+      currentDay,
+      currentBoard,
+      newBoardQuestCandidates: boardQuestCandidates,
+      newVisitorQuestCandidates: visitorQuestCandidates,
+    });
+
+    // 更新結果をStateに反映
+    this.stateManager.updateState({
+      questBoard: boardResult.newBoard,
+    });
   }
 
   // =============================================================================
