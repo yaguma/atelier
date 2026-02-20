@@ -10,6 +10,15 @@ export type { IAPConsumptionInput, IAPOverflowResult } from './ap-overflow';
 // --- 採取カード関連型 ---
 export type { IGatheringCard, IGatheringMaterial } from './gathering-card';
 export { isGatheringCard } from './gathering-card';
+// --- 採取場所関連型 ---
+export type {
+  DropRateLabel,
+  IGatheringLocation,
+  IGatheringLocationData,
+  ILocationSelectResult,
+  IMaterialPreview,
+} from './gathering-location';
+export { GatheringStage } from './gathering-location';
 // --- GatheringService関連型 ---
 export type {
   DraftSession,
@@ -18,6 +27,5 @@ export type {
   IGatheringService,
   MaterialOption,
 } from './gathering-service';
-
 // --- 素材関連型 ---
 export type { IMaterial, IMaterialInstance } from './material';
