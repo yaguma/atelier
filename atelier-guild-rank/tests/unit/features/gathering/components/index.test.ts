@@ -6,7 +6,7 @@
  */
 
 import type { MaterialDisplay } from '@features/gathering/components';
-import { GatheringPhaseUI, MaterialSlotUI } from '@features/gathering/components';
+import { GatheringPhaseUI, LocationSelectUI, MaterialSlotUI } from '@features/gathering/components';
 import { describe, expect, it } from 'vitest';
 
 describe('features/gathering/components', () => {
@@ -98,6 +98,28 @@ describe('features/gathering/components', () => {
       expect(display).toHaveProperty('name');
       expect(display).toHaveProperty('type');
       expect(display).toHaveProperty('quality');
+    });
+  });
+
+  describe('LocationSelectUI', () => {
+    it('LocationSelectUIがエクスポートされている', () => {
+      expect(LocationSelectUI).toBeDefined();
+    });
+
+    it('LocationSelectUIはクラスである', () => {
+      expect(typeof LocationSelectUI).toBe('function');
+    });
+
+    it('LocationSelectUIはprototypeを持つ', () => {
+      expect(LocationSelectUI.prototype).toBeDefined();
+    });
+
+    it('LocationSelectUIはcreateメソッドを持つ', () => {
+      expect(typeof LocationSelectUI.prototype.create).toBe('function');
+    });
+
+    it('LocationSelectUIはdestroyメソッドを持つ', () => {
+      expect(typeof LocationSelectUI.prototype.destroy).toBe('function');
     });
   });
 
