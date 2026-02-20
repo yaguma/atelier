@@ -12,7 +12,7 @@
 
 import type { IEventBus } from '@shared/services/event-bus/types';
 import type { IGameFlowManager } from '@shared/services/game-flow/game-flow-manager.interface';
-import type { GamePhase, IPhaseSwitchRequest } from '@shared/types';
+import type { GamePhase, IPhaseChangedEvent, IPhaseSwitchRequest } from '@shared/types';
 import { VALID_GAME_PHASES } from '@shared/types/common';
 import { GameEventType } from '@shared/types/events';
 import Phaser from 'phaser';
@@ -55,17 +55,25 @@ const TAB_LAYOUT = {
   TAB_START_X: 16,
   /** タブY座標 */
   TAB_Y: 20,
+  /** テキストX方向オフセット（タブ中心からの補正） */
+  TEXT_OFFSET_X: 12,
+  /** テキストY方向オフセット（タブ中心からの補正） */
+  TEXT_OFFSET_Y: 8,
   /** 日終了ボタン幅 */
   END_DAY_WIDTH: 80,
   /** 日終了ボタン高さ */
   END_DAY_HEIGHT: 36,
+  /** 日終了ボタンマージン */
+  END_DAY_MARGIN: 16,
+  /** 日終了テキストX方向オフセット */
+  END_DAY_TEXT_OFFSET_X: 24,
 } as const;
 
 /**
  * フェーズ名ラベル
  * 🔵 信頼性レベル: 既存FooterUIから流用
  */
-const PHASE_LABELS: Record<string, string> = {
+const PHASE_LABELS: Record<GamePhase, string> = {
   QUEST_ACCEPT: '依頼',
   GATHERING: '採取',
   ALCHEMY: '調合',
@@ -107,6 +115,9 @@ export class PhaseTabUI extends BaseComponent {
 
   /** EventBus購読解除関数 */
   private _unsubscribePhaseChanged: (() => void) | null = null;
+
+  /** 破棄済みフラグ */
+  private _isDestroyed = false;
 
   // ===========================================================================
   // 視覚要素
@@ -190,8 +201,8 @@ export class PhaseTabUI extends BaseComponent {
       // タブテキスト
       const label = PHASE_LABELS[phase] ?? phase;
       const text = this.scene.make.text({
-        x: tabX - 12,
-        y: TAB_LAYOUT.TAB_Y - 8,
+        x: tabX - TAB_LAYOUT.TEXT_OFFSET_X,
+        y: TAB_LAYOUT.TAB_Y - TAB_LAYOUT.TEXT_OFFSET_Y,
         text: label,
         style: {
           fontSize: '14px',
@@ -209,7 +220,7 @@ export class PhaseTabUI extends BaseComponent {
       TAB_LAYOUT.TAB_START_X +
       VALID_GAME_PHASES.length * (TAB_LAYOUT.TAB_WIDTH + TAB_LAYOUT.TAB_SPACING) +
       TAB_LAYOUT.END_DAY_WIDTH / 2 +
-      16;
+      TAB_LAYOUT.END_DAY_MARGIN;
 
     this._endDayBackground = new Phaser.GameObjects.Rectangle(
       this.scene,
@@ -230,8 +241,8 @@ export class PhaseTabUI extends BaseComponent {
     this.container.add(this._endDayBackground);
 
     this._endDayText = this.scene.make.text({
-      x: endDayX - 24,
-      y: TAB_LAYOUT.TAB_Y - 8,
+      x: endDayX - TAB_LAYOUT.END_DAY_TEXT_OFFSET_X,
+      y: TAB_LAYOUT.TAB_Y - TAB_LAYOUT.TEXT_OFFSET_Y,
       text: '日終了',
       style: { fontSize: '14px', color: '#FFFFFF', fontStyle: 'bold' },
       add: false,
@@ -239,7 +250,7 @@ export class PhaseTabUI extends BaseComponent {
     this.container.add(this._endDayText);
 
     // PHASE_CHANGEDイベントの購読
-    this._unsubscribePhaseChanged = this.eventBus.on<{ newPhase: GamePhase }>(
+    this._unsubscribePhaseChanged = this.eventBus.on<IPhaseChangedEvent>(
       GameEventType.PHASE_CHANGED,
       (event) => {
         this.updateActiveTab(event.payload.newPhase);
@@ -252,6 +263,11 @@ export class PhaseTabUI extends BaseComponent {
    * EventBus購読を確実に解除する
    */
   destroy(): void {
+    if (this._isDestroyed) {
+      return;
+    }
+    this._isDestroyed = true;
+
     // EventBus購読解除
     this._unsubscribePhaseChanged?.();
     this._unsubscribePhaseChanged = null;
@@ -315,7 +331,9 @@ export class PhaseTabUI extends BaseComponent {
     }
 
     const request: IPhaseSwitchRequest = { targetPhase };
-    this.gameFlowManager.switchPhase(request);
+    this.gameFlowManager.switchPhase(request).catch(() => {
+      // フェーズ切り替え失敗時は何もしない（PHASE_CHANGEDイベントが発行されないため状態は変わらない）
+    });
   }
 
   /**

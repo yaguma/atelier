@@ -247,8 +247,13 @@ describe('PhaseTabUI（TASK-0111）', () => {
       )?.[1];
       expect(handler).toBeDefined();
 
-      // GATHERINGへの変更イベントをシミュレート（IBusEvent構造に合わせる）
-      handler?.({ payload: { newPhase: GamePhase.GATHERING } });
+      // GATHERINGへの変更イベントをシミュレート（IBusEvent<IPhaseChangedEvent>構造に合わせる）
+      handler?.({
+        payload: {
+          previousPhase: GamePhase.QUEST_ACCEPT,
+          newPhase: GamePhase.GATHERING,
+        },
+      });
 
       expect(phaseTabUI.getActivePhase()).toBe(GamePhase.GATHERING);
     });
