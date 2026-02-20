@@ -16,8 +16,15 @@ import type { IDeckService } from '@domain/interfaces/deck-service.interface';
 import type { IQuestService } from '@domain/interfaces/quest-service.interface';
 import type { IEventBus } from '@shared/services/event-bus';
 import type { IStateManager } from '@shared/services/state-manager';
-import type { ISaveData } from '@shared/types';
-import { ApplicationError, ErrorCodes, GameEventType, GamePhase, GuildRank } from '@shared/types';
+import type { IPhaseSwitchRequest, IPhaseSwitchResult, ISaveData } from '@shared/types';
+import {
+  ApplicationError,
+  ErrorCodes,
+  GameEventType,
+  GamePhase,
+  GuildRank,
+  PhaseSwitchFailureReason,
+} from '@shared/types';
 import type { CardId } from '@shared/types/ids';
 import type { GameEndCondition, IGameFlowManager } from './game-flow-manager.interface';
 
@@ -59,12 +66,14 @@ export class GameFlowManager implements IGameFlowManager {
    * @param deckService - デッキ管理サービス
    * @param questService - 依頼管理サービス
    * @param eventBus - イベントバス
+   * @param activeOperationChecker - 進行中操作チェック（採取セッション等）
    */
   constructor(
     private readonly stateManager: IStateManager,
     private readonly deckService: IDeckService,
     private readonly questService: IQuestService,
     private readonly eventBus: IEventBus,
+    private readonly activeOperationChecker?: () => boolean,
   ) {
     // 【実装内容】: 依存性注入のみ、初期化処理はstartNewGame()またはcontinueGame()で行う
     // 🔵 信頼性レベル: 設計文書に明記
@@ -260,6 +269,54 @@ export class GameFlowManager implements IGameFlowManager {
   // =============================================================================
   // フェーズ進行
   // =============================================================================
+
+  /**
+   * 【機能概要】: フェーズを自由に切り替える（TASK-0106）
+   * 【実装方針】:
+   *   1. 同一フェーズの場合はno-op（成功として返却）
+   *   2. 進行中操作チェック（採取セッション中断確認）
+   *   3. StateManager.setPhase()でフェーズ変更
+   *   4. IPhaseSwitchResultを返却
+   *
+   * 設計文書: architecture.md, dataflow.md セクション2
+   * 要件: REQ-001, REQ-001-01〜REQ-001-03
+   * 🔵 信頼性レベル: 設計文書に明記
+   */
+  async switchPhase(request: IPhaseSwitchRequest): Promise<IPhaseSwitchResult> {
+    const currentPhase = this.stateManager.getState().currentPhase;
+    const { targetPhase, forceAbort = false } = request;
+
+    // 同一フェーズへの切り替えはno-op
+    if (currentPhase === targetPhase) {
+      return {
+        success: true,
+        previousPhase: currentPhase,
+        newPhase: currentPhase,
+      };
+    }
+
+    // 進行中操作チェック
+    const hasActiveOperation = this.activeOperationChecker?.() ?? false;
+    if (hasActiveOperation && !forceAbort) {
+      return {
+        success: false,
+        previousPhase: currentPhase,
+        newPhase: currentPhase,
+        failureReason: PhaseSwitchFailureReason.SESSION_ABORT_REJECTED,
+      };
+    }
+
+    // フェーズ遷移（StateManagerがバリデーションとPHASE_CHANGEDイベント発行を行う）
+    // 注意: 現在のVALID_PHASE_TRANSITIONSは全フェーズ間自由遷移のため例外は発生しない。
+    // 将来的に遷移制限が追加された場合はtry-catchでのエラーハンドリングが必要。
+    this.stateManager.setPhase(targetPhase);
+
+    return {
+      success: true,
+      previousPhase: currentPhase,
+      newPhase: targetPhase,
+    };
+  }
 
   /**
    * 【機能概要】: 指定されたフェーズに遷移
