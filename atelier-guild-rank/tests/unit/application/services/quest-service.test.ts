@@ -667,4 +667,85 @@ describe('QuestService', () => {
       });
     });
   });
+
+  // =============================================================================
+  // T-0109-01〜T-0109-03: 掲示板方式対応テストケース（TASK-0109）
+  // =============================================================================
+
+  describe('掲示板方式対応テストケース（TASK-0109）', () => {
+    describe('T-0109-01: 掲示板依頼の生成', () => {
+      it('generateBoardQuests()で指定された空き枠数分の依頼が生成される', () => {
+        const boardQuests = questService.generateBoardQuests('D', 2);
+
+        expect(boardQuests).toHaveLength(2);
+        for (const quest of boardQuests) {
+          expect(quest.id).toBeDefined();
+          expect(quest.clientId).toBeDefined();
+          expect(quest.contribution).toBeGreaterThan(0);
+        }
+      });
+
+      it('generateBoardQuests()で空き枠0の場合は空配列を返す', () => {
+        const boardQuests = questService.generateBoardQuests('D', 0);
+
+        expect(boardQuests).toHaveLength(0);
+      });
+
+      it('generateBoardQuests()で生成された依頼はavailableQuestsに追加される', () => {
+        const boardQuests = questService.generateBoardQuests('D', 2);
+
+        const available = questService.getAvailableQuests();
+        expect(available).toHaveLength(2);
+        expect(available.map((q) => q.id)).toEqual(boardQuests.map((q) => q.id));
+      });
+    });
+
+    describe('T-0109-02: 訪問依頼の生成', () => {
+      it('generateVisitorQuests()でランクに応じた訪問依頼が生成される', () => {
+        // Gランク: 訪問依頼1件
+        const visitorQuestsG = questService.generateVisitorQuests('G');
+        expect(visitorQuestsG).toHaveLength(1);
+
+        // 新しいQuestServiceインスタンスでDランクテスト
+        const questService2 = new QuestService(
+          mockMasterDataRepo as unknown as IMasterDataRepository,
+          mockEventBus,
+        );
+        const visitorQuestsD = questService2.generateVisitorQuests('D');
+        expect(visitorQuestsD).toHaveLength(2);
+      });
+
+      it('generateVisitorQuests()で生成された依頼はavailableQuestsに追加される', () => {
+        const visitorQuests = questService.generateVisitorQuests('D');
+
+        const available = questService.getAvailableQuests();
+        expect(available.length).toBeGreaterThanOrEqual(visitorQuests.length);
+      });
+    });
+
+    describe('T-0109-03: 既存generateDailyQuests()との後方互換', () => {
+      it('generateDailyQuests()は引き続き正常に動作する', () => {
+        const result = questService.generateDailyQuests('G');
+
+        expect(result.clients).toHaveLength(2);
+        expect(result.quests).toHaveLength(3);
+        expect(mockEventBus.emit).toHaveBeenCalledWith(
+          'QUEST_GENERATED',
+          expect.objectContaining({
+            clients: expect.any(Array),
+            quests: expect.any(Array),
+          }),
+        );
+      });
+
+      it('generateBoardQuests()後にacceptQuest()で受注できる', () => {
+        const boardQuests = questService.generateBoardQuests('D', 2);
+
+        const accepted = questService.acceptQuest(boardQuests[0].id);
+        expect(accepted).toBe(true);
+        expect(questService.getActiveQuests()).toHaveLength(1);
+        expect(questService.getActiveQuests()[0].quest.id).toBe(boardQuests[0].id);
+      });
+    });
+  });
 });

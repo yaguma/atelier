@@ -23,6 +23,7 @@ import {
   GamePhase,
   GuildRank,
   type ISaveData,
+  PhaseSwitchFailureReason,
 } from '@shared/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -628,6 +629,148 @@ describe('GameFlowManager', () => {
       // 【結果検証】: nullが返されることを確認（ゲームオーバーではない）
       // 🟡 信頼性: 要件定義書から妥当に推測
       expect(result).toBeNull(); // 【確認内容】: ゲームオーバーではないことを確認
+    });
+  });
+
+  // =============================================================================
+  // switchPhase() テストケース（TASK-0106）
+  // =============================================================================
+
+  describe('switchPhase() - フェーズ自由遷移（TASK-0106）', () => {
+    it('T-0106-01: 通常のフェーズ切り替えが成功する', async () => {
+      // 【テスト目的】: 進行中操作がない場合のフェーズ切り替えが成功することを確認
+      // 【テスト内容】: QUEST_ACCEPTからGATHERINGへの遷移
+      // 🔵 信頼性レベル: 設計文書に明記
+
+      const result = await gameFlowManager.switchPhase({
+        targetPhase: GamePhase.GATHERING,
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.previousPhase).toBe(GamePhase.QUEST_ACCEPT);
+      expect(result.newPhase).toBe(GamePhase.GATHERING);
+      expect(result.failureReason).toBeUndefined();
+      expect(mockStateManager.setPhase).toHaveBeenCalledWith(GamePhase.GATHERING);
+    });
+
+    it('T-0106-02: 採取セッション中にforceAbort=trueでフェーズ切り替えが成功する', async () => {
+      // 【テスト目的】: 採取セッション進行中でもforceAbort=trueなら遷移可能なことを確認
+      // 🟡 信頼性レベル: EDGE-001・REQ-001-03から妥当な推測
+
+      mockStateManager.getState = vi.fn(() => ({
+        currentRank: GuildRank.G,
+        rankHp: 100,
+        remainingDays: 150,
+        currentDay: 1,
+        gold: 100,
+        actionPoints: 3,
+        maxActionPoints: 3,
+        comboCount: 0,
+        currentPhase: GamePhase.GATHERING,
+        contribution: 0,
+      }));
+
+      // activeOperationChecker付きでGameFlowManagerを再作成
+      const { GameFlowManager } = await import('@shared/services/game-flow');
+      const activeChecker = vi.fn(() => true); // 採取セッション進行中
+      const gfm = new GameFlowManager(
+        mockStateManager as IStateManager,
+        mockDeckService as IDeckService,
+        mockQuestService as IQuestService,
+        mockEventBus as IEventBus,
+        activeChecker,
+      );
+
+      const result = await gfm.switchPhase({
+        targetPhase: GamePhase.ALCHEMY,
+        forceAbort: true,
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.previousPhase).toBe(GamePhase.GATHERING);
+      expect(result.newPhase).toBe(GamePhase.ALCHEMY);
+      expect(mockStateManager.setPhase).toHaveBeenCalledWith(GamePhase.ALCHEMY);
+    });
+
+    it('T-0106-02b: 採取セッション中にforceAbort=falseでフェーズ切り替えが失敗する', async () => {
+      // 【テスト目的】: 進行中操作があり、forceAbort=falseの場合にSESSION_ABORT_REJECTEDで失敗することを確認
+      // 🟡 信頼性レベル: EDGE-001・REQ-001-03から妥当な推測
+
+      mockStateManager.getState = vi.fn(() => ({
+        currentRank: GuildRank.G,
+        rankHp: 100,
+        remainingDays: 150,
+        currentDay: 1,
+        gold: 100,
+        actionPoints: 3,
+        maxActionPoints: 3,
+        comboCount: 0,
+        currentPhase: GamePhase.GATHERING,
+        contribution: 0,
+      }));
+
+      const { GameFlowManager } = await import('@shared/services/game-flow');
+      const activeChecker = vi.fn(() => true); // 進行中操作あり
+      const gfm = new GameFlowManager(
+        mockStateManager as IStateManager,
+        mockDeckService as IDeckService,
+        mockQuestService as IQuestService,
+        mockEventBus as IEventBus,
+        activeChecker,
+      );
+
+      const result = await gfm.switchPhase({
+        targetPhase: GamePhase.ALCHEMY,
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.previousPhase).toBe(GamePhase.GATHERING);
+      expect(result.newPhase).toBe(GamePhase.GATHERING);
+      expect(result.failureReason).toBe(PhaseSwitchFailureReason.SESSION_ABORT_REJECTED);
+      expect(mockStateManager.setPhase).not.toHaveBeenCalled();
+    });
+
+    it('T-0106-03: 同じフェーズへの切り替えはno-opで成功する', async () => {
+      // 【テスト目的】: 同一フェーズへの遷移がエラーにならず、no-opとして成功することを確認
+      // 🔵 信頼性レベル: 設計文書に明記
+
+      const result = await gameFlowManager.switchPhase({
+        targetPhase: GamePhase.QUEST_ACCEPT,
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.previousPhase).toBe(GamePhase.QUEST_ACCEPT);
+      expect(result.newPhase).toBe(GamePhase.QUEST_ACCEPT);
+      expect(result.failureReason).toBeUndefined();
+      // setPhase()は呼ばれない（no-op）
+      expect(mockStateManager.setPhase).not.toHaveBeenCalled();
+    });
+
+    it('T-0106-04: フェーズ切り替え時にStateManager.setPhase()が呼ばれる', async () => {
+      // 【テスト目的】: switchPhase()がStateManager.setPhase()経由でPHASE_CHANGEDイベント発行に繋がることを確認
+      // 🔵 信頼性レベル: 設計文書に明記
+
+      await gameFlowManager.switchPhase({
+        targetPhase: GamePhase.GATHERING,
+      });
+
+      // StateManager.setPhase()が正しい引数で呼ばれることを確認
+      // （PHASE_CHANGEDイベント発行はStateManager内部で行われる）
+      expect(mockStateManager.setPhase).toHaveBeenCalledTimes(1);
+      expect(mockStateManager.setPhase).toHaveBeenCalledWith(GamePhase.GATHERING);
+    });
+
+    it('T-0106-05: activeOperationCheckerが未設定の場合は進行中操作なしとして扱う', async () => {
+      // 【テスト目的】: activeOperationCheckerが未設定（デフォルト）でもswitchPhaseが正常動作することを確認
+      // 🔵 信頼性レベル: 設計文書に明記
+
+      // beforeEachで作成されたインスタンスにはactiveOperationCheckerが未設定
+      const result = await gameFlowManager.switchPhase({
+        targetPhase: GamePhase.DELIVERY,
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.newPhase).toBe(GamePhase.DELIVERY);
     });
   });
 
