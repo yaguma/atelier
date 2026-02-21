@@ -33,5 +33,75 @@
     "baseQuality": "C",
     "attributes": ["MUSHROOM"],
     "description": "毒を持つキノコ"
+  },
+  {
+    "id": "mushroom",
+    "name": "キノコ",
+    "baseQuality": "D",
+    "attributes": ["MUSHROOM"],
+    "description": "食用キノコ"
+  },
+  {
+    "id": "wood",
+    "name": "木材",
+    "baseQuality": "D",
+    "attributes": ["WOOD"],
+    "description": "丈夫な木材"
+  },
+  {
+    "id": "fish",
+    "name": "魚",
+    "baseQuality": "D",
+    "attributes": ["WATER"],
+    "description": "川魚"
+  },
+  {
+    "id": "water_grass",
+    "name": "水草",
+    "baseQuality": "D",
+    "attributes": ["GRASS", "WATER"],
+    "description": "水辺に生える草"
+  },
+  {
+    "id": "sand",
+    "name": "砂",
+    "baseQuality": "D",
+    "attributes": ["MINERAL"],
+    "description": "細かい砂"
+  },
+  {
+    "id": "ore",
+    "name": "鉱石",
+    "baseQuality": "C",
+    "attributes": ["MINERAL"],
+    "description": "山で採れる鉱石"
+  },
+  {
+    "id": "crystal",
+    "name": "水晶",
+    "baseQuality": "B",
+    "attributes": ["MINERAL"],
+    "description": "透明度の高い水晶"
+  },
+  {
+    "id": "fire_stone",
+    "name": "火石",
+    "baseQuality": "B",
+    "attributes": ["MINERAL", "FIRE"],
+    "description": "熱を帯びた不思議な石"
+  },
+  {
+    "id": "ancient_herb",
+    "name": "古代薬草",
+    "baseQuality": "A",
+    "attributes": ["GRASS"],
+    "description": "太古の力を宿す薬草"
+  },
+  {
+    "id": "dragon_scale",
+    "name": "竜鱗",
+    "baseQuality": "S",
+    "attributes": ["DRAGON"],
+    "description": "伝説の竜の鱗"
   }
 ]
