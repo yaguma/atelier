@@ -308,6 +308,36 @@ export class DebugTools {
   }
 
   /**
+   * 【機能概要】: 指定フェーズに直接切り替える（E2Eテスト用）
+   * 【実装方針】: GameFlowManager.switchPhase()を呼び出す
+   * 【用途】: E2Eテストでフェーズ自由遷移を検証する
+   *
+   * @param phase 切り替え先のGamePhase文字列
+   *
+   * @example
+   * ```typescript
+   * window.debug?.switchPhase('GATHERING'); // 採取フェーズに切り替え
+   * ```
+   */
+  static switchPhase(phase: string): void {
+    try {
+      if (!Object.values(GamePhase).includes(phase as GamePhase)) {
+        console.warn(`Invalid phase: ${phase}`);
+        return;
+      }
+      const container = Container.getInstance();
+      if (container.has(ServiceKeys.GameFlowManager)) {
+        const gameFlowManager = container.resolve<{
+          switchPhase: (req: { targetPhase: string }) => Promise<unknown>;
+        }>(ServiceKeys.GameFlowManager);
+        gameFlowManager.switchPhase({ targetPhase: phase });
+      }
+    } catch (e) {
+      console.warn('switchPhase failed:', e);
+    }
+  }
+
+  /**
    * 【機能概要】: 現在のフェーズをスキップする（E2Eテスト用）
    * 【実装方針】: GameFlowManager経由でフェーズを進める
    * 【用途】: E2Eテストでフェーズを素早く進める
@@ -469,6 +499,10 @@ declare global {
       gold?: number;
       currentRank?: string;
       actionPoints?: number;
+      currentDay?: number;
+      apOverflow?: number;
+      boardQuestCount?: number;
+      visitorQuestCount?: number;
       hasSaveData?: boolean;
       isGameClear?: boolean;
       isGameOver?: boolean;
