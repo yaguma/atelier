@@ -1,1 +1,409 @@
-[]
+[
+  {
+    "id": "quest_g_healing_basic",
+    "clientId": "villager",
+    "condition": {
+      "type": "SPECIFIC",
+      "itemId": "healing_potion",
+      "quantity": 1
+    },
+    "contribution": 15,
+    "gold": 20,
+    "deadline": 5,
+    "difficulty": "easy",
+    "flavorText": "怪我をしてしまって...回復薬を1つお願いします"
+  },
+  {
+    "id": "quest_g_nutrition_basic",
+    "clientId": "villager",
+    "condition": {
+      "type": "SPECIFIC",
+      "itemId": "nutrition",
+      "quantity": 1
+    },
+    "contribution": 10,
+    "gold": 15,
+    "deadline": 5,
+    "difficulty": "easy",
+    "flavorText": "体力が落ちてきたんだ...栄養剤が欲しい"
+  },
+  {
+    "id": "quest_g_medicine_any",
+    "clientId": "villager",
+    "condition": {
+      "type": "CATEGORY",
+      "category": "MEDICINE",
+      "quantity": 2
+    },
+    "contribution": 20,
+    "gold": 25,
+    "deadline": 6,
+    "difficulty": "easy",
+    "flavorText": "薬ならなんでもいい、2つ頼む"
+  },
+  {
+    "id": "quest_g_healing_quantity",
+    "clientId": "adventurer",
+    "condition": {
+      "type": "QUANTITY",
+      "itemId": "healing_potion",
+      "quantity": 2
+    },
+    "contribution": 25,
+    "gold": 35,
+    "deadline": 6,
+    "difficulty": "easy",
+    "flavorText": "冒険に回復薬が2つ必要だ！"
+  },
+  {
+    "id": "quest_g_healing_quality",
+    "clientId": "adventurer",
+    "condition": {
+      "type": "QUALITY",
+      "itemId": "healing_potion",
+      "minQuality": "C",
+      "quantity": 1
+    },
+    "contribution": 20,
+    "gold": 30,
+    "deadline": 5,
+    "difficulty": "normal",
+    "flavorText": "品質Cの回復薬が欲しい"
+  },
+  {
+    "id": "quest_f_antidote_basic",
+    "clientId": "adventurer",
+    "condition": {
+      "type": "SPECIFIC",
+      "itemId": "antidote",
+      "quantity": 2
+    },
+    "contribution": 30,
+    "gold": 40,
+    "deadline": 5,
+    "difficulty": "normal",
+    "flavorText": "毒の沼を通るから解毒剤を2つ頼む"
+  },
+  {
+    "id": "quest_f_sword_basic",
+    "clientId": "adventurer",
+    "condition": {
+      "type": "SPECIFIC",
+      "itemId": "iron_sword",
+      "quantity": 1
+    },
+    "contribution": 35,
+    "gold": 50,
+    "deadline": 5,
+    "difficulty": "normal",
+    "flavorText": "鉄の剣が必要だ、作ってくれ！"
+  },
+  {
+    "id": "quest_f_medicine_quality",
+    "clientId": "villager",
+    "condition": {
+      "type": "QUALITY",
+      "itemId": "healing_potion",
+      "minQuality": "B",
+      "quantity": 2
+    },
+    "contribution": 40,
+    "gold": 55,
+    "deadline": 6,
+    "difficulty": "normal",
+    "flavorText": "品質Bの回復薬を2つ、家族のために..."
+  },
+  {
+    "id": "quest_f_weapon_any",
+    "clientId": "adventurer",
+    "condition": {
+      "type": "CATEGORY",
+      "category": "WEAPON",
+      "quantity": 1
+    },
+    "contribution": 30,
+    "gold": 45,
+    "deadline": 5,
+    "difficulty": "normal",
+    "flavorText": "武器なら何でもいい、1つ頼む"
+  },
+  {
+    "id": "quest_e_charm_basic",
+    "clientId": "merchant",
+    "condition": {
+      "type": "SPECIFIC",
+      "itemId": "wind_charm",
+      "quantity": 2
+    },
+    "contribution": 45,
+    "gold": 70,
+    "deadline": 5,
+    "difficulty": "normal",
+    "flavorText": "風のお守りを2つ仕入れたい"
+  },
+  {
+    "id": "quest_e_magic_water",
+    "clientId": "merchant",
+    "condition": {
+      "type": "SPECIFIC",
+      "itemId": "magic_water",
+      "quantity": 1
+    },
+    "contribution": 50,
+    "gold": 80,
+    "deadline": 5,
+    "difficulty": "normal",
+    "flavorText": "魔法の水の需要が高いんだ"
+  },
+  {
+    "id": "quest_e_medicine_bulk",
+    "clientId": "merchant",
+    "condition": {
+      "type": "CATEGORY",
+      "category": "MEDICINE",
+      "quantity": 4
+    },
+    "contribution": 55,
+    "gold": 90,
+    "deadline": 7,
+    "difficulty": "normal",
+    "flavorText": "薬を4つまとめて仕入れたい"
+  },
+  {
+    "id": "quest_e_sword_quality",
+    "clientId": "adventurer",
+    "condition": {
+      "type": "QUALITY",
+      "itemId": "iron_sword",
+      "minQuality": "B",
+      "quantity": 1
+    },
+    "contribution": 55,
+    "gold": 85,
+    "deadline": 5,
+    "difficulty": "hard",
+    "flavorText": "品質Bの剣じゃないとダメだ！"
+  },
+  {
+    "id": "quest_d_high_potion",
+    "clientId": "adventurer",
+    "condition": {
+      "type": "SPECIFIC",
+      "itemId": "high_healing_potion",
+      "quantity": 2
+    },
+    "contribution": 65,
+    "gold": 100,
+    "deadline": 5,
+    "difficulty": "normal",
+    "flavorText": "高級回復薬を2つ、ダンジョン攻略用だ"
+  },
+  {
+    "id": "quest_d_bomb_basic",
+    "clientId": "adventurer",
+    "condition": {
+      "type": "SPECIFIC",
+      "itemId": "bomb",
+      "quantity": 1
+    },
+    "contribution": 60,
+    "gold": 95,
+    "deadline": 5,
+    "difficulty": "normal",
+    "flavorText": "爆弾を1つ作ってくれ、岩を壊したい"
+  },
+  {
+    "id": "quest_d_weapon_quality",
+    "clientId": "merchant",
+    "condition": {
+      "type": "QUALITY",
+      "itemId": "iron_sword",
+      "minQuality": "A",
+      "quantity": 2
+    },
+    "contribution": 80,
+    "gold": 130,
+    "deadline": 6,
+    "difficulty": "hard",
+    "flavorText": "品質Aの剣を2本、上客に納める"
+  },
+  {
+    "id": "quest_d_magic_bulk",
+    "clientId": "merchant",
+    "condition": {
+      "type": "CATEGORY",
+      "category": "MAGIC",
+      "quantity": 3
+    },
+    "contribution": 70,
+    "gold": 110,
+    "deadline": 7,
+    "difficulty": "hard",
+    "flavorText": "魔法系アイテムの大量注文だ"
+  },
+  {
+    "id": "quest_c_fire_blade",
+    "clientId": "noble",
+    "condition": {
+      "type": "SPECIFIC",
+      "itemId": "fire_blade",
+      "quantity": 1
+    },
+    "contribution": 90,
+    "gold": 180,
+    "deadline": 5,
+    "difficulty": "hard",
+    "flavorText": "炎の刃を用意してくれたまえ"
+  },
+  {
+    "id": "quest_c_perfume",
+    "clientId": "noble",
+    "condition": {
+      "type": "QUALITY",
+      "itemId": "perfume",
+      "minQuality": "B",
+      "quantity": 2
+    },
+    "contribution": 100,
+    "gold": 200,
+    "deadline": 5,
+    "difficulty": "hard",
+    "flavorText": "品質Bの香水を2つ、舞踏会で使う"
+  },
+  {
+    "id": "quest_c_luxury_any",
+    "clientId": "noble",
+    "condition": {
+      "type": "CATEGORY",
+      "category": "LUXURY",
+      "quantity": 2
+    },
+    "contribution": 85,
+    "gold": 170,
+    "deadline": 6,
+    "difficulty": "hard",
+    "flavorText": "高級品を2つ、何でも構わん"
+  },
+  {
+    "id": "quest_c_high_potion_quality",
+    "clientId": "merchant",
+    "condition": {
+      "type": "QUALITY",
+      "itemId": "high_healing_potion",
+      "minQuality": "A",
+      "quantity": 3
+    },
+    "contribution": 110,
+    "gold": 190,
+    "deadline": 7,
+    "difficulty": "hard",
+    "flavorText": "品質Aの高級回復薬を3つ、大口注文だ"
+  },
+  {
+    "id": "quest_b_elixir",
+    "clientId": "noble",
+    "condition": {
+      "type": "SPECIFIC",
+      "itemId": "elixir",
+      "quantity": 2
+    },
+    "contribution": 130,
+    "gold": 250,
+    "deadline": 5,
+    "difficulty": "hard",
+    "flavorText": "万能薬を2つ、我が家の常備薬としてな"
+  },
+  {
+    "id": "quest_b_ring",
+    "clientId": "noble",
+    "condition": {
+      "type": "QUALITY",
+      "itemId": "jeweled_ring",
+      "minQuality": "A",
+      "quantity": 1
+    },
+    "contribution": 140,
+    "gold": 300,
+    "deadline": 5,
+    "difficulty": "hard",
+    "flavorText": "品質Aの指輪を1つ、婚約の品だ"
+  },
+  {
+    "id": "quest_b_weapon_elite",
+    "clientId": "adventurer",
+    "condition": {
+      "type": "QUALITY",
+      "itemId": "fire_blade",
+      "minQuality": "A",
+      "quantity": 2
+    },
+    "contribution": 150,
+    "gold": 280,
+    "deadline": 6,
+    "difficulty": "hard",
+    "flavorText": "品質Aの炎の刃を2本、魔王討伐用だ！"
+  },
+  {
+    "id": "quest_b_compound_luxury",
+    "clientId": "noble",
+    "condition": {
+      "type": "COMPOUND",
+      "subConditions": [
+        { "type": "SPECIFIC", "itemId": "perfume", "quantity": 2, "minQuality": "A" },
+        { "type": "SPECIFIC", "itemId": "jeweled_ring", "quantity": 1 }
+      ]
+    },
+    "contribution": 160,
+    "gold": 350,
+    "deadline": 7,
+    "difficulty": "hard",
+    "flavorText": "香水2つと指輪を揃えてくれたまえ"
+  },
+  {
+    "id": "quest_a_elixir_supreme",
+    "clientId": "guild_master",
+    "condition": {
+      "type": "QUALITY",
+      "itemId": "elixir",
+      "minQuality": "S",
+      "quantity": 3
+    },
+    "contribution": 200,
+    "gold": 350,
+    "deadline": 5,
+    "difficulty": "hard",
+    "flavorText": "品質Sの万能薬を3つ、ギルドの最重要任務だ"
+  },
+  {
+    "id": "quest_a_compound_master",
+    "clientId": "guild_master",
+    "condition": {
+      "type": "COMPOUND",
+      "subConditions": [
+        { "type": "SPECIFIC", "itemId": "fire_blade", "quantity": 1, "minQuality": "S" },
+        { "type": "SPECIFIC", "itemId": "elixir", "quantity": 2, "minQuality": "A" },
+        { "type": "SPECIFIC", "itemId": "jeweled_ring", "quantity": 1, "minQuality": "A" }
+      ]
+    },
+    "contribution": 250,
+    "gold": 400,
+    "deadline": 7,
+    "difficulty": "hard",
+    "flavorText": "ギルドの威信をかけた依頼だ、全力で頼む"
+  },
+  {
+    "id": "quest_a_luxury_ultimate",
+    "clientId": "noble",
+    "condition": {
+      "type": "QUALITY",
+      "itemId": "jeweled_ring",
+      "minQuality": "S",
+      "quantity": 2
+    },
+    "contribution": 220,
+    "gold": 500,
+    "deadline": 5,
+    "difficulty": "hard",
+    "flavorText": "品質Sの指輪を2つ、王族への献上品だ"
+  }
+]

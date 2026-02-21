@@ -14,6 +14,20 @@
     "description": "普通の水"
   },
   {
+    "id": "stone",
+    "name": "石ころ",
+    "baseQuality": "D",
+    "attributes": ["EARTH"],
+    "description": "ありふれた石"
+  },
+  {
+    "id": "feather",
+    "name": "風切り羽",
+    "baseQuality": "D",
+    "attributes": ["WIND"],
+    "description": "鳥の羽根"
+  },
+  {
     "id": "herb",
     "name": "薬草",
     "baseQuality": "C",
@@ -31,7 +45,98 @@
     "id": "poison_mushroom",
     "name": "毒キノコ",
     "baseQuality": "C",
-    "attributes": ["MUSHROOM"],
+    "attributes": ["GRASS", "EARTH"],
     "description": "毒を持つキノコ"
+  },
+  {
+    "id": "iron_ore",
+    "name": "鉄鉱石",
+    "baseQuality": "C",
+    "attributes": ["EARTH"],
+    "description": "加工用の鉱石"
+  },
+  {
+    "id": "wind_flower",
+    "name": "風花",
+    "baseQuality": "C",
+    "attributes": ["WIND", "GRASS"],
+    "description": "風に揺れる花"
+  },
+  {
+    "id": "red_berry",
+    "name": "火の実",
+    "baseQuality": "C",
+    "attributes": ["FIRE", "GRASS"],
+    "description": "ピリリと辛い実"
+  },
+  {
+    "id": "fish",
+    "name": "川魚",
+    "baseQuality": "C",
+    "attributes": ["WATER"],
+    "description": "川で取れる魚"
+  },
+  {
+    "id": "sand",
+    "name": "砂",
+    "baseQuality": "D",
+    "attributes": ["EARTH", "WATER"],
+    "description": "川底の砂"
+  },
+  {
+    "id": "magic_herb",
+    "name": "魔法草",
+    "baseQuality": "B",
+    "attributes": ["GRASS", "WIND"],
+    "description": "魔力を帯びた薬草"
+  },
+  {
+    "id": "fire_stone",
+    "name": "火炎石",
+    "baseQuality": "B",
+    "attributes": ["FIRE", "EARTH"],
+    "description": "熱を帯びた鉱石"
+  },
+  {
+    "id": "deep_water",
+    "name": "深層水",
+    "baseQuality": "B",
+    "attributes": ["WATER"],
+    "description": "地下深くから湧く水"
+  },
+  {
+    "id": "crystal",
+    "name": "水晶",
+    "baseQuality": "B",
+    "attributes": ["EARTH", "WIND"],
+    "description": "透き通った結晶"
+  },
+  {
+    "id": "dragon_scale",
+    "name": "竜の鱗",
+    "baseQuality": "A",
+    "attributes": ["FIRE"],
+    "description": "竜から剥がれた鱗"
+  },
+  {
+    "id": "spirit_water",
+    "name": "精霊の雫",
+    "baseQuality": "A",
+    "attributes": ["WATER", "WIND"],
+    "description": "精霊が宿る聖水"
+  },
+  {
+    "id": "ancient_wood",
+    "name": "古代樹の枝",
+    "baseQuality": "A",
+    "attributes": ["EARTH", "GRASS"],
+    "description": "千年樹から落ちた枝"
+  },
+  {
+    "id": "star_fragment",
+    "name": "星の欠片",
+    "baseQuality": "A",
+    "attributes": ["FIRE", "WIND"],
+    "description": "夜空から降り注いだ光の結晶"
   }
 ]

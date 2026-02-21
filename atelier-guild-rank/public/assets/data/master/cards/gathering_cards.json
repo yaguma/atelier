@@ -18,7 +18,7 @@
     "baseCost": 0,
     "presentationCount": 3,
     "rareRate": 10,
-    "materialPool": ["herb", "mushroom", "wood", "pure_water"],
+    "materialPool": ["herb", "poison_mushroom", "weed", "pure_water"],
     "rarity": "COMMON",
     "unlockRank": "G",
     "description": "基本素材、安定"
@@ -30,9 +30,69 @@
     "baseCost": 0,
     "presentationCount": 3,
     "rareRate": 10,
-    "materialPool": ["fish", "water_grass", "sand", "pure_water"],
+    "materialPool": ["fish", "sand", "water", "pure_water"],
     "rarity": "COMMON",
     "unlockRank": "F",
     "description": "水属性特化"
+  },
+  {
+    "id": "gathering_windy_hill",
+    "name": "風の丘",
+    "type": "GATHERING",
+    "baseCost": 0,
+    "presentationCount": 3,
+    "rareRate": 15,
+    "materialPool": ["wind_flower", "feather", "herb", "red_berry"],
+    "rarity": "COMMON",
+    "unlockRank": "E",
+    "description": "風属性と草属性が多い"
+  },
+  {
+    "id": "gathering_mountain_trail",
+    "name": "山道",
+    "type": "GATHERING",
+    "baseCost": 0,
+    "presentationCount": 4,
+    "rareRate": 15,
+    "materialPool": ["iron_ore", "stone", "fire_stone", "red_berry"],
+    "rarity": "UNCOMMON",
+    "unlockRank": "D",
+    "description": "鉱石系が豊富"
+  },
+  {
+    "id": "gathering_deep_cave",
+    "name": "深層洞窟",
+    "type": "GATHERING",
+    "baseCost": 0,
+    "presentationCount": 4,
+    "rareRate": 20,
+    "materialPool": ["crystal", "deep_water", "iron_ore", "fire_stone"],
+    "rarity": "UNCOMMON",
+    "unlockRank": "C",
+    "description": "高品質な鉱石と水"
+  },
+  {
+    "id": "gathering_ancient_forest",
+    "name": "古代の森",
+    "type": "GATHERING",
+    "baseCost": 0,
+    "presentationCount": 4,
+    "rareRate": 25,
+    "materialPool": ["magic_herb", "ancient_wood", "spirit_water", "wind_flower"],
+    "rarity": "RARE",
+    "unlockRank": "B",
+    "description": "希少な魔法素材が眠る"
+  },
+  {
+    "id": "gathering_volcanic_area",
+    "name": "火山地帯",
+    "type": "GATHERING",
+    "baseCost": 0,
+    "presentationCount": 5,
+    "rareRate": 30,
+    "materialPool": ["dragon_scale", "star_fragment", "fire_stone", "crystal"],
+    "rarity": "RARE",
+    "unlockRank": "A",
+    "description": "最高級素材の宝庫"
   }
 ]

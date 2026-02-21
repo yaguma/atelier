@@ -34,7 +34,15 @@
     }
   },
   "files": {
-    "includes": ["src/**/*.ts", "src/**/*.tsx", "tests/**", "e2e/**/*.ts", "*.ts", "*.json"],
+    "includes": [
+      "src/**/*.ts",
+      "src/**/*.tsx",
+      "tests/**",
+      "e2e/**/*.ts",
+      "*.ts",
+      "*.json",
+      "public/**/*.json"
+    ],
     "ignoreUnknown": true
   },
   "assist": {
