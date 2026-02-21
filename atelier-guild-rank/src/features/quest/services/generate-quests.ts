@@ -31,6 +31,8 @@ export interface GenerateQuestsConfig {
   clients: readonly IClient[];
   /** 乱数シード */
   seed: number;
+  /** 利用可能なアイテムIDリスト（SPECIFIC依頼用） */
+  availableItemIds?: readonly string[];
 }
 
 /** 依頼生成結果 */
@@ -133,6 +135,9 @@ const RANK_DIFFICULTY_WEIGHTS: Record<
 /** 依頼タイプリスト */
 const QUEST_TYPES: QuestType[] = ['SPECIFIC', 'CATEGORY', 'QUALITY', 'QUANTITY'];
 
+/** SPECIFIC依頼用デフォルトアイテムIDリスト（マスターデータ未提供時のフォールバック） */
+const DEFAULT_ITEM_IDS: readonly string[] = ['healing_potion', 'antidote'];
+
 /** フレーバーテキストテンプレート */
 const FLAVOR_TEMPLATES: Record<QuestDifficulty, string[]> = {
   easy: ['簡単な調合品が必要です', 'ちょっとしたお願いです', '初心者向けの依頼です'],
@@ -151,7 +156,7 @@ const FLAVOR_TEMPLATES: Record<QuestDifficulty, string[]> = {
  * @returns 生成された依頼リスト
  */
 export function generateQuests(config: GenerateQuestsConfig): GenerateQuestsResult {
-  const { rank, count, clients, seed } = config;
+  const { rank, count, clients, seed, availableItemIds } = config;
 
   if (clients.length === 0) {
     return { quests: [] };
@@ -166,7 +171,7 @@ export function generateQuests(config: GenerateQuestsConfig): GenerateQuestsResu
 
   for (let i = 0; i < count; i++) {
     const client = selectClient(clients, i, random);
-    const quest = createQuestForRank(rank, client, i, random);
+    const quest = createQuestForRank(rank, client, i, random, availableItemIds);
     quests.push(quest);
   }
 
@@ -258,9 +263,10 @@ function createQuestForRank(
   client: IClient,
   index: number,
   random: () => number,
+  availableItemIds?: readonly string[],
 ): IQuest {
   const difficulty = selectDifficulty(rank, random);
-  const condition = generateCondition(client, random);
+  const condition = generateCondition(client, random, availableItemIds);
   const baseReward = DIFFICULTY_REWARDS[difficulty];
   const baseDeadline = DIFFICULTY_DEADLINES[difficulty];
 
@@ -288,28 +294,41 @@ function createQuestForRank(
 /**
  * 依頼条件を生成する
  */
-function generateCondition(client: IClient, random: () => number): IQuestCondition {
+function generateCondition(
+  client: IClient,
+  random: () => number,
+  availableItemIds?: readonly string[],
+): IQuestCondition {
   // 依頼者の好む依頼タイプがあればそれを優先
   if (client.preferredQuestTypes.length > 0) {
     const typeIndex = Math.floor(random() * client.preferredQuestTypes.length);
     const questType =
       client.preferredQuestTypes[typeIndex] ?? client.preferredQuestTypes[0] ?? 'QUANTITY';
-    return createConditionForType(questType, random);
+    return createConditionForType(questType, random, availableItemIds);
   }
 
   // フォールバック: ランダムに依頼タイプを選択
   const typeIndex = Math.floor(random() * QUEST_TYPES.length);
   const questType = QUEST_TYPES[typeIndex] ?? QUEST_TYPES[0] ?? 'QUANTITY';
-  return createConditionForType(questType, random);
+  return createConditionForType(questType, random, availableItemIds);
 }
 
 /**
  * 依頼タイプに応じた条件を作成する
  */
-function createConditionForType(questType: QuestType, random: () => number): IQuestCondition {
+function createConditionForType(
+  questType: QuestType,
+  random: () => number,
+  availableItemIds?: readonly string[],
+): IQuestCondition {
   switch (questType) {
-    case 'SPECIFIC':
-      return { type: 'SPECIFIC', itemId: `item-${Math.floor(random() * 100)}` };
+    case 'SPECIFIC': {
+      // マスターデータのアイテムIDリストから選択（存在しない場合はフォールバック）
+      const itemIds =
+        availableItemIds && availableItemIds.length > 0 ? availableItemIds : DEFAULT_ITEM_IDS;
+      const itemIndex = Math.floor(random() * itemIds.length);
+      return { type: 'SPECIFIC', itemId: itemIds[itemIndex] ?? itemIds[0] ?? 'healing_potion' };
+    }
     case 'CATEGORY':
       return { type: 'CATEGORY', category: selectCategory(random) };
     case 'QUALITY':
