@@ -594,9 +594,9 @@ export class QuestService implements IQuestService {
       return clients;
     }
 
-    // 【ランダム選択】: マスターデータから重複なく選択
+    // 【ランダム選択】: Fisher-Yatesアルゴリズムで公平にシャッフル
     // 🔵 信頼性レベル: 設計文書に明記
-    const shuffled = [...allClients].sort(() => this.randomFn() - 0.5);
+    const shuffled = this.fisherYatesShuffle([...allClients]);
     const selected = shuffled.slice(0, Math.min(count, shuffled.length));
 
     for (const client of selected) {
@@ -638,9 +638,9 @@ export class QuestService implements IQuestService {
       return quests;
     }
 
-    // 【ランダム選択】: マスターデータからランダムに選択
+    // 【ランダム選択】: Fisher-Yatesアルゴリズムで公平にシャッフル
     // 🔵 信頼性レベル: 設計文書に明記
-    const shuffled = [...allQuestTemplates].sort(() => this.randomFn() - 0.5);
+    const shuffled = this.fisherYatesShuffle([...allQuestTemplates]);
     const selected = shuffled.slice(0, Math.min(count, shuffled.length));
 
     for (let i = 0; i < selected.length; i++) {
@@ -754,5 +754,18 @@ export class QuestService implements IQuestService {
 
     const randomIndex = Math.floor(this.randomFn() * allCards.length);
     return allCards[randomIndex].id;
+  }
+
+  /**
+   * 【機能概要】: Fisher-Yatesアルゴリズムで配列をシャッフル
+   * 【実装方針】: 公平なシャッフルを保証（sort比較関数による偏りを回避）
+   * 🔵 信頼性レベル: 標準的なアルゴリズム
+   */
+  private fisherYatesShuffle<T>(array: T[]): T[] {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(this.randomFn() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
   }
 }
