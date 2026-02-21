@@ -5,3 +5,5 @@
 
 export { DebugTools } from './debug';
 export { generateUniqueId } from './id-generator';
+export type { RandomFn } from './random';
+export { defaultRandomFn } from './random';

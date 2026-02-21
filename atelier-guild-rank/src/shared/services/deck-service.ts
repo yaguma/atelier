@@ -20,6 +20,8 @@ import type { IEventBus } from '@shared/services/event-bus';
 import type { CardId } from '@shared/types';
 import { ApplicationError, ErrorCodes } from '@shared/types/errors';
 import { GameEventType } from '@shared/types/events';
+import type { RandomFn } from '@shared/utils';
+import { defaultRandomFn } from '@shared/utils';
 
 /**
  * 【機能概要】: DeckServiceクラス
@@ -28,6 +30,9 @@ import { GameEventType } from '@shared/types/events';
  * 🔵 信頼性レベル: note.md・設計文書に明記
  */
 export class DeckService implements IDeckService {
+  /** ランダム関数（テスト時に差し替え可能） */
+  private readonly randomFn: RandomFn;
+
   /**
    * 【定数定義】: 手札の上限枚数
    * 【制限値】: 手札は最大5枚まで
@@ -77,9 +82,9 @@ export class DeckService implements IDeckService {
   constructor(
     private readonly masterDataRepo: IMasterDataRepository,
     private readonly _eventBus: IEventBus,
+    randomFn?: RandomFn,
   ) {
-    // 【実装内容】: 依存性注入のみ、初期化処理はinitialize()で行う
-    // 🔵 信頼性レベル: note.md・設計文書に明記
+    this.randomFn = randomFn ?? defaultRandomFn;
   }
 
   // =============================================================================
@@ -160,7 +165,7 @@ export class DeckService implements IDeckService {
       // 【ランダムインデックス取得】: 0からiまでのランダムなインデックスを取得
       // 【公平性保証】: Math.random()により、全ての位置が等確率で選ばれる
       // 🔵 信頼性レベル: note.md・設計文書に明記
-      const j = Math.floor(Math.random() * (i + 1));
+      const j = Math.floor(this.randomFn() * (i + 1));
 
       // 【要素交換】: 分割代入構文で配列の要素を交換
       // 【効率性】: 一時変数を使わずに交換できる

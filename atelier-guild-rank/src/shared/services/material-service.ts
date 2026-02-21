@@ -20,7 +20,7 @@ import { orderToQuality, QUALITY_ORDER } from '@domain/value-objects/Quality';
 import type { IEventBus } from '@shared/services/event-bus';
 import type { GuildRank, IMaterial, MaterialId, Quality } from '@shared/types';
 import { ApplicationError, ErrorCodes } from '@shared/types/errors';
-import { generateUniqueId } from '@shared/utils';
+import { defaultRandomFn, generateUniqueId, type RandomFn } from '@shared/utils';
 
 /**
  * 【機能概要】: MaterialServiceクラス
@@ -28,6 +28,9 @@ import { generateUniqueId } from '@shared/utils';
  * 🔵 信頼性レベル: note.md・設計文書に明記
  */
 export class MaterialService implements IMaterialService {
+  /** ランダム関数（テスト時に差し替え可能） */
+  private readonly randomFn: RandomFn;
+
   /**
    * 【機能概要】: MaterialServiceのコンストラクタ
    * 【実装方針】: 依存性注入でMasterDataRepositoryとEventBusを受け取る
@@ -35,14 +38,14 @@ export class MaterialService implements IMaterialService {
    *
    * @param masterDataRepo - マスターデータリポジトリ
    * @param eventBus - イベントバス
+   * @param randomFn - ランダム関数（テスト用に差し替え可能）
    */
   constructor(
     private readonly masterDataRepo: IMasterDataRepository,
     _eventBus: IEventBus,
+    randomFn?: RandomFn,
   ) {
-    // 【実装内容】: 依存性注入のみ
-    // 【将来拡張用】: _eventBusは将来のイベント発行機能で使用予定
-    // 🔵 信頼性レベル: note.md・設計文書に明記
+    this.randomFn = randomFn ?? defaultRandomFn;
   }
 
   // =============================================================================
@@ -95,7 +98,7 @@ export class MaterialService implements IMaterialService {
     // 【実装】: Math.random() * 3 で 0〜2.999... を生成し、floor で 0, 1, 2 に変換
     // 【変換】: -1 を引いて -1, 0, 1 にする
     // 🔵 信頼性レベル: note.md・設計文書に明記
-    const variation = Math.floor(Math.random() * 3) - 1;
+    const variation = Math.floor(this.randomFn() * 3) - 1;
 
     // 【新しい順序を計算】: 基準値に変動を加える
     // 【境界値処理】: orderToQuality関数で範囲制限を実施

@@ -29,7 +29,8 @@ import { toClientId, toQuestId } from '@shared/types';
 import { ApplicationError, ErrorCodes } from '@shared/types/errors';
 import { GameEventType } from '@shared/types/events';
 import type { IActiveQuest, IClient, IQuest, IQuestCondition } from '@shared/types/quests';
-import { generateUniqueId } from '@shared/utils';
+import type { RandomFn } from '@shared/utils';
+import { defaultRandomFn, generateUniqueId } from '@shared/utils';
 
 // =============================================================================
 // ランク別同時受注上限
@@ -106,6 +107,9 @@ const CLIENT_COUNT_BY_RANK: Record<GuildRank, number> = {
  * 🔵 信頼性レベル: 設計文書・要件定義書に明記
  */
 export class QuestService implements IQuestService {
+  /** ランダム関数（テスト時に差し替え可能） */
+  private readonly randomFn: RandomFn;
+
   /**
    * 【プライベートプロパティ】: 利用可能な依頼リスト
    * 【実装内容】: 今日生成された依頼のリスト
@@ -152,9 +156,9 @@ export class QuestService implements IQuestService {
   constructor(
     private readonly masterDataRepo: IMasterDataRepository,
     private readonly eventBus: IEventBus,
+    randomFn?: RandomFn,
   ) {
-    // 【実装内容】: 依存性注入のみ
-    // 🔵 信頼性レベル: 設計文書に明記
+    this.randomFn = randomFn ?? defaultRandomFn;
   }
 
   // =============================================================================
@@ -592,7 +596,7 @@ export class QuestService implements IQuestService {
 
     // 【ランダム選択】: マスターデータから重複なく選択
     // 🔵 信頼性レベル: 設計文書に明記
-    const shuffled = [...allClients].sort(() => Math.random() - 0.5);
+    const shuffled = [...allClients].sort(() => this.randomFn() - 0.5);
     const selected = shuffled.slice(0, Math.min(count, shuffled.length));
 
     for (const client of selected) {
@@ -621,9 +625,9 @@ export class QuestService implements IQuestService {
           id: toQuestId(generateUniqueId('quest')),
           clientId: client.id,
           condition: { type: 'QUANTITY', quantity: 1 },
-          contribution: 50 + Math.floor(Math.random() * 50),
-          gold: 30 + Math.floor(Math.random() * 30),
-          deadline: 5 + Math.floor(Math.random() * 3),
+          contribution: 50 + Math.floor(this.randomFn() * 50),
+          gold: 30 + Math.floor(this.randomFn() * 30),
+          deadline: 5 + Math.floor(this.randomFn() * 3),
           difficulty: 'normal',
           flavorText: `${client.name}からの依頼`,
         };
@@ -636,7 +640,7 @@ export class QuestService implements IQuestService {
 
     // 【ランダム選択】: マスターデータからランダムに選択
     // 🔵 信頼性レベル: 設計文書に明記
-    const shuffled = [...allQuestTemplates].sort(() => Math.random() - 0.5);
+    const shuffled = [...allQuestTemplates].sort(() => this.randomFn() - 0.5);
     const selected = shuffled.slice(0, Math.min(count, shuffled.length));
 
     for (let i = 0; i < selected.length; i++) {
@@ -716,7 +720,7 @@ export class QuestService implements IQuestService {
 
     // 【ランダム選択】: 現時点では単純にランダム選択
     // 🟡 信頼性レベル: 将来的には依頼者タイプに応じた選択ロジックを実装
-    const randomIndex = Math.floor(Math.random() * allCards.length);
+    const randomIndex = Math.floor(this.randomFn() * allCards.length);
     return allCards[randomIndex].id;
   }
 
@@ -734,7 +738,7 @@ export class QuestService implements IQuestService {
 
     // 【ランダム選択】: 現時点では単純にランダム選択
     // 🟡 信頼性レベル: 将来的には依頼タイプに応じた選択ロジックを実装
-    const randomIndex = Math.floor(Math.random() * allCards.length);
+    const randomIndex = Math.floor(this.randomFn() * allCards.length);
     return allCards[randomIndex].id;
   }
 
@@ -748,7 +752,7 @@ export class QuestService implements IQuestService {
       return null;
     }
 
-    const randomIndex = Math.floor(Math.random() * allCards.length);
+    const randomIndex = Math.floor(this.randomFn() * allCards.length);
     return allCards[randomIndex].id;
   }
 }
