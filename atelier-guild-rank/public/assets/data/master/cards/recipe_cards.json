@@ -27,7 +27,7 @@
     "outputItemId": "nutrition",
     "category": "MEDICINE",
     "rarity": "COMMON",
-    "unlockRank": "G",
+    "unlockRank": "F",
     "description": "栄養補給の基本"
   },
   {
@@ -87,7 +87,7 @@
     "outputItemId": "magic_water",
     "category": "MAGIC",
     "rarity": "UNCOMMON",
-    "unlockRank": "E",
+    "unlockRank": "B",
     "description": "魔法系の中級"
   },
   {
@@ -103,7 +103,7 @@
     "outputItemId": "high_healing_potion",
     "category": "MEDICINE",
     "rarity": "UNCOMMON",
-    "unlockRank": "D",
+    "unlockRank": "C",
     "description": "高品質な医療"
   },
   {
@@ -135,7 +135,7 @@
     "outputItemId": "fire_blade",
     "category": "WEAPON",
     "rarity": "RARE",
-    "unlockRank": "C",
+    "unlockRank": "A",
     "description": "炎の武器"
   },
   {

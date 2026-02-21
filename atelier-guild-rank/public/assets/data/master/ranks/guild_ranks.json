@@ -10,7 +10,7 @@
       "dayLimit": 5
     },
     "unlockedGatheringCards": ["gathering_backyard", "gathering_nearby_forest"],
-    "unlockedRecipeCards": ["recipe_healing_potion", "recipe_nutrition"]
+    "unlockedRecipeCards": ["recipe_healing_potion"]
   },
   {
     "id": "F",
@@ -26,7 +26,7 @@
       "dayLimit": 5
     },
     "unlockedGatheringCards": ["gathering_riverside"],
-    "unlockedRecipeCards": ["recipe_antidote", "recipe_iron_sword"]
+    "unlockedRecipeCards": ["recipe_antidote", "recipe_iron_sword", "recipe_nutrition"]
   },
   {
     "id": "E",
@@ -42,7 +42,7 @@
       "dayLimit": 5
     },
     "unlockedGatheringCards": ["gathering_windy_hill"],
-    "unlockedRecipeCards": ["recipe_wind_charm", "recipe_magic_water"]
+    "unlockedRecipeCards": ["recipe_wind_charm"]
   },
   {
     "id": "D",
@@ -60,13 +60,13 @@
     ],
     "promotionTest": {
       "requirements": [
-        { "itemId": "high_healing_potion", "quantity": 2, "minQuality": "B" },
-        { "itemId": "bomb", "quantity": 1 }
+        { "itemId": "bomb", "quantity": 2, "minQuality": "B" },
+        { "itemId": "iron_sword", "quantity": 1, "minQuality": "A" }
       ],
       "dayLimit": 5
     },
     "unlockedGatheringCards": ["gathering_mountain_trail"],
-    "unlockedRecipeCards": ["recipe_high_healing_potion", "recipe_bomb"]
+    "unlockedRecipeCards": ["recipe_bomb"]
   },
   {
     "id": "C",
@@ -85,13 +85,13 @@
     ],
     "promotionTest": {
       "requirements": [
-        { "itemId": "fire_blade", "quantity": 1, "minQuality": "A" },
+        { "itemId": "high_healing_potion", "quantity": 2, "minQuality": "A" },
         { "itemId": "perfume", "quantity": 2, "minQuality": "B" }
       ],
       "dayLimit": 5
     },
     "unlockedGatheringCards": ["gathering_deep_cave"],
-    "unlockedRecipeCards": ["recipe_fire_blade", "recipe_perfume"]
+    "unlockedRecipeCards": ["recipe_high_healing_potion", "recipe_perfume"]
   },
   {
     "id": "B",
@@ -116,7 +116,7 @@
       "dayLimit": 5
     },
     "unlockedGatheringCards": ["gathering_ancient_forest"],
-    "unlockedRecipeCards": ["recipe_elixir", "recipe_jeweled_ring"]
+    "unlockedRecipeCards": ["recipe_elixir", "recipe_jeweled_ring", "recipe_magic_water"]
   },
   {
     "id": "A",
@@ -143,7 +143,7 @@
       "dayLimit": 7
     },
     "unlockedGatheringCards": ["gathering_volcanic_area"],
-    "unlockedRecipeCards": []
+    "unlockedRecipeCards": ["recipe_fire_blade"]
   },
   {
     "id": "S",

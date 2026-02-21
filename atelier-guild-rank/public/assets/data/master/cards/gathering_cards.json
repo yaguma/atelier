@@ -18,7 +18,7 @@
     "baseCost": 0,
     "presentationCount": 3,
     "rareRate": 10,
-    "materialPool": ["herb", "poison_mushroom", "weed", "pure_water"],
+    "materialPool": ["herb", "poison_mushroom", "weed", "pure_water", "red_berry"],
     "rarity": "COMMON",
     "unlockRank": "G",
     "description": "基本素材、安定"
