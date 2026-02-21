@@ -21,6 +21,7 @@ import type {
   IShopService,
 } from '@domain/interfaces/shop-service.interface';
 import { GuildRank, Quality, RankOrder, toArtifactId, toCardId, toMaterialId } from '@shared/types';
+import { generateUniqueId } from '@shared/utils';
 
 // =============================================================================
 // ランク比較ヘルパー
@@ -309,7 +310,7 @@ export class ShopService implements IShopService {
     }
 
     // 購入した素材はデフォルト品質Cで追加
-    const instanceId = `material_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+    const instanceId = generateUniqueId('material');
     const material = new MaterialInstance(instanceId, master, Quality.C);
     this.inventoryService.addMaterial(material);
   }

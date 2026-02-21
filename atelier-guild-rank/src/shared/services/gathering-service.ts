@@ -29,7 +29,8 @@ import type { MaterialId } from '@shared/types';
 import { ApplicationError, ErrorCodes } from '@shared/types/errors';
 import { GameEventType } from '@shared/types/events';
 import { isEnhancementCardMaster, isGatheringCardMaster } from '@shared/types/master-data';
-import { generateUniqueId } from '@shared/utils';
+import type { RandomFn } from '@shared/utils';
+import { defaultRandomFn, generateUniqueId } from '@shared/utils';
 
 /**
  * 【機能概要】: GatheringServiceクラス
@@ -38,6 +39,8 @@ import { generateUniqueId } from '@shared/utils';
  * 🔵 信頼性レベル: note.md・要件定義書に明記
  */
 export class GatheringService implements IGatheringService {
+  /** ランダム関数（テスト時に差し替え可能） */
+  private readonly randomFn: RandomFn;
   /**
    * 【プライベートプロパティ】: アクティブな採取セッション
    * 【実装内容】: セッションIDをキーとしたMap
@@ -66,9 +69,9 @@ export class GatheringService implements IGatheringService {
     private readonly materialService: IMaterialService,
     private readonly masterDataRepo: IMasterDataRepository,
     private readonly eventBus: IEventBus,
+    randomFn?: RandomFn,
   ) {
-    // 【実装内容】: 依存性注入のみ
-    // 🔵 信頼性レベル: note.md・設計文書に明記
+    this.randomFn = randomFn ?? defaultRandomFn;
   }
 
   // =============================================================================
@@ -495,7 +498,7 @@ export class GatheringService implements IGatheringService {
       // 【素材選択】: 素材プールからランダム選択
       // 【レア出現率】: adjustedRareRateは将来的な拡張のために計算（現在は未使用）
       // 🔵 信頼性レベル: note.md・設計文書に明記
-      const randomIndex = Math.floor(Math.random() * materialPool.length);
+      const randomIndex = Math.floor(this.randomFn() * materialPool.length);
       const materialId = materialPool[randomIndex] as MaterialId;
 
       // 【マスターデータ取得】: 素材IDに対応するマスターデータを取得
