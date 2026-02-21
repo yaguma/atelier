@@ -12,5 +12,40 @@
     "category": "MEDICINE",
     "effects": [{ "type": "CURE_POISON", "baseValue": 1 }],
     "description": "毒を治療する薬"
+  },
+  {
+    "id": "mana_potion",
+    "name": "魔力薬",
+    "category": "MEDICINE",
+    "effects": [{ "type": "MP_RECOVERY", "baseValue": 30 }],
+    "description": "魔力を回復する薬"
+  },
+  {
+    "id": "bomb",
+    "name": "爆弾",
+    "category": "TOOL",
+    "effects": [{ "type": "DAMAGE", "baseValue": 50 }],
+    "description": "爆発する危険な道具"
+  },
+  {
+    "id": "elixir",
+    "name": "エリクサー",
+    "category": "MEDICINE",
+    "effects": [{ "type": "HP_RECOVERY", "baseValue": 100 }],
+    "description": "全てを癒す高級薬"
+  },
+  {
+    "id": "philosophers_stone",
+    "name": "賢者の石",
+    "category": "MATERIAL",
+    "effects": [{ "type": "TRANSFORM", "baseValue": 1 }],
+    "description": "万物を変換する伝説の石"
+  },
+  {
+    "id": "universal_remedy",
+    "name": "万能薬",
+    "category": "MEDICINE",
+    "effects": [{ "type": "CURE_ALL", "baseValue": 1 }],
+    "description": "あらゆる状態異常を治す究極の薬"
   }
 ]

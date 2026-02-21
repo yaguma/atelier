@@ -34,5 +34,65 @@
     "rarity": "COMMON",
     "unlockRank": "F",
     "description": "水属性特化"
+  },
+  {
+    "id": "gathering_mountain_path",
+    "name": "山道",
+    "type": "GATHERING",
+    "baseCost": 0,
+    "presentationCount": 3,
+    "rareRate": 15,
+    "materialPool": ["ore", "mushroom", "herb", "wood"],
+    "rarity": "UNCOMMON",
+    "unlockRank": "E",
+    "description": "鉱石が採れる山道"
+  },
+  {
+    "id": "gathering_deep_forest",
+    "name": "深い森",
+    "type": "GATHERING",
+    "baseCost": 0,
+    "presentationCount": 4,
+    "rareRate": 20,
+    "materialPool": ["ancient_herb", "mushroom", "herb", "wood"],
+    "rarity": "UNCOMMON",
+    "unlockRank": "D",
+    "description": "希少な薬草が見つかる深い森"
+  },
+  {
+    "id": "gathering_cave",
+    "name": "洞窟",
+    "type": "GATHERING",
+    "baseCost": 0,
+    "presentationCount": 4,
+    "rareRate": 25,
+    "materialPool": ["ore", "crystal", "fire_stone", "sand"],
+    "rarity": "RARE",
+    "unlockRank": "C",
+    "description": "鉱物資源が豊富な洞窟"
+  },
+  {
+    "id": "gathering_ancient_ruins",
+    "name": "古代遺跡",
+    "type": "GATHERING",
+    "baseCost": 0,
+    "presentationCount": 4,
+    "rareRate": 30,
+    "materialPool": ["crystal", "ancient_herb", "fire_stone", "ore"],
+    "rarity": "RARE",
+    "unlockRank": "B",
+    "description": "太古の力が眠る遺跡"
+  },
+  {
+    "id": "gathering_dragon_peak",
+    "name": "竜の峰",
+    "type": "GATHERING",
+    "baseCost": 0,
+    "presentationCount": 5,
+    "rareRate": 40,
+    "materialPool": ["dragon_scale", "crystal", "fire_stone", "ancient_herb"],
+    "rarity": "LEGENDARY",
+    "unlockRank": "A",
+    "description": "伝説の竜が棲む山の頂"
   }
 ]
