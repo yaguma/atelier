@@ -51,7 +51,6 @@ export interface RewardCard {
   rarity: 'common' | 'uncommon' | 'rare';
   cardType: 'gathering' | 'recipe' | 'enhancement';
   description: string;
-  effectDescription: string;
 }
 
 /**

@@ -9,6 +9,7 @@
 
 import { Colors, THEME } from '@presentation/ui/theme';
 import { AnimationPresets } from '@presentation/ui/utils/AnimationPresets';
+import { BaseComponent } from '@shared/components';
 import type Phaser from 'phaser';
 import type { RewardCard, RewardCardSelectionCallbacks } from './types';
 
@@ -29,7 +30,6 @@ const LAYOUT = {
   CARD_TYPE_OFFSET_Y: -45,
   CARD_RARITY_OFFSET_Y: -20,
   CARD_DESC_OFFSET_Y: 10,
-  CARD_EFFECT_OFFSET_Y: 40,
   SKIP_BUTTON_OFFSET_Y: 310,
 } as const;
 
@@ -41,34 +41,31 @@ const UI_TEXT = {
 } as const;
 
 /** レアリティ表示名 */
-const RARITY_LABELS: Record<string, string> = {
+const RARITY_LABELS: Record<RewardCard['rarity'], string> = {
   common: 'コモン',
   uncommon: 'アンコモン',
   rare: 'レア',
-  COMMON: 'コモン',
-  UNCOMMON: 'アンコモン',
-  RARE: 'レア',
 };
 
 /** カードタイプ表示名 */
-const CARD_TYPE_LABELS: Record<string, string> = {
+const CARD_TYPE_LABELS: Record<RewardCard['cardType'], string> = {
   gathering: '採取地',
   recipe: 'レシピ',
   enhancement: '強化',
-  GATHERING: '採取地',
-  RECIPE: 'レシピ',
-  ENHANCEMENT: '強化',
 };
 
 /** レアリティ別ボーダー色 */
-const RARITY_COLORS: Record<string, number> = {
+const RARITY_COLORS: Record<RewardCard['rarity'], number> = {
   common: 0x808080,
   uncommon: 0x2e7d32,
   rare: 0xf9a825,
-  COMMON: 0x808080,
-  UNCOMMON: 0x2e7d32,
-  RARE: 0xf9a825,
 };
+
+/** テキスト色ヘルパー */
+const TEXT_COLOR = {
+  muted: `#${Colors.text.muted.toString(16).padStart(6, '0')}`,
+  secondary: `#${Colors.text.secondary.toString(16).padStart(6, '0')}`,
+} as const;
 
 /** UIスタイル定数 */
 const UI_STYLES = {
@@ -88,7 +85,7 @@ const UI_STYLES = {
   },
   CARD_TYPE: {
     fontSize: `${THEME.sizes.small}px`,
-    color: '#aaaaaa',
+    color: TEXT_COLOR.muted,
     fontFamily: THEME.fonts.primary,
   },
   CARD_RARITY: {
@@ -97,19 +94,19 @@ const UI_STYLES = {
   },
   CARD_DESC: {
     fontSize: `${THEME.sizes.small}px`,
-    color: '#cccccc',
+    color: TEXT_COLOR.secondary,
     fontFamily: THEME.fonts.primary,
     wordWrap: { width: LAYOUT.CARD_WIDTH - 20 },
     align: 'center',
   },
   SKIP: {
     fontSize: `${THEME.sizes.small}px`,
-    color: '#999999',
+    color: TEXT_COLOR.muted,
     fontFamily: THEME.fonts.primary,
   },
   NO_CARDS: {
     fontSize: `${THEME.sizes.medium}px`,
-    color: '#999999',
+    color: TEXT_COLOR.muted,
     fontFamily: THEME.fonts.primary,
   },
 } as const;
@@ -121,18 +118,16 @@ const UI_STYLES = {
 /**
  * 報酬カード選択ダイアログコンポーネント
  */
-export class RewardCardSelectionDialog {
-  private scene: Phaser.Scene;
+export class RewardCardSelectionDialog extends BaseComponent {
   private callbacks: RewardCardSelectionCallbacks;
-  private container: Phaser.GameObjects.Container;
   private overlay: Phaser.GameObjects.Rectangle | null = null;
-  private visible: boolean = false;
+  private isDialogVisible: boolean = false;
   private elements: Phaser.GameObjects.GameObject[] = [];
 
   constructor(scene: Phaser.Scene, x: number, y: number, callbacks: RewardCardSelectionCallbacks) {
-    this.scene = scene;
+    // Issue #137: 親コンテナに追加されるため、シーンには直接追加しない
+    super(scene, x, y, { addToScene: false });
     this.callbacks = callbacks;
-    this.container = scene.add.container(x, y);
     this.container.setVisible(false);
     this.container.setAlpha(0);
     this.container.setDepth(100);
@@ -150,6 +145,7 @@ export class RewardCardSelectionDialog {
    * @param cards - 報酬カード候補
    */
   public show(cards: RewardCard[]): void {
+    if (this.isDialogVisible) return;
     this.clearElements();
 
     // 半透明オーバーレイ
@@ -158,7 +154,7 @@ export class RewardCardSelectionDialog {
       0,
       this.scene.scale.width * 2,
       this.scene.scale.height * 2,
-      0x000000,
+      Colors.background.overlay,
       0.6,
     );
     this.overlay.setInteractive();
@@ -206,13 +202,13 @@ export class RewardCardSelectionDialog {
     skipButton.setInteractive({ useHandCursor: true });
     skipButton.on('pointerdown', () => this.onSkip());
     skipButton.on('pointerover', () => skipButton.setColor('#ffffff'));
-    skipButton.on('pointerout', () => skipButton.setColor('#999999'));
+    skipButton.on('pointerout', () => skipButton.setColor(TEXT_COLOR.muted));
     this.container.add(skipButton);
     this.elements.push(skipButton);
 
     // 表示アニメーション
     this.container.setVisible(true);
-    this.visible = true;
+    this.isDialogVisible = true;
     this.scene.tweens.add({
       targets: this.container,
       ...AnimationPresets.fade.in,
@@ -244,7 +240,7 @@ export class RewardCardSelectionDialog {
       baseY + LAYOUT.CARD_HEIGHT / 2,
       LAYOUT.CARD_WIDTH,
       LAYOUT.CARD_HEIGHT,
-      0x1a1a2e,
+      Colors.background.secondary,
       0.9,
     );
     cardBg.setStrokeStyle(2, rarityColor);
@@ -306,7 +302,7 @@ export class RewardCardSelectionDialog {
         scaleY: 1.05,
         duration: 100,
       });
-      cardBg.setStrokeStyle(3, 0xffd700);
+      cardBg.setStrokeStyle(3, Colors.border.gold);
     });
 
     cardBg.on('pointerout', () => {
@@ -335,48 +331,67 @@ export class RewardCardSelectionDialog {
 
   /**
    * カード選択時の処理
+   * 二重クリック防止のためフラグを即座に落とす
    */
   private onCardSelect(card: RewardCard): void {
-    this.hide();
-    this.callbacks.onCardSelect(card);
+    if (!this.isDialogVisible) return;
+    this.isDialogVisible = false;
+    this.disableAllInteractions();
+    this.hideWithCallback(() => this.callbacks.onCardSelect(card));
   }
 
   /**
    * スキップ時の処理
    */
   private onSkip(): void {
-    this.hide();
-    this.callbacks.onSkip();
+    if (!this.isDialogVisible) return;
+    this.isDialogVisible = false;
+    this.disableAllInteractions();
+    this.hideWithCallback(() => this.callbacks.onSkip());
   }
 
   /**
-   * ダイアログを非表示
+   * すべてのインタラクションを無効化
    */
-  public hide(): void {
+  private disableAllInteractions(): void {
+    for (const element of this.elements) {
+      if ('disableInteractive' in element && typeof element.disableInteractive === 'function') {
+        (
+          element as Phaser.GameObjects.GameObject & { disableInteractive: () => void }
+        ).disableInteractive();
+      }
+    }
+  }
+
+  /**
+   * アニメーション完了後にコールバックを実行するhide
+   */
+  private hideWithCallback(onComplete?: () => void): void {
     this.scene.tweens.add({
       targets: this.container,
       alpha: 0,
       duration: 200,
       onComplete: () => {
         this.container.setVisible(false);
-        this.visible = false;
         this.clearElements();
+        onComplete?.();
       },
     });
+  }
+
+  /**
+   * ダイアログを非表示
+   */
+  public hide(): void {
+    this.isDialogVisible = false;
+    this.hideWithCallback();
   }
 
   /**
    * 表示状態を取得
    */
   public isVisible(): boolean {
-    return this.visible;
-  }
-
-  /**
-   * コンテナを取得
-   */
-  public getContainer(): Phaser.GameObjects.Container {
-    return this.container;
+    return this.isDialogVisible;
   }
 
   /**

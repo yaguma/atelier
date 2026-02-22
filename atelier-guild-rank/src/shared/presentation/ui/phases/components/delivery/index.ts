@@ -6,10 +6,10 @@
  * 納品フェーズUIのサブコンポーネントと型定義を一括エクスポート
  */
 
+// コンポーネント
 export { ContributionPreview } from './ContributionPreview';
 export { DeliveryResultPanel } from './DeliveryResultPanel';
 export { ItemSelector } from './ItemSelector';
-// コンポーネント
 export { QuestDeliveryList } from './QuestDeliveryList';
 export { RewardCardSelectionDialog } from './RewardCardSelectionDialog';
 
