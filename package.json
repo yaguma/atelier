@@ -1,0 +1,17 @@
+{
+  "name": "atelier-monorepo",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "pnpm --filter atelier-guild-rank dev",
+    "build": "pnpm --filter atelier-guild-rank build",
+    "test": "pnpm --filter atelier-guild-rank test",
+    "test:watch": "pnpm --filter atelier-guild-rank test:watch",
+    "test:coverage": "pnpm --filter atelier-guild-rank test:coverage",
+    "test:e2e": "pnpm --filter atelier-guild-rank test:e2e",
+    "test:e2e:headed": "pnpm --filter atelier-guild-rank test:e2e:headed",
+    "lint": "pnpm --filter atelier-guild-rank lint",
+    "lint:fix": "pnpm --filter atelier-guild-rank lint:fix",
+    "format": "pnpm --filter atelier-guild-rank format"
+  }
+}
