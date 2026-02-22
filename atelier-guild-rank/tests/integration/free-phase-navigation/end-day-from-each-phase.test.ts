@@ -105,9 +105,8 @@ describe('TC-004-04: 各フェーズからの日終了（REQ-004）', () => {
       // 日が進んでいることを確認
       expect(stateManager.getState().currentDay).toBe(initialDay + 1);
 
-      // DAY_ENDEDとDAY_STARTEDイベントが順番に発行される
-      expect(events).toContain('DAY_ENDED');
-      expect(events).toContain('DAY_STARTED');
+      // DAY_ENDEDとDAY_STARTEDイベントがこの順番で発行される
+      expect(events).toEqual(['DAY_ENDED', 'DAY_STARTED']);
 
       // 翌日はQUEST_ACCEPTフェーズで開始される
       expect(stateManager.getState().currentPhase).toBe(GamePhase.QUEST_ACCEPT);
