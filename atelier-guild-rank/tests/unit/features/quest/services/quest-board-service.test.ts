@@ -205,6 +205,140 @@ describe('updateBoard', () => {
     });
   });
 
+  // ===========================================================================
+  // TC-005-04: 訪問依頼の数日ごとの更新（REQ-005-02）
+  // ===========================================================================
+
+  describe('TC-005-04: 訪問依頼の数日ごとの更新（REQ-005-02）', () => {
+    it('デフォルト間隔（3日）で訪問依頼が更新される', () => {
+      // 【テスト目的】: visitorUpdateInterval未指定時にDEFAULT_VISITOR_UPDATE_INTERVAL=3が適用される
+      // 🔵 REQ-005-02: 訪問依頼は一定日数ごとに入れ替わる
+      const oldVisitor = createVisitorQuest({ questId: 'old-visitor' });
+      const newVisitor = createVisitorQuest({ questId: 'new-visitor', visitStartDay: 4 });
+      const board = createBoardState({
+        visitorQuests: [oldVisitor],
+        lastVisitorUpdateDay: 1,
+      });
+
+      // visitorUpdateInterval未指定 → デフォルト3日が適用される
+      const result = updateBoard({
+        currentDay: 4,
+        currentBoard: board,
+        newVisitorQuestCandidates: [newVisitor],
+      });
+
+      expect(result.visitorQuestsUpdated).toBe(true);
+      expect(result.newBoard.visitorQuests).toHaveLength(1);
+      expect(result.newBoard.visitorQuests[0].questId).toBe('new-visitor');
+      expect(result.newBoard.lastVisitorUpdateDay).toBe(4);
+    });
+
+    it('複数サイクルにわたり訪問依頼が繰り返し更新される', () => {
+      // 【テスト目的】: updateBoardを連続呼び出しして訪問依頼が正しく入れ替わることを確認
+      const visitor1 = createVisitorQuest({ questId: 'visitor-cycle1' });
+      const visitor2 = createVisitorQuest({ questId: 'visitor-cycle2', visitStartDay: 4 });
+      const visitor3 = createVisitorQuest({ questId: 'visitor-cycle3', visitStartDay: 7 });
+
+      // サイクル1: day=1 → lastVisitorUpdateDay=1, visitor1
+      let board = createBoardState({
+        visitorQuests: [visitor1],
+        lastVisitorUpdateDay: 1,
+      });
+
+      // サイクル2: day=4（3日経過）→ visitor2に更新
+      const result1 = updateBoard({
+        currentDay: 4,
+        currentBoard: board,
+        newVisitorQuestCandidates: [visitor2],
+        visitorUpdateInterval: 3,
+      });
+
+      expect(result1.visitorQuestsUpdated).toBe(true);
+      expect(result1.newBoard.visitorQuests[0].questId).toBe('visitor-cycle2');
+      expect(result1.newBoard.lastVisitorUpdateDay).toBe(4);
+
+      // サイクル3: day=7（さらに3日経過）→ visitor3に更新
+      board = result1.newBoard;
+      const result2 = updateBoard({
+        currentDay: 7,
+        currentBoard: board,
+        newVisitorQuestCandidates: [visitor3],
+        visitorUpdateInterval: 3,
+      });
+
+      expect(result2.visitorQuestsUpdated).toBe(true);
+      expect(result2.newBoard.visitorQuests[0].questId).toBe('visitor-cycle3');
+      expect(result2.newBoard.lastVisitorUpdateDay).toBe(7);
+    });
+
+    it('境界値: ちょうど間隔日数が経過した場合に更新される', () => {
+      // 【テスト目的】: daysSinceLastUpdate === visitorUpdateInterval で更新が発生する
+      const oldVisitor = createVisitorQuest({ questId: 'old' });
+      const newVisitor = createVisitorQuest({ questId: 'new' });
+      const board = createBoardState({
+        visitorQuests: [oldVisitor],
+        lastVisitorUpdateDay: 5,
+      });
+
+      // daysSinceLastUpdate = 8 - 5 = 3 === visitorUpdateInterval
+      const result = updateBoard({
+        currentDay: 8,
+        currentBoard: board,
+        newVisitorQuestCandidates: [newVisitor],
+        visitorUpdateInterval: 3,
+      });
+
+      expect(result.visitorQuestsUpdated).toBe(true);
+      expect(result.newBoard.visitorQuests[0].questId).toBe('new');
+    });
+
+    it('境界値: 間隔日数に1日足りない場合は更新されない', () => {
+      // 【テスト目的】: daysSinceLastUpdate === visitorUpdateInterval - 1 では更新されない
+      const oldVisitor = createVisitorQuest({ questId: 'old' });
+      const newVisitor = createVisitorQuest({ questId: 'new' });
+      const board = createBoardState({
+        visitorQuests: [oldVisitor],
+        lastVisitorUpdateDay: 5,
+      });
+
+      // daysSinceLastUpdate = 7 - 5 = 2 < visitorUpdateInterval(3)
+      const result = updateBoard({
+        currentDay: 7,
+        currentBoard: board,
+        newVisitorQuestCandidates: [newVisitor],
+        visitorUpdateInterval: 3,
+      });
+
+      expect(result.visitorQuestsUpdated).toBe(false);
+      expect(result.newBoard.visitorQuests[0].questId).toBe('old');
+    });
+
+    it('複数の訪問依頼候補がある場合、全て差し替えられる', () => {
+      // 【テスト目的】: 候補が複数ある場合に全て反映される
+      const oldVisitor = createVisitorQuest({ questId: 'old-1' });
+      const newVisitors = [
+        createVisitorQuest({ questId: 'new-1', visitStartDay: 4 }),
+        createVisitorQuest({ questId: 'new-2', visitStartDay: 4 }),
+      ];
+      const board = createBoardState({
+        visitorQuests: [oldVisitor],
+        lastVisitorUpdateDay: 1,
+      });
+
+      const result = updateBoard({
+        currentDay: 4,
+        currentBoard: board,
+        newVisitorQuestCandidates: newVisitors,
+        visitorUpdateInterval: 3,
+      });
+
+      expect(result.visitorQuestsUpdated).toBe(true);
+      expect(result.newBoard.visitorQuests).toHaveLength(2);
+      expect(result.newBoard.visitorQuests[0].questId).toBe('new-1');
+      expect(result.newBoard.visitorQuests[1].questId).toBe('new-2');
+    });
+  });
+
   describe('新規掲示板依頼の追加', () => {
     it('空き枠がある場合、新規候補が追加される', () => {
       const board = createBoardState({ boardQuests: [] });
