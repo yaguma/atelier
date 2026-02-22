@@ -141,3 +141,20 @@ export interface ItemSelectorCallbacks {
 export interface DeliveryResultPanelCallbacks {
   onClose: () => void;
 }
+
+/**
+ * RewardCardSelectionCallbacks - 報酬カード選択コールバック
+ * Issue #263: 報酬カード選択ダイアログ
+ */
+export interface RewardCardSelectionCallbacks {
+  onCardSelect: (card: RewardCard) => void;
+  onSkip: () => void;
+}
+
+/**
+ * IDeckServiceインターフェース - デッキサービス（報酬カード追加用）
+ * Issue #263: 報酬カード選択ダイアログ
+ */
+export interface IDeckService {
+  addCard(cardId: string): void;
+}
