@@ -99,6 +99,53 @@ describe('updateBoard', () => {
     });
   });
 
+  describe('TC-005-02: 期限切れ依頼の自動削除（REQ-005-01）', () => {
+    it('期限切れの依頼のみが掲示板から削除され、有効な依頼は残る', () => {
+      // 【テスト目的】: REQ-005-01 期限切れ依頼の自動削除を包括的に検証
+      const board = createBoardState({
+        boardQuests: [
+          createBoardQuest({ questId: 'q1', postedDay: 3, expiryDay: 8 }),
+          createBoardQuest({ questId: 'q2', postedDay: 5, expiryDay: 12 }),
+          createBoardQuest({ questId: 'q3', postedDay: 1, expiryDay: 9 }),
+        ],
+      });
+
+      const result = updateBoard({ currentDay: 10, currentBoard: board });
+
+      expect(result.newBoard.boardQuests).toHaveLength(1);
+      expect(result.newBoard.boardQuests[0].questId).toBe('q2');
+      expect(result.expiredQuestIds).toContain('q1');
+      expect(result.expiredQuestIds).toContain('q3');
+      expect(result.expiredQuestIds).not.toContain('q2');
+    });
+
+    it('全ての依頼が期限切れの場合、掲示板が空になる', () => {
+      const board = createBoardState({
+        boardQuests: [
+          createBoardQuest({ questId: 'q1', expiryDay: 3 }),
+          createBoardQuest({ questId: 'q2', expiryDay: 4 }),
+          createBoardQuest({ questId: 'q3', expiryDay: 5 }),
+        ],
+      });
+
+      const result = updateBoard({ currentDay: 10, currentBoard: board });
+
+      expect(result.newBoard.boardQuests).toHaveLength(0);
+      expect(result.expiredQuestIds).toHaveLength(3);
+    });
+
+    it('expiryDayがcurrentDay - 1の依頼は削除される（境界値）', () => {
+      const board = createBoardState({
+        boardQuests: [createBoardQuest({ questId: 'q1', expiryDay: 9 })],
+      });
+
+      const result = updateBoard({ currentDay: 10, currentBoard: board });
+
+      expect(result.newBoard.boardQuests).toHaveLength(0);
+      expect(result.expiredQuestIds).toEqual(['q1']);
+    });
+  });
+
   describe('訪問依頼の更新', () => {
     it('更新間隔に達した場合、訪問依頼が差し替えられる', () => {
       const oldVisitor = createVisitorQuest({ questId: 'old-visitor' });
