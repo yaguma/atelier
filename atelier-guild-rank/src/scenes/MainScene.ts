@@ -25,11 +25,13 @@ import { SidebarUI } from '@presentation/ui/components/SidebarUI';
 import { DeliveryPhaseUI } from '@presentation/ui/phases/DeliveryPhaseUI';
 import { QuestAcceptPhaseUI } from '@presentation/ui/phases/QuestAcceptPhaseUI';
 import { Container, ServiceKeys } from '@shared/services/di/container';
+import type { IBusEvent } from '@shared/services/event-bus/types';
 import { GamePhase, type GuildRank, VALID_GAME_PHASES } from '@shared/types/common';
 import type { IPhaseChangedEvent } from '@shared/types/events';
 import { GameEventType } from '@shared/types/events';
 import { toMaterialId } from '@shared/types/ids';
 import type { IClient, IQuest } from '@shared/types/quests';
+import type { ISaveData } from '@shared/types/save-data';
 import { generateUniqueId } from '@shared/utils';
 import Phaser from 'phaser';
 
@@ -88,8 +90,7 @@ interface IGameFlowManager {
   startPhase(phase: GamePhase): void;
   endPhase(): void;
   startNewGame(): void;
-  // biome-ignore lint/suspicious/noExplicitAny: セーブデータは任意の型を許容（ISaveData）
-  continueGame(saveData: any): void;
+  continueGame(saveData: ISaveData): void;
   startDay(): void;
   endDay(): void;
   skipPhase(): void;
@@ -108,8 +109,8 @@ interface IBasePhaseUI {
  */
 interface IEventBus {
   emit(event: string, data: unknown): void;
-  on(event: string, handler: (...args: unknown[]) => void): void;
-  off(event: string, handler?: (...args: unknown[]) => void): void;
+  on(event: string, handler: (event: IBusEvent) => void): void;
+  off(event: string, handler?: (event: IBusEvent) => void): void;
 }
 
 /**
@@ -120,8 +121,7 @@ interface MainSceneData {
   /** 新規ゲーム開始フラグ（TitleSceneから渡される） */
   isNewGame?: boolean;
   /** セーブデータ（コンティニュー時に渡される） */
-  // biome-ignore lint/suspicious/noExplicitAny: セーブデータは任意の型を許容
-  saveData?: any;
+  saveData?: ISaveData;
 }
 
 // =============================================================================
@@ -179,7 +179,7 @@ export class MainScene extends Phaser.Scene {
   // ===========================================================================
 
   /** EventBus購読解除関数の配列（shutdown時に一括解除） */
-  private eventUnsubscribes: Array<{ event: string; handler: (...args: unknown[]) => void }> = [];
+  private eventUnsubscribes: Array<{ event: string; handler: (event: IBusEvent) => void }> = [];
 
   /** 現在表示中のフェーズ */
   private _currentVisiblePhase: GamePhase | null = null;
@@ -466,25 +466,17 @@ export class MainScene extends Phaser.Scene {
    */
   private setupEventSubscriptions(): void {
     // ハンドラ参照を保持してshutdown時に解除する
-    // biome-ignore lint/suspicious/noExplicitAny: EventBusのIBusEvent型に対応
-    const phaseChangedHandler = (busEvent: any) => {
-      const event = busEvent.payload as IPhaseChangedEvent;
-      this.handlePhaseChanged(event);
+    const phaseChangedHandler = (busEvent: IBusEvent) => {
+      this.handlePhaseChanged(busEvent.payload as IPhaseChangedEvent);
     };
-    // biome-ignore lint/suspicious/noExplicitAny: EventBusのIBusEvent型に対応
-    const dayStartedHandler = (busEvent: any) => {
-      const event = busEvent.payload as { remainingDays: number };
-      this.handleDayStarted(event);
+    const dayStartedHandler = (busEvent: IBusEvent) => {
+      this.handleDayStarted(busEvent.payload as { remainingDays: number });
     };
-    // biome-ignore lint/suspicious/noExplicitAny: EventBusのIBusEvent型に対応
-    const questGeneratedHandler = (busEvent: any) => {
-      const event = busEvent.payload as { quests: import('@shared/types/quests').IQuest[] };
-      this.handleQuestGenerated(event);
+    const questGeneratedHandler = (busEvent: IBusEvent) => {
+      this.handleQuestGenerated(busEvent.payload as { quests: IQuest[] });
     };
-    // biome-ignore lint/suspicious/noExplicitAny: EventBusのIBusEvent型に対応
-    const questAcceptedHandler = (busEvent: any) => {
-      const event = busEvent.payload as { quest: import('@shared/types/quests').IQuest };
-      this.handleQuestAccepted(event);
+    const questAcceptedHandler = (busEvent: IBusEvent) => {
+      this.handleQuestAccepted(busEvent.payload as { quest: IQuest });
     };
 
     // イベント購読
