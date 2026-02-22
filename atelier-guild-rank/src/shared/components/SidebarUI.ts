@@ -15,6 +15,16 @@ import type Phaser from 'phaser';
 import { BaseComponent } from './BaseComponent';
 
 // =============================================================================
+// セクション型定義
+// =============================================================================
+
+/** サイドバーセクションのUI要素 */
+interface ISidebarSection {
+  header: Phaser.GameObjects.Text | null;
+  icon: Phaser.GameObjects.Text | null;
+}
+
+// =============================================================================
 // 定数
 // =============================================================================
 
@@ -116,17 +126,17 @@ export class SidebarUI extends BaseComponent {
     craftedItems: false,
   };
 
-  /** ショップボタン（ダミー） */
-  private _shopButton = {};
+  /** ショップボタン */
+  private _shopButton: Phaser.GameObjects.Rectangle | null = null;
 
-  /** 依頼セクション（ダミー） */
-  private _questsSection = {};
+  /** 依頼セクション */
+  private _questsSection: ISidebarSection = { header: null, icon: null };
 
-  /** 素材セクション（ダミー） */
-  private _materialsSection = {};
+  /** 素材セクション */
+  private _materialsSection: ISidebarSection = { header: null, icon: null };
 
-  /** 完成品セクション（ダミー） */
-  private _craftedItemsSection = {};
+  /** 完成品セクション */
+  private _craftedItemsSection: ISidebarSection = { header: null, icon: null };
 
   /** 現在/最大保管容量 */
   private _currentStorage = 0;
@@ -676,8 +686,7 @@ export class SidebarUI extends BaseComponent {
   /**
    * 依頼セクションを取得
    */
-  // biome-ignore lint/suspicious/noExplicitAny: UI要素の戻り値型は複雑なためanyを使用
-  getQuestsSection(): any {
+  getQuestsSection(): ISidebarSection {
     return this._questsSection;
   }
 
@@ -691,8 +700,7 @@ export class SidebarUI extends BaseComponent {
   /**
    * 素材セクションを取得
    */
-  // biome-ignore lint/suspicious/noExplicitAny: UI要素の戻り値型は複雑なためanyを使用
-  getMaterialsSection(): any {
+  getMaterialsSection(): ISidebarSection {
     return this._materialsSection;
   }
 
@@ -706,8 +714,7 @@ export class SidebarUI extends BaseComponent {
   /**
    * 完成品セクションを取得
    */
-  // biome-ignore lint/suspicious/noExplicitAny: UI要素の戻り値型は複雑なためanyを使用
-  getCraftedItemsSection(): any {
+  getCraftedItemsSection(): ISidebarSection {
     return this._craftedItemsSection;
   }
 
@@ -728,8 +735,7 @@ export class SidebarUI extends BaseComponent {
   /**
    * ショップボタンを取得
    */
-  // biome-ignore lint/suspicious/noExplicitAny: UI要素の戻り値型は複雑なためanyを使用
-  getShopButton(): any {
+  getShopButton(): Phaser.GameObjects.Rectangle | null {
     return this._shopButton;
   }
 
