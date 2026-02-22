@@ -40,6 +40,10 @@ const TAB_COLORS = {
   END_DAY_BUTTON: 0xef4444,
   /** 日終了ボタンホバー */
   END_DAY_BUTTON_HOVER: 0xf87171,
+  /** 休憩ボタン背景 */
+  REST_BUTTON: 0x3b82f6,
+  /** 休憩ボタンホバー */
+  REST_BUTTON_HOVER: 0x60a5fa,
 } as const;
 
 /**
@@ -68,6 +72,14 @@ const TAB_LAYOUT = {
   END_DAY_MARGIN: 16,
   /** 日終了テキストX方向オフセット */
   END_DAY_TEXT_OFFSET_X: 24,
+  /** 休憩ボタン幅 */
+  REST_WIDTH: 80,
+  /** 休憩ボタン高さ */
+  REST_HEIGHT: 36,
+  /** 休憩ボタンマージン */
+  REST_MARGIN: 8,
+  /** 休憩テキストX方向オフセット */
+  REST_TEXT_OFFSET_X: 16,
 } as const;
 
 /**
@@ -135,6 +147,12 @@ export class PhaseTabUI extends BaseComponent {
 
   /** 日終了ボタンテキスト */
   private _endDayText: Phaser.GameObjects.Text | null = null;
+
+  /** 休憩ボタン背景 */
+  private _restBackground: Phaser.GameObjects.Rectangle | null = null;
+
+  /** 休憩ボタンテキスト */
+  private _restText: Phaser.GameObjects.Text | null = null;
 
   // ===========================================================================
   // コンストラクタ
@@ -251,6 +269,37 @@ export class PhaseTabUI extends BaseComponent {
     });
     this.container.add(this._endDayText);
 
+    // 休憩ボタン
+    const restX =
+      endDayX + TAB_LAYOUT.END_DAY_WIDTH / 2 + TAB_LAYOUT.REST_MARGIN + TAB_LAYOUT.REST_WIDTH / 2;
+
+    this._restBackground = new Phaser.GameObjects.Rectangle(
+      this.scene,
+      restX,
+      TAB_LAYOUT.TAB_Y,
+      TAB_LAYOUT.REST_WIDTH,
+      TAB_LAYOUT.REST_HEIGHT,
+      TAB_COLORS.REST_BUTTON,
+    );
+    this._restBackground.setInteractive({ useHandCursor: true });
+    this._restBackground.on('pointerover', () => {
+      this._restBackground?.setFillStyle(TAB_COLORS.REST_BUTTON_HOVER);
+    });
+    this._restBackground.on('pointerout', () => {
+      this._restBackground?.setFillStyle(TAB_COLORS.REST_BUTTON);
+    });
+    this._restBackground.on('pointerdown', () => this.handleRestClick());
+    this.container.add(this._restBackground);
+
+    this._restText = this.scene.make.text({
+      x: restX - TAB_LAYOUT.REST_TEXT_OFFSET_X,
+      y: TAB_LAYOUT.TAB_Y - TAB_LAYOUT.TEXT_OFFSET_Y,
+      text: '休憩',
+      style: { fontSize: '14px', color: '#FFFFFF', fontStyle: 'bold' },
+      add: false,
+    });
+    this.container.add(this._restText);
+
     // PHASE_CHANGEDイベントの購読
     this._unsubscribePhaseChanged = this.eventBus.on<IPhaseChangedEvent>(
       GameEventType.PHASE_CHANGED,
@@ -316,6 +365,13 @@ export class PhaseTabUI extends BaseComponent {
     this.handleEndDayClick();
   }
 
+  /**
+   * 休憩ボタンクリックをシミュレート（テスト用）
+   */
+  simulateRestClick(): void {
+    this.handleRestClick();
+  }
+
   // ===========================================================================
   // プライベートメソッド
   // ===========================================================================
@@ -344,6 +400,14 @@ export class PhaseTabUI extends BaseComponent {
    */
   private handleEndDayClick(): void {
     this.gameFlowManager.endDay();
+  }
+
+  /**
+   * 休憩ボタンクリック時の処理
+   * 手札を入れ替えてAP消費なしで日を進める
+   */
+  private handleRestClick(): void {
+    this.gameFlowManager.rest();
   }
 
   /**
