@@ -351,6 +351,119 @@ describe('LocationSelectUI（TASK-0113）', () => {
   });
 
   // ===========================================================================
+  // TC-EDGE-101-01: AP残量0で採取試行（EDGE-101）
+  // ===========================================================================
+
+  describe('TC-EDGE-101-01: AP残量0で採取場所選択の振る舞い（EDGE-101）', () => {
+    it('AP不足で全場所がisSelectable=falseの場合、空手札メッセージが表示される', () => {
+      // 【テスト目的】: AP=0で採取地を選択しようとするシナリオ
+      // 上位サービスがisSelectable=falseを設定してLocationSelectUIに渡すケースを模擬
+      // 🔵 EDGE-101: AP不足時は「APが足りません」に相当するUIフィードバック
+
+      const allUnselectable: IGatheringLocation[] = [
+        {
+          cardId: toCardId('gathering-forest'),
+          name: '近くの森',
+          movementAPCost: 1,
+          availableMaterials: [{ name: '薬草', rarity: 'Common', dropRate: 'high' }],
+          mapX: 100,
+          mapY: 200,
+          isSelectable: false, // AP不足で選択不可
+        },
+        {
+          cardId: toCardId('gathering-mine'),
+          name: '鉱山',
+          movementAPCost: 1,
+          availableMaterials: [{ name: '鉄鉱石', rarity: 'Common', dropRate: 'high' }],
+          mapX: 300,
+          mapY: 150,
+          isSelectable: false, // AP不足で選択不可
+        },
+      ];
+
+      const ui = new LocationSelectUI(mockScene, 0, 0);
+      ui.create();
+      ui.updateLocations(allUnselectable);
+
+      // 空手札メッセージが表示される
+      expect(ui.hasEmptyHandMessage()).toBe(true);
+      // 選択可能な場所は0
+      expect(ui.getSelectableLocationCount()).toBe(0);
+      // 場所カード自体は表示される（グレーアウト状態）
+      expect(ui.getLocationCount()).toBe(2);
+    });
+
+    it('AP不足の場所をクリックしてもコールバックは発火しない', () => {
+      // 【テスト目的】: isSelectable=falseの場所をsimulateLocationSelectしても何も起きない
+      const callback = vi.fn();
+      const unselectableLocations: IGatheringLocation[] = [
+        {
+          cardId: toCardId('gathering-forest'),
+          name: '近くの森',
+          movementAPCost: 1,
+          availableMaterials: [{ name: '薬草', rarity: 'Common', dropRate: 'high' }],
+          mapX: 100,
+          mapY: 200,
+          isSelectable: false,
+        },
+      ];
+
+      const ui = new LocationSelectUI(mockScene, 0, 0);
+      ui.create();
+      ui.updateLocations(unselectableLocations);
+      ui.onLocationSelect(callback);
+
+      // AP不足の場所を選択試行
+      ui.simulateLocationSelect(toCardId('gathering-forest'));
+
+      // コールバックは発火しない
+      expect(callback).not.toHaveBeenCalled();
+    });
+
+    it('AP不足の場所が存在しても、AP十分な場所は選択可能', () => {
+      // 【テスト目的】: 混在状態で正しくフィルタリングされることを確認
+      const callback = vi.fn();
+      const mixedLocations: IGatheringLocation[] = [
+        {
+          cardId: toCardId('gathering-forest'),
+          name: '近くの森',
+          movementAPCost: 1,
+          availableMaterials: [{ name: '薬草', rarity: 'Common', dropRate: 'high' }],
+          mapX: 100,
+          mapY: 200,
+          isSelectable: true, // AP十分
+        },
+        {
+          cardId: toCardId('gathering-ruins'),
+          name: '古代遺跡',
+          movementAPCost: 2,
+          availableMaterials: [{ name: '古代の欠片', rarity: 'Uncommon', dropRate: 'high' }],
+          mapX: 400,
+          mapY: 100,
+          isSelectable: false, // AP不足
+        },
+      ];
+
+      const ui = new LocationSelectUI(mockScene, 0, 0);
+      ui.create();
+      ui.updateLocations(mixedLocations);
+      ui.onLocationSelect(callback);
+
+      // AP不足でないメッセージは非表示（選択可能が1つある）
+      expect(ui.hasEmptyHandMessage()).toBe(false);
+      expect(ui.getSelectableLocationCount()).toBe(1);
+
+      // AP十分な場所は選択可能
+      ui.simulateLocationSelect(toCardId('gathering-forest'));
+      expect(callback).toHaveBeenCalledTimes(1);
+
+      // AP不足の場所は選択不可
+      ui.simulateLocationSelect(toCardId('gathering-ruins'));
+      expect(callback).toHaveBeenCalledTimes(1); // 追加呼び出しなし
+    });
+  });
+
+  // ===========================================================================
   // destroy
   // ===========================================================================
 
