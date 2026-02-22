@@ -9,7 +9,7 @@ pre-commit:
     biome-check:
       root: atelier-guild-rank/
       glob: "**/*.{ts,tsx,js,jsx,json}"
-      run: pnpm biome check --write {staged_files}
+      run: pnpm biome check --write --no-errors-on-unmatched {staged_files}
       stage_fixed: true
     typecheck:
       root: atelier-guild-rank/

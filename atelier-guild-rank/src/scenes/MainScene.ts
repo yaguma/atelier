@@ -178,6 +178,9 @@ export class MainScene extends Phaser.Scene {
   // 内部状態
   // ===========================================================================
 
+  /** EventBus購読解除関数の配列（shutdown時に一括解除） */
+  private eventUnsubscribes: Array<{ event: string; handler: (...args: unknown[]) => void }> = [];
+
   /** 現在表示中のフェーズ */
   private _currentVisiblePhase: GamePhase | null = null;
 
@@ -254,6 +257,42 @@ export class MainScene extends Phaser.Scene {
 
     // サイドバーの初期更新
     this.updateSidebar();
+  }
+
+  /**
+   * shutdown() - シーン終了時のクリーンアップ
+   * EventBus購読解除、タイマー停止、Tweenキャンセル、UIコンポーネント破棄を行う。
+   * シーン再開時の二重購読・メモリリークを防止する。
+   */
+  shutdown(): void {
+    // EventBus購読を全て解除
+    for (const { event, handler } of this.eventUnsubscribes) {
+      this.eventBus.off(event, handler);
+    }
+    this.eventUnsubscribes = [];
+
+    // タイマー停止
+    this.time.removeAllEvents();
+
+    // Tweenキャンセル
+    this.tweens.killAll();
+
+    // フェーズUIを破棄
+    for (const ui of this.phaseUIs.values()) {
+      ui.destroy();
+    }
+    this.phaseUIs.clear();
+
+    // レイアウトコンポーネントを破棄
+    this.headerUI?.destroy();
+    this.sidebarUI?.destroy();
+    this.footerUI?.destroy();
+
+    // コンテンツコンテナを破棄
+    this._contentContainer?.destroy(true);
+
+    // 内部状態をリセット
+    this._currentVisiblePhase = null;
   }
 
   // ===========================================================================
@@ -426,34 +465,41 @@ export class MainScene extends Phaser.Scene {
    * payloadプロパティからデータを取得する必要がある
    */
   private setupEventSubscriptions(): void {
-    // PHASE_CHANGEDイベント
+    // ハンドラ参照を保持してshutdown時に解除する
     // biome-ignore lint/suspicious/noExplicitAny: EventBusのIBusEvent型に対応
-    this.eventBus.on(GameEventType.PHASE_CHANGED, (busEvent: any) => {
+    const phaseChangedHandler = (busEvent: any) => {
       const event = busEvent.payload as IPhaseChangedEvent;
       this.handlePhaseChanged(event);
-    });
-
-    // DAY_STARTEDイベント
+    };
     // biome-ignore lint/suspicious/noExplicitAny: EventBusのIBusEvent型に対応
-    this.eventBus.on(GameEventType.DAY_STARTED, (busEvent: any) => {
+    const dayStartedHandler = (busEvent: any) => {
       const event = busEvent.payload as { remainingDays: number };
       this.handleDayStarted(event);
-    });
-
-    // QUEST_GENERATEDイベント（依頼生成時）
+    };
     // biome-ignore lint/suspicious/noExplicitAny: EventBusのIBusEvent型に対応
-    this.eventBus.on(GameEventType.QUEST_GENERATED, (busEvent: any) => {
+    const questGeneratedHandler = (busEvent: any) => {
       const event = busEvent.payload as { quests: import('@shared/types/quests').IQuest[] };
       this.handleQuestGenerated(event);
-    });
-
-    // QUEST_ACCEPTEDイベント（依頼受注時）
-    // Issue #137: UIから発行された受注イベントをQuestServiceに伝達
+    };
     // biome-ignore lint/suspicious/noExplicitAny: EventBusのIBusEvent型に対応
-    this.eventBus.on(GameEventType.QUEST_ACCEPTED, (busEvent: any) => {
+    const questAcceptedHandler = (busEvent: any) => {
       const event = busEvent.payload as { quest: import('@shared/types/quests').IQuest };
       this.handleQuestAccepted(event);
-    });
+    };
+
+    // イベント購読
+    this.eventBus.on(GameEventType.PHASE_CHANGED, phaseChangedHandler);
+    this.eventBus.on(GameEventType.DAY_STARTED, dayStartedHandler);
+    this.eventBus.on(GameEventType.QUEST_GENERATED, questGeneratedHandler);
+    this.eventBus.on(GameEventType.QUEST_ACCEPTED, questAcceptedHandler);
+
+    // 購読解除用にハンドラ参照を保持
+    this.eventUnsubscribes = [
+      { event: GameEventType.PHASE_CHANGED, handler: phaseChangedHandler },
+      { event: GameEventType.DAY_STARTED, handler: dayStartedHandler },
+      { event: GameEventType.QUEST_GENERATED, handler: questGeneratedHandler },
+      { event: GameEventType.QUEST_ACCEPTED, handler: questAcceptedHandler },
+    ];
   }
 
   // ===========================================================================

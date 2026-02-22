@@ -11,7 +11,7 @@
  * @信頼性レベル 🟡 NFR-102・design-interview.md D7から妥当な推測
  */
 
-import type { IAPOverflowResult } from '../types';
+import type { IAPOverflowResult } from '@features/gathering';
 
 // =============================================================================
 // Types

@@ -146,6 +146,91 @@
     "unlockedRecipeCards": ["recipe_fire_blade"]
   },
   {
+    "id": "E",
+    "name": "一般",
+    "requiredContribution": 300,
+    "dayLimit": 25,
+    "specialRules": [],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "healing_potion", "quantity": 3, "minQuality": "B" },
+        { "itemId": "mana_potion", "quantity": 2 }
+      ],
+      "dayLimit": 5
+    },
+    "unlockedGatheringCards": ["gathering_mountain_path"],
+    "unlockedRecipeCards": ["recipe_mana_potion"]
+  },
+  {
+    "id": "D",
+    "name": "中堅",
+    "requiredContribution": 500,
+    "dayLimit": 25,
+    "specialRules": [{ "type": "QUEST_LIMIT", "value": 3, "description": "同時受注3件まで" }],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "antidote", "quantity": 3, "minQuality": "B" },
+        { "itemId": "bomb", "quantity": 2 }
+      ],
+      "dayLimit": 5
+    },
+    "unlockedGatheringCards": ["gathering_deep_forest"],
+    "unlockedRecipeCards": ["recipe_bomb"]
+  },
+  {
+    "id": "C",
+    "name": "熟練",
+    "requiredContribution": 800,
+    "dayLimit": 20,
+    "specialRules": [
+      { "type": "QUALITY_REQUIRED", "value": 3, "description": "納品品質C以上必須" }
+    ],
+    "promotionTest": {
+      "requirements": [{ "itemId": "elixir", "quantity": 2, "minQuality": "B" }],
+      "dayLimit": 7
+    },
+    "unlockedGatheringCards": ["gathering_cave"],
+    "unlockedRecipeCards": ["recipe_elixir"]
+  },
+  {
+    "id": "B",
+    "name": "上級",
+    "requiredContribution": 1200,
+    "dayLimit": 20,
+    "specialRules": [
+      { "type": "QUALITY_REQUIRED", "value": 4, "description": "納品品質B以上必須" },
+      { "type": "DEADLINE_REDUCTION", "value": 1, "description": "依頼期限-1日" }
+    ],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "elixir", "quantity": 3, "minQuality": "A" },
+        { "itemId": "philosophers_stone", "quantity": 1 }
+      ],
+      "dayLimit": 7
+    },
+    "unlockedGatheringCards": ["gathering_ancient_ruins"],
+    "unlockedRecipeCards": ["recipe_philosophers_stone"]
+  },
+  {
+    "id": "A",
+    "name": "達人",
+    "requiredContribution": 2000,
+    "dayLimit": 15,
+    "specialRules": [
+      { "type": "QUALITY_REQUIRED", "value": 5, "description": "納品品質A以上必須" },
+      { "type": "DEADLINE_REDUCTION", "value": 2, "description": "依頼期限-2日" }
+    ],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "universal_remedy", "quantity": 2, "minQuality": "S" },
+        { "itemId": "philosophers_stone", "quantity": 2, "minQuality": "A" }
+      ],
+      "dayLimit": 10
+    },
+    "unlockedGatheringCards": ["gathering_dragon_peak"],
+    "unlockedRecipeCards": ["recipe_universal_remedy"]
+  },
+  {
     "id": "S",
     "name": "伝説",
     "requiredContribution": 0,

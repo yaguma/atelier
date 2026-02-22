@@ -60,7 +60,7 @@ interface MockScene extends Phaser.Scene {
 
 interface MockGameFlowManager extends Partial<IGameFlowManager> {
   switchPhase: ReturnType<typeof vi.fn>;
-  endDay: ReturnType<typeof vi.fn>;
+  requestEndDay: ReturnType<typeof vi.fn>;
 }
 
 interface MockEventBus extends Partial<IEventBus> {
@@ -134,7 +134,7 @@ const createMockGameFlowManager = (): MockGameFlowManager => ({
     previousPhase: GamePhase.QUEST_ACCEPT,
     newPhase: GamePhase.ALCHEMY,
   }),
-  endDay: vi.fn(),
+  requestEndDay: vi.fn(),
 });
 
 const createMockEventBus = (): MockEventBus => ({
@@ -263,16 +263,16 @@ describe('FooterUI（TASK-0112）', () => {
   // ===========================================================================
 
   describe('T-0112-04: 「日終了」ボタンが存在する', () => {
-    it('PhaseTabUI経由で日終了ボタンクリックでendDay()が呼ばれる', () => {
-      // 【テスト目的】: 「日終了」ボタンがPhaseTabUI経由で機能することを確認
-      // 🔵 信頼性レベル: REQ-004・architecture.md「日終了ボタン」より
+    it('PhaseTabUI経由で日終了ボタンクリックでrequestEndDay()が呼ばれる', () => {
+      // 【テスト目的】: 「日終了」ボタンがPhaseTabUI経由でrequestEndDay()を呼ぶことを確認
+      // 🔵 信頼性レベル: REQ-004・REQ-004-01「残りAP破棄→日終了」より
 
       footerUI.create();
 
       const phaseTabUI = footerUI.getPhaseTabUI();
       phaseTabUI?.simulateEndDayClick();
 
-      expect(mockGameFlowManager.endDay).toHaveBeenCalledTimes(1);
+      expect(mockGameFlowManager.requestEndDay).toHaveBeenCalledTimes(1);
     });
   });
 
