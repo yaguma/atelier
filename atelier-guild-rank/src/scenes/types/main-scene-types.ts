@@ -66,7 +66,7 @@ export interface IBasePhaseUI {
  */
 export interface IMainSceneEventBus {
   emit(event: string, data: unknown): void;
-  on(event: string, handler: (...args: unknown[]) => void): void;
+  on(event: string, handler: (...args: unknown[]) => void): () => void;
   off(event: string, handler?: (...args: unknown[]) => void): void;
 }
 

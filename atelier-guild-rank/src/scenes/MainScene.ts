@@ -99,6 +99,9 @@ export class MainScene extends Phaser.Scene {
   /** フェーズUI管理 */
   private phaseManager!: PhaseManager;
 
+  /** イベント購読解除関数 */
+  private unsubscribeHandlers: Array<() => void> = [];
+
   // ===========================================================================
   // コンストラクタ
   // ===========================================================================
@@ -219,30 +222,53 @@ export class MainScene extends Phaser.Scene {
    * イベント購読を設定
    */
   private setupEventSubscriptions(): void {
-    // biome-ignore lint/suspicious/noExplicitAny: EventBusのIBusEvent型に対応
-    this.eventBus.on(GameEventType.PHASE_CHANGED, (busEvent: any) => {
-      const event = busEvent.payload as IPhaseChangedEvent;
-      this.phaseManager.showPhase(event.newPhase);
-      this.phaseManager.updateSidebar(this.sidebarUI);
-    });
+    this.unsubscribeHandlers = [];
 
     // biome-ignore lint/suspicious/noExplicitAny: EventBusのIBusEvent型に対応
-    this.eventBus.on(GameEventType.DAY_STARTED, (busEvent: any) => {
-      const event = busEvent.payload as { remainingDays: number };
-      this.handleDayStarted(event);
-    });
+    this.unsubscribeHandlers.push(
+      this.eventBus.on(GameEventType.PHASE_CHANGED, (busEvent: any) => {
+        const event = busEvent.payload as IPhaseChangedEvent;
+        this.phaseManager.showPhase(event.newPhase);
+        this.phaseManager.updateSidebar(this.sidebarUI);
+      }),
+    );
 
     // biome-ignore lint/suspicious/noExplicitAny: EventBusのIBusEvent型に対応
-    this.eventBus.on(GameEventType.QUEST_GENERATED, (busEvent: any) => {
-      const event = busEvent.payload as { quests: IQuest[] };
-      this.phaseManager.handleQuestGenerated(event);
-    });
+    this.unsubscribeHandlers.push(
+      this.eventBus.on(GameEventType.DAY_STARTED, (busEvent: any) => {
+        const event = busEvent.payload as { remainingDays: number };
+        this.handleDayStarted(event);
+      }),
+    );
 
     // biome-ignore lint/suspicious/noExplicitAny: EventBusのIBusEvent型に対応
-    this.eventBus.on(GameEventType.QUEST_ACCEPTED, (busEvent: any) => {
-      const event = busEvent.payload as { quest: IQuest };
-      this.phaseManager.handleQuestAccepted(event, this.sidebarUI);
-    });
+    this.unsubscribeHandlers.push(
+      this.eventBus.on(GameEventType.QUEST_GENERATED, (busEvent: any) => {
+        const event = busEvent.payload as { quests: IQuest[] };
+        this.phaseManager.handleQuestGenerated(event);
+      }),
+    );
+
+    // biome-ignore lint/suspicious/noExplicitAny: EventBusのIBusEvent型に対応
+    this.unsubscribeHandlers.push(
+      this.eventBus.on(GameEventType.QUEST_ACCEPTED, (busEvent: any) => {
+        const event = busEvent.payload as { quest: IQuest };
+        this.phaseManager.handleQuestAccepted(event, this.sidebarUI);
+      }),
+    );
+  }
+
+  /**
+   * シーン終了時のクリーンアップ
+   * イベント購読解除とPhaseManager破棄を行う
+   */
+  shutdown(): void {
+    for (const unsub of this.unsubscribeHandlers) {
+      unsub();
+    }
+    this.unsubscribeHandlers = [];
+
+    this.phaseManager?.destroy();
   }
 
   /**

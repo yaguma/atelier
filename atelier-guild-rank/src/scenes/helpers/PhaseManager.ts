@@ -162,15 +162,16 @@ export class PhaseManager {
     container.add(text);
     this.contentContainer.add(container);
 
-    return {
-      setVisible: (visible: boolean) => {
+    const dummyUI: IBasePhaseUI = {
+      setVisible(visible: boolean): IBasePhaseUI {
         container.setVisible(visible);
-        return { setVisible: () => ({}) as IBasePhaseUI, destroy: () => {} } as IBasePhaseUI;
+        return dummyUI;
       },
-      destroy: () => {
+      destroy(): void {
         container.destroy();
       },
     };
+    return dummyUI;
   }
 
   // ===========================================================================
