@@ -66,6 +66,7 @@ interface MockScene extends Phaser.Scene {
 interface MockGameFlowManager extends Partial<IGameFlowManager> {
   switchPhase: ReturnType<typeof vi.fn>;
   endDay: ReturnType<typeof vi.fn>;
+  rest: ReturnType<typeof vi.fn>;
 }
 
 interface MockEventBus extends Partial<IEventBus> {
@@ -140,6 +141,7 @@ const createMockGameFlowManager = (): MockGameFlowManager => ({
     newPhase: GamePhase.ALCHEMY,
   }),
   endDay: vi.fn(),
+  rest: vi.fn(),
 });
 
 const createMockEventBus = (): MockEventBus => ({
@@ -201,7 +203,7 @@ describe('PhaseTabUI（TASK-0111）', () => {
 
       phaseTabUI.create();
 
-      // scene.make.textが4つのタブ + 1つの日終了ボタンテキスト = 5回呼ばれる
+      // scene.make.textが4つのタブ + 日終了ボタン + 休憩ボタン = 6回呼ばれる
       const tabTextCalls = scene.make.text.mock.calls.slice(0, 4);
       const labels = tabTextCalls.map((call) => call[0]?.text);
 
@@ -303,7 +305,7 @@ describe('PhaseTabUI（TASK-0111）', () => {
       phaseTabUI.create();
 
       // 4つのタブ背景にsetInteractiveが呼ばれていることを確認
-      // Rectangleコンストラクタは4タブ + 1日終了ボタン = 5回呼ばれる
+      // Rectangleコンストラクタは4タブ + 日終了ボタン + 休憩ボタン = 6回呼ばれる
       const tabRects = mockRectangles.slice(0, 4);
       for (const rect of tabRects) {
         expect(rect.setInteractive).toHaveBeenCalled();
@@ -324,6 +326,36 @@ describe('PhaseTabUI（TASK-0111）', () => {
       phaseTabUI.simulateEndDayClick();
 
       expect(mockGameFlowManager.endDay).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // ===========================================================================
+  // テストケース5: 休憩ボタンでrest呼び出し
+  // ===========================================================================
+
+  describe('T-0112-01: 休憩ボタンでrest()が呼ばれる', () => {
+    it('休憩ボタンクリックでrest()が呼ばれる', () => {
+      phaseTabUI.create();
+      phaseTabUI.simulateRestClick();
+
+      expect(mockGameFlowManager.rest).toHaveBeenCalledTimes(1);
+    });
+
+    it('休憩ボタンが表示される', () => {
+      phaseTabUI.create();
+
+      const allTextCalls = scene.make.text.mock.calls;
+      const restCall = allTextCalls.find((call) => call[0]?.text === '休憩');
+      expect(restCall).toBeDefined();
+    });
+
+    it('休憩ボタンがクリック可能である', () => {
+      phaseTabUI.create();
+
+      // 6つ目のRectangle（index 5）が休憩ボタン
+      const restRect = mockRectangles[5];
+      expect(restRect).toBeDefined();
+      expect(restRect?.setInteractive).toHaveBeenCalled();
     });
   });
 

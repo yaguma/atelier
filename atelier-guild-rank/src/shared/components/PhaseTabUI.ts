@@ -404,7 +404,7 @@ export class PhaseTabUI extends BaseComponent {
 
   /**
    * 休憩ボタンクリック時の処理
-   * 手札を入れ替えてAP消費なしで日を進める
+   * GameFlowManagerに休憩アクションを委譲する
    */
   private handleRestClick(): void {
     this.gameFlowManager.rest();
