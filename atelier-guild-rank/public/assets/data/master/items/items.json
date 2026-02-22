@@ -14,38 +14,76 @@
     "description": "毒を治療する薬"
   },
   {
-    "id": "mana_potion",
-    "name": "魔力薬",
+    "id": "nutrition",
+    "name": "栄養剤",
     "category": "MEDICINE",
-    "effects": [{ "type": "MP_RECOVERY", "baseValue": 30 }],
-    "description": "魔力を回復する薬"
+    "effects": [{ "type": "HP_RECOVERY", "baseValue": 15 }],
+    "description": "体力を少し回復する栄養ドリンク"
+  },
+  {
+    "id": "high_healing_potion",
+    "name": "高級回復薬",
+    "category": "MEDICINE",
+    "effects": [{ "type": "HP_RECOVERY", "baseValue": 80 }],
+    "description": "HPを大きく回復する高品質な薬"
+  },
+  {
+    "id": "elixir",
+    "name": "万能薬",
+    "category": "MEDICINE",
+    "effects": [
+      { "type": "HP_RECOVERY", "baseValue": 50 },
+      { "type": "CURE_POISON", "baseValue": 1 }
+    ],
+    "description": "あらゆる状態異常を治し体力も回復する"
+  },
+  {
+    "id": "iron_sword",
+    "name": "鉄の剣",
+    "category": "WEAPON",
+    "effects": [{ "type": "ATTACK_UP", "baseValue": 15 }],
+    "description": "頑丈な鉄製の剣"
+  },
+  {
+    "id": "fire_blade",
+    "name": "炎の刃",
+    "category": "WEAPON",
+    "effects": [{ "type": "ATTACK_UP", "baseValue": 30 }],
+    "description": "炎を纏う魔法の剣"
+  },
+  {
+    "id": "magic_water",
+    "name": "魔法の水",
+    "category": "MAGIC",
+    "effects": [{ "type": "DEFENSE_UP", "baseValue": 20 }],
+    "description": "魔法防御を高める水"
+  },
+  {
+    "id": "wind_charm",
+    "name": "風のお守り",
+    "category": "MAGIC",
+    "effects": [{ "type": "DEFENSE_UP", "baseValue": 10 }],
+    "description": "風の加護を受けた護符"
   },
   {
     "id": "bomb",
     "name": "爆弾",
-    "category": "TOOL",
-    "effects": [{ "type": "DAMAGE", "baseValue": 50 }],
-    "description": "爆発する危険な道具"
+    "category": "WEAPON",
+    "effects": [{ "type": "EXPLOSION", "baseValue": 40 }],
+    "description": "投げると爆発する危険物"
   },
   {
-    "id": "elixir",
-    "name": "エリクサー",
-    "category": "MEDICINE",
-    "effects": [{ "type": "HP_RECOVERY", "baseValue": 100 }],
-    "description": "全てを癒す高級薬"
+    "id": "perfume",
+    "name": "香水",
+    "category": "LUXURY",
+    "effects": [{ "type": "HP_RECOVERY", "baseValue": 5 }],
+    "description": "高級感あふれる香り"
   },
   {
-    "id": "philosophers_stone",
-    "name": "賢者の石",
-    "category": "MATERIAL",
-    "effects": [{ "type": "TRANSFORM", "baseValue": 1 }],
-    "description": "万物を変換する伝説の石"
-  },
-  {
-    "id": "universal_remedy",
-    "name": "万能薬",
-    "category": "MEDICINE",
-    "effects": [{ "type": "CURE_ALL", "baseValue": 1 }],
-    "description": "あらゆる状態異常を治す究極の薬"
+    "id": "jeweled_ring",
+    "name": "宝石の指輪",
+    "category": "LUXURY",
+    "effects": [{ "type": "DEFENSE_UP", "baseValue": 25 }],
+    "description": "美しい宝石をあしらった指輪"
   }
 ]
