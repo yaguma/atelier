@@ -28,5 +28,81 @@
     "rarity": "COMMON",
     "unlockRank": "F",
     "description": "医療系"
+  },
+  {
+    "id": "recipe_mana_potion",
+    "name": "魔力薬",
+    "type": "RECIPE",
+    "cost": 1,
+    "requiredMaterials": [
+      { "materialId": "herb", "quantity": 2 },
+      { "materialId": "water", "quantity": 2 }
+    ],
+    "outputItemId": "mana_potion",
+    "category": "MEDICINE",
+    "rarity": "UNCOMMON",
+    "unlockRank": "E",
+    "description": "魔力を回復する薬の調合"
+  },
+  {
+    "id": "recipe_bomb",
+    "name": "爆弾",
+    "type": "RECIPE",
+    "cost": 2,
+    "requiredMaterials": [
+      { "materialId": "fire_stone", "quantity": 1 },
+      { "materialId": "ore", "quantity": 1 }
+    ],
+    "outputItemId": "bomb",
+    "category": "TOOL",
+    "rarity": "UNCOMMON",
+    "unlockRank": "D",
+    "description": "危険な爆発物の調合"
+  },
+  {
+    "id": "recipe_elixir",
+    "name": "エリクサー",
+    "type": "RECIPE",
+    "cost": 3,
+    "requiredMaterials": [
+      { "materialId": "ancient_herb", "quantity": 2 },
+      { "materialId": "pure_water", "quantity": 2 }
+    ],
+    "outputItemId": "elixir",
+    "category": "MEDICINE",
+    "rarity": "RARE",
+    "unlockRank": "C",
+    "description": "高級回復薬の調合"
+  },
+  {
+    "id": "recipe_philosophers_stone",
+    "name": "賢者の石",
+    "type": "RECIPE",
+    "cost": 4,
+    "requiredMaterials": [
+      { "materialId": "crystal", "quantity": 3 },
+      { "materialId": "dragon_scale", "quantity": 1 }
+    ],
+    "outputItemId": "philosophers_stone",
+    "category": "MATERIAL",
+    "rarity": "RARE",
+    "unlockRank": "B",
+    "description": "伝説の錬金素材"
+  },
+  {
+    "id": "recipe_universal_remedy",
+    "name": "万能薬",
+    "type": "RECIPE",
+    "cost": 5,
+    "requiredMaterials": [
+      { "materialId": "ancient_herb", "quantity": 3 },
+      { "materialId": "crystal", "quantity": 1 },
+      { "materialId": "pure_water", "quantity": 2 }
+    ],
+    "outputItemId": "universal_remedy",
+    "category": "MEDICINE",
+    "rarity": "LEGENDARY",
+    "unlockRank": "A",
+    "description": "究極の医療薬"
   }
 ]
