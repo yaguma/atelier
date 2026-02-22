@@ -396,10 +396,10 @@ export class PhaseTabUI extends BaseComponent {
 
   /**
    * 日終了ボタンクリック時の処理
-   * 🔵 信頼性レベル: REQ-004・architecture.md「日終了ボタン」より
+   * 🔵 信頼性レベル: REQ-004・REQ-004-01「残りAP破棄→日終了」より
    */
   private handleEndDayClick(): void {
-    this.gameFlowManager.endDay();
+    this.gameFlowManager.requestEndDay();
   }
 
   /**
