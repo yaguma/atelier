@@ -9,8 +9,8 @@
  */
 
 import type { IAPOverflowResult } from '@features/gathering';
-import type { IAPOverflowPreviewData } from '@features/gathering/components/APOverflowPreview';
-import { APOverflowPreview } from '@features/gathering/components/APOverflowPreview';
+import type { IAPOverflowPreviewData } from '@shared/components/APOverflowPreview';
+import { APOverflowPreview } from '@shared/components/APOverflowPreview';
 import type Phaser from 'phaser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
