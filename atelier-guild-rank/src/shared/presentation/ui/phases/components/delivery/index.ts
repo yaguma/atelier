@@ -6,11 +6,12 @@
  * 納品フェーズUIのサブコンポーネントと型定義を一括エクスポート
  */
 
+// コンポーネント
 export { ContributionPreview } from './ContributionPreview';
 export { DeliveryResultPanel } from './DeliveryResultPanel';
 export { ItemSelector } from './ItemSelector';
-// コンポーネント
 export { QuestDeliveryList } from './QuestDeliveryList';
+export { RewardCardSelectionDialog } from './RewardCardSelectionDialog';
 
 // 型定義
 export type {
@@ -18,6 +19,7 @@ export type {
   DeliveryResult,
   DeliveryResultPanelCallbacks,
   IContributionCalculator,
+  IDeckService,
   IEventBus,
   IInventoryService,
   IQuestService,
@@ -27,4 +29,5 @@ export type {
   Quest,
   QuestDeliveryListCallbacks,
   RewardCard,
+  RewardCardSelectionCallbacks,
 } from './types';

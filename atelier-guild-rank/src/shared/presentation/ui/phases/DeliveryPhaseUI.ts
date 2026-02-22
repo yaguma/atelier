@@ -14,6 +14,7 @@ import {
   ContributionPreview,
   DeliveryResultPanel,
   type IContributionCalculator,
+  type IDeckService,
   type IEventBus,
   type IInventoryService,
   type IQuestService,
@@ -21,6 +22,8 @@ import {
   ItemSelector,
   type Quest,
   QuestDeliveryList,
+  type RewardCard,
+  RewardCardSelectionDialog,
 } from './components/delivery';
 
 // =============================================================================
@@ -52,6 +55,7 @@ const ERROR_MESSAGES = {
   QUEST_SERVICE_NOT_AVAILABLE: 'QuestService is not available',
   INVENTORY_SERVICE_NOT_AVAILABLE: 'InventoryService is not available',
   CONTRIBUTION_CALCULATOR_NOT_AVAILABLE: 'ContributionCalculator is not available',
+  DECK_SERVICE_NOT_AVAILABLE: 'DeckService is not available',
   FAILED_TO_EMIT_EVENT: 'Failed to emit event:',
 } as const;
 
@@ -93,6 +97,7 @@ const GameEventType = {
   CONTRIBUTION_PREVIEW_UPDATED: 'CONTRIBUTION_PREVIEW_UPDATED',
   DELIVERY_STARTED: 'DELIVERY_STARTED',
   DELIVERY_COMPLETED: 'DELIVERY_COMPLETED',
+  REWARD_CARD_SELECTED: 'REWARD_CARD_SELECTED',
   DAY_END_REQUESTED: 'DAY_END_REQUESTED',
   PROMOTION_GAUGE_UPDATED: 'PROMOTION_GAUGE_UPDATED',
   PHASE_TRANSITION_REQUESTED: 'PHASE_TRANSITION_REQUESTED',
@@ -113,12 +118,15 @@ export class DeliveryPhaseUI extends BaseComponent {
   private questService: IQuestService | null = null;
   private inventoryService: IInventoryService | null = null;
   private contributionCalculator: IContributionCalculator | null = null;
+  private deckService: IDeckService | null = null;
 
   private questList: QuestDeliveryList | null = null;
   private itemSelector: ItemSelector | null = null;
   private contributionPreview: ContributionPreview | null = null;
   private resultPanel: DeliveryResultPanel | null = null;
+  private rewardCardDialog: RewardCardSelectionDialog | null = null;
 
+  private pendingRewardCards: RewardCard[] = [];
   private deliverButton: Button | null = null;
   private keyboardHandler: ((event: { key: string }) => void) | null = null;
 
@@ -139,6 +147,8 @@ export class DeliveryPhaseUI extends BaseComponent {
     this.contributionCalculator = this.scene.data.get('contributionCalculator');
     if (!this.contributionCalculator)
       console.warn(ERROR_MESSAGES.CONTRIBUTION_CALCULATOR_NOT_AVAILABLE);
+    this.deckService = this.scene.data.get('deckService');
+    if (!this.deckService) console.warn(ERROR_MESSAGES.DECK_SERVICE_NOT_AVAILABLE);
   }
 
   public create(): void {
@@ -198,6 +208,17 @@ export class DeliveryPhaseUI extends BaseComponent {
       { onClose: () => this.onResultPanelClose() },
     );
     this.resultPanel.create();
+
+    this.rewardCardDialog = new RewardCardSelectionDialog(
+      this.scene,
+      UI_LAYOUT.RESULT_PANEL_X,
+      UI_LAYOUT.RESULT_PANEL_Y,
+      {
+        onCardSelect: (card) => this.onRewardCardSelect(card),
+        onSkip: () => this.onRewardCardSkip(),
+      },
+    );
+    this.rewardCardDialog.create();
   }
 
   private createButtons(): void {
@@ -300,8 +321,9 @@ export class DeliveryPhaseUI extends BaseComponent {
 
     const result = this.questService.deliver(selectedQuest.id, [selectedItem]);
     if (result.success) {
+      // 報酬カード候補を保持（結果パネル閉じた後に使用）
+      this.pendingRewardCards = result.rewardCards ?? [];
       this.resultPanel?.show(result, selectedQuest.description);
-      this.refreshData();
       this.emitEvent(GameEventType.DELIVERY_COMPLETED, {
         questId: selectedQuest.id,
         contribution: result.contribution,
@@ -317,7 +339,45 @@ export class DeliveryPhaseUI extends BaseComponent {
     }
   }
 
+  /**
+   * 結果パネル閉じた後の処理
+   * Issue #263: 報酬カード候補がある場合はカード選択ダイアログを表示
+   */
   private onResultPanelClose(): void {
+    if (this.pendingRewardCards.length > 0 && this.rewardCardDialog) {
+      this.rewardCardDialog.show(this.pendingRewardCards);
+    } else {
+      this.pendingRewardCards = [];
+      this.refreshData();
+    }
+  }
+
+  /**
+   * 報酬カード選択時の処理
+   * Issue #263: 選択されたカードをデッキに追加
+   */
+  private onRewardCardSelect(card: RewardCard): void {
+    if (this.deckService) {
+      try {
+        this.deckService.addCard(card.id);
+      } catch (error) {
+        console.warn('Failed to add reward card to deck:', error);
+      }
+    }
+    this.emitEvent(GameEventType.REWARD_CARD_SELECTED, {
+      cardId: card.id,
+      cardName: card.name,
+      rarity: card.rarity,
+    });
+    this.pendingRewardCards = [];
+    this.refreshData();
+  }
+
+  /**
+   * 報酬カード選択スキップ時の処理
+   */
+  private onRewardCardSkip(): void {
+    this.pendingRewardCards = [];
     this.refreshData();
   }
 
@@ -377,7 +437,9 @@ export class DeliveryPhaseUI extends BaseComponent {
     this.itemSelector?.destroy();
     this.contributionPreview?.destroy();
     this.resultPanel?.destroy();
+    this.rewardCardDialog?.destroy();
     this.deliverButton?.destroy();
+    this.pendingRewardCards = [];
     this.container?.destroy();
   }
 }
