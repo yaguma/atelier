@@ -30,18 +30,6 @@ cd /path/to/project
 pnpm test
 ```
 
-### 絶対パスの活用
-
-`cd` の代わりに、コマンドの引数として絶対パスを指定する。
-
-```bash
-# NG
-cd /path/to/project && git status
-
-# OK
-git -C /path/to/project status
-```
-
 ---
 
 ## コマンドの分割・結合ルール
@@ -144,19 +132,6 @@ pnpm --filter atelier-guild-rank test -- --run
 
 # NG: サブディレクトリに cd してから実行
 cd atelier-guild-rank && pnpm test
-```
-
-### 引数の渡し方
-
-`--` セパレータはルートスクリプト経由では正しく渡せない場合がある。`--filter` を使う。
-
-```bash
-# NG: ルートスクリプト経由で引数を渡す
-pnpm test -- --run
-
-# OK: --filter で直接渡す
-pnpm --filter atelier-guild-rank test -- --run
-pnpm --filter atelier-guild-rank test -- -t "generateQuest"
 ```
 
 ### サブディレクトリでの直接実行が許される場合
