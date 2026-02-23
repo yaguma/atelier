@@ -121,7 +121,7 @@ interface QuestSourceTabsProps {
 
 enum QuestSource {
   BULLETIN = 'bulletin',     // 掲示板（累積型、期限切れで自動削除）
-  VISITOR = 'visitor',       // 訪問者（数日ごとに更新・入れ替え）
+  VISITOR = 'visitor',       // 訪問者（3日ごとに更新・入れ替え）
 }
 ```
 
@@ -179,7 +179,7 @@ interface QuestCardProps {
 
 | 項目 | 掲示板 | 訪問者 |
 |------|--------|--------|
-| **更新タイミング** | 累積型（期限切れで自動削除） | 数日ごとに更新・入れ替え |
+| **更新タイミング** | 累積型（期限切れで自動削除） | 3日ごとに更新・入れ替え |
 | **バッジ色** | #795548（ブラウン） | #FF7043（ディープオレンジ） |
 | **特徴** | 常に一定数の依頼が掲示される | 特別な依頼者が来訪、報酬が高め |
 
@@ -487,7 +487,7 @@ interface Quest {
 
 enum QuestSource {
   BULLETIN = 'bulletin',     // 掲示板（累積型、期限切れで自動削除）
-  VISITOR = 'visitor',       // 訪問者（数日ごとに更新・入れ替え）
+  VISITOR = 'visitor',       // 訪問者（3日ごとに更新・入れ替え）
 }
 
 enum QuestType {

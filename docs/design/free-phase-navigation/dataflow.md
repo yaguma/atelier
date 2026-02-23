@@ -395,7 +395,7 @@ sequenceDiagram
 
     QBS->>QBS: 期限切れ依頼を除去
     QBS->>QBS: 訪問依頼の更新判定
-    alt 更新タイミング（数日ごと）
+    alt 更新タイミング（3日ごと）
         QBS->>QS: generateVisitorQuests(rank)
         QS-->>QBS: visitorQuests
         QBS->>QBS: 訪問依頼を差し替え

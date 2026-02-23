@@ -258,7 +258,7 @@ export interface IBoardQuest {
 
 /**
  * 訪問依頼
- * 🔵 信頼性: REQ-005-02「訪問依頼は数日ごとに更新」より
+ * 🔵 信頼性: REQ-005-02「訪問依頼は3日ごとに更新」より
  */
 export interface IVisitorQuest {
   /** 依頼ID */
