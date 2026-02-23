@@ -52,14 +52,11 @@ flowchart TD
     end
 
     subgraph レビューループ
-        N --> O["🔍 Step 4: /tdd-code-review<br/>コードレビュー"]
-        O --> P[PRコメントに指摘記載]
-        P --> Q["🔒 Step 5: /security-review<br/>セキュリティレビュー"]
-        Q --> R[PRコメントに指摘記載]
-        R --> S{レビュー指摘あり?}
+        N --> O["🔍 Step 4: /pr-review-team --quick<br/>5人並列レビュー"]
+        O --> S{レビュー指摘あり?}
 
-        S -->|あり| T["🔧 Step 6: /tdd-code-review-fix<br/>指摘修正"]
-        T --> U["📝 Step 7: コミット＆プッシュ"]
+        S -->|あり| T["🔧 Step 5: /tdd-code-review-fix<br/>指摘修正"]
+        T --> U["📝 Step 6: コミット＆プッシュ"]
         U --> O
 
         S -->|なし| V[✅ タスク完了]
@@ -153,69 +150,34 @@ Task実行: /commit-commands:commit-push-pr
 
 出力: PR URL（後続ステップで使用）
 
-### Step 5: コードレビュー (`/tdd-code-review`)
+### Step 5: PRレビュー (`/pr-review-team --quick`)
 
 `--skip-review` オプションが指定されていない場合に実行するのだ。
 
 サブエージェント（general-purpose）で実行するのだ。
 
 ```
-Task実行: /tdd-code-review
+Task実行: /pr-review-team {PR番号} --quick
 ```
 
 処理内容:
-1. 7つの観点でレビュー
-   - セキュリティ
-   - パフォーマンス
-   - SOLID原則
-   - エラーハンドリング
-   - テスト品質
-   - コード可読性
-   - 日本語コメント品質
-2. 指摘事項をPRコメントに投稿
+1. 5人の専門レビュアーが並列でレビュー
+   - アーキテクチャレビュアー
+   - セキュリティレビュアー
+   - テスト品質レビュアー
+   - パフォーマンスレビュアー
+   - ゲームデザインレビュアー
+2. Team Leadがクロスカッティング分析で根本的な問題を特定
+3. 指摘事項をPRコメントに投稿 + `docs/reviews/` にローカル保存
 
-```bash
-gh pr comment {PR番号} --body "## 🔍 コードレビュー結果
-
-### 指摘事項
-{指摘内容をMarkdown形式で記載}
-
-### サマリー
-- Critical: {N}件
-- Warning: {N}件
-- Info: {N}件
-"
-```
+重要度定義（`pr-review-team`の`severity-definitions.md`に準拠）:
+- **Critical**: バグ・セキュリティ脆弱性・データ損失のリスク → マージ前に必ず修正
+- **Warning**: 保守性・可読性・パフォーマンスの懸念 → 修正を強く推奨
+- **Info**: 改善提案・ベストプラクティスの紹介 → 任意対応
 
 **音声通知**: 「レビューを開始するのだ」
 
-### Step 6: セキュリティレビュー (`/security-review`)
-
-`--skip-review` オプションが指定されていない場合に実行するのだ。
-
-サブエージェント（general-purpose）で実行するのだ。
-
-```
-Task実行: /security-review
-```
-
-処理内容:
-1. Claude Code標準セキュリティレビュー実行
-2. 脆弱性検出
-3. 指摘事項をPRコメントに投稿
-
-```bash
-gh pr comment {PR番号} --body "## 🔒 セキュリティレビュー結果
-
-### 検出された脆弱性
-{脆弱性をMarkdown形式で記載}
-
-### 推奨対策
-{対策をMarkdown形式で記載}
-"
-```
-
-### Step 7: レビュー指摘修正 (`/tdd-code-review-fix`)
+### Step 6: レビュー指摘修正 (`/tdd-code-review-fix`)
 
 レビュー指摘がある場合に実行するのだ。
 
@@ -226,13 +188,13 @@ Task実行: /tdd-code-review-fix
 ```
 
 処理内容:
-1. PRコメントから指摘内容を取得（`gh pr view --comments`）
-2. 優先度順に修正を実施
+1. PRコメントおよび `docs/reviews/` から指摘内容を取得
+2. 優先度順に修正を実施（Critical → Warning → Info）
 3. 修正完了レポート生成
 
 **音声通知**: 「{N}件の指摘があるのだ」
 
-### Step 8: 修正コミット＆プッシュ
+### Step 7: 修正コミット＆プッシュ
 
 サブエージェント（general-purpose）で実行するのだ。
 
@@ -246,9 +208,9 @@ Task実行: /commit-commands:commit-push-pr
 
 **音声通知**: 「修正が完了したのだ」
 
-### Step 9: レビューループ判定
+### Step 8: レビューループ判定
 
-1. Step 5〜8の結果を確認
+1. Step 5〜7の結果を確認
 2. **以下の条件を満たすまでループ**：
    - Critical問題: 全て修正完了（Issue作成不可のため必須）
    - Warning問題: 全て「修正完了」または「Issue作成済み」
@@ -274,7 +236,7 @@ Task実行: /commit-commands:commit-push-pr
 ⚠️ レビューループが5回に達したのだ。手動確認が必要なのだ。
 ```
 
-### Step 10: 次のタスクへ
+### Step 9: 次のタスクへ
 
 1. Issue: `gh issue list --state open` で次のオープンIssueを取得
 2. タスク: `docs/tasks/{要件名}/overview.md` から次の未完了タスクを取得
@@ -303,15 +265,10 @@ Task tool:
   subagent_type: general-purpose
   prompt: "/commit-commands:commit-push-pr を実行して、PRを作成してほしいのだ"
 
-# コードレビュー
+# PRレビュー（5人並列レビュー）
 Task tool:
   subagent_type: general-purpose
-  prompt: "/tdd-code-review を実行して、コードをレビューしてほしいのだ。指摘事項は gh pr comment でPR {PR番号} に投稿してほしいのだ"
-
-# セキュリティレビュー
-Task tool:
-  subagent_type: general-purpose
-  prompt: "/security-review を実行して、セキュリティをレビューしてほしいのだ。指摘事項は gh pr comment でPR {PR番号} に投稿してほしいのだ"
+  prompt: "/pr-review-team {PR番号} --quick を実行して、PRをレビューしてほしいのだ"
 
 # レビュー指摘修正
 Task tool:
