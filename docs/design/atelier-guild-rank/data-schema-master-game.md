@@ -271,9 +271,7 @@
     "name": "新人",
     "requiredContribution": 200,
     "dayLimit": 30,
-    "specialRules": [
-      { "type": "QUEST_LIMIT", "value": 2, "description": "同時受注2件まで" }
-    ],
+    "specialRules": [],
     "promotionTest": {
       "requirements": [
         { "itemId": "healing_potion", "quantity": 3, "minQuality": "B" },
