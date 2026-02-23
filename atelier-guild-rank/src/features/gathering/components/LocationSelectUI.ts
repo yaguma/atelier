@@ -14,6 +14,7 @@ import { BaseComponent } from '@shared/components';
 import { Colors, THEME } from '@shared/theme/theme';
 import type { CardId } from '@shared/types';
 import type {
+  DropRateLabel,
   IGatheringLocation,
   ILocationSelectResult,
   IMaterialPreview,
@@ -47,6 +48,8 @@ const MAP_LAYOUT = {
   AP_OFFSET_Y: -20,
   /** 素材テキストのY方向オフセット */
   MATERIAL_OFFSET_Y: 52,
+  /** 素材プレビューのフォントサイズ */
+  MATERIAL_FONT_SIZE: 12,
 } as const;
 
 /** マップ色定数（Colors統一カラーパレットを参照） */
@@ -74,7 +77,7 @@ const UNSELECTABLE_ALPHA = 0.4;
 const EMPTY_HAND_MESSAGE = '採取地カードがありません';
 
 /** 出現率ラベルの日本語マッピング */
-const DROP_RATE_LABELS: Record<string, string> = {
+const DROP_RATE_LABELS: Record<DropRateLabel, string> = {
   high: '◎',
   medium: '○',
   low: '△',
@@ -153,8 +156,15 @@ function scaleToMapArea(mapX: number, mapY: number, bounds: MapBounds): { x: num
   const rangeX = bounds.maxX - bounds.minX;
   const rangeY = bounds.maxY - bounds.minY;
 
-  const x = areaLeft + ((mapX - bounds.minX) / rangeX) * (areaRight - areaLeft);
-  const y = areaTop + ((mapY - bounds.minY) / rangeY) * (areaBottom - areaTop);
+  // range === 0 の場合はエリア中央に配置（NaN防止）
+  const x =
+    rangeX === 0
+      ? (areaLeft + areaRight) / 2
+      : areaLeft + ((mapX - bounds.minX) / rangeX) * (areaRight - areaLeft);
+  const y =
+    rangeY === 0
+      ? (areaTop + areaBottom) / 2
+      : areaTop + ((mapY - bounds.minY) / rangeY) * (areaBottom - areaTop);
 
   return { x, y };
 }
@@ -422,7 +432,7 @@ export class LocationSelectUI extends BaseComponent {
       y: MAP_LAYOUT.MATERIAL_OFFSET_Y,
       text: materialsStr,
       style: {
-        fontSize: '12px',
+        fontSize: `${MAP_LAYOUT.MATERIAL_FONT_SIZE}px`,
         color: '#CCCCCC',
         fontFamily: THEME.fonts.primary,
       },
@@ -476,9 +486,22 @@ export class LocationSelectUI extends BaseComponent {
 
   /**
    * 場所ノードをすべてクリアする
+   *
+   * 各ノードのcircle要素に登録されたイベントリスナーを明示的に解除してから破棄する。
    */
   private clearLocationNodes(): void {
     for (const node of this._locationNodeContainers) {
+      // コンテナ内のcircle要素のイベントリスナーを明示的に解除
+      const children = node.list;
+      if (children) {
+        for (const child of children) {
+          if ('off' in child && typeof child.off === 'function') {
+            child.off('pointerover');
+            child.off('pointerout');
+            child.off('pointerdown');
+          }
+        }
+      }
       node.destroy(true);
     }
     this._locationNodeContainers = [];

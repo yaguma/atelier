@@ -353,6 +353,22 @@ describe('LocationSelectUI（Issue #288: マップ形式）', () => {
       // getSelectableLocationCount()で選択可能な場所数を確認
       expect(ui.getSelectableLocationCount()).toBe(2);
     });
+
+    it('選択不可ノードのコンテナにsetAlphaが呼ばれる', () => {
+      const ui = new LocationSelectUI(mockScene, 0, 0);
+      ui.create();
+      ui.updateLocations(mockLocations);
+
+      // ノード用コンテナ（ルートコンテナ以降）を取得
+      const containerCalls = (mockScene.add.container as ReturnType<typeof vi.fn>).mock.results;
+      // ルートコンテナ(index 0)を除外し、ノード用コンテナを取得
+      const nodeContainers = containerCalls.slice(1).map((r: { value: unknown }) => r.value);
+
+      // 選択不可のノード（鉱山 = 2番目のノード）のコンテナでsetAlphaが呼ばれること
+      // mockLocations: [森(selectable), 鉱山(unselectable), 遺跡(selectable)]
+      const unselectableContainer = nodeContainers[1];
+      expect(unselectableContainer.setAlpha).toHaveBeenCalledWith(0.4);
+    });
   });
 
   // ===========================================================================
