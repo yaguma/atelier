@@ -83,30 +83,47 @@ stateDiagram-v2
 
 ## 3. メインシーンのフェーズUI遷移 🔵
 
-メインシーン内で、1日のフェーズに応じてUIコンテナが切り替わる。
+> **v2.1.0更新**: フェーズ自由遷移システムに対応。固定順序の一方向フローからタブUIによる自由遷移に変更。
+> 詳細は [フェーズ自由遷移要件定義書](../../spec/free-phase-navigation/requirements.md) を参照。
+
+メインシーン内で、タブUIにより4フェーズを自由に切り替えられる。
 
 ```mermaid
 stateDiagram-v2
     [*] --> DayStart: 日開始
 
-    state "1日のUIループ" as DayLoop {
-        DayStart --> QuestAcceptUI: 日開始処理
-        QuestAcceptUI --> GatheringUI: 受注完了/スキップ
-        GatheringUI --> AlchemyUI: 採取完了/スキップ
-        AlchemyUI --> DeliveryUI: 調合完了/スキップ
-        DeliveryUI --> DayEndUI: 納品完了/スキップ
+    state "1日のUIループ（自由遷移）" as DayLoop {
+        DayStart --> ActivePhase: 日開始処理
+
+        state ActivePhase {
+            QuestAcceptUI --> GatheringUI: タブ切替
+            GatheringUI --> QuestAcceptUI: タブ切替
+            QuestAcceptUI --> AlchemyUI: タブ切替
+            AlchemyUI --> QuestAcceptUI: タブ切替
+            QuestAcceptUI --> DeliveryUI: タブ切替
+            DeliveryUI --> QuestAcceptUI: タブ切替
+            GatheringUI --> AlchemyUI: タブ切替
+            AlchemyUI --> GatheringUI: タブ切替
+            GatheringUI --> DeliveryUI: タブ切替
+            DeliveryUI --> GatheringUI: タブ切替
+            AlchemyUI --> DeliveryUI: タブ切替
+            DeliveryUI --> AlchemyUI: タブ切替
+        }
+
+        ActivePhase --> DayEnd: 「日終了」ボタン
+        ActivePhase --> DayEnd: AP超過による自動日進行
     }
 
-    DayEndUI --> DayStart: 次の日へ
-    DayEndUI --> [*]: ゲーム終了判定
+    DayEnd --> DayStart: 次の日へ
+    DayEnd --> [*]: ゲーム終了判定
 ```
 
 ### フェーズ別UI概要 🔵
 
 | フェーズ | UIコンテナ | rexUIコンポーネント | 主要操作 |
 |---------|----------|-------------------|----------|
-| **依頼受注** | QuestAcceptContainer | ScrollablePanel, Buttons | 依頼確認、受注/断る |
-| **採取** | GatheringContainer | GridButtons, ProgressBar | 素材選択、スキップ、終了 |
+| **依頼受注** | QuestAcceptContainer | ScrollablePanel, Buttons | 掲示板＋訪問依頼、受注/断る |
+| **採取** | GatheringContainer | GridButtons, MapView | 場所選択→ドラフト採取 |
 | **調合** | AlchemyContainer | GridButtons, Buttons | カード選択、素材選択、強化カード使用 |
 | **納品** | DeliveryContainer | ScrollablePanel, Buttons | 納品選択、報酬カード選択 |
 
