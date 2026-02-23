@@ -65,7 +65,8 @@ interface MockScene extends Phaser.Scene {
 
 interface MockGameFlowManager extends Partial<IGameFlowManager> {
   switchPhase: ReturnType<typeof vi.fn>;
-  endDay: ReturnType<typeof vi.fn>;
+  requestEndDay: ReturnType<typeof vi.fn>;
+  rest: ReturnType<typeof vi.fn>;
 }
 
 interface MockEventBus extends Partial<IEventBus> {
@@ -139,7 +140,8 @@ const createMockGameFlowManager = (): MockGameFlowManager => ({
     previousPhase: GamePhase.QUEST_ACCEPT,
     newPhase: GamePhase.ALCHEMY,
   }),
-  endDay: vi.fn(),
+  requestEndDay: vi.fn(),
+  rest: vi.fn(),
 });
 
 const createMockEventBus = (): MockEventBus => ({
@@ -201,7 +203,7 @@ describe('PhaseTabUI（TASK-0111）', () => {
 
       phaseTabUI.create();
 
-      // scene.make.textが4つのタブ + 1つの日終了ボタンテキスト = 5回呼ばれる
+      // scene.make.textが4つのタブ + 日終了ボタン + 休憩ボタン = 6回呼ばれる
       const tabTextCalls = scene.make.text.mock.calls.slice(0, 4);
       const labels = tabTextCalls.map((call) => call[0]?.text);
 
@@ -303,7 +305,7 @@ describe('PhaseTabUI（TASK-0111）', () => {
       phaseTabUI.create();
 
       // 4つのタブ背景にsetInteractiveが呼ばれていることを確認
-      // Rectangleコンストラクタは4タブ + 1日終了ボタン = 5回呼ばれる
+      // Rectangleコンストラクタは4タブ + 日終了ボタン + 休憩ボタン = 6回呼ばれる
       const tabRects = mockRectangles.slice(0, 4);
       for (const rect of tabRects) {
         expect(rect.setInteractive).toHaveBeenCalled();
@@ -312,18 +314,48 @@ describe('PhaseTabUI（TASK-0111）', () => {
   });
 
   // ===========================================================================
-  // テストケース4: 日終了ボタンでendDay呼び出し
+  // テストケース4: 日終了ボタンでrequestEndDay呼び出し
   // ===========================================================================
 
-  describe('T-0111-04: 日終了ボタンでendDay()が呼ばれる', () => {
-    it('日終了ボタンクリックでendDay()が呼ばれる', () => {
-      // 【テスト目的】: 日終了ボタンクリック時にGameFlowManager.endDay()が呼ばれることを確認
-      // 🔵 信頼性レベル: REQ-004・architecture.md「日終了ボタン」より
+  describe('T-0111-04: 日終了ボタンでrequestEndDay()が呼ばれる', () => {
+    it('日終了ボタンクリックでrequestEndDay()が呼ばれる', () => {
+      // 【テスト目的】: 日終了ボタンクリック時にGameFlowManager.requestEndDay()が呼ばれることを確認
+      // 🔵 信頼性レベル: REQ-004・REQ-004-01「残りAP破棄→日終了」より
 
       phaseTabUI.create();
       phaseTabUI.simulateEndDayClick();
 
-      expect(mockGameFlowManager.endDay).toHaveBeenCalledTimes(1);
+      expect(mockGameFlowManager.requestEndDay).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // ===========================================================================
+  // テストケース5: 休憩ボタンでrest呼び出し
+  // ===========================================================================
+
+  describe('T-0112-01: 休憩ボタンでrest()が呼ばれる', () => {
+    it('休憩ボタンクリックでrest()が呼ばれる', () => {
+      phaseTabUI.create();
+      phaseTabUI.simulateRestClick();
+
+      expect(mockGameFlowManager.rest).toHaveBeenCalledTimes(1);
+    });
+
+    it('休憩ボタンが表示される', () => {
+      phaseTabUI.create();
+
+      const allTextCalls = scene.make.text.mock.calls;
+      const restCall = allTextCalls.find((call) => call[0]?.text === '休憩');
+      expect(restCall).toBeDefined();
+    });
+
+    it('休憩ボタンがクリック可能である', () => {
+      phaseTabUI.create();
+
+      // 6つ目のRectangle（index 5）が休憩ボタン
+      const restRect = mockRectangles[5];
+      expect(restRect).toBeDefined();
+      expect(restRect?.setInteractive).toHaveBeenCalled();
     });
   });
 

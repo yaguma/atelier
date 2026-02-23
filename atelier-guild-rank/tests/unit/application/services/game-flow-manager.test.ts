@@ -1298,6 +1298,59 @@ describe('GameFlowManager', () => {
       expect(mockEventBus.emit).toHaveBeenCalledWith(GameEventType.DAY_ENDED, expect.anything());
     });
 
+    it('TC-004-02: AP残量0でrequestEndDay()すると翌日AP=3で開始される', () => {
+      // 【テスト目的】: AP残量0の状態で「日終了」クリック→翌日AP=3で開始
+      // 🔵 信頼性レベル: REQ-004
+      let currentDay = 5;
+      let remainingDays = 146;
+
+      mockStateManager.getState = vi.fn(() => ({
+        currentRank: GuildRank.G,
+        rankHp: 100,
+        remainingDays,
+        currentDay,
+        gold: 200,
+        actionPoints: 0,
+        maxActionPoints: 3,
+        comboCount: 0,
+        currentPhase: GamePhase.ALCHEMY,
+        contribution: 0,
+        apOverflow: 0,
+        isPromotionTest: false,
+        promotionGauge: 0,
+        questBoard: {
+          boardQuests: [],
+          visitorQuests: [],
+          lastVisitorUpdateDay: 0,
+        },
+      }));
+      mockStateManager.updateState = vi.fn((update) => {
+        if (update.currentDay !== undefined) {
+          currentDay = update.currentDay;
+        }
+        if (update.remainingDays !== undefined) {
+          remainingDays = update.remainingDays;
+        }
+      });
+
+      gameFlowManager.requestEndDay();
+
+      const updateCalls = mockStateManager.updateState.mock.calls;
+
+      // requestEndDay()でAP=0, apOverflow=0のリセットが呼ばれる
+      expect(updateCalls[0][0]).toEqual(
+        expect.objectContaining({ actionPoints: 0, apOverflow: 0 }),
+      );
+
+      // endDay()→startDay()でAP=3（MAX_AP）で回復される
+      const startDayCall = updateCalls.find((call) => call[0].actionPoints === 3);
+      expect(startDayCall).toBeDefined();
+
+      // DAY_ENDEDとDAY_STARTEDイベントが発行される
+      expect(mockEventBus.emit).toHaveBeenCalledWith(GameEventType.DAY_ENDED, expect.anything());
+      expect(mockEventBus.emit).toHaveBeenCalledWith(GameEventType.DAY_STARTED, expect.anything());
+    });
+
     it('T-0108-04: requestEndDay()でapOverflowがリセットされ次日はMAX_APで開始', () => {
       // 🔵 信頼性レベル: REQ-004・REQ-003-01
       let currentApOverflow = 1;

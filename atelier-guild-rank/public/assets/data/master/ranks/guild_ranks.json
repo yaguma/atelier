@@ -10,16 +10,14 @@
       "dayLimit": 5
     },
     "unlockedGatheringCards": ["gathering_backyard", "gathering_nearby_forest"],
-    "unlockedRecipeCards": ["recipe_healing_potion", "recipe_nutrition"]
+    "unlockedRecipeCards": ["recipe_healing_potion"]
   },
   {
     "id": "F",
     "name": "新人",
     "requiredContribution": 200,
     "dayLimit": 30,
-    "specialRules": [
-      { "type": "QUEST_LIMIT", "value": 2, "description": "同時受注2件まで" }
-    ],
+    "specialRules": [{ "type": "QUEST_LIMIT", "value": 2, "description": "同時受注2件まで" }],
     "promotionTest": {
       "requirements": [
         { "itemId": "healing_potion", "quantity": 3, "minQuality": "B" },
@@ -28,7 +26,124 @@
       "dayLimit": 5
     },
     "unlockedGatheringCards": ["gathering_riverside"],
-    "unlockedRecipeCards": ["recipe_antidote"]
+    "unlockedRecipeCards": ["recipe_antidote", "recipe_iron_sword", "recipe_nutrition"]
+  },
+  {
+    "id": "E",
+    "name": "一人前",
+    "requiredContribution": 300,
+    "dayLimit": 30,
+    "specialRules": [{ "type": "QUEST_LIMIT", "value": 3, "description": "同時受注3件まで" }],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "iron_sword", "quantity": 1, "minQuality": "B" },
+        { "itemId": "wind_charm", "quantity": 2 }
+      ],
+      "dayLimit": 5
+    },
+    "unlockedGatheringCards": ["gathering_windy_hill"],
+    "unlockedRecipeCards": ["recipe_wind_charm"]
+  },
+  {
+    "id": "D",
+    "name": "中堅",
+    "requiredContribution": 400,
+    "dayLimit": 30,
+    "specialRules": [
+      { "type": "QUEST_LIMIT", "value": 3, "description": "同時受注3件まで" },
+      {
+        "type": "QUALITY_REQUIRED",
+        "value": 0,
+        "condition": "C",
+        "description": "品質C以上のアイテムのみ納品可"
+      }
+    ],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "bomb", "quantity": 2, "minQuality": "B" },
+        { "itemId": "iron_sword", "quantity": 1, "minQuality": "A" }
+      ],
+      "dayLimit": 5
+    },
+    "unlockedGatheringCards": ["gathering_mountain_trail"],
+    "unlockedRecipeCards": ["recipe_bomb"]
+  },
+  {
+    "id": "C",
+    "name": "熟練",
+    "requiredContribution": 500,
+    "dayLimit": 30,
+    "specialRules": [
+      { "type": "QUEST_LIMIT", "value": 3, "description": "同時受注3件まで" },
+      {
+        "type": "QUALITY_REQUIRED",
+        "value": 0,
+        "condition": "C",
+        "description": "品質C以上のアイテムのみ納品可"
+      },
+      { "type": "DEADLINE_REDUCTION", "value": 1, "description": "全依頼の期限-1日" }
+    ],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "high_healing_potion", "quantity": 2, "minQuality": "A" },
+        { "itemId": "perfume", "quantity": 2, "minQuality": "B" }
+      ],
+      "dayLimit": 5
+    },
+    "unlockedGatheringCards": ["gathering_deep_cave"],
+    "unlockedRecipeCards": ["recipe_high_healing_potion", "recipe_perfume"]
+  },
+  {
+    "id": "B",
+    "name": "達人",
+    "requiredContribution": 600,
+    "dayLimit": 30,
+    "specialRules": [
+      { "type": "QUEST_LIMIT", "value": 3, "description": "同時受注3件まで" },
+      {
+        "type": "QUALITY_REQUIRED",
+        "value": 0,
+        "condition": "B",
+        "description": "品質B以上のアイテムのみ納品可"
+      },
+      { "type": "DEADLINE_REDUCTION", "value": 1, "description": "全依頼の期限-1日" }
+    ],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "elixir", "quantity": 2, "minQuality": "A" },
+        { "itemId": "jeweled_ring", "quantity": 1, "minQuality": "A" }
+      ],
+      "dayLimit": 5
+    },
+    "unlockedGatheringCards": ["gathering_ancient_forest"],
+    "unlockedRecipeCards": ["recipe_elixir", "recipe_jeweled_ring", "recipe_magic_water"]
+  },
+  {
+    "id": "A",
+    "name": "名匠",
+    "requiredContribution": 700,
+    "dayLimit": 30,
+    "specialRules": [
+      { "type": "QUEST_LIMIT", "value": 3, "description": "同時受注3件まで" },
+      {
+        "type": "QUALITY_REQUIRED",
+        "value": 0,
+        "condition": "B",
+        "description": "品質B以上のアイテムのみ納品可"
+      },
+      { "type": "DEADLINE_REDUCTION", "value": 2, "description": "全依頼の期限-2日" },
+      { "type": "QUALITY_PENALTY", "value": 1, "description": "品質判定が1段階厳しい" }
+    ],
+    "promotionTest": {
+      "requirements": [
+        { "itemId": "elixir", "quantity": 3, "minQuality": "S" },
+        { "itemId": "fire_blade", "quantity": 2, "minQuality": "S" },
+        { "itemId": "jeweled_ring", "quantity": 2, "minQuality": "S" }
+      ],
+      "dayLimit": 7
+    },
+    "unlockedGatheringCards": ["gathering_volcanic_area"],
+    "unlockedRecipeCards": ["recipe_fire_blade"]
   },
   {
     "id": "E",
@@ -51,9 +166,7 @@
     "name": "中堅",
     "requiredContribution": 500,
     "dayLimit": 25,
-    "specialRules": [
-      { "type": "QUEST_LIMIT", "value": 3, "description": "同時受注3件まで" }
-    ],
+    "specialRules": [{ "type": "QUEST_LIMIT", "value": 3, "description": "同時受注3件まで" }],
     "promotionTest": {
       "requirements": [
         { "itemId": "antidote", "quantity": 3, "minQuality": "B" },
@@ -73,9 +186,7 @@
       { "type": "QUALITY_REQUIRED", "value": 3, "description": "納品品質C以上必須" }
     ],
     "promotionTest": {
-      "requirements": [
-        { "itemId": "elixir", "quantity": 2, "minQuality": "B" }
-      ],
+      "requirements": [{ "itemId": "elixir", "quantity": 2, "minQuality": "B" }],
       "dayLimit": 7
     },
     "unlockedGatheringCards": ["gathering_cave"],

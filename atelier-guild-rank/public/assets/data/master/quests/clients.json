@@ -28,5 +28,50 @@
       "火属性{value}以上の武器を頼む",
       "HP{value}回復できるものをくれ"
     ]
+  },
+  {
+    "id": "merchant",
+    "name": "商人",
+    "type": "MERCHANT",
+    "contributionMultiplier": 1.2,
+    "goldMultiplier": 1.5,
+    "deadlineModifier": -1,
+    "preferredQuestTypes": ["SPECIFIC", "QUANTITY"],
+    "unlockRank": "E",
+    "dialoguePatterns": [
+      "{item}を{quantity}個仕入れたいのだが",
+      "品質{quality}以上の{item}を頼む",
+      "至急{item}が必要だ、高く買おう"
+    ]
+  },
+  {
+    "id": "noble",
+    "name": "貴族",
+    "type": "NOBLE",
+    "contributionMultiplier": 1.5,
+    "goldMultiplier": 2.0,
+    "deadlineModifier": -1,
+    "preferredQuestTypes": ["QUALITY", "SPECIFIC"],
+    "unlockRank": "C",
+    "dialoguePatterns": [
+      "最高品質の{item}を用意してくれたまえ",
+      "品質{quality}以上でなければ受け取らんぞ",
+      "{item}を{quantity}個、急ぎで頼む"
+    ]
+  },
+  {
+    "id": "guild_master",
+    "name": "ギルドマスター",
+    "type": "GUILD",
+    "contributionMultiplier": 2.0,
+    "goldMultiplier": 1.0,
+    "deadlineModifier": -2,
+    "preferredQuestTypes": ["COMPOUND", "MATERIAL"],
+    "unlockRank": "A",
+    "dialoguePatterns": [
+      "ギルドの依頼だ、{item}を最高品質で頼む",
+      "複合依頼だ、{item}と素材を揃えてくれ",
+      "ギルドの名に恥じない品を期待している"
+    ]
   }
 ]

@@ -15,6 +15,22 @@
     "description": "医療系の基本"
   },
   {
+    "id": "recipe_nutrition",
+    "name": "栄養剤",
+    "type": "RECIPE",
+    "cost": 1,
+    "requiredMaterials": [
+      { "materialId": "herb", "quantity": 1 },
+      { "materialId": "fish", "quantity": 1 },
+      { "materialId": "water", "quantity": 1 }
+    ],
+    "outputItemId": "nutrition",
+    "category": "MEDICINE",
+    "rarity": "COMMON",
+    "unlockRank": "F",
+    "description": "栄養補給の基本"
+  },
+  {
     "id": "recipe_antidote",
     "name": "解毒剤",
     "type": "RECIPE",
@@ -30,19 +46,65 @@
     "description": "医療系"
   },
   {
-    "id": "recipe_mana_potion",
-    "name": "魔力薬",
+    "id": "recipe_iron_sword",
+    "name": "鉄の剣",
+    "type": "RECIPE",
+    "cost": 2,
+    "requiredMaterials": [
+      { "materialId": "iron_ore", "quantity": 3 },
+      { "materialId": "stone", "quantity": 1 }
+    ],
+    "outputItemId": "iron_sword",
+    "category": "WEAPON",
+    "rarity": "COMMON",
+    "unlockRank": "F",
+    "description": "武器の基本"
+  },
+  {
+    "id": "recipe_wind_charm",
+    "name": "風のお守り",
     "type": "RECIPE",
     "cost": 1,
     "requiredMaterials": [
-      { "materialId": "herb", "quantity": 2 },
-      { "materialId": "water", "quantity": 2 }
+      { "materialId": "wind_flower", "quantity": 2 },
+      { "materialId": "feather", "quantity": 1 }
     ],
-    "outputItemId": "mana_potion",
+    "outputItemId": "wind_charm",
+    "category": "MAGIC",
+    "rarity": "COMMON",
+    "unlockRank": "E",
+    "description": "護符系の基本"
+  },
+  {
+    "id": "recipe_magic_water",
+    "name": "魔法の水",
+    "type": "RECIPE",
+    "cost": 2,
+    "requiredMaterials": [
+      { "materialId": "pure_water", "quantity": 2 },
+      { "materialId": "magic_herb", "quantity": 1 }
+    ],
+    "outputItemId": "magic_water",
+    "category": "MAGIC",
+    "rarity": "UNCOMMON",
+    "unlockRank": "B",
+    "description": "魔法系の中級"
+  },
+  {
+    "id": "recipe_high_healing_potion",
+    "name": "高級回復薬",
+    "type": "RECIPE",
+    "cost": 2,
+    "requiredMaterials": [
+      { "materialId": "magic_herb", "quantity": 2 },
+      { "materialId": "deep_water", "quantity": 1 },
+      { "materialId": "herb", "quantity": 1 }
+    ],
+    "outputItemId": "high_healing_potion",
     "category": "MEDICINE",
     "rarity": "UNCOMMON",
-    "unlockRank": "E",
-    "description": "魔力を回復する薬の調合"
+    "unlockRank": "C",
+    "description": "高品質な医療"
   },
   {
     "id": "recipe_bomb",
@@ -51,58 +113,77 @@
     "cost": 2,
     "requiredMaterials": [
       { "materialId": "fire_stone", "quantity": 1 },
-      { "materialId": "ore", "quantity": 1 }
+      { "materialId": "iron_ore", "quantity": 1 },
+      { "materialId": "red_berry", "quantity": 1 }
     ],
     "outputItemId": "bomb",
-    "category": "TOOL",
+    "category": "WEAPON",
     "rarity": "UNCOMMON",
     "unlockRank": "D",
-    "description": "危険な爆発物の調合"
+    "description": "爆発物の調合"
   },
   {
-    "id": "recipe_elixir",
-    "name": "エリクサー",
+    "id": "recipe_fire_blade",
+    "name": "炎の刃",
     "type": "RECIPE",
     "cost": 3,
     "requiredMaterials": [
-      { "materialId": "ancient_herb", "quantity": 2 },
-      { "materialId": "pure_water", "quantity": 2 }
+      { "materialId": "fire_stone", "quantity": 2 },
+      { "materialId": "iron_ore", "quantity": 2 },
+      { "materialId": "dragon_scale", "quantity": 1 }
+    ],
+    "outputItemId": "fire_blade",
+    "category": "WEAPON",
+    "rarity": "RARE",
+    "unlockRank": "A",
+    "description": "炎の武器"
+  },
+  {
+    "id": "recipe_perfume",
+    "name": "香水",
+    "type": "RECIPE",
+    "cost": 2,
+    "requiredMaterials": [
+      { "materialId": "wind_flower", "quantity": 2 },
+      { "materialId": "pure_water", "quantity": 1 },
+      { "materialId": "red_berry", "quantity": 1 }
+    ],
+    "outputItemId": "perfume",
+    "category": "LUXURY",
+    "rarity": "UNCOMMON",
+    "unlockRank": "C",
+    "description": "高級品の調合"
+  },
+  {
+    "id": "recipe_elixir",
+    "name": "万能薬",
+    "type": "RECIPE",
+    "cost": 3,
+    "requiredMaterials": [
+      { "materialId": "spirit_water", "quantity": 1 },
+      { "materialId": "magic_herb", "quantity": 2 },
+      { "materialId": "ancient_wood", "quantity": 1 }
     ],
     "outputItemId": "elixir",
     "category": "MEDICINE",
     "rarity": "RARE",
-    "unlockRank": "C",
-    "description": "高級回復薬の調合"
+    "unlockRank": "B",
+    "description": "究極の医療"
   },
   {
-    "id": "recipe_philosophers_stone",
-    "name": "賢者の石",
+    "id": "recipe_jeweled_ring",
+    "name": "宝石の指輪",
     "type": "RECIPE",
-    "cost": 4,
+    "cost": 3,
     "requiredMaterials": [
-      { "materialId": "crystal", "quantity": 3 },
-      { "materialId": "dragon_scale", "quantity": 1 }
+      { "materialId": "crystal", "quantity": 2 },
+      { "materialId": "star_fragment", "quantity": 1 },
+      { "materialId": "deep_water", "quantity": 1 }
     ],
-    "outputItemId": "philosophers_stone",
-    "category": "MATERIAL",
+    "outputItemId": "jeweled_ring",
+    "category": "LUXURY",
     "rarity": "RARE",
     "unlockRank": "B",
-    "description": "伝説の錬金素材"
-  },
-  {
-    "id": "recipe_universal_remedy",
-    "name": "万能薬",
-    "type": "RECIPE",
-    "cost": 5,
-    "requiredMaterials": [
-      { "materialId": "ancient_herb", "quantity": 3 },
-      { "materialId": "crystal", "quantity": 1 },
-      { "materialId": "pure_water", "quantity": 2 }
-    ],
-    "outputItemId": "universal_remedy",
-    "category": "MEDICINE",
-    "rarity": "LEGENDARY",
-    "unlockRank": "A",
-    "description": "究極の医療薬"
+    "description": "最高級の装飾品"
   }
 ]
