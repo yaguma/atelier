@@ -76,6 +76,9 @@ vi.mock('@presentation/ui/components/QuestCardUI', () => ({
     getContainer() {
       return this.mockContainer;
     }
+    getBackground() {
+      return this.background;
+    }
     setSelected() {}
   },
 }));

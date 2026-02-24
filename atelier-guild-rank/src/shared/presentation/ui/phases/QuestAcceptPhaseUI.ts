@@ -370,9 +370,7 @@ export class QuestAcceptPhaseUI extends BaseComponent {
    * @param quest - 依頼データ
    */
   private setupCardClickHandler(questCard: QuestCardUI, quest: Quest): void {
-    // 【型安全性】: backgroundはprivateプロパティのためanyでアクセス
-    // biome-ignore lint/suspicious/noExplicitAny: backgroundはprivateプロパティのためanyでアクセス
-    const background = (questCard as any).background;
+    const background = questCard.getBackground();
     if (background?.on) {
       background.on('pointerdown', () => {
         this.openQuestDetailModal(quest);

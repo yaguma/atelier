@@ -336,6 +336,14 @@ export class QuestCardUI extends BaseComponent {
   }
 
   /**
+   * 【背景を取得する】: カードクリックハンドラ設定用にbackgroundを公開
+   * @returns 背景のGameObject
+   */
+  public getBackground(): Phaser.GameObjects.Rectangle {
+    return this.background;
+  }
+
+  /**
    * 【コンポーネントを破棄する】: すべてのGameObjectsとコンテナを破棄
    * 【メモリリーク防止】: 各要素を個別に破棄し、メモリリークを防止
    * 【型安全性】: 各要素の存在確認を行ってから破棄

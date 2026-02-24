@@ -115,8 +115,7 @@ export abstract class BaseComponent {
       get(target, prop) {
         if (prop === 'x') return coordinates.x;
         if (prop === 'y') return coordinates.y;
-        // biome-ignore lint/suspicious/noExplicitAny: Proxyのため
-        return (target as any)[prop];
+        return (target as unknown as Record<string | symbol, unknown>)[prop];
       },
       set(target, prop, value) {
         if (prop === 'x') {
@@ -127,8 +126,7 @@ export abstract class BaseComponent {
           coordinates.y = value;
           return true;
         }
-        // biome-ignore lint/suspicious/noExplicitAny: Proxyのため
-        (target as any)[prop] = value;
+        (target as unknown as Record<string | symbol, unknown>)[prop] = value;
         return true;
       },
     });
