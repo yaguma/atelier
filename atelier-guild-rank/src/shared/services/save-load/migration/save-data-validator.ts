@@ -10,6 +10,7 @@
 
 import { GamePhase, GuildRank } from '@shared/types';
 import type { IValidationError, IValidationResult } from './types';
+import { isObject } from './types';
 
 // =============================================================================
 // 定数
@@ -262,6 +263,21 @@ function validateGameState(state: Record<string, unknown>): IValidationError[] {
     );
   }
 
+  // promotionTestRemainingDays（オプショナル: 存在する場合のみ検証）
+  if (
+    state.promotionTestRemainingDays !== undefined &&
+    !isPositiveInteger(state.promotionTestRemainingDays)
+  ) {
+    errors.push(
+      createError(
+        'gameState.promotionTestRemainingDays',
+        'positive integer or undefined',
+        String(state.promotionTestRemainingDays),
+        '昇格試験残り日数が不正です',
+      ),
+    );
+  }
+
   // apOverflow
   if (!isNonNegativeInteger(state.apOverflow)) {
     errors.push(
@@ -477,13 +493,6 @@ function validateQuestState(state: Record<string, unknown>): IValidationError[] 
 // =============================================================================
 // ヘルパー関数（型ガード）
 // =============================================================================
-
-/**
- * 値がオブジェクト（null以外）であるか判定する
- */
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 /**
  * 値が非空文字列であるか判定する

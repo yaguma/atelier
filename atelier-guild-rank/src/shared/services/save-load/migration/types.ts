@@ -320,3 +320,20 @@ export type ParseVersionFn = (version: string) => SaveDataVersion | null;
  * @returns a < b なら負、a === b なら0、a > b なら正
  */
 export type CompareVersionsFn = (a: SaveDataVersion, b: SaveDataVersion) => number;
+
+// =============================================================================
+// 共通型ガード
+// =============================================================================
+
+/**
+ * 値がオブジェクト（null以外・配列以外）であるか判定する
+ *
+ * マイグレーションモジュール内で `as Record<string, unknown>` キャストの
+ * 代わりに使用し、型安全性を向上させる。
+ *
+ * @param value 検証対象
+ * @returns value が Record<string, unknown> の場合 true
+ */
+export function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}

@@ -13,6 +13,7 @@
  */
 
 import type { IMigrationStep } from '../types';
+import { isObject } from '../types';
 
 // =============================================================================
 // マイグレーション定義
@@ -29,18 +30,18 @@ export const migrationV1_0ToV1_1: IMigrationStep = {
   description: 'フェーズ自由遷移対応: apOverflow, questBoard を追加',
   migrate: (data: unknown): unknown => {
     // unknown型から安全にオブジェクトを取得
-    if (typeof data !== 'object' || data === null) {
+    if (!isObject(data)) {
       throw new Error('Migration v1.0.0 -> v1.1.0: data is not an object');
     }
 
-    const saveData = data as Record<string, unknown>;
+    const saveData = data;
 
     // gameStateの存在チェック
-    if (typeof saveData.gameState !== 'object' || saveData.gameState === null) {
+    if (!isObject(saveData.gameState)) {
       throw new Error('Migration v1.0.0 -> v1.1.0: gameState is missing or invalid');
     }
 
-    const gameState = saveData.gameState as Record<string, unknown>;
+    const gameState = saveData.gameState;
 
     // 新しいgameStateを構築（既存フィールド + 新規フィールド）
     const migratedGameState = {

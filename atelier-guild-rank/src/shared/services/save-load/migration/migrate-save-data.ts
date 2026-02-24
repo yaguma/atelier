@@ -19,7 +19,7 @@ import type {
   ParseVersionFn,
   SaveDataVersion,
 } from './types';
-import { MigrationFailureReason } from './types';
+import { isObject, MigrationFailureReason } from './types';
 
 // =============================================================================
 // バージョンユーティリティ関数（純粋関数）
@@ -108,7 +108,7 @@ export function migrateSaveData(
   registry: IMigrationRegistry,
 ): MigrationResult {
   // 1. データの基本構造チェック
-  if (typeof rawData !== 'object' || rawData === null || Array.isArray(rawData)) {
+  if (!isObject(rawData)) {
     return createFailure(
       null,
       targetVersion,
@@ -117,7 +117,7 @@ export function migrateSaveData(
     );
   }
 
-  const data = rawData as Record<string, unknown>;
+  const data = rawData;
 
   // 2. バージョン検出
   if (typeof data.version !== 'string' || data.version.length === 0) {
@@ -188,7 +188,7 @@ export function migrateSaveData(
 
     return {
       success: true,
-      data: rawData as ISaveData,
+      data: rawData as unknown as ISaveData,
       fromVersion: fromVersionStr,
       toVersion: targetVersion,
       stepsApplied: 0 as const,
