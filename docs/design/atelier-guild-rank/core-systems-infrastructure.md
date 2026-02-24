@@ -71,7 +71,7 @@ const deckService = new DeckService(masterDataRepo, eventBus);
 const questService = new QuestService(masterDataRepo, eventBus);
 
 // 利用側での解決
-const eventBus = container.resolve<IEventBus>(ServiceKeys.EventBus);
+const resolvedEventBus = container.resolve<IEventBus>(ServiceKeys.EventBus);
 ```
 
 ### 2.5 イベント定義 🔵
@@ -81,37 +81,37 @@ const eventBus = container.resolve<IEventBus>(ServiceKeys.EventBus);
 | イベント名 | 発火元 | ペイロード型 | 説明 |
 |-----------|-------|-------------|------|
 | **フェーズ遷移** ||||
-| `PHASE_CHANGED` | StateManager | `{ previousPhase, newPhase }` | フェーズ変更 |
-| `DAY_STARTED` | GameFlowManager | `{ day }` | 日開始 |
+| `PHASE_CHANGED` | StateManager | `IPhaseChangedEvent` (`{ previousPhase, newPhase }`) | フェーズ変更 |
+| `DAY_STARTED` | StateManager | `{ day, remainingDays }` | 日開始 |
 | `DAY_ENDED` | GameFlowManager | `{ day }` | 日終了 |
 | **依頼関連** ||||
 | `QUEST_GENERATED` | QuestService | `{ quests: IQuest[] }` | 日毎依頼生成 |
 | `QUEST_ACCEPTED` | QuestService | `{ quest }` | 依頼受注 |
 | `QUEST_CANCELLED` | QuestService | `{ questId }` | 依頼キャンセル |
-| `QUEST_COMPLETED` | QuestService | `{ quest, deliveredItem }` | 依頼完了 |
+| `QUEST_COMPLETED` | QuestService | `IQuestCompletedEvent` (`{ quest, deliveredItem }`) | 依頼完了 |
 | `QUEST_FAILED` | QuestService | `{ quest }` | 依頼失敗 |
 | **採取関連** ||||
 | `GATHERING_STARTED` | GatheringService | `{ session }` | 採取開始 |
 | `MATERIAL_SELECTED` | GatheringService | `{ material }` | 素材選択 |
 | `GATHERING_ENDED` | GatheringService | `{ result }` | 採取終了 |
-| `GATHERING_COMPLETED` | GatheringService | `{ obtainedMaterials }` | 採取完了 |
+| `GATHERING_COMPLETED` | GatheringService | `IGatheringCompletedEvent` (`{ obtainedMaterials }`) | 採取完了 |
 | **調合関連** ||||
-| `ALCHEMY_COMPLETED` | AlchemyService | `{ craftedItem }` | 調合完了 |
+| `ALCHEMY_COMPLETED` | AlchemyService | `IAlchemyCompletedEvent` (`{ craftedItem }`) | 調合完了 |
 | **デッキ関連** ||||
 | `CARD_DRAWN` | DeckService | `{ cards }` | ドロー |
 | `CARD_PLAYED` | DeckService | `{ cardId }` | カード使用 |
 | `CARD_DISCARDED` | DeckService | `{ cardId }` | カード破棄 |
 | `HAND_REFILLED` | DeckService | `{ hand }` | 手札補充 |
 | **ランク関連** ||||
-| `RANK_DAMAGED` | RankService | `{ damage, remainingHp, currentRank }` | ランクダメージ |
-| `RANK_UP` | RankService | `{ previousRank, newRank }` | ランクアップ |
-| `CONTRIBUTION_ADDED` | RankService | `{ amount, newPromotionGauge }` | 貢献度追加 |
+| `RANK_DAMAGED` | RankService | `IRankDamagedEvent` (`{ damage, remainingHp, currentRank }`) | ランクダメージ |
+| `RANK_UP` | RankService | `IRankUpEvent` (`{ previousRank, newRank }`) | ランクアップ |
+| `CONTRIBUTION_ADDED` | RankService | `IContributionAddedEvent` (`{ amount, newPromotionGauge }`) | 貢献度追加 |
 | **ゲーム終了** ||||
-| `GAME_OVER` | GameFlowManager | `{ reason, finalRank }` | ゲームオーバー |
-| `GAME_CLEARED` | GameFlowManager | `{ totalDays, finalScore }` | ゲームクリア |
+| `GAME_OVER` | GameFlowManager | `IGameOverEvent` (`{ reason, finalRank }`) | ゲームオーバー |
+| `GAME_CLEARED` | GameFlowManager | `IGameClearedEvent` (`{ totalDays, finalScore }`) | ゲームクリア |
 | **セーブ/ロード** ||||
-| `GAME_SAVED` | StateManager | - | セーブ完了 |
-| `GAME_LOADED` | StateManager | - | ロード完了 |
+| `GAME_SAVED` | StateManager | `IGameSavedEvent` | セーブ完了 |
+| `GAME_LOADED` | StateManager | `IGameLoadedEvent` | ロード完了 |
 
 ### 2.6 使用例
 
@@ -519,25 +519,54 @@ class MainScene extends Phaser.Scene {
 
 ```mermaid
 classDiagram
+    class IStateManager {
+        <<interface>>
+        +getState(): Readonly~IGameState~
+        +updateState(partial: Partial~IGameState~): void
+        +setPhase(phase: GamePhase): void
+        +canTransitionTo(phase: GamePhase): boolean
+        +advanceDay(): void
+        +spendActionPoints(amount: number): boolean
+        +addGold(amount: number): void
+        +spendGold(amount: number): boolean
+        +addContribution(amount: number): void
+        +initialize(initialState?: Partial~IGameState~): void
+        +reset(): void
+        +loadFromSaveData(saveData: ISaveData): void
+        +exportToSaveData(): ISaveData
+    }
+
     class StateManager {
         -state: IGameState
-        +getState(): IGameState
-        +setState(partial: Partial~IGameState~): void
-        +subscribe(key: keyof IGameState, callback: Function): void
-        +unsubscribe(key: keyof IGameState, callback: Function): void
-        -notifyChange(key: string, value: any): void
+        -eventBus: IEventBus
+        +getState(): Readonly~IGameState~
+        +updateState(partial: Partial~IGameState~): void
+        +setPhase(phase: GamePhase): void
+        +canTransitionTo(phase: GamePhase): boolean
+        +advanceDay(): void
+        +spendActionPoints(amount: number): boolean
+        +addGold(amount: number): void
+        +spendGold(amount: number): boolean
+        +addContribution(amount: number): void
+        +initialize(initialState?: Partial~IGameState~): void
+        +reset(): void
+        +loadFromSaveData(saveData: ISaveData): void
+        +exportToSaveData(): ISaveData
     }
 
     class IGameState {
         +currentDay: number
         +remainingDays: number
-        +currentPhase: Phase
+        +currentPhase: GamePhase
         +currentRank: GuildRank
         +promotionGauge: number
         +gold: number
         +actionPoints: number
         +comboCount: number
     }
+
+    IStateManager <|.. StateManager
+    StateManager --> IEventBus : uses
 ```
 
 ### 6.3 状態変更と通知 🔵
