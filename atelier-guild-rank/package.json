@@ -20,6 +20,7 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:report": "playwright show-report",
     "prepare": "lefthook install",
+    "typecheck": "tsc --noEmit",
     "hooks:install": "lefthook install",
     "hooks:uninstall": "lefthook uninstall"
   },
