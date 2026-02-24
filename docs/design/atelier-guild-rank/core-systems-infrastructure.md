@@ -1,9 +1,9 @@
 # コアシステム設計書
 
-**バージョン**: 1.4.0
+**バージョン**: 1.5.0
 **作成日**: 2026-01-01
-**更新日**: 2026-01-14
-**対象**: アトリエ錬金術ゲーム（ギルドランク制）HTML版・Phaser版
+**更新日**: 2026-02-24
+**対象**: アトリエ錬金術ゲーム（ギルドランク制）Phaser版
 
 # コアシステム設計書 - インフラストラクチャシステム
 
@@ -11,83 +11,129 @@
 
 ---
 
-## 2. EventBus（イベントバス） 🟡
+## 2. EventBus（イベントバス） 🔵
 
 ### 2.1 責務
 
-Phaserシーン（Presentation層）とApplication層の疎結合な連携を実現する。
+購読型（Pub/Sub）パターンでコンポーネント間の疎結合な通信を実現する。
+Phaserシーン（Presentation層）とApplication層の連携を担う。
 
-### 2.2 クラス図
+### 2.2 設計方針
+
+- **独自実装**: `Map<GameEventType, Set<EventHandler>>`による軽量な独自Pub/Sub実装（Phaser.Events.EventEmitterは使用しない）
+- **DI注入**: コンストラクタインジェクションで各サービスに注入（グローバルシングルトン参照ではない）
+- **型安全**: `GameEventType`（const object）による列挙型イベント名と、`IBusEvent<T>`によるジェネリックなペイロード型
+- **購読解除関数**: `on()`は購読解除関数を返し、リソースリークを防止
+
+### 2.3 クラス図
 
 ```mermaid
 classDiagram
-    class EventBus {
-        <<singleton>>
-        -emitter: Phaser.Events.EventEmitter
-        +on(event: string, callback: Function, context?: any): void
-        +once(event: string, callback: Function, context?: any): void
-        +off(event: string, callback?: Function, context?: any): void
-        +emit(event: string, ...args: any[]): void
-        +removeAllListeners(): void
+    class IEventBus {
+        <<interface>>
+        +emit~T~(type: GameEventType, payload: T): void
+        +on~T~(type: GameEventType, handler: EventHandler~T~): () => void
+        +once~T~(type: GameEventType, handler: EventHandler~T~): void
+        +off(type: GameEventType, handler: EventHandler~unknown~): void
     }
+
+    class EventBus {
+        -handlers: Map~GameEventType, Set~EventHandler~~
+        +emit~T~(type: GameEventType, payload: T): void
+        +on~T~(type: GameEventType, handler: EventHandler~T~): () => void
+        +once~T~(type: GameEventType, handler: EventHandler~T~): void
+        +off(type: GameEventType, handler: EventHandler~unknown~): void
+    }
+
+    class IBusEvent~T~ {
+        <<interface>>
+        +type: GameEventType
+        +payload: T
+        +timestamp: number
+    }
+
+    IEventBus <|.. EventBus
+    EventBus ..> IBusEvent : creates
 ```
 
-### 2.3 イベント定義 🔵
+### 2.4 DI登録
 
-| イベント名 | 発火元 | データ | 説明 |
-|-----------|-------|--------|------|
-| **ゲームフロー** ||||
-| `game:start` | TitleScene | { isNewGame: boolean } | ゲーム開始 |
-| `game:save` | MainScene | - | セーブ要求 |
-| `game:load` | TitleScene | - | ロード要求 |
-| `game:over` | RankService | { reason: string } | ゲームオーバー |
-| `game:clear` | RankService | { stats: IGameStats } | ゲームクリア |
-| **フェーズ遷移** ||||
-| `phase:change` | PhaseManager | { phase: Phase } | フェーズ変更 |
-| `phase:complete` | PhaseManager | { phase: Phase } | フェーズ完了 |
-| `day:start` | PhaseManager | { day: number } | 日開始 |
-| `day:end` | PhaseManager | { day: number } | 日終了 |
-| **依頼関連** ||||
-| `quest:generated` | QuestService | { quests: IQuest[] } | 日毎依頼生成 |
-| `quest:accepted` | QuestService | { questId: string } | 依頼受注 |
-| `quest:delivered` | QuestService | { result: IDeliveryResult } | 納品完了 |
-| `quest:expired` | QuestService | { questId: string } | 期限切れ |
-| **採取関連** ||||
-| `gathering:start` | GatheringService | { session: IDraftSession } | 採取開始 |
-| `gathering:options` | GatheringService | { options: IMaterialOption[] } | 素材提示 |
-| `gathering:selected` | GatheringService | { material: IMaterialInstance } | 素材選択 |
-| `gathering:end` | GatheringService | { result: IGatheringResult } | 採取終了 |
-| **調合関連** ||||
-| `alchemy:start` | AlchemyService | { recipeId: string } | 調合開始 |
-| `alchemy:complete` | AlchemyService | { item: ICraftedItem } | 調合完了 |
-| **デッキ関連** ||||
-| `deck:draw` | DeckService | { cards: string[] } | ドロー |
-| `deck:play` | DeckService | { cardId: string } | カード使用 |
-| `deck:add` | DeckService | { cardId: string } | カード追加 |
-| `deck:shuffle` | DeckService | - | シャッフル |
-| **ランク関連** ||||
-| `rank:contribution` | RankService | { amount: number, total: number } | 貢献度追加 |
-| `rank:promotionReady` | RankService | - | 昇格準備完了 |
-| `rank:up` | RankService | { newRank: GuildRank } | ランクアップ |
-| **UI関連** ||||
-| `ui:dialog:open` | Scene | { type: string, data: any } | ダイアログ開く |
-| `ui:dialog:close` | Scene | { type: string } | ダイアログ閉じる |
-| `ui:toast:show` | Scene | { message: string, type: string } | トースト表示 |
-| `ui:inventory:update` | InventoryService | { materials: [], items: [] } | インベントリ更新 |
-
-### 2.4 使用例
+EventBusはDIコンテナ（`Container`）経由で管理される。`initializeServices()`で最初に初期化され、依存する各サービスにコンストラクタ引数として注入される。
 
 ```typescript
-// イベント発火（Application層）
-EventBus.emit('phase:change', { phase: 'GATHERING' });
+// setup.ts での初期化・登録
+const eventBus = new EventBus();
+container.register(ServiceKeys.EventBus, eventBus);
 
-// イベント購読（Presentation層）
-EventBus.on('phase:change', (data: { phase: Phase }) => {
-    this.switchPhaseContainer(data.phase);
-}, this);
+// 依存サービスへのコンストラクタ注入
+const stateManager = new StateManager(eventBus);
+const deckService = new DeckService(masterDataRepo, eventBus);
+const questService = new QuestService(masterDataRepo, eventBus);
 
-// イベント購読解除（シーン終了時）
-EventBus.off('phase:change', this.onPhaseChange, this);
+// 利用側での解決
+const resolvedEventBus = container.resolve<IEventBus>(ServiceKeys.EventBus);
+```
+
+### 2.5 イベント定義 🔵
+
+イベント名は`GameEventType`（const object）で定義される。
+
+| イベント名 | 発火元 | ペイロード型 | 説明 |
+|-----------|-------|-------------|------|
+| **フェーズ遷移** ||||
+| `PHASE_CHANGED` | StateManager | `IPhaseChangedEvent` (`{ previousPhase, newPhase }`) | フェーズ変更 |
+| `DAY_STARTED` | StateManager | `{ day, remainingDays }` | 日開始 |
+| `DAY_ENDED` | GameFlowManager | `{ day }` | 日終了 |
+| **依頼関連** ||||
+| `QUEST_GENERATED` | QuestService | `{ quests: IQuest[] }` | 日毎依頼生成 |
+| `QUEST_ACCEPTED` | QuestService | `{ quest }` | 依頼受注 |
+| `QUEST_CANCELLED` | QuestService | `{ questId }` | 依頼キャンセル |
+| `QUEST_COMPLETED` | QuestService | `IQuestCompletedEvent` (`{ quest, deliveredItem }`) | 依頼完了 |
+| `QUEST_FAILED` | QuestService | `{ quest }` | 依頼失敗 |
+| **採取関連** ||||
+| `GATHERING_STARTED` | GatheringService | `{ session }` | 採取開始 |
+| `MATERIAL_SELECTED` | GatheringService | `{ material }` | 素材選択 |
+| `GATHERING_ENDED` | GatheringService | `{ result }` | 採取終了 |
+| `GATHERING_COMPLETED` | GatheringService | `IGatheringCompletedEvent` (`{ obtainedMaterials }`) | 採取完了 |
+| **調合関連** ||||
+| `ALCHEMY_COMPLETED` | AlchemyService | `IAlchemyCompletedEvent` (`{ craftedItem }`) | 調合完了 |
+| **デッキ関連** ||||
+| `CARD_DRAWN` | DeckService | `{ cards }` | ドロー |
+| `CARD_PLAYED` | DeckService | `{ cardId }` | カード使用 |
+| `CARD_DISCARDED` | DeckService | `{ cardId }` | カード破棄 |
+| `HAND_REFILLED` | DeckService | `{ hand }` | 手札補充 |
+| **ランク関連** ||||
+| `RANK_DAMAGED` | RankService | `IRankDamagedEvent` (`{ damage, remainingHp, currentRank }`) | ランクダメージ |
+| `RANK_UP` | RankService | `IRankUpEvent` (`{ previousRank, newRank }`) | ランクアップ |
+| `CONTRIBUTION_ADDED` | RankService | `IContributionAddedEvent` (`{ amount, newPromotionGauge }`) | 貢献度追加 |
+| **ゲーム終了** ||||
+| `GAME_OVER` | GameFlowManager | `IGameOverEvent` (`{ reason, finalRank }`) | ゲームオーバー |
+| `GAME_CLEARED` | GameFlowManager | `IGameClearedEvent` (`{ totalDays, finalScore }`) | ゲームクリア |
+| **セーブ/ロード** ||||
+| `GAME_SAVED` | StateManager | `IGameSavedEvent` | セーブ完了 |
+| `GAME_LOADED` | StateManager | `IGameLoadedEvent` | ロード完了 |
+
+### 2.6 使用例
+
+```typescript
+// イベント発行（Application層）
+eventBus.emit(GameEventType.PHASE_CHANGED, {
+  previousPhase: GamePhase.GATHERING,
+  newPhase: GamePhase.ALCHEMY,
+});
+
+// イベント購読（購読解除関数を受け取る）
+const unsubscribe = eventBus.on(GameEventType.PHASE_CHANGED, (event) => {
+  console.log('Phase changed:', event.payload.newPhase);
+});
+
+// 1回だけ購読
+eventBus.once(GameEventType.DAY_STARTED, (event) => {
+  console.log('Day started:', event.payload.day);
+});
+
+// 購読解除（コンポーネント破棄時に必ず呼ぶ）
+unsubscribe();
 ```
 
 ---
@@ -418,35 +464,44 @@ classDiagram
 ```typescript
 // MainScene内でのフェーズコンテナ管理
 class MainScene extends Phaser.Scene {
-    private phaseContainers: Map<Phase, IPhaseContainer> = new Map();
+    private readonly eventBus: IEventBus;
+    private phaseContainers: Map<GamePhase, IPhaseContainer> = new Map();
     private currentContainer: IPhaseContainer | null = null;
+    private unsubscribePhase?: () => void;
 
     create(): void {
-        // フェーズコンテナの初期化
-        this.phaseContainers.set('QUEST_ACCEPT', new QuestAcceptContainer(this));
-        this.phaseContainers.set('GATHERING', new GatheringContainer(this));
-        this.phaseContainers.set('ALCHEMY', new AlchemyContainer(this));
-        this.phaseContainers.set('DELIVERY', new DeliveryContainer(this));
+        // DIコンテナからEventBusを取得
+        const container = Container.getInstance();
+        this.eventBus = container.resolve<IEventBus>(ServiceKeys.EventBus);
 
-        // イベント購読
-        EventBus.on('phase:change', this.onPhaseChange, this);
+        // フェーズコンテナの初期化
+        this.phaseContainers.set(GamePhase.QUEST_ACCEPT, new QuestAcceptContainer(this));
+        this.phaseContainers.set(GamePhase.GATHERING, new GatheringContainer(this));
+        this.phaseContainers.set(GamePhase.ALCHEMY, new AlchemyContainer(this));
+        this.phaseContainers.set(GamePhase.DELIVERY, new DeliveryContainer(this));
+
+        // イベント購読（購読解除関数を保持）
+        this.unsubscribePhase = this.eventBus.on(GameEventType.PHASE_CHANGED, (event) => {
+            this.onPhaseChange(event.payload.newPhase);
+        });
     }
 
-    private onPhaseChange(data: { phase: Phase }): void {
+    private onPhaseChange(newPhase: GamePhase): void {
         // 現在のコンテナを非表示
         if (this.currentContainer) {
             this.currentContainer.hide();
         }
 
         // 新しいコンテナを表示
-        this.currentContainer = this.phaseContainers.get(data.phase) || null;
+        this.currentContainer = this.phaseContainers.get(newPhase) || null;
         if (this.currentContainer) {
             this.currentContainer.show();
         }
     }
 
     shutdown(): void {
-        EventBus.off('phase:change', this.onPhaseChange, this);
+        // 購読解除
+        this.unsubscribePhase?.();
         this.phaseContainers.forEach(container => container.destroy());
     }
 }
@@ -464,25 +519,54 @@ class MainScene extends Phaser.Scene {
 
 ```mermaid
 classDiagram
+    class IStateManager {
+        <<interface>>
+        +getState(): Readonly~IGameState~
+        +updateState(partial: Partial~IGameState~): void
+        +setPhase(phase: GamePhase): void
+        +canTransitionTo(phase: GamePhase): boolean
+        +advanceDay(): void
+        +spendActionPoints(amount: number): boolean
+        +addGold(amount: number): void
+        +spendGold(amount: number): boolean
+        +addContribution(amount: number): void
+        +initialize(initialState?: Partial~IGameState~): void
+        +reset(): void
+        +loadFromSaveData(saveData: ISaveData): void
+        +exportToSaveData(): ISaveData
+    }
+
     class StateManager {
         -state: IGameState
-        +getState(): IGameState
-        +setState(partial: Partial~IGameState~): void
-        +subscribe(key: keyof IGameState, callback: Function): void
-        +unsubscribe(key: keyof IGameState, callback: Function): void
-        -notifyChange(key: string, value: any): void
+        -eventBus: IEventBus
+        +getState(): Readonly~IGameState~
+        +updateState(partial: Partial~IGameState~): void
+        +setPhase(phase: GamePhase): void
+        +canTransitionTo(phase: GamePhase): boolean
+        +advanceDay(): void
+        +spendActionPoints(amount: number): boolean
+        +addGold(amount: number): void
+        +spendGold(amount: number): boolean
+        +addContribution(amount: number): void
+        +initialize(initialState?: Partial~IGameState~): void
+        +reset(): void
+        +loadFromSaveData(saveData: ISaveData): void
+        +exportToSaveData(): ISaveData
     }
 
     class IGameState {
         +currentDay: number
         +remainingDays: number
-        +currentPhase: Phase
+        +currentPhase: GamePhase
         +currentRank: GuildRank
         +promotionGauge: number
         +gold: number
         +actionPoints: number
         +comboCount: number
     }
+
+    IStateManager <|.. StateManager
+    StateManager --> IEventBus : uses
 ```
 
 ### 6.3 状態変更と通知 🔵
@@ -490,34 +574,31 @@ classDiagram
 ```typescript
 class StateManager {
     private state: IGameState;
-    private subscribers: Map<string, Set<Function>> = new Map();
+    private readonly eventBus: IEventBus;
+
+    constructor(eventBus: IEventBus) {
+        this.eventBus = eventBus;
+    }
 
     setState(partial: Partial<IGameState>): void {
+        const previousState = { ...this.state };
         for (const [key, value] of Object.entries(partial)) {
             const oldValue = this.state[key as keyof IGameState];
             if (oldValue !== value) {
                 (this.state as any)[key] = value;
-                this.notifyChange(key, value);
             }
         }
+        this.notifyChanges(previousState);
     }
 
-    private notifyChange(key: string, value: any): void {
-        // ローカル購読者への通知
-        const subs = this.subscribers.get(key);
-        if (subs) {
-            subs.forEach(callback => callback(value));
+    private notifyChanges(previousState: IGameState): void {
+        // フェーズ変更の通知
+        if (previousState.currentPhase !== this.state.currentPhase) {
+            this.eventBus.emit(GameEventType.PHASE_CHANGED, {
+                previousPhase: previousState.currentPhase,
+                newPhase: this.state.currentPhase,
+            });
         }
-
-        // EventBus経由でUI層へ通知
-        EventBus.emit(`state:${key}`, { [key]: value });
-    }
-
-    subscribe(key: keyof IGameState, callback: Function): void {
-        if (!this.subscribers.has(key)) {
-            this.subscribers.set(key, new Set());
-        }
-        this.subscribers.get(key)!.add(callback);
     }
 }
 ```
