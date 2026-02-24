@@ -834,12 +834,13 @@ if (import.meta.env.DEV) {
 
 ## 関連文書
 
-- **要件定義書**: [../../spec/atelier-guild-rank-requirements.md](../../spec/atelier-guild-rank-requirements.md)
-- **アーキテクチャ設計書**: [architecture.md](architecture.md)
-- **データスキーマ設計書**: [data-schema.md](data-schema.md)
-- **ゲームメカニクス設計書**: [game-mechanics.md](game-mechanics.md)
-- **アーキテクチャ設計書（Phaser版）**: [../atelier-guild-rank-phaser/architecture.md](../atelier-guild-rank-phaser/architecture.md)
-- **UI設計概要（Phaser版）**: [../atelier-guild-rank-phaser/ui-design/overview.md](../atelier-guild-rank-phaser/ui-design/overview.md)
+- [← コアサービス](core-systems-core-services.md)
+- [インフラストラクチャシステム](core-systems-infrastructure.md)
+- [システム構成概要](core-systems-overview.md)
+- [アーキテクチャ設計 - 概要](architecture-overview.md)
+- [アーキテクチャ設計 - コンポーネント](architecture-components.md)
+- [データスキーマ設計 - セーブデータ](data-schema-save.md)
+- [データスキーマ設計 - マスターデータ（カード）](data-schema-master-cards.md)
 
 ---
 
