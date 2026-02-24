@@ -10,6 +10,7 @@
     "test:coverage": "pnpm --filter atelier-guild-rank test:coverage",
     "test:e2e": "pnpm --filter atelier-guild-rank test:e2e",
     "test:e2e:headed": "pnpm --filter atelier-guild-rank test:e2e:headed",
+    "typecheck": "pnpm --filter atelier-guild-rank typecheck",
     "lint": "pnpm --filter atelier-guild-rank lint",
     "lint:fix": "pnpm --filter atelier-guild-rank lint:fix",
     "format": "pnpm --filter atelier-guild-rank format"

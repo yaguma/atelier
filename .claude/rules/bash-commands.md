@@ -121,18 +121,41 @@ gh issue create ... && gh issue create ... && gh issue create ... && ...
 
 ### 原則: ルートから `pnpm` を実行
 
+ルートの `package.json` にショートカットスクリプトが定義されているため、`--filter` なしで実行できる。
+
 ```bash
-# OK: ルートからフィルタ付き実行
+# OK: ルートから直接実行（推奨）
 pnpm test
 pnpm build
 pnpm lint
+pnpm typecheck
 
-# OK: --filter で明示的に指定（引数を渡す場合）
-pnpm --filter atelier-guild-rank test -- --run
+# OK: 引数を渡す場合
+pnpm test -- --run
+pnpm test -- tests/unit/features/quest/
+
+# NG: --filter を毎回指定（冗長）
+pnpm --filter atelier-guild-rank test
 
 # NG: サブディレクトリに cd してから実行
 cd atelier-guild-rank && pnpm test
 ```
+
+### ルートで利用可能なスクリプト一覧
+
+| コマンド | 内容 |
+|---------|------|
+| `pnpm dev` | 開発サーバー起動 |
+| `pnpm build` | プロダクションビルド |
+| `pnpm test` | ユニット/統合テスト（Vitest） |
+| `pnpm test:watch` | テストウォッチモード |
+| `pnpm test:coverage` | カバレッジ付きテスト |
+| `pnpm test:e2e` | E2Eテスト（Playwright） |
+| `pnpm test:e2e:headed` | E2E（ブラウザ表示） |
+| `pnpm typecheck` | TypeScript型チェック（tsc --noEmit） |
+| `pnpm lint` | Biome チェック |
+| `pnpm lint:fix` | Biome 自動修正 |
+| `pnpm format` | コードフォーマット |
 
 ### サブディレクトリでの直接実行が許される場合
 

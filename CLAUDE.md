@@ -14,11 +14,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Quick Reference
 
-### Development Commands (atelier-guild-rank/)
+### Development Commands (ルートから実行)
 
 ```bash
-cd atelier-guild-rank
-
 # Development
 pnpm dev              # Start dev server (http://localhost:3000)
 pnpm build            # Build for production
@@ -29,6 +27,9 @@ pnpm test:watch       # Watch mode
 pnpm test:coverage    # With coverage report
 pnpm test:e2e         # Run E2E tests (Playwright)
 pnpm test:e2e:headed  # E2E with browser visible
+
+# Type Check
+pnpm typecheck        # TypeScript type check (tsc --noEmit)
 
 # Linting
 pnpm lint             # Check with Biome
