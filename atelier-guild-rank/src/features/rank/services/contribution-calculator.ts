@@ -6,32 +6,18 @@
  * 品質補正、依頼者補正、コンボ補正を適用して最終貢献度を算出する。
  */
 
+import {
+  CLIENT_TYPE_MODIFIERS,
+  COMBO_MODIFIER_RATE,
+  CONTRIBUTION_QUALITY_MODIFIERS,
+} from '@shared/constants';
 import type { ClientType, Quality } from '@shared/types';
 
 // =============================================================================
-// 定数
+// 定数（GAME_CONFIGから参照）
 // =============================================================================
-
-/** 品質補正テーブル（D:0.5, C:0.75, B:1.0, A:1.5, S:2.0） */
-const QUALITY_MODIFIERS: Record<Quality, number> = {
-  D: 0.5,
-  C: 0.75,
-  B: 1.0,
-  A: 1.5,
-  S: 2.0,
-};
-
-/** 依頼者補正テーブル */
-const CLIENT_MODIFIERS: Record<ClientType, number> = {
-  VILLAGER: 1.0,
-  ADVENTURER: 1.1,
-  MERCHANT: 1.2,
-  NOBLE: 1.3,
-  GUILD: 1.5,
-};
-
-/** コンボ補正の増加率（1回あたり+10%） */
-const COMBO_MODIFIER_RATE = 0.1;
+// CONTRIBUTION_QUALITY_MODIFIERS, CLIENT_TYPE_MODIFIERS, COMBO_MODIFIER_RATE
+// は @shared/constants/game-config からインポート済み
 
 // =============================================================================
 // 型定義
@@ -98,7 +84,7 @@ export function calculateContribution(context: ContributionContext): Contributio
  * @returns 品質補正値
  */
 export function getQualityModifier(quality: Quality): number {
-  return QUALITY_MODIFIERS[quality];
+  return CONTRIBUTION_QUALITY_MODIFIERS[quality];
 }
 
 /**
@@ -108,7 +94,7 @@ export function getQualityModifier(quality: Quality): number {
  * @returns 依頼者補正値
  */
 export function getClientModifier(clientType: ClientType): number {
-  return CLIENT_MODIFIERS[clientType];
+  return CLIENT_TYPE_MODIFIERS[clientType];
 }
 
 /**

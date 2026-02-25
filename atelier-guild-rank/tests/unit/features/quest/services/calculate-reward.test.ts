@@ -8,9 +8,8 @@ import type { RewardableItem } from '@features/quest/services/calculate-reward';
 import {
   calculateAverageQualityMultiplier,
   calculateReward,
-  QUALITY_REWARD_MULTIPLIER,
-  QUEST_TYPE_CONTRIBUTION_MULTIPLIER,
 } from '@features/quest/services/calculate-reward';
+import { QUALITY_REWARD_MULTIPLIER, QUEST_TYPE_CONTRIBUTION_MULTIPLIER } from '@shared/constants';
 import type { Quality, QuestType } from '@shared/types';
 import {
   ClientType,

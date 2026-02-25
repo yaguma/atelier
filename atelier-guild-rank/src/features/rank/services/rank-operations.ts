@@ -6,6 +6,7 @@
  * ビジネスロジックを純粋関数として提供する。
  */
 
+import { PROMOTION_BONUS_BASE } from '@shared/constants';
 import type { GuildRank } from '@shared/types';
 import type { IGuildRankMaster, ISpecialRule } from '@shared/types/master-data';
 import type { RankProgress } from '../types/rank-progress';
@@ -17,8 +18,7 @@ import type { RankProgress } from '../types/rank-progress';
 /** ランク順序（G→S） */
 const RANK_ORDER: GuildRank[] = ['G', 'F', 'E', 'D', 'C', 'B', 'A', 'S'];
 
-/** 昇格ボーナス報酬の基礎値 */
-const PROMOTION_BONUS_BASE = 100;
+// PROMOTION_BONUS_BASE は @shared/constants/game-config からインポート済み
 
 // =============================================================================
 // ランク進捗計算

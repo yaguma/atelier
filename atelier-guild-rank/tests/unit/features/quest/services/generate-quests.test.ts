@@ -5,14 +5,16 @@
  */
 
 import {
-  CLIENT_COUNT_BY_RANK,
-  DAILY_QUEST_COUNT_BY_RANK,
   generateQuests,
   getDefaultClientCount,
   getDefaultQuestCount,
   getQuestLimitForRank,
-  QUEST_LIMIT_BY_RANK,
 } from '@features/quest/services/generate-quests';
+import {
+  CLIENT_COUNT_BY_RANK,
+  DAILY_QUEST_COUNT_BY_RANK,
+  QUEST_LIMIT_BY_RANK,
+} from '@shared/constants';
 import type { GuildRank } from '@shared/types';
 import { ClientType, GuildRank as GuildRankEnum, QuestType, toClientId } from '@shared/types';
 import type { IClient } from '@shared/types/quests';

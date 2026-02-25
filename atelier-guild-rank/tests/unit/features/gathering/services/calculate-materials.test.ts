@@ -60,19 +60,21 @@ describe('calculateGatheringCost', () => {
     });
   });
 
-  describe('翌日持越しペナルティ', () => {
-    it('7個選択で基本コスト+3でextraDays=1を返すこと', () => {
+  describe('7個以上の大量採取（v1.3.0: AP超過モデル）', () => {
+    it('7個選択で基本コスト+4でextraDays=0を返すこと', () => {
+      // v1.3.0変更: 旧extraDays=1ルールを廃止、追加コスト4に変更
+      // AP超過は ap-overflow-service で管理される
       const result = calculateGatheringCost(1, 7);
 
-      expect(result.actionPointCost).toBe(4);
-      expect(result.extraDays).toBe(1);
+      expect(result.actionPointCost).toBe(5);
+      expect(result.extraDays).toBe(0);
     });
 
-    it('10個選択でextraDays=1を返すこと', () => {
+    it('10個選択で基本コスト+4を返すこと', () => {
       const result = calculateGatheringCost(1, 10);
 
-      expect(result.actionPointCost).toBe(4);
-      expect(result.extraDays).toBe(1);
+      expect(result.actionPointCost).toBe(5);
+      expect(result.extraDays).toBe(0);
     });
   });
 

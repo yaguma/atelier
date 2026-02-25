@@ -7,20 +7,21 @@
  * 設計文書: docs/design/free-phase-navigation/interfaces.ts
  */
 
+import { QUEST_BOARD } from '@shared/constants';
 import type { IBoardQuest, IQuestBoardState, IVisitorQuest } from '@shared/types';
 
 // =============================================================================
-// 定数
+// 定数（GAME_CONFIGから導出）
 // =============================================================================
 
 /** 掲示板の最大依頼数（デフォルト） */
-export const DEFAULT_BOARD_CAPACITY = 5;
+export const DEFAULT_BOARD_CAPACITY = QUEST_BOARD.DEFAULT_CAPACITY;
 
 /** 訪問依頼の更新間隔（デフォルト: 3日） */
-export const DEFAULT_VISITOR_UPDATE_INTERVAL = 3;
+export const DEFAULT_VISITOR_UPDATE_INTERVAL = QUEST_BOARD.VISITOR_UPDATE_INTERVAL;
 
 /** 掲示板依頼の有効期間（デフォルト: 5日） */
-export const DEFAULT_BOARD_QUEST_DURATION = 5;
+export const DEFAULT_BOARD_QUEST_DURATION = QUEST_BOARD.QUEST_DURATION;
 
 // =============================================================================
 // 入力・結果型
