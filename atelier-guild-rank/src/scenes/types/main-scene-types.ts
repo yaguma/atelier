@@ -7,6 +7,7 @@
  * DIコンテナから取得するサービスの型定義を含む。
  */
 
+import type { EventHandler } from '@shared/services';
 import type { GamePhase, GuildRank } from '@shared/types/common';
 
 // =============================================================================
@@ -61,21 +62,13 @@ export interface IBasePhaseUI {
 }
 
 /**
- * EventBusイベントの構造（IMainSceneEventBus用）
- */
-interface IBusEvent<T = unknown> {
-  type: string;
-  payload: T;
-  timestamp: number;
-}
-
-/**
  * EventBus インターフェース（依存注入用）
+ * IBusEvent/EventHandler は shared/services/event-bus/types.ts の本家定義を再利用
  */
 export interface IMainSceneEventBus {
   emit(event: string, data: unknown): void;
-  on<T = unknown>(event: string, handler: (busEvent: IBusEvent<T>) => void): () => void;
-  off(event: string, handler?: (busEvent: IBusEvent) => void): void;
+  on<T = unknown>(event: string, handler: EventHandler<T>): () => void;
+  off(event: string, handler?: EventHandler): void;
 }
 
 /**
