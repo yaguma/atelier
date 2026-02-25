@@ -3,9 +3,13 @@
  * TASK-0057 DeliveryPhaseUIリファクタリング
  *
  * @description
- * DeliveryPhaseUIコンポーネントテストで使用するサービスのモック
+ * DeliveryPhaseUIコンポーネントテストで使用するサービスのモック。
+ * EventBusモックは共通モック（@test-mocks/phaser-mocks）を利用する。
+ *
+ * Issue #313: テストモック共通化
  */
 
+import { createMockEventBusSimple } from '@test-mocks/phaser-mocks';
 import { vi } from 'vitest';
 
 // =============================================================================
@@ -143,11 +147,7 @@ export const createMockContributionCalculator = (): IContributionCalculator => (
 });
 
 /**
- * EventBusモックを作成
+ * EventBusモックを作成（共通モックを利用）
  */
-export const createMockEventBus = (): IEventBus => ({
-  emit: vi.fn(),
-  on: vi.fn(),
-  off: vi.fn(),
-  once: vi.fn(),
-});
+export const createMockEventBus = (): IEventBus =>
+  createMockEventBusSimple() as unknown as IEventBus;

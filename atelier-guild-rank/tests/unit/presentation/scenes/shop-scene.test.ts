@@ -12,8 +12,12 @@
  */
 
 import type { IPurchaseResult, IShopItem } from '@domain/interfaces/shop-service.interface';
-import { GamePhase, GuildRank } from '@shared/types/common';
-import type Phaser from 'phaser';
+import { GuildRank } from '@shared/types/common';
+import {
+  createMockEventBus,
+  createMockScene,
+  createMockStateManager,
+} from '@test-mocks/phaser-mocks';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // =============================================================================
@@ -66,166 +70,8 @@ vi.mock('@shared/services/di/container', () => ({
 }));
 
 // =============================================================================
-// モック作成ヘルパー
+// テスト固有のモック作成ヘルパー
 // =============================================================================
-
-/**
- * Phaserコンテナのモックを作成
- */
-const createMockContainer = () => ({
-  setVisible: vi.fn().mockReturnThis(),
-  setPosition: vi.fn().mockReturnThis(),
-  setDepth: vi.fn().mockReturnThis(),
-  add: vi.fn().mockReturnThis(),
-  destroy: vi.fn(),
-  bringToTop: vi.fn().mockReturnThis(),
-  x: 0,
-  y: 0,
-  visible: true,
-});
-
-/**
- * Phaserテキストのモックを作成
- */
-const createMockText = () => ({
-  setText: vi.fn().mockReturnThis(),
-  setOrigin: vi.fn().mockReturnThis(),
-  setStyle: vi.fn().mockReturnThis(),
-  setColor: vi.fn().mockReturnThis(),
-  setFontSize: vi.fn().mockReturnThis(),
-  destroy: vi.fn(),
-  text: '',
-});
-
-/**
- * Phaserグラフィックスのモックを作成
- */
-const createMockGraphics = () => ({
-  fillStyle: vi.fn().mockReturnThis(),
-  fillRect: vi.fn().mockReturnThis(),
-  fillRoundedRect: vi.fn().mockReturnThis(),
-  clear: vi.fn().mockReturnThis(),
-  destroy: vi.fn(),
-  lineStyle: vi.fn().mockReturnThis(),
-  beginPath: vi.fn().mockReturnThis(),
-  moveTo: vi.fn().mockReturnThis(),
-  lineTo: vi.fn().mockReturnThis(),
-  stroke: vi.fn().mockReturnThis(),
-  strokePath: vi.fn().mockReturnThis(),
-});
-
-/**
- * rexUIモックを作成
- */
-const createMockRexUI = () => ({
-  add: {
-    sizer: vi.fn().mockReturnValue({
-      layout: vi.fn(),
-      add: vi.fn().mockReturnThis(),
-      destroy: vi.fn(),
-    }),
-    label: vi.fn().mockReturnValue({
-      layout: vi.fn(),
-      setInteractive: vi.fn().mockReturnThis(),
-      on: vi.fn().mockReturnThis(),
-      destroy: vi.fn(),
-      setText: vi.fn().mockReturnThis(),
-      setAlpha: vi.fn().mockReturnThis(),
-    }),
-    roundRectangle: vi.fn().mockReturnValue({
-      setFillStyle: vi.fn().mockReturnThis(),
-      destroy: vi.fn(),
-    }),
-    scrollablePanel: vi.fn().mockReturnValue({
-      layout: vi.fn(),
-      destroy: vi.fn(),
-    }),
-  },
-});
-
-/**
- * Phaserシーンのモックを作成
- */
-const createMockScene = () => {
-  const mockContainer = createMockContainer();
-  const mockText = createMockText();
-  const mockGraphics = createMockGraphics();
-  const mockRexUI = createMockRexUI();
-
-  return {
-    scene: {
-      add: {
-        container: vi.fn().mockImplementation((x: number, y: number) => ({
-          ...mockContainer,
-          x,
-          y,
-        })),
-        text: vi.fn().mockReturnValue(mockText),
-        graphics: vi.fn().mockReturnValue(mockGraphics),
-        rectangle: vi.fn().mockReturnValue({
-          setFillStyle: vi.fn().mockReturnThis(),
-          setStrokeStyle: vi.fn().mockReturnThis(),
-          setOrigin: vi.fn().mockReturnThis(),
-          setInteractive: vi.fn().mockReturnThis(),
-          on: vi.fn().mockReturnThis(),
-          destroy: vi.fn(),
-        }),
-      },
-      cameras: {
-        main: {
-          centerX: 640,
-          centerY: 360,
-          width: 1280,
-          height: 720,
-          fadeIn: vi.fn(),
-          fadeOut: vi.fn(),
-          once: vi.fn().mockImplementation((event, callback) => {
-            // 即時にコールバックを呼び出す
-            if (event === 'camerafadeoutcomplete') {
-              setTimeout(callback, 0);
-            }
-          }),
-        },
-      },
-      rexUI: mockRexUI,
-      tweens: {
-        add: vi.fn().mockImplementation((config) => {
-          if (config.onComplete) {
-            config.onComplete();
-          }
-          return {};
-        }),
-      },
-      scene: {
-        start: vi.fn(),
-      },
-    } as unknown as Phaser.Scene,
-    mockContainer,
-    mockText,
-    mockGraphics,
-    mockRexUI,
-  };
-};
-
-/**
- * StateManagerモックを作成
- */
-const createMockStateManager = () => ({
-  getState: vi.fn().mockReturnValue({
-    currentRank: GuildRank.E,
-    promotionGauge: 35,
-    remainingDays: 25,
-    currentDay: 6,
-    currentPhase: GamePhase.QUEST_ACCEPT,
-    gold: 500,
-    actionPoints: 3,
-    comboCount: 0,
-    rankHp: 100,
-    isPromotionTest: false,
-  }),
-  updateState: vi.fn(),
-  spendGold: vi.fn().mockReturnValue(true),
-});
 
 /**
  * ShopServiceモックを作成
@@ -275,34 +121,6 @@ const createMockShopService = () => ({
   getShopItem: vi.fn().mockReturnValue(null),
   getStock: vi.fn().mockReturnValue(3),
 });
-
-/**
- * EventBusモックを作成
- */
-const createMockEventBus = () => {
-  const listeners = new Map<string, Array<(...args: unknown[]) => void>>();
-  return {
-    emit: vi.fn().mockImplementation((event: string, data: unknown) => {
-      const handlers = listeners.get(event) || [];
-      for (const handler of handlers) {
-        handler(data);
-      }
-    }),
-    on: vi.fn().mockImplementation((event: string, handler: (...args: unknown[]) => void) => {
-      const existing = listeners.get(event) || [];
-      existing.push(handler);
-      listeners.set(event, existing);
-      return () => {
-        const index = existing.indexOf(handler);
-        if (index > -1) {
-          existing.splice(index, 1);
-        }
-      };
-    }),
-    off: vi.fn(),
-    listeners,
-  };
-};
 
 // =============================================================================
 // テストスイート

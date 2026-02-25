@@ -9,62 +9,8 @@
  * TC-TL-D01: 破棄処理テストケース
  */
 
+import { createMockScene } from '@test-mocks/phaser-mocks';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-
-// =============================================================================
-// モック定義
-// =============================================================================
-
-/**
- * モックコンテナを作成
- */
-const createMockContainer = () => ({
-  setVisible: vi.fn().mockReturnThis(),
-  setPosition: vi.fn().mockReturnThis(),
-  add: vi.fn().mockReturnThis(),
-  destroy: vi.fn(),
-  x: 0,
-  y: 0,
-});
-
-/**
- * モックテキストを作成
- */
-const createMockText = () => ({
-  setText: vi.fn().mockReturnThis(),
-  setOrigin: vi.fn().mockReturnThis(),
-  setStyle: vi.fn().mockReturnThis(),
-  setColor: vi.fn().mockReturnThis(),
-  destroy: vi.fn(),
-  text: '',
-});
-
-/**
- * モックシーンを作成
- */
-const createMockScene = () => {
-  const mockContainer = createMockContainer();
-  const mockText = createMockText();
-
-  return {
-    scene: {
-      add: {
-        container: vi.fn().mockReturnValue(mockContainer),
-        text: vi.fn().mockReturnValue(mockText),
-      },
-      cameras: {
-        main: {
-          centerX: 640,
-          centerY: 360,
-          width: 1280,
-          height: 720,
-        },
-      },
-    } as unknown as Phaser.Scene,
-    mockContainer,
-    mockText,
-  };
-};
 
 // =============================================================================
 // テストスイート
