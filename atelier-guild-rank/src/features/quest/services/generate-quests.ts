@@ -13,6 +13,14 @@
  * Phase 11でshared/utils/に統合を検討する。
  */
 
+import {
+  CLIENT_COUNT_BY_RANK,
+  DAILY_QUEST_COUNT_BY_RANK,
+  QUEST_DIFFICULTY_DEADLINES,
+  QUEST_DIFFICULTY_REWARDS,
+  QUEST_LIMIT_BY_RANK,
+  RANK_DIFFICULTY_WEIGHTS,
+} from '@shared/constants';
 import type { GuildRank, QuestType } from '@shared/types';
 import { toQuestId } from '@shared/types';
 import type { IClient, IQuest, IQuestCondition, QuestDifficulty } from '@shared/types/quests';
@@ -42,95 +50,11 @@ export interface GenerateQuestsResult {
 }
 
 // =============================================================================
-// ランク別定数
+// ランク別定数（GAME_CONFIGから参照）
 // =============================================================================
-
-/** ランク別日次依頼生成数 */
-export const DAILY_QUEST_COUNT_BY_RANK: Record<GuildRank, number> = {
-  G: 3,
-  F: 4,
-  E: 4,
-  D: 5,
-  C: 5,
-  B: 6,
-  A: 6,
-  S: 7,
-};
-
-/** ランク別同時受注上限 */
-export const QUEST_LIMIT_BY_RANK: Record<GuildRank, number> = {
-  G: 2,
-  F: 2,
-  E: 3,
-  D: 3,
-  C: 4,
-  B: 4,
-  A: 5,
-  S: 5,
-};
-
-/** ランク別依頼者出現数 */
-export const CLIENT_COUNT_BY_RANK: Record<GuildRank, number> = {
-  G: 2,
-  F: 2,
-  E: 3,
-  D: 3,
-  C: 3,
-  B: 4,
-  A: 4,
-  S: 5,
-};
-
-/** 難易度ごとの基本報酬テーブル */
-const DIFFICULTY_REWARDS: Record<QuestDifficulty, { gold: number; contribution: number }> = {
-  easy: { gold: 30, contribution: 30 },
-  normal: { gold: 60, contribution: 60 },
-  hard: { gold: 100, contribution: 100 },
-};
-
-/** 難易度ごとの基本期限 */
-const DIFFICULTY_DEADLINES: Record<QuestDifficulty, number> = {
-  easy: 7,
-  normal: 5,
-  hard: 3,
-};
-
-/** ランクと難易度の対応（各ランクで出現可能な難易度と重み） */
-const RANK_DIFFICULTY_WEIGHTS: Record<
-  GuildRank,
-  { difficulty: QuestDifficulty; weight: number }[]
-> = {
-  G: [
-    { difficulty: 'easy', weight: 3 },
-    { difficulty: 'normal', weight: 1 },
-  ],
-  F: [
-    { difficulty: 'easy', weight: 2 },
-    { difficulty: 'normal', weight: 2 },
-  ],
-  E: [
-    { difficulty: 'easy', weight: 1 },
-    { difficulty: 'normal', weight: 3 },
-  ],
-  D: [
-    { difficulty: 'easy', weight: 1 },
-    { difficulty: 'normal', weight: 2 },
-    { difficulty: 'hard', weight: 1 },
-  ],
-  C: [
-    { difficulty: 'normal', weight: 2 },
-    { difficulty: 'hard', weight: 2 },
-  ],
-  B: [
-    { difficulty: 'normal', weight: 1 },
-    { difficulty: 'hard', weight: 3 },
-  ],
-  A: [
-    { difficulty: 'normal', weight: 1 },
-    { difficulty: 'hard', weight: 4 },
-  ],
-  S: [{ difficulty: 'hard', weight: 1 }],
-};
+// DAILY_QUEST_COUNT_BY_RANK, QUEST_LIMIT_BY_RANK, CLIENT_COUNT_BY_RANK,
+// QUEST_DIFFICULTY_REWARDS, QUEST_DIFFICULTY_DEADLINES, RANK_DIFFICULTY_WEIGHTS
+// は @shared/constants/game-config からインポート済み
 
 /** 依頼タイプリスト */
 const QUEST_TYPES: QuestType[] = ['SPECIFIC', 'CATEGORY', 'QUALITY', 'QUANTITY'];
@@ -267,8 +191,8 @@ function createQuestForRank(
 ): IQuest {
   const difficulty = selectDifficulty(rank, random);
   const condition = generateCondition(client, random, availableItemIds);
-  const baseReward = DIFFICULTY_REWARDS[difficulty];
-  const baseDeadline = DIFFICULTY_DEADLINES[difficulty];
+  const baseReward = QUEST_DIFFICULTY_REWARDS[difficulty];
+  const baseDeadline = QUEST_DIFFICULTY_DEADLINES[difficulty];
 
   // 依頼者の補正を適用
   const gold = Math.floor(baseReward.gold * client.goldMultiplier);

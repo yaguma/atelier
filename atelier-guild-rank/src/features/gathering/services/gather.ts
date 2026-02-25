@@ -9,6 +9,7 @@
  */
 
 import type { MaterialOption } from '@features/gathering/types';
+import { GATHERING_QUALITY } from '@shared/constants';
 import type { MaterialId, Quality } from '@shared/types';
 
 /**
@@ -49,14 +50,17 @@ function determineQuality(baseQuality: Quality, randomValue: number): Quality {
   const baseIndex = QUALITY_LEVELS.indexOf(baseQuality);
   if (baseIndex === -1) return 'D';
 
-  // 乱数値に基づいて品質を上下させる
-  // 0.0-0.2: 1段階下（下限D）
-  // 0.2-0.8: 基本品質
-  // 0.8-1.0: 1段階上（上限S）
-  if (randomValue < 0.2 && baseIndex > 0) {
+  // 乱数値に基づいて品質を上下させる（GATHERING_QUALITYの閾値を使用）
+  // 0.0〜QUALITY_DOWN_THRESHOLD: 1段階下（下限D）
+  // QUALITY_DOWN_THRESHOLD〜QUALITY_UP_THRESHOLD: 基本品質
+  // QUALITY_UP_THRESHOLD〜1.0: 1段階上（上限S）
+  if (randomValue < GATHERING_QUALITY.QUALITY_DOWN_THRESHOLD && baseIndex > 0) {
     return QUALITY_LEVELS[baseIndex - 1] as Quality;
   }
-  if (randomValue >= 0.8 && baseIndex < QUALITY_LEVELS.length - 1) {
+  if (
+    randomValue >= GATHERING_QUALITY.QUALITY_UP_THRESHOLD &&
+    baseIndex < QUALITY_LEVELS.length - 1
+  ) {
     return QUALITY_LEVELS[baseIndex + 1] as Quality;
   }
 

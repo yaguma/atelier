@@ -7,7 +7,8 @@
  * 品質補正、依頼タイプ補正、依頼者補正を適用する。
  */
 
-import type { Quality, QuestType } from '@shared/types';
+import { QUALITY_REWARD_MULTIPLIER, QUEST_TYPE_CONTRIBUTION_MULTIPLIER } from '@shared/constants';
+import type { Quality } from '@shared/types';
 import type { IClient, IQuest } from '@shared/types/quests';
 
 // =============================================================================
@@ -41,29 +42,10 @@ export interface RewardCalculationResult {
 }
 
 // =============================================================================
-// 定数
+// 定数（GAME_CONFIGから参照）
 // =============================================================================
-
-/** 品質に応じた報酬補正値 */
-export const QUALITY_REWARD_MULTIPLIER: Record<Quality, number> = {
-  D: 0.5,
-  C: 1.0,
-  B: 1.5,
-  A: 2.0,
-  S: 3.0,
-};
-
-/** 依頼タイプに応じた貢献度補正値 */
-export const QUEST_TYPE_CONTRIBUTION_MULTIPLIER: Record<QuestType, number> = {
-  SPECIFIC: 1.0,
-  CATEGORY: 0.8,
-  QUALITY: 1.2,
-  QUANTITY: 0.7,
-  ATTRIBUTE: 1.3,
-  EFFECT: 1.3,
-  MATERIAL: 1.5,
-  COMPOUND: 1.8,
-};
+// QUALITY_REWARD_MULTIPLIER, QUEST_TYPE_CONTRIBUTION_MULTIPLIER
+// は @shared/constants/game-config からインポート済み
 
 // =============================================================================
 // メイン関数

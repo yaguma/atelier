@@ -5,6 +5,7 @@
  * ゲーム開始時のデフォルト状態を定義する
  */
 
+import { PLAYER_INITIAL, RANK_CONFIG } from '@shared/constants';
 import type { IGameState } from '@shared/types';
 import { GamePhase, GuildRank, InitialParameters } from '@shared/types';
 
@@ -12,16 +13,17 @@ import { GamePhase, GuildRank, InitialParameters } from '@shared/types';
  * 初期ゲーム状態
  *
  * ゲーム開始時のデフォルト値を定義
+ * バランスパラメータは PLAYER_INITIAL / RANK_CONFIG から参照
  */
 export const INITIAL_GAME_STATE: IGameState = {
   /** 初期ランク: G */
   currentRank: GuildRank.G,
-  /** ランクHP: 初期値3（ランクダメージ3回で降格） */
-  rankHp: 3,
+  /** ランクHP: 初期値（PLAYER_INITIAL.RANK_HP） */
+  rankHp: PLAYER_INITIAL.RANK_HP,
   /** 昇格ゲージ: 初期値0 */
   promotionGauge: 0,
-  /** 残り日数: 30日 */
-  remainingDays: 30,
+  /** 残り日数: Gランクの制限日数 */
+  remainingDays: RANK_CONFIG.G.dayLimit,
   /** 現在の日数: 1日目 */
   currentDay: 1,
   /** 現在のフェーズ: 依頼受注 */

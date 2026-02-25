@@ -206,10 +206,75 @@ features/quest/
 
 ---
 
+## 定数管理: GAME_CONFIG vs THEME
+
+ゲーム内の定数は用途に応じて2つのファイルに分離して管理する。
+
+### GAME_CONFIG (`@shared/constants/game-config.ts`)
+
+**ゲームバランスに影響するパラメータ**を管理する。
+
+| カテゴリ | 例 |
+|---------|-----|
+| 報酬・コスト | 依頼報酬、調合コスト、採取コスト、ショップ価格 |
+| 制限値 | デッキ上限、手札上限、同時受注上限、保管上限 |
+| ランク設定 | 必要貢献度、日数制限、昇格ボーナス |
+| 品質パラメータ | 品質閾値、品質補正値、品質値マッピング |
+| 依頼パラメータ | 難易度報酬、期限、依頼生成数、依頼タイプ補正 |
+| 確率・閾値 | 品質変動閾値、コンボ補正率 |
+
+```typescript
+// 使用例
+import { PLAYER_INITIAL, GATHERING_COST } from '@shared/constants';
+
+const maxDeck = PLAYER_INITIAL.DECK_LIMIT;     // 30
+const apCost = GATHERING_COST.thresholds[0];    // { maxCount: 0, additionalCost: 0 }
+```
+
+### THEME (`@shared/theme/theme.ts`)
+
+**UIの見た目に関するパラメータ**を管理する。
+
+| カテゴリ | 例 |
+|---------|-----|
+| 色 | 背景色、テキスト色、ボーダー色、品質色、ボタン色 |
+| フォント | フォントファミリー、フォントサイズ |
+| スペーシング | マージン、パディング |
+| 視覚効果 | 光彩効果、アニメーション設定 |
+
+```typescript
+// 使用例
+import { THEME, Colors } from '@shared/theme/theme';
+
+const bgColor = Colors.background.primary;      // 0x2a2a3d
+const fontSize = THEME.sizes.medium;             // 16
+```
+
+### 判断基準
+
+新しい定数を追加する場合、以下の基準で配置先を決定する。
+
+```
+その定数を変更するとゲームバランスが変わるか？
+  → YES: GAME_CONFIG（game-config.ts）
+  → NO: その定数を変更するとUIの見た目が変わるか？
+    → YES: THEME（theme.ts）
+    → NO: 用途に応じて @shared/constants/ または各feature内に配置
+```
+
+### 注意事項
+
+- GAME_CONFIGの値をTHEMEから参照しない（逆も同様）
+- マジックナンバーは必ずどちらかのファイルに定数として定義する
+- バランス設計書 (`docs/design/atelier-guild-rank/balance-design.md`) の変更時はGAME_CONFIGも同期更新する
+- 各定数にはバランス設計書のセクション番号をコメントで対応付ける
+
+---
+
 ## 禁止事項
 
 - `eslint-disable` / `biome-ignore` のコメントを安易に使わない
 - `@ts-ignore` / `@ts-expect-error` は原則禁止
-- マジックナンバーは定数化
+- マジックナンバーは定数化（GAME_CONFIGまたはTHEMEに追加）
 - ネストが深いコード（3階層以上は早期リターンで解消）
 - `console.log` を本番コードに残さない
