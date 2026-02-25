@@ -10,7 +10,7 @@
  */
 
 import type { IPurchaseResult, IShopItem, IShopService } from '@features/shop';
-import type { RexLabel, RexUIPlugin } from '@presentation/types/rexui';
+import type { RexLabel, RexSizer, RexUIPlugin } from '@presentation/types/rexui';
 import { THEME } from '@presentation/ui/theme';
 import { Container, ServiceKeys } from '@shared/services/di/container';
 import type { GuildRank } from '@shared/types';
@@ -162,11 +162,9 @@ export class ShopScene extends Phaser.Scene {
 
   /**
    * アイテムUIリスト
-   * 各アイテムUIにはカスタムプロパティ（item, buyButton, card）が追加されるため、
-   * RexSizer型では対応できず、anyを使用する必要がある
+   * 各アイテムUIにはrexUIコンポーネントとショップアイテムの参照を保持
    */
-  // biome-ignore lint/suspicious/noExplicitAny: カスタムプロパティを持つためanyが必要
-  private itemUIs: any[] = [];
+  private itemUIs: Array<{ card: RexSizer; item: IShopItem; buyButton: RexLabel }> = [];
 
   // ===========================================================================
   // rexUIプラグイン

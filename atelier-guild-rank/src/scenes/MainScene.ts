@@ -225,35 +225,27 @@ export class MainScene extends Phaser.Scene {
     this.unsubscribeHandlers = [];
 
     this.unsubscribeHandlers.push(
-      // biome-ignore lint/suspicious/noExplicitAny: EventBusのIBusEvent型に対応
-      this.eventBus.on(GameEventType.PHASE_CHANGED, (busEvent: any) => {
-        const event = busEvent.payload as IPhaseChangedEvent;
-        this.phaseManager.showPhase(event.newPhase);
+      this.eventBus.on<IPhaseChangedEvent>(GameEventType.PHASE_CHANGED, (busEvent) => {
+        this.phaseManager.showPhase(busEvent.payload.newPhase);
         this.phaseManager.updateSidebar(this.sidebarUI);
       }),
     );
 
     this.unsubscribeHandlers.push(
-      // biome-ignore lint/suspicious/noExplicitAny: EventBusのIBusEvent型に対応
-      this.eventBus.on(GameEventType.DAY_STARTED, (busEvent: any) => {
-        const event = busEvent.payload as { remainingDays: number };
-        this.handleDayStarted(event);
+      this.eventBus.on<{ remainingDays: number }>(GameEventType.DAY_STARTED, (busEvent) => {
+        this.handleDayStarted(busEvent.payload);
       }),
     );
 
     this.unsubscribeHandlers.push(
-      // biome-ignore lint/suspicious/noExplicitAny: EventBusのIBusEvent型に対応
-      this.eventBus.on(GameEventType.QUEST_GENERATED, (busEvent: any) => {
-        const event = busEvent.payload as { quests: IQuest[] };
-        this.phaseManager.handleQuestGenerated(event);
+      this.eventBus.on<{ quests: IQuest[] }>(GameEventType.QUEST_GENERATED, (busEvent) => {
+        this.phaseManager.handleQuestGenerated(busEvent.payload);
       }),
     );
 
     this.unsubscribeHandlers.push(
-      // biome-ignore lint/suspicious/noExplicitAny: EventBusのIBusEvent型に対応
-      this.eventBus.on(GameEventType.QUEST_ACCEPTED, (busEvent: any) => {
-        const event = busEvent.payload as { quest: IQuest };
-        this.phaseManager.handleQuestAccepted(event, this.sidebarUI);
+      this.eventBus.on<{ quest: IQuest }>(GameEventType.QUEST_ACCEPTED, (busEvent) => {
+        this.phaseManager.handleQuestAccepted(busEvent.payload, this.sidebarUI);
       }),
     );
   }

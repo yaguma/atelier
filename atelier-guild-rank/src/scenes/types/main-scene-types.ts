@@ -46,8 +46,7 @@ export interface IMainSceneGameFlowManager {
   startPhase(phase: GamePhase): void;
   endPhase(): void;
   startNewGame(): void;
-  // biome-ignore lint/suspicious/noExplicitAny: セーブデータは任意の型を許容（ISaveData）
-  continueGame(saveData: any): void;
+  continueGame(saveData: unknown): void;
   startDay(): void;
   endDay(): void;
   skipPhase(): void;
@@ -62,12 +61,21 @@ export interface IBasePhaseUI {
 }
 
 /**
+ * EventBusイベントの構造（IMainSceneEventBus用）
+ */
+interface IBusEvent<T = unknown> {
+  type: string;
+  payload: T;
+  timestamp: number;
+}
+
+/**
  * EventBus インターフェース（依存注入用）
  */
 export interface IMainSceneEventBus {
   emit(event: string, data: unknown): void;
-  on(event: string, handler: (...args: unknown[]) => void): () => void;
-  off(event: string, handler?: (...args: unknown[]) => void): void;
+  on<T = unknown>(event: string, handler: (busEvent: IBusEvent<T>) => void): () => void;
+  off(event: string, handler?: (busEvent: IBusEvent) => void): void;
 }
 
 /**
@@ -78,6 +86,5 @@ export interface MainSceneData {
   /** 新規ゲーム開始フラグ（TitleSceneから渡される） */
   isNewGame?: boolean;
   /** セーブデータ（コンティニュー時に渡される） */
-  // biome-ignore lint/suspicious/noExplicitAny: セーブデータは任意の型を許容
-  saveData?: any;
+  saveData?: unknown;
 }

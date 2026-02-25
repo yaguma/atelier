@@ -406,8 +406,7 @@ export class TitleScene extends Phaser.Scene {
     return dialog;
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: rexUI Labelの型は複雑
-  private createDialogButton(action: DialogAction): any {
+  private createDialogButton(action: DialogAction): RexLabel {
     const bg = this.rexUI.add.roundRectangle(
       0,
       0,
@@ -450,8 +449,7 @@ export class TitleScene extends Phaser.Scene {
     this.cameras.main.fadeIn(TITLE_ANIMATION.FADE_DURATION, 0, 0, 0);
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: シーンデータは任意の型を許容
-  private fadeOutToScene(targetScene: string, sceneData?: any): void {
+  private fadeOutToScene(targetScene: string, sceneData?: Record<string, unknown>): void {
     this.cameras.main.fadeOut(TITLE_ANIMATION.FADE_DURATION, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => {
       sceneData !== undefined

@@ -20,6 +20,7 @@ import type {
   DraftSession,
   IGatheringService,
 } from '@domain/interfaces/gathering-service.interface';
+import type { Card } from '@features/deck/types/card';
 import { Button } from '@presentation/ui/components/Button';
 import { THEME } from '@presentation/ui/theme';
 import { BaseComponent } from '@shared/components';
@@ -479,7 +480,10 @@ export class GatheringPhaseUI extends BaseComponent {
     // cardIdからCardオブジェクトを取得する処理は上位層が担当
     // ここではサービスに直接委譲
     // TODO(TASK-0114): startDraftGatheringの引数型をcardId直接受け取りに拡張する
-    const draftSession = this.gatheringService.startDraftGathering({ id: result.cardId } as never);
+    // 暫定: cardIdのみで仮のCardオブジェクトを構築（上位層でCard取得を行うべき）
+    const draftSession = this.gatheringService.startDraftGathering({
+      id: result.cardId,
+    } as unknown as Card);
 
     if (!draftSession) {
       console.warn(
