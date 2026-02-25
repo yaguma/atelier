@@ -174,6 +174,9 @@ export const QUEST_DIFFICULTY_REWARDS = {
 
 /**
  * 難易度ごとの基本期限（日数）
+ *
+ * バランス設計書 セクション 5.1「依頼パラメータ」に基づく。
+ * 依頼者の deadlineModifier で最終期限が増減する。
  */
 export const QUEST_DIFFICULTY_DEADLINES = {
   easy: 7,
@@ -271,8 +274,13 @@ export const QUEST_TYPE_CONTRIBUTION_MULTIPLIER: Record<QuestType, number> = {
 /**
  * 品質に応じた貢献度補正値（contribution-calculator用）
  *
- * calculate-reward.tsのQUALITY_REWARD_MULTIPLIERとは別の補正テーブル。
- * 納品時の貢献度計算で使用する。
+ * バランス設計書 セクション 3.4「品質パラメータ」の貢献度補正列に基づく。
+ *
+ * QUALITY_REWARD_MULTIPLIERとは別の補正テーブル。
+ * - QUALITY_REWARD_MULTIPLIER: 依頼報酬計算で使用（高品質への動機付け）
+ * - CONTRIBUTION_QUALITY_MODIFIERS: 納品時の貢献度計算で使用（ランク進行速度の制御）
+ *
+ * 貢献度補正を報酬補正より控えめに設定することで、貢献度のインフレを防止する。
  */
 export const CONTRIBUTION_QUALITY_MODIFIERS: Record<Quality, number> = {
   D: 0.5,
