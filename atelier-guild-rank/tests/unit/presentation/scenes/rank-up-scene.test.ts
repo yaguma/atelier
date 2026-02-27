@@ -16,12 +16,16 @@ import type {
   PromotionResult,
   PromotionTest,
 } from '@domain/interfaces/rank-service.interface';
+import type { IEventBus } from '@shared/services/event-bus';
+import type { IStateManager } from '@shared/services/state-manager';
 import { GuildRank } from '@shared/types/common';
 import type { IGuildRankMaster } from '@shared/types/master-data';
 import {
+  createMockDIContainer,
   createMockEventBus,
   createMockScene,
   createMockStateManager,
+  type MockEventBusWithListeners,
 } from '@test-mocks/phaser-mocks';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -45,23 +49,12 @@ vi.mock('phaser', () => {
   };
 });
 
-// DIコンテナのモックインスタンス
-// biome-ignore lint/suspicious/noExplicitAny: テスト用のモック変数
-let mockStateManagerInstance: any;
-// biome-ignore lint/suspicious/noExplicitAny: テスト用のモック変数
-let mockRankServiceInstance: any;
-// biome-ignore lint/suspicious/noExplicitAny: テスト用のモック変数
-let mockEventBusInstance: any;
+// DIコンテナのモックインスタンス（型安全）
+let mockStateManagerInstance: Partial<IStateManager>;
+let mockRankServiceInstance: IRankService;
+let mockEventBusInstance: MockEventBusWithListeners;
 
-const mockContainerInstance = {
-  resolve: vi.fn((key: string) => {
-    if (key === 'StateManager') return mockStateManagerInstance;
-    if (key === 'RankService') return mockRankServiceInstance;
-    if (key === 'EventBus') return mockEventBusInstance;
-    throw new Error(`Service not found: ${key}`);
-  }),
-  register: vi.fn(),
-};
+let mockContainerInstance: ReturnType<typeof createMockDIContainer>;
 
 vi.mock('@shared/services/di/container', () => ({
   Container: {
@@ -129,6 +122,11 @@ describe('RankUpScene', () => {
     mockStateManagerInstance = createMockStateManager({ promotionGauge: 100 });
     mockRankServiceInstance = createMockRankService();
     mockEventBusInstance = createMockEventBus();
+    mockContainerInstance = createMockDIContainer({
+      StateManager: mockStateManagerInstance,
+      RankService: mockRankServiceInstance,
+      EventBus: mockEventBusInstance,
+    });
   });
 
   afterEach(() => {
@@ -505,8 +503,13 @@ describe('RankUpScene', () => {
       const { RankUpScene } = await import('@presentation/scenes/RankUpScene');
       const { scene: mockScene } = createMockScene();
 
-      const originalStateManager = mockStateManagerInstance;
-      mockStateManagerInstance = undefined;
+      // StateManagerがundefinedを返すDIコンテナに差し替え
+      const savedContainer = mockContainerInstance;
+      mockContainerInstance = createMockDIContainer({
+        StateManager: undefined,
+        RankService: mockRankServiceInstance,
+        EventBus: mockEventBusInstance,
+      });
 
       try {
         const rankUpScene = new RankUpScene();
@@ -521,7 +524,7 @@ describe('RankUpScene', () => {
 
         expect(() => rankUpScene.create()).toThrow('StateManager is required');
       } finally {
-        mockStateManagerInstance = originalStateManager;
+        mockContainerInstance = savedContainer;
       }
     });
 
@@ -532,8 +535,13 @@ describe('RankUpScene', () => {
       const { RankUpScene } = await import('@presentation/scenes/RankUpScene');
       const { scene: mockScene } = createMockScene();
 
-      const originalRankService = mockRankServiceInstance;
-      mockRankServiceInstance = undefined;
+      // RankServiceがundefinedを返すDIコンテナに差し替え
+      const savedContainer = mockContainerInstance;
+      mockContainerInstance = createMockDIContainer({
+        StateManager: mockStateManagerInstance,
+        RankService: undefined,
+        EventBus: mockEventBusInstance,
+      });
 
       try {
         const rankUpScene = new RankUpScene();
@@ -548,7 +556,7 @@ describe('RankUpScene', () => {
 
         expect(() => rankUpScene.create()).toThrow('RankService is required');
       } finally {
-        mockRankServiceInstance = originalRankService;
+        mockContainerInstance = savedContainer;
       }
     });
 

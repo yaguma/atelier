@@ -11,12 +11,19 @@
  * - シーン遷移: MainSceneへの戻り
  */
 
-import type { IPurchaseResult, IShopItem } from '@domain/interfaces/shop-service.interface';
+import type {
+  IPurchaseResult,
+  IShopItem,
+  IShopService,
+} from '@domain/interfaces/shop-service.interface';
+import type { IStateManager } from '@shared/services/state-manager';
 import { GuildRank } from '@shared/types/common';
 import {
+  createMockDIContainer,
   createMockEventBus,
   createMockScene,
   createMockStateManager,
+  type MockEventBusWithListeners,
 } from '@test-mocks/phaser-mocks';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -40,23 +47,12 @@ vi.mock('phaser', () => {
   };
 });
 
-// DIコンテナのモックインスタンス
-// biome-ignore lint/suspicious/noExplicitAny: テスト用のモック変数
-let mockStateManagerInstance: any;
-// biome-ignore lint/suspicious/noExplicitAny: テスト用のモック変数
-let mockShopServiceInstance: any;
-// biome-ignore lint/suspicious/noExplicitAny: テスト用のモック変数
-let mockEventBusInstance: any;
+// DIコンテナのモックインスタンス（型安全）
+let mockStateManagerInstance: Partial<IStateManager>;
+let mockShopServiceInstance: IShopService;
+let mockEventBusInstance: MockEventBusWithListeners;
 
-const mockContainerInstance = {
-  resolve: vi.fn((key: string) => {
-    if (key === 'StateManager') return mockStateManagerInstance;
-    if (key === 'ShopService') return mockShopServiceInstance;
-    if (key === 'EventBus') return mockEventBusInstance;
-    throw new Error(`Service not found: ${key}`);
-  }),
-  register: vi.fn(),
-};
+let mockContainerInstance: ReturnType<typeof createMockDIContainer>;
 
 vi.mock('@shared/services/di/container', () => ({
   Container: {
@@ -76,7 +72,7 @@ vi.mock('@shared/services/di/container', () => ({
 /**
  * ShopServiceモックを作成
  */
-const createMockShopService = () => ({
+const createMockShopService = (): IShopService => ({
   getAvailableItems: vi.fn().mockReturnValue([
     {
       id: 'shop-card-001',
@@ -131,6 +127,11 @@ describe('ShopScene', () => {
     mockStateManagerInstance = createMockStateManager();
     mockShopServiceInstance = createMockShopService();
     mockEventBusInstance = createMockEventBus();
+    mockContainerInstance = createMockDIContainer({
+      StateManager: mockStateManagerInstance,
+      ShopService: mockShopServiceInstance,
+      EventBus: mockEventBusInstance,
+    });
   });
 
   afterEach(() => {
@@ -553,8 +554,13 @@ describe('ShopScene', () => {
       const { ShopScene } = await import('@presentation/scenes/ShopScene');
       const { scene: mockScene } = createMockScene();
 
-      const originalStateManager = mockStateManagerInstance;
-      mockStateManagerInstance = undefined;
+      // StateManagerがundefinedを返すDIコンテナに差し替え
+      const savedContainer = mockContainerInstance;
+      mockContainerInstance = createMockDIContainer({
+        StateManager: undefined,
+        ShopService: mockShopServiceInstance,
+        EventBus: mockEventBusInstance,
+      });
 
       try {
         const shopScene = new ShopScene();
@@ -569,7 +575,7 @@ describe('ShopScene', () => {
 
         expect(() => shopScene.create()).toThrow('StateManager is required');
       } finally {
-        mockStateManagerInstance = originalStateManager;
+        mockContainerInstance = savedContainer;
       }
     });
 
@@ -580,8 +586,13 @@ describe('ShopScene', () => {
       const { ShopScene } = await import('@presentation/scenes/ShopScene');
       const { scene: mockScene } = createMockScene();
 
-      const originalShopService = mockShopServiceInstance;
-      mockShopServiceInstance = undefined;
+      // ShopServiceがundefinedを返すDIコンテナに差し替え
+      const savedContainer = mockContainerInstance;
+      mockContainerInstance = createMockDIContainer({
+        StateManager: mockStateManagerInstance,
+        ShopService: undefined,
+        EventBus: mockEventBusInstance,
+      });
 
       try {
         const shopScene = new ShopScene();
@@ -596,7 +607,7 @@ describe('ShopScene', () => {
 
         expect(() => shopScene.create()).toThrow('ShopService is required');
       } finally {
-        mockShopServiceInstance = originalShopService;
+        mockContainerInstance = savedContainer;
       }
     });
   });
