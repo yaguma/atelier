@@ -54,9 +54,9 @@ describe('contribution-calculator', () => {
 
     it('コンボ補正を適用すること', () => {
       const result = calculateContribution(createContext({ deliveryCount: 3 }));
-      // 100 * 1.0(B) * 1.0(VILLAGER) * 1.2(3回目) = 120
-      expect(result.contribution).toBe(120);
-      expect(result.comboModifier).toBeCloseTo(1.2);
+      // 100 * 1.0(B) * 1.0(VILLAGER) * 1.3(3回目) = 130
+      expect(result.contribution).toBe(130);
+      expect(result.comboModifier).toBeCloseTo(1.3);
     });
 
     it('全補正の組み合わせを計算すること', () => {
@@ -70,6 +70,13 @@ describe('contribution-calculator', () => {
       );
       // 100 * 1.5(A) * 1.2(MERCHANT) * 1.1(2回目) = 198
       expect(result.contribution).toBe(198);
+    });
+
+    it('高コンボ(7回以上)でx2.0が適用されること', () => {
+      const result = calculateContribution(createContext({ deliveryCount: 7 }));
+      // 100 * 1.0(B) * 1.0(VILLAGER) * 2.0(7回目) = 200
+      expect(result.contribution).toBe(200);
+      expect(result.comboModifier).toBeCloseTo(2.0);
     });
 
     it('結果を切り捨てで整数化すること', () => {
@@ -133,8 +140,28 @@ describe('contribution-calculator', () => {
       expect(getComboModifier(2)).toBeCloseTo(1.1);
     });
 
-    it('5回目は1.4であること', () => {
-      expect(getComboModifier(5)).toBeCloseTo(1.4);
+    it('3回目は1.3であること（段階的閾値）', () => {
+      expect(getComboModifier(3)).toBeCloseTo(1.3);
+    });
+
+    it('4回目は1.3であること（次の閾値まで同値）', () => {
+      expect(getComboModifier(4)).toBeCloseTo(1.3);
+    });
+
+    it('5回目は1.5であること', () => {
+      expect(getComboModifier(5)).toBeCloseTo(1.5);
+    });
+
+    it('6回目は1.5であること（次の閾値まで同値）', () => {
+      expect(getComboModifier(6)).toBeCloseTo(1.5);
+    });
+
+    it('7回目は2.0であること（最大補正）', () => {
+      expect(getComboModifier(7)).toBeCloseTo(2.0);
+    });
+
+    it('10回目は2.0であること（7以上は全て最大補正）', () => {
+      expect(getComboModifier(10)).toBeCloseTo(2.0);
     });
   });
 
