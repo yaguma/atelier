@@ -8,7 +8,7 @@
 
 import {
   CLIENT_TYPE_MODIFIERS,
-  COMBO_MODIFIER_RATE,
+  COMBO_THRESHOLDS,
   CONTRIBUTION_QUALITY_MODIFIERS,
 } from '@shared/constants';
 import type { ClientType, Quality } from '@shared/types';
@@ -99,11 +99,19 @@ export function getClientModifier(clientType: ClientType): number {
 
 /**
  * コンボ補正値を取得する（純粋関数）
- * 1 + 0.1 x (納品回数 - 1)
+ *
+ * 段階的閾値テーブル（COMBO_THRESHOLDS）に基づき、
+ * 連続成功回数に応じた補正値を返す。
  *
  * @param deliveryCount - 同日の納品回数（1から開始）
  * @returns コンボ補正値
  */
 export function getComboModifier(deliveryCount: number): number {
-  return 1 + COMBO_MODIFIER_RATE * (deliveryCount - 1);
+  let modifier = 1.0;
+  for (const threshold of COMBO_THRESHOLDS) {
+    if (deliveryCount >= threshold.minCount) {
+      modifier = threshold.modifier;
+    }
+  }
+  return modifier;
 }
