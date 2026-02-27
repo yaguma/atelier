@@ -56,6 +56,7 @@ export default defineConfig({
       '@shared': path.resolve(__dirname, './src/shared'),
       '@features': path.resolve(__dirname, './src/features'),
       '@scenes': path.resolve(__dirname, './src/scenes'),
+      '@test-mocks': path.resolve(__dirname, './tests/mocks'),
     },
   },
 });

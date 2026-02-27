@@ -21,6 +21,7 @@ import { SaveLoadService } from '@shared/services/save-load';
 import type { IStateManager } from '@shared/services/state-manager';
 import type { IGameState, ISaveData } from '@shared/types';
 import { ApplicationError, ErrorCodes, GameEventType } from '@shared/types';
+import { createMockEventBusSimple } from '@test-mocks/phaser-mocks';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // =============================================================================
@@ -39,7 +40,7 @@ const createMockSaveRepo = (): ISaveDataRepository => ({
 });
 
 /**
- * IStateManagerモック作成
+ * IStateManagerモック作成（セーブ/ロード固有の状態）
  */
 const createMockStateManager = (): Partial<IStateManager> => ({
   getState: vi.fn().mockReturnValue({
@@ -65,7 +66,6 @@ const createMockDeckService = (): Partial<IDeckService> => ({
   getDeck: vi.fn().mockReturnValue([{ id: 'card_001' }, { id: 'card_002' }]),
   getHand: vi.fn().mockReturnValue([{ id: 'card_003' }]),
   getDiscard: vi.fn().mockReturnValue([]),
-  // loadFromSaveDataは既存インターフェースにないため、拡張が必要
 });
 
 /**
@@ -76,7 +76,6 @@ const createMockInventoryService = (): Partial<IInventoryService> => ({
   getItems: vi.fn().mockReturnValue([]),
   getArtifacts: vi.fn().mockReturnValue([]),
   getMaterialCapacity: vi.fn().mockReturnValue(20),
-  // loadFromSaveDataは既存インターフェースにないため、拡張が必要
 });
 
 /**
@@ -86,17 +85,13 @@ const createMockQuestService = (): Partial<IQuestService> => ({
   getActiveQuests: vi.fn().mockReturnValue([]),
   getAvailableQuests: vi.fn().mockReturnValue([]),
   getQuestLimit: vi.fn().mockReturnValue(3),
-  // loadFromSaveDataは既存インターフェースにないため、拡張が必要
 });
 
 /**
- * IEventBusモック作成
+ * IEventBusモック作成（共通モックのシンプル版を使用）
  */
-const createMockEventBus = (): Partial<IEventBus> => ({
-  emit: vi.fn(),
-  on: vi.fn().mockReturnValue(() => {}),
-  off: vi.fn(),
-});
+const createMockEventBus = (): Partial<IEventBus> =>
+  createMockEventBusSimple() as Partial<IEventBus>;
 
 /**
  * 有効なセーブデータのサンプル作成

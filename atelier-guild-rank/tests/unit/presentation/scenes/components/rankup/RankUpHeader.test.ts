@@ -9,75 +9,8 @@
  * - 破棄処理
  */
 
+import { createMockScene } from '@test-mocks/phaser-mocks';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
-// =============================================================================
-// モック定義
-// =============================================================================
-
-/**
- * モックコンテナを作成
- */
-const createMockContainer = () => ({
-  setVisible: vi.fn().mockReturnThis(),
-  setPosition: vi.fn().mockReturnThis(),
-  add: vi.fn().mockReturnThis(),
-  destroy: vi.fn(),
-  x: 0,
-  y: 0,
-});
-
-/**
- * モックテキストを作成
- */
-const createMockText = () => ({
-  setText: vi.fn().mockReturnThis(),
-  setOrigin: vi.fn().mockReturnThis(),
-  setStyle: vi.fn().mockReturnThis(),
-  setColor: vi.fn().mockReturnThis(),
-  destroy: vi.fn(),
-  text: '',
-});
-
-/**
- * モックグラフィックスを作成
- */
-const createMockGraphics = () => ({
-  fillStyle: vi.fn().mockReturnThis(),
-  fillRoundedRect: vi.fn().mockReturnThis(),
-  lineStyle: vi.fn().mockReturnThis(),
-  strokeRoundedRect: vi.fn().mockReturnThis(),
-  destroy: vi.fn(),
-});
-
-/**
- * モックシーンを作成
- */
-const createMockScene = () => {
-  const mockContainer = createMockContainer();
-  const mockText = createMockText();
-  const mockGraphics = createMockGraphics();
-
-  return {
-    scene: {
-      add: {
-        container: vi.fn().mockReturnValue(mockContainer),
-        text: vi.fn().mockReturnValue(mockText),
-        graphics: vi.fn().mockReturnValue(mockGraphics),
-      },
-      make: {
-        text: vi.fn().mockReturnValue(mockText),
-        container: vi.fn().mockReturnValue(mockContainer),
-      },
-      tweens: {
-        add: vi.fn(),
-      },
-    } as unknown as Phaser.Scene,
-    mockContainer,
-    mockText,
-    mockGraphics,
-  };
-};
 
 // =============================================================================
 // テストスイート

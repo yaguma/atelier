@@ -10,87 +10,9 @@
  * - ホバーエフェクト
  */
 
+import { createMockScene } from '@test-mocks/phaser-mocks';
 import Phaser from 'phaser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-
-// =============================================================================
-// モック定義
-// =============================================================================
-
-/**
- * モックコンテナを作成
- */
-const createMockContainer = () => ({
-  setVisible: vi.fn().mockReturnThis(),
-  setPosition: vi.fn().mockReturnThis(),
-  add: vi.fn().mockReturnThis(),
-  destroy: vi.fn(),
-  removeAll: vi.fn(),
-  x: 0,
-  y: 0,
-});
-
-/**
- * モックテキストを作成
- */
-const createMockText = () => ({
-  setText: vi.fn().mockReturnThis(),
-  setOrigin: vi.fn().mockReturnThis(),
-  setStyle: vi.fn().mockReturnThis(),
-  setColor: vi.fn().mockReturnThis(),
-  setWordWrapWidth: vi.fn().mockReturnThis(),
-  destroy: vi.fn(),
-  text: '',
-});
-
-/**
- * モックRectangleを作成
- */
-const createMockRectangle = () => ({
-  setInteractive: vi.fn().mockReturnThis(),
-  on: vi.fn().mockReturnThis(),
-  off: vi.fn().mockReturnThis(),
-  setFillStyle: vi.fn().mockReturnThis(),
-  setStrokeStyle: vi.fn().mockReturnThis(),
-  setAlpha: vi.fn().mockReturnThis(),
-  destroy: vi.fn(),
-});
-
-/**
- * モックシーンを作成
- */
-const createMockScene = () => {
-  const mockContainer = createMockContainer();
-  const mockText = createMockText();
-  const mockRectangle = createMockRectangle();
-
-  return {
-    scene: {
-      add: {
-        container: vi.fn().mockReturnValue(mockContainer),
-        text: vi.fn().mockReturnValue(mockText),
-        rectangle: vi.fn().mockReturnValue(mockRectangle),
-        graphics: vi.fn().mockReturnValue({
-          fillStyle: vi.fn().mockReturnThis(),
-          fillRoundedRect: vi.fn().mockReturnThis(),
-          lineStyle: vi.fn().mockReturnThis(),
-          strokeRoundedRect: vi.fn().mockReturnThis(),
-          destroy: vi.fn(),
-        }),
-      },
-      make: {
-        text: vi.fn().mockReturnValue(mockText),
-        container: vi.fn().mockReturnValue(mockContainer),
-      },
-      tweens: {
-        add: vi.fn(),
-      },
-    } as unknown as Phaser.Scene,
-    mockContainer,
-    mockText,
-    mockRectangle,
-  };
-};
 
 // =============================================================================
 // テスト用データ
