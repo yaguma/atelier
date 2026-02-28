@@ -27,7 +27,7 @@ import { BaseComponent } from '@shared/components';
 import { getSelectionIndexFromKey, isKeyForAction } from '@shared/constants/keybindings';
 import type { MaterialId, Quality } from '@shared/types';
 import type Phaser from 'phaser';
-import type { ILocationSelectResult } from '../types/gathering-location';
+import type { IGatheringLocation, ILocationSelectResult } from '../types/gathering-location';
 import { GatheringStage } from '../types/gathering-location';
 import { LocationSelectUI } from './LocationSelectUI';
 import { type MaterialDisplay, MaterialSlotUI } from './MaterialSlotUI';
@@ -91,6 +91,9 @@ export class GatheringPhaseUI extends BaseComponent {
 
   /** LocationSelectUIコンポーネント */
   private _locationSelectUI: LocationSelectUI | null = null;
+
+  /** 場所選択用データ（手札連動フィルタリング済み） */
+  private _availableLocations: readonly IGatheringLocation[] = [];
 
   /** フェーズ離脱確認のコールバック */
   private _pendingLeaveConfirm: (() => void) | null = null;
@@ -453,6 +456,22 @@ export class GatheringPhaseUI extends BaseComponent {
   }
 
   /**
+   * 場所選択用データを設定する
+   *
+   * 【機能概要】: 手札カードと連動した採取場所リストをLocationSelectUIに反映
+   * 【実装方針】: PhaseManagerから呼び出され、getAvailableLocations()の結果を受け取る
+   * 🔵 Issue #354 修正: LocationSelectUIに場所データを渡す
+   *
+   * @param locations - 手札フィルタリング済みの採取場所リスト
+   */
+  setAvailableLocations(locations: readonly IGatheringLocation[]): void {
+    this._availableLocations = locations;
+    if (this._locationSelectUI) {
+      this._locationSelectUI.updateLocations(locations);
+    }
+  }
+
+  /**
    * 現在のGatheringStageを取得する
    */
   getCurrentStage(): GatheringStage {
@@ -584,6 +603,11 @@ export class GatheringPhaseUI extends BaseComponent {
       this.container.add(this._locationSelectUI.getContainer());
     }
     this._locationSelectUI.setVisible(true);
+
+    // Issue #354: 場所データをLocationSelectUIに反映
+    if (this._availableLocations.length > 0) {
+      this._locationSelectUI.updateLocations(this._availableLocations);
+    }
   }
 
   /**
