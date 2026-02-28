@@ -6,18 +6,12 @@
  * 品質補正、依頼者補正、コンボ補正を適用して最終貢献度を算出する。
  */
 
-import {
-  CLIENT_TYPE_MODIFIERS,
-  COMBO_THRESHOLDS,
-  CONTRIBUTION_QUALITY_MODIFIERS,
-} from '@shared/constants';
+import { getComboModifier } from '@domain/services/contribution-calculator';
+import { CLIENT_TYPE_MODIFIERS, CONTRIBUTION_QUALITY_MODIFIERS } from '@shared/constants';
 import type { ClientType, Quality } from '@shared/types';
 
-// =============================================================================
-// 定数（GAME_CONFIGから参照）
-// =============================================================================
-// CONTRIBUTION_QUALITY_MODIFIERS, CLIENT_TYPE_MODIFIERS, COMBO_MODIFIER_RATE
-// は @shared/constants/game-config からインポート済み
+// calculateContribution内で使用し、かつ外部にもre-exportする
+export { getComboModifier };
 
 // =============================================================================
 // 型定義
@@ -95,23 +89,4 @@ export function getQualityModifier(quality: Quality): number {
  */
 export function getClientModifier(clientType: ClientType): number {
   return CLIENT_TYPE_MODIFIERS[clientType];
-}
-
-/**
- * コンボ補正値を取得する（純粋関数）
- *
- * 段階的閾値テーブル（COMBO_THRESHOLDS）に基づき、
- * 連続成功回数に応じた補正値を返す。
- *
- * @param deliveryCount - 同日の納品回数（1から開始）
- * @returns コンボ補正値
- */
-export function getComboModifier(deliveryCount: number): number {
-  let modifier = 1.0;
-  for (const threshold of COMBO_THRESHOLDS) {
-    if (deliveryCount >= threshold.minCount) {
-      modifier = threshold.modifier;
-    }
-  }
-  return modifier;
 }
