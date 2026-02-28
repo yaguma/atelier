@@ -11,9 +11,9 @@ import { Quest } from '@domain/entities/Quest';
 import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
 import type { IAlchemyService } from '@features/alchemy';
 import { AlchemyPhaseUI } from '@features/alchemy';
-import { Card, toCardId } from '@features/deck';
-import type { IGatheringService } from '@features/gathering';
-import { GatheringPhaseUI } from '@features/gathering';
+import type { IDeckService } from '@features/deck';
+import type { IGatheringLocation, IGatheringService } from '@features/gathering';
+import { GATHERING_LOCATIONS, GatheringPhaseUI } from '@features/gathering';
 import type { IQuestService } from '@features/quest';
 import type { SidebarUI } from '@presentation/ui/components/SidebarUI';
 import { DeliveryPhaseUI } from '@presentation/ui/phases/DeliveryPhaseUI';
@@ -23,7 +23,6 @@ import { GamePhase, VALID_GAME_PHASES } from '@shared/types/common';
 import { toMaterialId } from '@shared/types/ids';
 import type { IAttributeValue, IEffectValue, IUsedMaterial } from '@shared/types/materials';
 import type { IClient, IQuest } from '@shared/types/quests';
-import { generateUniqueId } from '@shared/utils';
 import type Phaser from 'phaser';
 import type { IBasePhaseUI } from '../types/main-scene-types';
 
@@ -242,43 +241,35 @@ export class PhaseManager {
   // ===========================================================================
 
   /**
-   * 採取セッションを初期化
+   * 採取フェーズを初期化（場所選択ステージ）
+   *
+   * Issue #354: 手札カードから選択可能な採取場所を計算し、
+   * LocationSelectUIに反映して場所選択ステージを表示する。
    */
   private initializeGatheringSession(): void {
     const container = Container.getInstance();
 
-    if (!container.has(ServiceKeys.GatheringService)) {
-      console.warn('GatheringService is not available');
-      return;
-    }
-    const gatheringService = container.resolve<IGatheringService>(ServiceKeys.GatheringService);
-
-    if (!container.has(ServiceKeys.MasterDataRepository)) {
-      console.warn('MasterDataRepository is not available');
-      return;
-    }
-    const masterDataRepo = container.resolve<IMasterDataRepository>(
-      ServiceKeys.MasterDataRepository,
-    );
-
-    const gatheringCardMasters = masterDataRepo.getCardsByType('GATHERING');
-    if (gatheringCardMasters.length === 0) {
-      console.warn('No gathering cards available');
+    const gatheringUI = this.phaseUIs.get(GamePhase.GATHERING);
+    if (!(gatheringUI instanceof GatheringPhaseUI)) {
       return;
     }
 
-    const cardId = toCardId(generateUniqueId('card'));
-    const defaultCard = new Card(cardId, gatheringCardMasters[0]);
-
-    try {
-      const session = gatheringService.startDraftGathering(defaultCard);
-      const gatheringUI = this.phaseUIs.get(GamePhase.GATHERING);
-      if (gatheringUI && 'updateSession' in gatheringUI) {
-        (gatheringUI as GatheringPhaseUI).updateSession(session);
-      }
-    } catch (error) {
-      console.error('Failed to initialize gathering session:', error);
+    // 手札カードIDから選択可能な採取場所を計算
+    if (container.has(ServiceKeys.DeckService)) {
+      const deckService = container.resolve<IDeckService>(ServiceKeys.DeckService);
+      const hand = deckService.getHand();
+      const gatheringCardIds = new Set(
+        hand.filter((card) => card.type === 'GATHERING').map((card) => card.id),
+      );
+      const locations: IGatheringLocation[] = GATHERING_LOCATIONS.map((loc) => ({
+        ...loc,
+        isSelectable: gatheringCardIds.has(loc.cardId),
+      }));
+      gatheringUI.setAvailableLocations(locations);
     }
+
+    // LOCATION_SELECTステージで表示開始
+    gatheringUI.show();
   }
 
   /**

@@ -9,8 +9,10 @@
  */
 
 import type { IGatheringService } from '@domain/interfaces/gathering-service.interface';
-import { GatheringStage } from '@features/gathering';
+import type { IGatheringLocation } from '@features/gathering';
+import { GATHERING_LOCATIONS, GatheringStage } from '@features/gathering';
 import { GatheringPhaseUI } from '@features/gathering/components/GatheringPhaseUI';
+import { toCardId } from '@shared/types';
 import type Phaser from 'phaser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -98,6 +100,15 @@ function createMockScene(): Phaser.Scene {
         setAlpha: vi.fn().mockReturnThis(),
         setFillStyle: vi.fn().mockReturnThis(),
         setDepth: vi.fn().mockReturnThis(),
+        setVisible: vi.fn().mockReturnThis(),
+        on: vi.fn().mockReturnThis(),
+        off: vi.fn().mockReturnThis(),
+        destroy: vi.fn(),
+      })),
+      circle: vi.fn().mockImplementation(() => ({
+        setStrokeStyle: vi.fn().mockReturnThis(),
+        setInteractive: vi.fn().mockReturnThis(),
+        setAlpha: vi.fn().mockReturnThis(),
         setVisible: vi.fn().mockReturnThis(),
         on: vi.fn().mockReturnThis(),
         off: vi.fn().mockReturnThis(),
@@ -208,7 +219,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
 
       // 場所選択をシミュレート
       ui.handleLocationSelected({
-        cardId: 'gathering-forest' as never,
+        cardId: toCardId('gathering-forest'),
         locationName: '近くの森',
         movementAPCost: 1,
       });
@@ -222,7 +233,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
       ui.show();
 
       ui.handleLocationSelected({
-        cardId: 'gathering-forest' as never,
+        cardId: toCardId('gathering-forest'),
         locationName: '近くの森',
         movementAPCost: 1,
       });
@@ -250,7 +261,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
       ui.show();
 
       ui.handleLocationSelected({
-        cardId: 'gathering-forest' as never,
+        cardId: toCardId('gathering-forest'),
         locationName: '近くの森',
         movementAPCost: 1,
       });
@@ -274,7 +285,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
 
       // セッション開始
       ui.handleLocationSelected({
-        cardId: 'gathering-forest' as never,
+        cardId: toCardId('gathering-forest'),
         locationName: '近くの森',
         movementAPCost: 1,
       });
@@ -312,7 +323,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
 
       // セッション開始
       ui.handleLocationSelected({
-        cardId: 'gathering-forest' as never,
+        cardId: toCardId('gathering-forest'),
         locationName: '近くの森',
         movementAPCost: 1,
       });
@@ -336,7 +347,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
 
       // セッション開始
       ui.handleLocationSelected({
-        cardId: 'gathering-forest' as never,
+        cardId: toCardId('gathering-forest'),
         locationName: '近くの森',
         movementAPCost: 1,
       });
@@ -366,7 +377,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
 
       // セッション開始
       ui.handleLocationSelected({
-        cardId: 'gathering-forest' as never,
+        cardId: toCardId('gathering-forest'),
         locationName: '近くの森',
         movementAPCost: 1,
       });
@@ -382,7 +393,79 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
   });
 
   // ===========================================================================
-  // テストケース6: destroy
+  // テストケース6: 場所データ設定（Issue #354）
+  // ===========================================================================
+
+  describe('場所データ設定（Issue #354）', () => {
+    it('setAvailableLocations()で場所データが設定される', () => {
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      ui.create();
+
+      const locations: IGatheringLocation[] = GATHERING_LOCATIONS.map((loc) => ({
+        ...loc,
+        isSelectable: loc.cardId === toCardId('gathering-forest'),
+      }));
+
+      // show()前にsetAvailableLocationsを呼ぶ
+      expect(() => ui.setAvailableLocations(locations)).not.toThrow();
+    });
+
+    it('show()後にsetAvailableLocations()を呼んでもエラーにならない', () => {
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      ui.create();
+      ui.show();
+
+      const locations: IGatheringLocation[] = GATHERING_LOCATIONS.map((loc) => ({
+        ...loc,
+        isSelectable: true,
+      }));
+
+      expect(() => ui.setAvailableLocations(locations)).not.toThrow();
+    });
+
+    it('setAvailableLocations()後にshow()でLocationSelectUIに場所が反映される', () => {
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      ui.create();
+
+      const locations: IGatheringLocation[] = GATHERING_LOCATIONS.map((loc) => ({
+        ...loc,
+        isSelectable: loc.cardId === toCardId('gathering-forest'),
+      }));
+
+      ui.setAvailableLocations(locations);
+      ui.show();
+
+      // show後もLOCATION_SELECTステージであること
+      expect(ui.getCurrentStage()).toBe(GatheringStage.LOCATION_SELECT);
+    });
+
+    it('discardSession()後に再度show()しても場所データが維持される', () => {
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      ui.create();
+
+      const locations: IGatheringLocation[] = GATHERING_LOCATIONS.map((loc) => ({
+        ...loc,
+        isSelectable: true,
+      }));
+
+      ui.setAvailableLocations(locations);
+      ui.show();
+
+      // セッション開始→破棄
+      ui.handleLocationSelected({
+        cardId: toCardId('gathering-forest'),
+        locationName: '近くの森',
+        movementAPCost: 1,
+      });
+      ui.discardSession();
+
+      // LOCATION_SELECTに戻り、場所データが維持される
+      expect(ui.getCurrentStage()).toBe(GatheringStage.LOCATION_SELECT);
+    });
+  });
+
+  // ===========================================================================
+  // テストケース7: destroy
   // ===========================================================================
 
   describe('destroy', () => {
@@ -400,7 +483,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
       ui.show();
 
       ui.handleLocationSelected({
-        cardId: 'gathering-forest' as never,
+        cardId: toCardId('gathering-forest'),
         locationName: '近くの森',
         movementAPCost: 1,
       });
