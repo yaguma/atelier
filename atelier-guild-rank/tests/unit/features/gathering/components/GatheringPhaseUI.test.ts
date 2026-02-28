@@ -219,7 +219,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
 
       // 場所選択をシミュレート
       ui.handleLocationSelected({
-        cardId: 'gathering-forest' as never,
+        cardId: toCardId('gathering-forest'),
         locationName: '近くの森',
         movementAPCost: 1,
       });
@@ -233,7 +233,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
       ui.show();
 
       ui.handleLocationSelected({
-        cardId: 'gathering-forest' as never,
+        cardId: toCardId('gathering-forest'),
         locationName: '近くの森',
         movementAPCost: 1,
       });
@@ -261,7 +261,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
       ui.show();
 
       ui.handleLocationSelected({
-        cardId: 'gathering-forest' as never,
+        cardId: toCardId('gathering-forest'),
         locationName: '近くの森',
         movementAPCost: 1,
       });
@@ -285,7 +285,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
 
       // セッション開始
       ui.handleLocationSelected({
-        cardId: 'gathering-forest' as never,
+        cardId: toCardId('gathering-forest'),
         locationName: '近くの森',
         movementAPCost: 1,
       });
@@ -323,7 +323,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
 
       // セッション開始
       ui.handleLocationSelected({
-        cardId: 'gathering-forest' as never,
+        cardId: toCardId('gathering-forest'),
         locationName: '近くの森',
         movementAPCost: 1,
       });
@@ -347,7 +347,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
 
       // セッション開始
       ui.handleLocationSelected({
-        cardId: 'gathering-forest' as never,
+        cardId: toCardId('gathering-forest'),
         locationName: '近くの森',
         movementAPCost: 1,
       });
@@ -377,7 +377,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
 
       // セッション開始
       ui.handleLocationSelected({
-        cardId: 'gathering-forest' as never,
+        cardId: toCardId('gathering-forest'),
         locationName: '近くの森',
         movementAPCost: 1,
       });
@@ -453,7 +453,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
 
       // セッション開始→破棄
       ui.handleLocationSelected({
-        cardId: 'gathering-forest' as never,
+        cardId: toCardId('gathering-forest'),
         locationName: '近くの森',
         movementAPCost: 1,
       });
@@ -483,7 +483,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
       ui.show();
 
       ui.handleLocationSelected({
-        cardId: 'gathering-forest' as never,
+        cardId: toCardId('gathering-forest'),
         locationName: '近くの森',
         movementAPCost: 1,
       });

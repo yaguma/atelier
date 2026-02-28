@@ -250,7 +250,7 @@ export class PhaseManager {
     const container = Container.getInstance();
 
     const gatheringUI = this.phaseUIs.get(GamePhase.GATHERING);
-    if (!gatheringUI || !('show' in gatheringUI)) {
+    if (!(gatheringUI instanceof GatheringPhaseUI)) {
       return;
     }
 
@@ -265,11 +265,11 @@ export class PhaseManager {
         ...loc,
         isSelectable: gatheringCardIds.has(loc.cardId),
       }));
-      (gatheringUI as GatheringPhaseUI).setAvailableLocations(locations);
+      gatheringUI.setAvailableLocations(locations);
     }
 
     // LOCATION_SELECTステージで表示開始
-    (gatheringUI as GatheringPhaseUI).show();
+    gatheringUI.show();
   }
 
   /**

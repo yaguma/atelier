@@ -456,12 +456,7 @@ export class GatheringPhaseUI extends BaseComponent {
   }
 
   /**
-   * 場所選択用データを設定する
-   *
-   * 【機能概要】: 手札カードと連動した採取場所リストをLocationSelectUIに反映
-   * 【実装方針】: PhaseManagerから呼び出され、getAvailableLocations()の結果を受け取る
-   * 🔵 Issue #354 修正: LocationSelectUIに場所データを渡す
-   *
+   * 場所選択用データを設定する（Issue #354）
    * @param locations - 手札フィルタリング済みの採取場所リスト
    */
   setAvailableLocations(locations: readonly IGatheringLocation[]): void {
