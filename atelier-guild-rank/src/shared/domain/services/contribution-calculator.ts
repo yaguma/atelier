@@ -36,6 +36,29 @@ export interface DeliveryContext {
 }
 
 // =============================================================================
+// 純粋関数（共通ロジック）
+// =============================================================================
+
+/**
+ * コンボ補正値を取得する（純粋関数）
+ *
+ * 段階的閾値テーブル（COMBO_THRESHOLDS）に基づき、
+ * 連続成功回数に応じた補正値を返す。
+ *
+ * @param deliveryCount - 同日の納品回数（1から開始）
+ * @returns コンボ補正値
+ */
+export function getComboModifier(deliveryCount: number): number {
+  let modifier = 1.0;
+  for (const threshold of COMBO_THRESHOLDS) {
+    if (deliveryCount >= threshold.minCount) {
+      modifier = threshold.modifier;
+    }
+  }
+  return modifier;
+}
+
+// =============================================================================
 // 貢献度計算サービス
 // =============================================================================
 
@@ -129,19 +152,13 @@ export class ContributionCalculator {
 
   /**
    * 【機能概要】: コンボ補正を取得
-   * 【実装方針】: COMBO_THRESHOLDSテーブルに基づく段階的補正
+   * 【実装方針】: 共通の getComboModifier 純粋関数に委譲
    * 🔵 信頼性レベル: 設計文書に明記
    *
    * @param deliveryCount - 同日の納品回数
    * @returns コンボ補正値
    */
   getComboModifier(deliveryCount: number): number {
-    let modifier = 1.0;
-    for (const threshold of COMBO_THRESHOLDS) {
-      if (deliveryCount >= threshold.minCount) {
-        modifier = threshold.modifier;
-      }
-    }
-    return modifier;
+    return getComboModifier(deliveryCount);
   }
 }

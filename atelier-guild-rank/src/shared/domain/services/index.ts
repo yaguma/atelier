@@ -4,4 +4,4 @@
  */
 
 export type { DeliveryContext } from './contribution-calculator';
-export { ContributionCalculator } from './contribution-calculator';
+export { ContributionCalculator, getComboModifier } from './contribution-calculator';
