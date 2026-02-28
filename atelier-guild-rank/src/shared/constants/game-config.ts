@@ -43,13 +43,13 @@ export const RANK_CONFIG: Record<
     readonly dayLimit: number;
   }
 > = {
-  G: { requiredContribution: 100, dayLimit: 30 },
-  F: { requiredContribution: 200, dayLimit: 30 },
+  G: { requiredContribution: 100, dayLimit: 20 },
+  F: { requiredContribution: 200, dayLimit: 25 },
   E: { requiredContribution: 350, dayLimit: 35 },
   D: { requiredContribution: 500, dayLimit: 35 },
   C: { requiredContribution: 700, dayLimit: 35 },
   B: { requiredContribution: 1000, dayLimit: 35 },
-  A: { requiredContribution: 1500, dayLimit: 35 },
+  A: { requiredContribution: 1500, dayLimit: 40 },
   S: { requiredContribution: 0, dayLimit: Infinity },
 } as const;
 
@@ -305,8 +305,31 @@ export const CLIENT_TYPE_MODIFIERS: Record<ClientType, number> = {
  * コンボ補正の増加率（1回あたり+10%）
  *
  * バランス設計書 セクション 5.3「コンボシステムのバランス」に基づく。
+ *
+ * @deprecated COMBO_THRESHOLDS に移行。既存コードの互換性のために残す。
  */
 export const COMBO_MODIFIER_RATE = 0.1;
+
+/**
+ * コンボ段階別補正テーブル
+ *
+ * 連続成功回数に応じた補正値を段階的に定義する。
+ * 旧方式（線形+0.1/回）では10連続(x2.0)が実質到達不可能だったため、
+ * 段階的な閾値方式に変更して到達可能性を改善する。
+ *
+ * バランス設計書 セクション 5.3「コンボシステムのバランス」に基づく。
+ *
+ * @remarks
+ * thresholds配列は昇順に並べること（minCount が小さい順）。
+ * 連続成功回数が閾値以上の最後のエントリが適用される。
+ */
+export const COMBO_THRESHOLDS = [
+  { minCount: 1, modifier: 1.0 },
+  { minCount: 2, modifier: 1.1 },
+  { minCount: 3, modifier: 1.3 },
+  { minCount: 5, modifier: 1.5 },
+  { minCount: 7, modifier: 2.0 },
+] as const;
 
 // =============================================================================
 // ランク昇格関連定数（バランス設計書 7.1）

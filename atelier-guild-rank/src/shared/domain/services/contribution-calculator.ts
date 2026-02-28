@@ -12,6 +12,7 @@
  * - 計算式は設計文書に明記
  */
 
+import { COMBO_THRESHOLDS } from '@shared/constants';
 import { ClientType, type Quality } from '@shared/types';
 
 // =============================================================================
@@ -128,13 +129,19 @@ export class ContributionCalculator {
 
   /**
    * 【機能概要】: コンボ補正を取得
-   * 【実装方針】: 1 + 0.1 × (納品数 - 1)
+   * 【実装方針】: COMBO_THRESHOLDSテーブルに基づく段階的補正
    * 🔵 信頼性レベル: 設計文書に明記
    *
    * @param deliveryCount - 同日の納品回数
    * @returns コンボ補正値
    */
   getComboModifier(deliveryCount: number): number {
-    return 1 + 0.1 * (deliveryCount - 1);
+    let modifier = 1.0;
+    for (const threshold of COMBO_THRESHOLDS) {
+      if (deliveryCount >= threshold.minCount) {
+        modifier = threshold.modifier;
+      }
+    }
+    return modifier;
   }
 }

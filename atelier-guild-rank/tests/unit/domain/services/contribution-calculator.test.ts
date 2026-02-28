@@ -193,10 +193,10 @@ describe('ContributionCalculator', () => {
   // =============================================================================
 
   describe('コンボ補正', () => {
-    it('T-0014-04: 3回納品で1.2倍の補正が適用される', () => {
-      // 【テスト目的】: 同日3回目の納品で1.2倍になる
-      // 【テスト内容】: 基礎100、品質B(1.0)、村人(1.0)、3回目(1.2)
-      // 【期待される動作】: 120が返る
+    it('T-0014-04: 3回納品で1.3倍の補正が適用される', () => {
+      // 【テスト目的】: 同日3回目の納品で1.3倍になる（段階的閾値テーブル方式）
+      // 【テスト内容】: 基礎100、品質B(1.0)、村人(1.0)、3回目(1.3)
+      // 【期待される動作】: 130が返る
       // 🔵 信頼性レベル: 設計文書に明記
 
       // Arrange
@@ -206,7 +206,7 @@ describe('ContributionCalculator', () => {
       const result = calculator.calculate(context);
 
       // Assert
-      expect(result).toBe(120);
+      expect(result).toBe(130);
     });
 
     it('2回目の納品で1.1倍の補正が適用される', () => {
@@ -220,7 +220,7 @@ describe('ContributionCalculator', () => {
       expect(result).toBe(110);
     });
 
-    it('5回目の納品で1.4倍の補正が適用される', () => {
+    it('5回目の納品で1.5倍の補正が適用される', () => {
       // Arrange
       const context = createDeliveryContext(100, Quality.B, ClientType.VILLAGER, 5);
 
@@ -228,7 +228,18 @@ describe('ContributionCalculator', () => {
       const result = calculator.calculate(context);
 
       // Assert
-      expect(result).toBe(140);
+      expect(result).toBe(150);
+    });
+
+    it('7回目の納品で2.0倍の補正が適用される', () => {
+      // Arrange
+      const context = createDeliveryContext(100, Quality.B, ClientType.VILLAGER, 7);
+
+      // Act
+      const result = calculator.calculate(context);
+
+      // Assert
+      expect(result).toBe(200);
     });
   });
 
@@ -239,8 +250,8 @@ describe('ContributionCalculator', () => {
   describe('複合補正', () => {
     it('全補正が同時に適用される', () => {
       // 【テスト目的】: 品質・依頼者・コンボの全補正が掛け算で適用される
-      // 【テスト内容】: 基礎100、品質S(2.0)、ギルド(1.5)、3回目(1.2)
-      // 【期待される動作】: 100 * 2.0 * 1.5 * 1.2 = 360 が返る
+      // 【テスト内容】: 基礎100、品質S(2.0)、ギルド(1.5)、3回目(1.3)
+      // 【期待される動作】: 100 * 2.0 * 1.5 * 1.3 = 390 が返る
       // 🔵 信頼性レベル: 設計文書に明記
 
       // Arrange
@@ -250,7 +261,7 @@ describe('ContributionCalculator', () => {
       const result = calculator.calculate(context);
 
       // Assert
-      expect(result).toBe(360);
+      expect(result).toBe(390);
     });
 
     it('小数点以下は切り捨てられる', () => {
@@ -296,12 +307,15 @@ describe('ContributionCalculator', () => {
   });
 
   describe('getComboModifier', () => {
-    it('納品回数に応じた補正値を正しく返す', () => {
+    it('納品回数に応じた補正値を正しく返す（段階的閾値テーブル）', () => {
       expect(calculator.getComboModifier(1)).toBe(1.0);
       expect(calculator.getComboModifier(2)).toBe(1.1);
-      expect(calculator.getComboModifier(3)).toBe(1.2);
+      expect(calculator.getComboModifier(3)).toBe(1.3);
       expect(calculator.getComboModifier(4)).toBe(1.3);
-      expect(calculator.getComboModifier(5)).toBe(1.4);
+      expect(calculator.getComboModifier(5)).toBe(1.5);
+      expect(calculator.getComboModifier(6)).toBe(1.5);
+      expect(calculator.getComboModifier(7)).toBe(2.0);
+      expect(calculator.getComboModifier(10)).toBe(2.0);
     });
   });
 });
