@@ -10,7 +10,8 @@ import { getComboModifier } from '@domain/services/contribution-calculator';
 import { CLIENT_TYPE_MODIFIERS, CONTRIBUTION_QUALITY_MODIFIERS } from '@shared/constants';
 import type { ClientType, Quality } from '@shared/types';
 
-export { getComboModifier } from '@domain/services/contribution-calculator';
+// calculateContribution内で使用し、かつ外部にもre-exportする
+export { getComboModifier };
 
 // =============================================================================
 // 型定義
