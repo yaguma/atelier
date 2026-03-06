@@ -102,6 +102,7 @@ const createMockContainer = () => ({
   setDepth: vi.fn().mockReturnThis(),
   setAlpha: vi.fn().mockReturnThis(),
   setScale: vi.fn().mockReturnThis(),
+  setMask: vi.fn().mockReturnThis(),
   add: vi.fn().mockReturnThis(),
   destroy: vi.fn(),
   bringToTop: vi.fn().mockReturnThis(),
@@ -149,6 +150,13 @@ function createMockScene(): Phaser.Scene {
     make: {
       text: vi.fn().mockImplementation(() => createMockText()),
       container: vi.fn().mockImplementation(() => createMockContainer()),
+      graphics: vi.fn().mockReturnValue({
+        fillStyle: vi.fn().mockReturnThis(),
+        fillRect: vi.fn().mockReturnThis(),
+        clear: vi.fn().mockReturnThis(),
+        createGeometryMask: vi.fn().mockReturnValue({}),
+        destroy: vi.fn(),
+      }),
     },
     data: {
       get: vi.fn().mockReturnValue({
@@ -160,6 +168,8 @@ function createMockScene(): Phaser.Scene {
       set: vi.fn(),
     },
     input: {
+      on: vi.fn(),
+      off: vi.fn(),
       keyboard: { on: vi.fn(), off: vi.fn() },
     },
     rexUI: {
