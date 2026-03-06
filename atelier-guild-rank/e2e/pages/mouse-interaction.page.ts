@@ -1,14 +1,19 @@
 import type { Page } from '@playwright/test';
+import {
+  ALCHEMY_COORDS,
+  COMMON_UI_COORDS,
+  type Coordinates,
+  DELIVERY_COORDS,
+  GATHERING_COORDS,
+  getPhaseTabCoords,
+  QUEST_ACCEPT_COORDS,
+  RESULT_COORDS,
+  TITLE_COORDS,
+} from '../fixtures/mouse-coordinates';
 import type { GameWindow } from '../types/game-window.types';
 import { BasePage } from './base.page';
 
-/**
- * 座標情報の型定義
- */
-export interface Coordinates {
-  x: number;
-  y: number;
-}
+export type { Coordinates };
 
 /**
  * バウンディングボックスの型定義
@@ -282,48 +287,56 @@ export class MouseInteractionPage extends BasePage {
   // フェーズ固有の座標定義
   // =============================================================================
 
-  /** UI要素の固定座標（1280x720基準） */
+  /**
+   * UI要素の座標（1280x720基準）
+   * Issue #367: レイアウト定数ベースの計算式に統一
+   *
+   * 各座標は e2e/fixtures/mouse-coordinates.ts のレイアウト定数から算出。
+   * 座標変更時は mouse-coordinates.ts の定数を更新すること。
+   */
   static readonly COORDS = {
-    // フッター（サイドバー200px + フッター内ボタン位置744px = 944px）
-    NEXT_BUTTON: { x: 944, y: 660 },
-    END_DAY_BUTTON: { x: 400, y: 630 },
+    // フッター（PhaseTabUI: TASK-0112で「次へ」ボタンを廃止、フェーズタブに変更）
+    PHASE_TAB_GATHERING: COMMON_UI_COORDS.FOOTER.PHASE_TAB_GATHERING,
+    PHASE_TAB_ALCHEMY: COMMON_UI_COORDS.FOOTER.PHASE_TAB_ALCHEMY,
+    PHASE_TAB_DELIVERY: COMMON_UI_COORDS.FOOTER.PHASE_TAB_DELIVERY,
+    END_DAY_BUTTON: COMMON_UI_COORDS.FOOTER.END_DAY_BUTTON,
 
     // サイドバー
-    SIDEBAR_SHOP_BUTTON: { x: 100, y: 504 },
+    SIDEBAR_SHOP_BUTTON: COMMON_UI_COORDS.SIDEBAR.SHOP_BUTTON,
 
     // タイトル画面
-    TITLE_NEW_GAME: { x: 640, y: 400 },
-    TITLE_CONTINUE: { x: 640, y: 470 },
-    TITLE_SETTINGS: { x: 640, y: 540 },
+    TITLE_NEW_GAME: TITLE_COORDS.NEW_GAME,
+    TITLE_CONTINUE: TITLE_COORDS.CONTINUE,
+    TITLE_SETTINGS: TITLE_COORDS.SETTINGS,
 
-    // 依頼受注フェーズ
-    QUEST_CARD_1: { x: 400, y: 290 },
-    QUEST_CARD_2: { x: 700, y: 290 },
-    QUEST_CARD_3: { x: 1000, y: 290 },
-    QUEST_CARD_4: { x: 400, y: 490 },
-    QUEST_CARD_5: { x: 700, y: 490 },
+    // 依頼受注フェーズ（レイアウト定数ベース: SIDEBAR_WIDTH + GRID_START_X/Y）
+    QUEST_CARD_1: QUEST_ACCEPT_COORDS.CARDS[0],
+    QUEST_CARD_2: QUEST_ACCEPT_COORDS.CARDS[1],
+    QUEST_CARD_3: QUEST_ACCEPT_COORDS.CARDS[2],
+    QUEST_CARD_4: QUEST_ACCEPT_COORDS.CARDS[3],
+    QUEST_CARD_5: QUEST_ACCEPT_COORDS.CARDS[4],
 
     // 採取フェーズ
-    DRAFT_CARD_1: { x: 450, y: 300 },
-    DRAFT_CARD_2: { x: 700, y: 300 },
-    DRAFT_CARD_3: { x: 950, y: 300 },
-    GATHERING_END_BUTTON: { x: 650, y: 550 },
+    DRAFT_CARD_1: GATHERING_COORDS.DRAFT_CARDS[0],
+    DRAFT_CARD_2: GATHERING_COORDS.DRAFT_CARDS[1],
+    DRAFT_CARD_3: GATHERING_COORDS.DRAFT_CARDS[2],
+    GATHERING_END_BUTTON: GATHERING_COORDS.END_BUTTON,
 
-    // 調合フェーズ
-    RECIPE_1: { x: 500, y: 200 },
-    RECIPE_2: { x: 500, y: 260 },
-    ALCHEMY_SYNTHESIZE_BUTTON: { x: 700, y: 480 },
-    ALCHEMY_RESULT_CLOSE: { x: 700, y: 500 },
+    // 調合フェーズ（レイアウト定数ベース: SIDEBAR_WIDTH + RECIPE_LIST_OFFSET_X/Y）
+    RECIPE_1: ALCHEMY_COORDS.RECIPES[0],
+    RECIPE_2: ALCHEMY_COORDS.RECIPES[1],
+    ALCHEMY_SYNTHESIZE_BUTTON: ALCHEMY_COORDS.SYNTHESIZE_BUTTON,
+    ALCHEMY_RESULT_CLOSE: ALCHEMY_COORDS.RESULT_MODAL.CLOSE_BUTTON,
 
     // 納品フェーズ
-    DELIVERY_QUEST_1: { x: 400, y: 200 },
-    DELIVERY_ITEM_1: { x: 700, y: 350 },
-    DELIVERY_BUTTON: { x: 400, y: 480 },
-    DELIVERY_REWARD_CLOSE: { x: 700, y: 500 },
+    DELIVERY_QUEST_1: DELIVERY_COORDS.QUESTS[0],
+    DELIVERY_ITEM_1: DELIVERY_COORDS.ITEMS[0],
+    DELIVERY_BUTTON: DELIVERY_COORDS.DELIVER_BUTTON,
+    DELIVERY_REWARD_CLOSE: DELIVERY_COORDS.REWARD_MODAL.CLOSE_BUTTON,
 
     // リザルト画面
-    RESULT_TO_TITLE: { x: 500, y: 550 },
-    RESULT_RETRY: { x: 780, y: 550 },
+    RESULT_TO_TITLE: RESULT_COORDS.GAME_OVER.TITLE_BUTTON,
+    RESULT_RETRY: RESULT_COORDS.GAME_OVER.RETRY_BUTTON,
   } as const;
 
   // =============================================================================
@@ -371,10 +384,17 @@ export class MouseInteractionPage extends BasePage {
   }
 
   /**
-   * 次へボタンをクリック
+   * フェーズタブをクリックしてフェーズを遷移
+   * Issue #367: TASK-0112で「次へ」ボタンがPhaseTabUIに変更されたため追加
+   *
+   * @param phase - 遷移先フェーズ名（GATHERING, ALCHEMY, DELIVERY）
    */
-  async clickNextButton(): Promise<void> {
-    await this.clickCoords(MouseInteractionPage.COORDS.NEXT_BUTTON);
+  async clickPhaseTab(phase: string): Promise<void> {
+    const coords = getPhaseTabCoords(phase);
+    if (!coords) {
+      throw new Error(`Unknown phase for tab click: ${phase}`);
+    }
+    await this.clickCoords(coords);
   }
 
   /**
