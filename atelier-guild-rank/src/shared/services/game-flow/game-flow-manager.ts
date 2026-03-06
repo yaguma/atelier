@@ -21,6 +21,7 @@ import {
   DEFAULT_VISITOR_UPDATE_INTERVAL,
   updateBoard,
 } from '@features/quest';
+import { INITIAL_DECK } from '@shared/constants/game-config';
 import type { IEventBus } from '@shared/services/event-bus';
 import type { IStateManager } from '@shared/services/state-manager';
 import type {
@@ -39,22 +40,7 @@ import {
   GuildRank,
   PhaseSwitchFailureReason,
 } from '@shared/types';
-import type { CardId } from '@shared/types/ids';
 import type { GameEndCondition, IGameFlowManager } from './game-flow-manager.interface';
-
-/**
- * 【定数定義】: 初期デッキ構成
- * 【実装内容】: ゲーム開始時のデッキ構成（CardIdの配列）
- * 【暫定実装】: 現在は空配列として実装
- * 【将来的な実装】: 以下の実装方法を検討中
- *   - マスターデータから取得する方式
- *   - ゲームバランス調整用の設定ファイルから読み込む方式
- *   - ランク別の初期デッキを定義する方式
- * 【依存タスク】: カードマスターデータの実装完了後に正式な定義を追加予定
- * 【テスト影響】: 現在のテストはモックを使用しているため、空配列でも問題なく動作
- * 🟡 信頼性レベル: 暫定実装（後でマスターデータから取得）
- */
-const INITIAL_DECK: CardId[] = [] as CardId[];
 
 /**
  * 【定数定義】: 1日の最大行動ポイント
@@ -113,6 +99,11 @@ export class GameFlowManager implements IGameFlowManager {
     // 【処理方針】: INITIAL_DECK定数からカードIDを渡す
     // 🔵 信頼性レベル: 設計文書に明記
     this.deckService.initialize(INITIAL_DECK);
+
+    // 【実装内容】: 初期手札をドロー
+    // 【処理方針】: initialize()はデッキ構築とシャッフルのみ行うため、手札補充を明示的に実行
+    // 🔵 信頼性レベル: Issue #373 バグ修正
+    this.deckService.refillHand();
 
     // 【実装内容】: 最初の日を開始
     // 【処理方針】: startDay()で日開始処理を実行

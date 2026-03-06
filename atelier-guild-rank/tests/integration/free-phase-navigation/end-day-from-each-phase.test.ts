@@ -26,6 +26,7 @@ const createMockDeckService = (): IDeckService =>
     initialize: vi.fn(),
     draw: vi.fn(),
     shuffle: vi.fn(),
+    refillHand: vi.fn(),
     getHand: vi.fn().mockReturnValue([]),
     getDeck: vi.fn().mockReturnValue([]),
     getDiscardPile: vi.fn().mockReturnValue([]),
