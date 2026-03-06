@@ -21,6 +21,7 @@ import {
   DEFAULT_VISITOR_UPDATE_INTERVAL,
   updateBoard,
 } from '@features/quest';
+import { INITIAL_DECK } from '@shared/constants/game-config';
 import type { IEventBus } from '@shared/services/event-bus';
 import type { IStateManager } from '@shared/services/state-manager';
 import type {
@@ -39,39 +40,7 @@ import {
   GuildRank,
   PhaseSwitchFailureReason,
 } from '@shared/types';
-import type { CardId } from '@shared/types/ids';
 import type { GameEndCondition, IGameFlowManager } from './game-flow-manager.interface';
-
-/**
- * 【定数定義】: 初期デッキ構成
- * 【実装内容】: ゲーム開始時のデッキ構成（CardIdの配列）
- * 【根拠】: balance-design.md セクション3.3「初期デッキ構成（15枚）」
- *   - 採取地カード: 7枚 (47%) - 素材供給の安定化
- *   - レシピカード: 5枚 (33%) - 調合オプションの確保
- *   - 強化カード: 3枚 (20%) - ボーナスの機会提供
- * 【カード選定基準】: unlockRank が G のカードのみを使用（ゲーム開始時の初期ランク）
- * 🔵 信頼性レベル: バランス設計書に明記
- */
-const INITIAL_DECK: CardId[] = [
-  // 採取地カード 7枚（Gランク）
-  'gathering_backyard' as CardId,
-  'gathering_backyard' as CardId,
-  'gathering_backyard' as CardId,
-  'gathering_nearby_forest' as CardId,
-  'gathering_nearby_forest' as CardId,
-  'gathering_nearby_forest' as CardId,
-  'gathering_nearby_forest' as CardId,
-  // レシピカード 5枚（Gランク）
-  'recipe_healing_potion' as CardId,
-  'recipe_healing_potion' as CardId,
-  'recipe_healing_potion' as CardId,
-  'recipe_healing_potion' as CardId,
-  'recipe_healing_potion' as CardId,
-  // 強化カード 3枚（Gランク）
-  'enhance_sage_catalyst' as CardId,
-  'enhance_sage_catalyst' as CardId,
-  'enhance_spirit_guide' as CardId,
-];
 
 /**
  * 【定数定義】: 1日の最大行動ポイント
