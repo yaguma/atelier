@@ -9,6 +9,7 @@
  */
 
 import { expect, test } from '../../fixtures/game.fixture';
+import { INITIAL_DAY_LIMIT } from '../../fixtures/test-data';
 import { GamePage } from '../../pages/game.page';
 import { MainPage } from '../../pages/main.page';
 import { PhaseFlowPage } from '../../pages/phase-flow.page';
@@ -82,7 +83,7 @@ test.describe('SCN-004: ゲームクリア（ハイブリッド版）', () => {
 
     // 初期状態を確認
     expect(await main.getCurrentRank()).toBe('G');
-    expect(await main.getRemainingDays()).toBe(30);
+    expect(await main.getRemainingDays()).toBe(INITIAL_DAY_LIMIT);
     expect(await main.getGold()).toBe(100);
 
     // ランクを段階的に上げて状態の整合性を確認

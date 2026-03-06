@@ -9,6 +9,7 @@
  */
 
 import { expect, test } from '../../fixtures/game.fixture';
+import { INITIAL_DAY_LIMIT } from '../../fixtures/test-data';
 import { MainPage } from '../../pages/main.page';
 import { TitlePage } from '../../pages/title.page';
 import type { GameState } from '../../types/game-window.types';
@@ -65,8 +66,8 @@ test.describe('SCN-008: セーブ/ロード連携', () => {
           currentRank: state.currentRank ?? 'G',
           rankHp: 3,
           promotionGauge: 0,
-          remainingDays: state.remainingDays ?? 30,
-          currentDay: 30 - (state.remainingDays ?? 30) + 1,
+          remainingDays: state.remainingDays ?? INITIAL_DAY_LIMIT,
+          currentDay: INITIAL_DAY_LIMIT - (state.remainingDays ?? INITIAL_DAY_LIMIT) + 1,
           currentPhase: state.currentPhase ?? 'QUEST_ACCEPT',
           gold: state.gold ?? 100,
           comboCount: 0,
