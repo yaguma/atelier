@@ -7,7 +7,18 @@
  * フィクスチャデータを提供する。
  */
 
+import { RANK_CONFIG } from '@shared/constants';
 import { GuildRank } from '@shared/types';
+
+// =============================================================================
+// ゲームバランス定数（GAME_CONFIGとの同期）
+// =============================================================================
+
+/**
+ * Gランク初期日数制限
+ * RANK_CONFIG.G.dayLimitから取得し、E2Eテスト全体で一元管理する。
+ */
+export const INITIAL_DAY_LIMIT = RANK_CONFIG.G.dayLimit;
 
 // =============================================================================
 // ゲーム状態テストシナリオ
@@ -47,14 +58,14 @@ export const TEST_SCENARIOS = {
    * 新規ゲーム開始シナリオ
    *
    * @description
-   * ゲーム開始時の初期状態。Gランク、30日、100ゴールド。
+   * ゲーム開始時の初期状態。Gランク、RANK_CONFIG.G.dayLimit日、100ゴールド。
    */
   newGame: {
     name: '新規ゲーム',
     initialState: {
       rank: GuildRank.G,
       gold: 100,
-      days: 30,
+      days: INITIAL_DAY_LIMIT,
       actionPoints: 3,
     },
     description: 'ゲーム開始時の初期状態',
@@ -158,7 +169,7 @@ export const TEST_SCENARIOS = {
     initialState: {
       rank: GuildRank.G,
       gold: 100,
-      days: 30,
+      days: INITIAL_DAY_LIMIT,
       actionPoints: 3,
     },
     description: '新規ゲーム開始からクリアまでのフルフロー',

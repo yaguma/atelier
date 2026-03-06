@@ -9,6 +9,7 @@
  */
 
 import { expect, test } from '../../fixtures/game.fixture';
+import { INITIAL_DAY_LIMIT } from '../../fixtures/test-data';
 import { GamePage } from '../../pages/game.page';
 import { MainPage } from '../../pages/main.page';
 import { PhaseFlowPage } from '../../pages/phase-flow.page';
@@ -33,7 +34,7 @@ test.describe('SCN-007: 複数日連続プレイ', () => {
     const flow = new PhaseFlowPage(gamePage);
 
     const initialDays = await main.getRemainingDays();
-    expect(initialDays).toBe(30);
+    expect(initialDays).toBe(INITIAL_DAY_LIMIT);
 
     // 3日間ループ
     for (let day = 1; day <= 3; day++) {

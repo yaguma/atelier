@@ -9,6 +9,7 @@
  */
 
 import { expect, test } from '../../fixtures/game.fixture';
+import { INITIAL_DAY_LIMIT } from '../../fixtures/test-data';
 import { GamePage } from '../../pages/game.page';
 import { MainPage } from '../../pages/main.page';
 import { PhaseFlowPage } from '../../pages/phase-flow.page';
@@ -56,7 +57,7 @@ test.describe('SCN-002: 1日の完全フェーズフロー', () => {
 
     // 日が進んだか確認（MainSceneに留まっている場合）
     if (after.currentScene === 'MainScene') {
-      expect(after.remainingDays).toBeLessThan(before.remainingDays ?? 30);
+      expect(after.remainingDays).toBeLessThan(before.remainingDays ?? INITIAL_DAY_LIMIT);
     }
   });
 
@@ -83,7 +84,7 @@ test.describe('SCN-002: 1日の完全フェーズフロー', () => {
     const initialDays = await main.getRemainingDays();
     const initialGold = await main.getGold();
 
-    expect(initialDays).toBe(30);
+    expect(initialDays).toBe(INITIAL_DAY_LIMIT);
     expect(initialGold).toBe(100);
 
     // デバッグで全フェーズスキップ→日終了

@@ -9,6 +9,7 @@
  */
 
 import { expect, test } from '../../fixtures/game.fixture';
+import { INITIAL_DAY_LIMIT } from '../../fixtures/test-data';
 import { GamePage } from '../../pages/game.page';
 import { MainPage } from '../../pages/main.page';
 import { TitlePage } from '../../pages/title.page';
@@ -58,7 +59,7 @@ test.describe('SCN-001: ゲーム起動→新規ゲーム開始', () => {
     const phase = await main.getCurrentPhase();
 
     expect(rank).toBe('G');
-    expect(days).toBe(30);
+    expect(days).toBe(INITIAL_DAY_LIMIT);
     expect(gold).toBe(100);
     expect(ap).toBe(3);
     // フェーズは QUEST_ACCEPT で始まる

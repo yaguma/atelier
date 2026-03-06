@@ -11,6 +11,7 @@
  */
 
 import { expect, test } from '../../fixtures/game.fixture';
+import { INITIAL_DAY_LIMIT } from '../../fixtures/test-data';
 import { FreePhaseNavigationPage } from '../../pages/free-phase-navigation.page';
 import { MainPage } from '../../pages/main.page';
 import { TitlePage } from '../../pages/title.page';
@@ -220,7 +221,7 @@ test.describe('TASK-0121: フェーズ自由遷移 E2Eテスト', () => {
       const nav = new FreePhaseNavigationPage(gamePage);
 
       const daysBefore = await nav.getRemainingDays();
-      expect(daysBefore).toBe(30);
+      expect(daysBefore).toBe(INITIAL_DAY_LIMIT);
 
       await nav.debugEndDay();
 
@@ -291,7 +292,7 @@ test.describe('TASK-0121: フェーズ自由遷移 E2Eテスト', () => {
 
       // 初期状態記録
       const initialDays = await nav.getRemainingDays();
-      expect(initialDays).toBe(30);
+      expect(initialDays).toBe(INITIAL_DAY_LIMIT);
 
       // 全フェーズを自由に巡回
       await nav.switchPhase('GATHERING');

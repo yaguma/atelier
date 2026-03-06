@@ -14,7 +14,7 @@
  */
 
 import { expect, test } from '../fixtures/game.fixture';
-import { TEST_DATA } from '../fixtures/test-data';
+import { INITIAL_DAY_LIMIT } from '../fixtures/test-data';
 import { AlchemyPage } from '../pages/alchemy.page';
 import { DeliveryPage } from '../pages/delivery.page';
 import { GamePage } from '../pages/game.page';
@@ -51,7 +51,7 @@ test.describe('クリティカルパス: 完全なゲームプレイ', () => {
 
     // 初期状態確認
     expect(await main.getCurrentRank()).toBe('G');
-    expect(await main.getRemainingDays()).toBe(30);
+    expect(await main.getRemainingDays()).toBe(INITIAL_DAY_LIMIT);
     expect(await main.getGold()).toBe(100);
 
     // ========== 4. ゲームループ（デバッグツールで高速化）==========

@@ -9,6 +9,7 @@
  */
 
 import { expect, test } from '../../fixtures/game.fixture';
+import { INITIAL_DAY_LIMIT } from '../../fixtures/test-data';
 import { MainPage } from '../../pages/main.page';
 import { ResultPage } from '../../pages/result.page';
 import { TitlePage } from '../../pages/title.page';
@@ -106,6 +107,6 @@ test.describe('SCN-006: リザルト→タイトル復帰', () => {
     const rank = await main2.getCurrentRank();
     const days = await main2.getRemainingDays();
     expect(rank).toBe('G');
-    expect(days).toBe(30);
+    expect(days).toBe(INITIAL_DAY_LIMIT);
   });
 });

@@ -11,6 +11,7 @@
  */
 
 import { expect, test } from '../fixtures/game.fixture';
+import { INITIAL_DAY_LIMIT } from '../fixtures/test-data';
 import { GamePage } from '../pages/game.page';
 import { MainPage } from '../pages/main.page';
 import { ResultPage } from '../pages/result.page';
@@ -51,8 +52,8 @@ test.describe('ゲームフロー E2E', () => {
 
       // 【確認内容】: 初期ランクがGであることを確認
       expect(rank).toBe('G');
-      // 【確認内容】: 初期日数が30であることを確認
-      expect(days).toBe(30);
+      // 【確認内容】: 初期日数がRANK_CONFIG.G.dayLimitであることを確認
+      expect(days).toBe(INITIAL_DAY_LIMIT);
       // 【確認内容】: 初期所持金が100であることを確認
       expect(gold).toBe(100);
     });
