@@ -284,15 +284,16 @@ test.describe('共通UI - マウス操作', () => {
   });
 
   /**
-   * 次へボタンをクリック
+   * フェーズタブをクリックしてフェーズを進める
    * 🔵 信頼性レベル: 高（基本操作）
+   * Issue #367: TASK-0112で「次へ」ボタンがPhaseTabUIに変更されたため修正
    */
-  test('次へボタンをクリックしてフェーズを進める', async ({ gamePage }) => {
+  test('フェーズタブをクリックしてフェーズを進める', async ({ gamePage }) => {
     // Arrange: 依頼受注フェーズで待機
     await visual.waitForPhaseStable('QUEST_ACCEPT');
 
-    // Act: 次へボタンをクリック
-    await mouse.clickNextButton();
+    // Act: 採取フェーズタブをクリック
+    await mouse.clickPhaseTab('GATHERING');
 
     // Assert: 採取フェーズに遷移
     await visual.waitForPhaseStable('GATHERING');
