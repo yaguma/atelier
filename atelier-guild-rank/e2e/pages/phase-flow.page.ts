@@ -193,6 +193,7 @@ export class PhaseFlowPage extends BasePage {
 
   /**
    * 1日分の全フェーズをデバッグスキップで進める
+   * Issue #365: シーン遷移によるコンテキスト破棄を安全にハンドリング
    *
    * @returns 日終了前後のゲーム状態
    */
@@ -202,6 +203,19 @@ export class PhaseFlowPage extends BasePage {
     // 4フェーズをスキップ: QuestAccept → Gathering → Alchemy → Delivery
     for (let i = 0; i < 4; i++) {
       await this.skipCurrentPhase();
+
+      // フェーズスキップ後にシーン遷移が発生した場合は中断
+      try {
+        const state = await this.getGameState();
+        if (state.currentScene !== 'MainScene') {
+          return { before, after: state };
+        }
+      } catch {
+        // コンテキスト破棄（シーン遷移中）の場合はリトライ
+        await this.page.waitForTimeout(PhaseFlowPage.WAIT.SCENE_TRANSITION);
+        const state = await this.getGameState();
+        return { before, after: state };
+      }
     }
 
     const after = await this.getGameState();

@@ -142,12 +142,30 @@ export abstract class BasePage {
   // =============================================================================
 
   /**
+   * デバッグツールが利用可能になるまで待機
+   * Issue #365: window.debugの初期化タイミング問題を解消
+   *
+   * @param timeout - 待機タイムアウト（ミリ秒）
+   */
+  protected async waitForDebugReady(timeout: number = BasePage.DEFAULT_TIMEOUT): Promise<void> {
+    await this.page.waitForFunction(
+      () => {
+        // biome-ignore lint/suspicious/noExplicitAny: window拡張型のため
+        return (window as any).debug !== undefined;
+      },
+      { timeout },
+    );
+  }
+
+  /**
    * デバッグアクションを実行（引数なし）
+   * Issue #365: デバッグツール初期化完了を待機してから実行
    *
    * @param actionName - 実行するアクション名
    * @throws デバッグツールが利用不可の場合
    */
   protected async executeDebugAction(actionName: string): Promise<void> {
+    await this.waitForDebugReady();
     await this.page.evaluate((name) => {
       const debug = (window as unknown as GameWindow).debug;
       // biome-ignore lint/suspicious/noExplicitAny: 動的メソッド呼び出しのため
@@ -162,12 +180,14 @@ export abstract class BasePage {
 
   /**
    * デバッグアクションを実行（引数あり）
+   * Issue #365: デバッグツール初期化完了を待機してから実行
    *
    * @param actionName - 実行するアクション名
    * @param arg - アクションに渡す引数
    * @throws デバッグツールが利用不可の場合
    */
   protected async executeDebugActionWithArg<T>(actionName: string, arg: T): Promise<void> {
+    await this.waitForDebugReady();
     await this.page.evaluate(
       ({ name, value }) => {
         const debug = (window as unknown as GameWindow).debug;

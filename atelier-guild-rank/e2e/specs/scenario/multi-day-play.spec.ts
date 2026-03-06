@@ -16,6 +16,9 @@ import { PhaseFlowPage } from '../../pages/phase-flow.page';
 import { TitlePage } from '../../pages/title.page';
 
 test.describe('SCN-007: 複数日連続プレイ', () => {
+  // Issue #365: skipFullDay()×3回で12秒以上かかるためタイムアウトを延長
+  test.describe.configure({ timeout: 60000 });
+
   test.beforeEach(async ({ gamePage }) => {
     // セーブデータをクリア
     await gamePage.evaluate(() => {

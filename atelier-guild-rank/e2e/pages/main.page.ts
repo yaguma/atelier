@@ -201,15 +201,17 @@ export class MainPage extends BasePage {
 
   /**
    * フェーズが利用可能になるまで待機
+   * Issue #365: StateManager初期化完了を確実に待機するためタイムアウトを延長
    */
   private async waitForPhaseAvailable(): Promise<void> {
+    const extendedTimeout = BasePage.DEFAULT_TIMEOUT * 2;
     await this.page.waitForFunction(
       () => {
         // biome-ignore lint/suspicious/noExplicitAny: window拡張型のため
         const state = (window as any).gameState?.();
-        return state?.currentPhase !== undefined;
+        return state?.currentPhase !== undefined && state?.currentPhase !== null;
       },
-      { timeout: BasePage.DEFAULT_TIMEOUT },
+      { timeout: extendedTimeout },
     );
   }
 }

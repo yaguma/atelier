@@ -29,6 +29,7 @@ export class TitlePage extends BasePage {
 
   /**
    * 新規ゲームボタンをクリック
+   * Issue #365: デバッグツール初期化完了を待機してから実行
    *
    * @description
    * デバッグツール経由で新規ゲームを開始する。
@@ -36,6 +37,7 @@ export class TitlePage extends BasePage {
    * @throws デバッグツールが利用不可の場合
    */
   async clickNewGame(): Promise<void> {
+    await this.waitForDebugReady();
     await this.page.evaluate(() => {
       const debug = (window as unknown as GameWindow).debug;
       if (debug?.clickNewGame) {
@@ -48,6 +50,7 @@ export class TitlePage extends BasePage {
 
   /**
    * コンティニューボタンをクリック
+   * Issue #365: デバッグツール初期化完了を待機してから実行
    *
    * @description
    * デバッグツール経由でコンティニューを実行する。
@@ -55,6 +58,7 @@ export class TitlePage extends BasePage {
    * @throws デバッグツールが利用不可の場合
    */
   async clickContinue(): Promise<void> {
+    await this.waitForDebugReady();
     await this.page.evaluate(() => {
       const debug = (window as unknown as GameWindow).debug;
       if (debug?.clickContinue) {
