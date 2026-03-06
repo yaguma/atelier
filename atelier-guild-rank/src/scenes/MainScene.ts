@@ -18,9 +18,10 @@ import { FooterUI } from '@presentation/ui/components/FooterUI';
 import { HeaderUI } from '@presentation/ui/components/HeaderUI';
 import { SidebarUI } from '@presentation/ui/components/SidebarUI';
 import { MAIN_LAYOUT } from '@shared/constants';
+import type { GameEndCondition } from '@shared/services';
 import { Container, ServiceKeys } from '@shared/services/di/container';
 import { GamePhase } from '@shared/types/common';
-import type { IPhaseChangedEvent } from '@shared/types/events';
+import type { GameEndStats, IPhaseChangedEvent } from '@shared/types/events';
 import { GameEventType } from '@shared/types/events';
 import type { IQuest } from '@shared/types/quests';
 import Phaser from 'phaser';
@@ -242,6 +243,19 @@ export class MainScene extends Phaser.Scene {
         this.phaseManager.handleQuestAccepted(busEvent.payload, this.sidebarUI);
       }),
     );
+
+    // Issue #361: ゲーム終了イベントの購読
+    this.unsubscribeHandlers.push(
+      this.eventBus.on<GameEndCondition>(GameEventType.GAME_OVER, (busEvent) => {
+        this.handleGameOver(busEvent.payload);
+      }),
+    );
+
+    this.unsubscribeHandlers.push(
+      this.eventBus.on<GameEndCondition>(GameEventType.GAME_CLEARED, (busEvent) => {
+        this.handleGameCleared(busEvent.payload);
+      }),
+    );
   }
 
   /**
@@ -270,6 +284,36 @@ export class MainScene extends Phaser.Scene {
       actionPoints: state.actionPoints,
       maxActionPoints: 3,
     });
+  }
+
+  /**
+   * GAME_OVERイベントハンドラ
+   * Issue #361: ゲームオーバー時にGameOverSceneへ遷移
+   */
+  private handleGameOver(condition: GameEndCondition): void {
+    const state = this.stateManager.getState();
+    const stats: GameEndStats = {
+      finalRank: condition.finalRank,
+      totalDays: condition.totalDays,
+      totalDeliveries: 0, // TODO: 実際の納品数をStateから取得
+      totalGold: state.gold,
+    };
+    this.scene.start('GameOverScene', { stats });
+  }
+
+  /**
+   * GAME_CLEAREDイベントハンドラ
+   * Issue #361: ゲームクリア時にGameClearSceneへ遷移
+   */
+  private handleGameCleared(condition: GameEndCondition): void {
+    const state = this.stateManager.getState();
+    const stats: GameEndStats = {
+      finalRank: condition.finalRank,
+      totalDays: condition.totalDays,
+      totalDeliveries: 0, // TODO: 実際の納品数をStateから取得
+      totalGold: state.gold,
+    };
+    this.scene.start('GameClearScene', { stats });
   }
 
   // ===========================================================================
