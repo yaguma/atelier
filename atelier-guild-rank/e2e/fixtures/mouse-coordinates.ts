@@ -21,16 +21,6 @@ export interface Coordinates {
   y: number;
 }
 
-/**
- * バウンディングボックスの型定義
- */
-export interface BoundingBox {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
 // =============================================================================
 // 基準解像度・レイアウト定数
 // =============================================================================
@@ -124,8 +114,6 @@ const PHASE_TAB_LAYOUT = {
   TAB_Y: 20,
   END_DAY_WIDTH: 80,
   END_DAY_MARGIN: 16,
-  REST_WIDTH: 80,
-  REST_MARGIN: 8,
 } as const;
 
 /** フェーズ順序（VALID_GAME_PHASESと同期） */
@@ -139,7 +127,8 @@ function getPhaseTabLocalCenter(phaseIndex: number): Coordinates {
     PHASE_TAB_LAYOUT.TAB_START_X +
     phaseIndex * (PHASE_TAB_LAYOUT.TAB_WIDTH + PHASE_TAB_LAYOUT.TAB_SPACING) +
     PHASE_TAB_LAYOUT.TAB_WIDTH / 2;
-  return { x: tabCenterX, y: PHASE_TAB_LAYOUT.TAB_Y };
+  const tabCenterY = PHASE_TAB_LAYOUT.TAB_Y + PHASE_TAB_LAYOUT.TAB_HEIGHT / 2;
+  return { x: tabCenterX, y: tabCenterY };
 }
 
 /**
@@ -151,7 +140,8 @@ function getEndDayLocalCenter(): Coordinates {
     PHASE_ORDER.length * (PHASE_TAB_LAYOUT.TAB_WIDTH + PHASE_TAB_LAYOUT.TAB_SPACING) +
     PHASE_TAB_LAYOUT.END_DAY_WIDTH / 2 +
     PHASE_TAB_LAYOUT.END_DAY_MARGIN;
-  return { x: endDayX, y: PHASE_TAB_LAYOUT.TAB_Y };
+  const endDayCenterY = PHASE_TAB_LAYOUT.TAB_Y + PHASE_TAB_LAYOUT.TAB_HEIGHT / 2;
+  return { x: endDayX, y: endDayCenterY };
 }
 
 // =============================================================================
@@ -388,105 +378,9 @@ export const RESULT_COORDS = {
 // 全座標のエクスポート
 // =============================================================================
 
-export const MOUSE_COORDINATES = {
-  title: TITLE_COORDS,
-  common: COMMON_UI_COORDS,
-  questAccept: QUEST_ACCEPT_COORDS,
-  gathering: GATHERING_COORDS,
-  alchemy: ALCHEMY_COORDS,
-  delivery: DELIVERY_COORDS,
-  result: RESULT_COORDS,
-} as const;
-
 // =============================================================================
 // ユーティリティ関数
 // =============================================================================
-
-/**
- * 座標を指定された解像度にスケーリング
- *
- * @param coords - 元の座標（基準解像度）
- * @param targetWidth - ターゲット幅
- * @param targetHeight - ターゲット高さ
- * @returns スケーリングされた座標
- */
-export function scaleCoordinates(
-  coords: Coordinates,
-  targetWidth: number,
-  targetHeight: number,
-): Coordinates {
-  const scaleX = targetWidth / BASE_RESOLUTION.WIDTH;
-  const scaleY = targetHeight / BASE_RESOLUTION.HEIGHT;
-  return {
-    x: Math.round(coords.x * scaleX),
-    y: Math.round(coords.y * scaleY),
-  };
-}
-
-/**
- * バウンディングボックスの中心座標を取得
- *
- * @param box - バウンディングボックス
- * @returns 中心座標
- */
-export function getCenterOfBoundingBox(box: BoundingBox): Coordinates {
-  return {
-    x: box.x + box.width / 2,
-    y: box.y + box.height / 2,
-  };
-}
-
-/**
- * フェーズに応じたカード座標を取得
- *
- * @param phase - 現在のフェーズ
- * @param index - カードインデックス（0始まり）
- * @returns 座標（存在しない場合null）
- */
-export function getCardCoordinates(phase: string, index: number): Coordinates | null {
-  switch (phase) {
-    case 'QUEST_ACCEPT':
-      return QUEST_ACCEPT_COORDS.CARDS[index] ?? null;
-    case 'GATHERING':
-      return GATHERING_COORDS.DRAFT_CARDS[index] ?? null;
-    case 'ALCHEMY':
-      return ALCHEMY_COORDS.RECIPES[index] ?? null;
-    case 'DELIVERY':
-      return DELIVERY_COORDS.QUESTS[index] ?? null;
-    default:
-      return null;
-  }
-}
-
-/**
- * 座標がコンテンツエリア内に収まっているか検証
- *
- * @param coords - 検証する座標（Canvas座標）
- * @returns コンテンツエリア内ならtrue
- */
-export function isWithinContentArea(coords: Coordinates): boolean {
-  return (
-    coords.x >= CONTENT_AREA.x &&
-    coords.x <= CONTENT_AREA.x + CONTENT_AREA.width &&
-    coords.y >= CONTENT_AREA.y &&
-    coords.y <= CONTENT_AREA.y + CONTENT_AREA.height
-  );
-}
-
-/**
- * 座標がフッターエリア内に収まっているか検証
- *
- * @param coords - 検証する座標（Canvas座標）
- * @returns フッターエリア内ならtrue
- */
-export function isWithinFooterArea(coords: Coordinates): boolean {
-  return (
-    coords.x >= FOOTER_AREA.x &&
-    coords.x <= FOOTER_AREA.x + FOOTER_AREA.width &&
-    coords.y >= FOOTER_AREA.y &&
-    coords.y <= FOOTER_AREA.y + FOOTER_AREA.height
-  );
-}
 
 /**
  * フェーズ名からフェーズタブのCanvas座標を取得
