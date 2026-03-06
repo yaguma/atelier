@@ -16,6 +16,7 @@
  */
 
 import type { Quest } from '@domain/entities/Quest';
+import { MAIN_LAYOUT } from '@shared/constants';
 import { getSelectionIndexFromKey, isKeyForAction } from '@shared/constants/keybindings';
 import { GameEventType } from '@shared/types/events';
 import type Phaser from 'phaser';
@@ -157,9 +158,6 @@ export class QuestAcceptPhaseUI extends BaseComponent {
   private static readonly CARD_AREA_OFFSET_Y = 60;
   private static readonly SCROLL_SPEED = 0.5;
   private static readonly CARD_HEIGHT = 180;
-  private static readonly KNOWN_SIDEBAR_WIDTH = 200;
-  private static readonly KNOWN_HEADER_HEIGHT = 60;
-  private static readonly KNOWN_FOOTER_HEIGHT = 120;
 
   /**
    * 【タイトルスタイル定数】: タイトルテキストのスタイル
@@ -700,13 +698,13 @@ export class QuestAcceptPhaseUI extends BaseComponent {
     const gameWidth = this.scene.cameras?.main?.width ?? 1280;
     const gameHeight = this.scene.cameras?.main?.height ?? 720;
 
-    const maskX = QuestAcceptPhaseUI.KNOWN_SIDEBAR_WIDTH;
-    const maskY = QuestAcceptPhaseUI.KNOWN_HEADER_HEIGHT + QuestAcceptPhaseUI.CARD_AREA_OFFSET_Y;
-    const maskWidth = gameWidth - QuestAcceptPhaseUI.KNOWN_SIDEBAR_WIDTH;
+    const maskX = MAIN_LAYOUT.SIDEBAR_WIDTH;
+    const maskY = MAIN_LAYOUT.HEADER_HEIGHT + QuestAcceptPhaseUI.CARD_AREA_OFFSET_Y;
+    const maskWidth = gameWidth - MAIN_LAYOUT.SIDEBAR_WIDTH;
     const maskHeight =
       gameHeight -
-      QuestAcceptPhaseUI.KNOWN_HEADER_HEIGHT -
-      QuestAcceptPhaseUI.KNOWN_FOOTER_HEIGHT -
+      MAIN_LAYOUT.HEADER_HEIGHT -
+      MAIN_LAYOUT.FOOTER_HEIGHT -
       QuestAcceptPhaseUI.CARD_AREA_OFFSET_Y;
 
     try {
@@ -717,8 +715,7 @@ export class QuestAcceptPhaseUI extends BaseComponent {
       const mask = this.cardAreaMaskGraphics.createGeometryMask();
       this.questCardScrollContainer.setMask(mask);
     } catch {
-      // テスト環境等でmake.graphicsが使用できない場合はマスクなしで動作
-      console.warn('Failed to create card area mask');
+      // make.graphicsが使用できない場合はマスクなしで動作
     }
   }
 
@@ -795,8 +792,8 @@ export class QuestAcceptPhaseUI extends BaseComponent {
     const gameHeight = this.scene.cameras?.main?.height ?? 720;
     return (
       gameHeight -
-      QuestAcceptPhaseUI.KNOWN_HEADER_HEIGHT -
-      QuestAcceptPhaseUI.KNOWN_FOOTER_HEIGHT -
+      MAIN_LAYOUT.HEADER_HEIGHT -
+      MAIN_LAYOUT.FOOTER_HEIGHT -
       QuestAcceptPhaseUI.CARD_AREA_OFFSET_Y
     );
   }

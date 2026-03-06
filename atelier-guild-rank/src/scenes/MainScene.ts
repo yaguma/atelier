@@ -17,6 +17,7 @@ import type { IQuestService } from '@features/quest';
 import { FooterUI } from '@presentation/ui/components/FooterUI';
 import { HeaderUI } from '@presentation/ui/components/HeaderUI';
 import { SidebarUI } from '@presentation/ui/components/SidebarUI';
+import { MAIN_LAYOUT } from '@shared/constants';
 import { Container, ServiceKeys } from '@shared/services/di/container';
 import { GamePhase } from '@shared/types/common';
 import type { IPhaseChangedEvent } from '@shared/types/events';
@@ -37,16 +38,9 @@ import type {
 // =============================================================================
 
 /**
- * レイアウト定数
+ * レイアウト定数（共通定数から参照）
  */
-const LAYOUT = {
-  /** サイドバー幅 */
-  SIDEBAR_WIDTH: 200,
-  /** ヘッダー高さ */
-  HEADER_HEIGHT: 60,
-  /** フッター高さ */
-  FOOTER_HEIGHT: 120,
-} as const;
+const LAYOUT = MAIN_LAYOUT;
 
 // =============================================================================
 // MainSceneクラス
