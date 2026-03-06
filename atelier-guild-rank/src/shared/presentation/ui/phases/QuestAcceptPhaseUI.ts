@@ -16,6 +16,7 @@
  */
 
 import type { Quest } from '@domain/entities/Quest';
+import { MAIN_LAYOUT } from '@shared/constants';
 import { getSelectionIndexFromKey, isKeyForAction } from '@shared/constants/keybindings';
 import { GameEventType } from '@shared/types/events';
 import type Phaser from 'phaser';
@@ -88,6 +89,29 @@ export class QuestAcceptPhaseUI extends BaseComponent {
   private focusedCardIndex = -1;
 
   // =============================================================================
+  // スクロール関連プロパティ（Issue #355）
+  // =============================================================================
+
+  /** カードスクロール用コンテナ */
+  private questCardScrollContainer: Phaser.GameObjects.Container | null = null;
+
+  /** マスク用Graphicsオブジェクト */
+  private cardAreaMaskGraphics: Phaser.GameObjects.Graphics | null = null;
+
+  /** 現在のスクロールオフセット（px） */
+  private scrollOffset = 0;
+
+  /** マウスホイールハンドラ参照 */
+  private wheelHandler:
+    | ((
+        pointer: Phaser.Input.Pointer,
+        gameObjects: Phaser.GameObjects.GameObject[],
+        deltaX: number,
+        deltaY: number,
+      ) => void)
+    | null = null;
+
+  // =============================================================================
   // 掲示板・訪問依頼管理（TASK-0117）
   // =============================================================================
 
@@ -126,6 +150,14 @@ export class QuestAcceptPhaseUI extends BaseComponent {
    */
   private static readonly COMPONENT_X = 0;
   private static readonly COMPONENT_Y = 0;
+
+  /**
+   * 【スクロール関連定数】: カードエリアのスクロール設定
+   * Issue #355: フッター被り防止のためスクロール機能を追加
+   */
+  private static readonly CARD_AREA_OFFSET_Y = 60;
+  private static readonly SCROLL_SPEED = 0.5;
+  private static readonly CARD_HEIGHT = 180;
 
   /**
    * 【タイトルスタイル定数】: タイトルテキストのスタイル
@@ -178,6 +210,7 @@ export class QuestAcceptPhaseUI extends BaseComponent {
    */
   public create(): void {
     this.createTitle();
+    this.createCardScrollArea();
     this.createQuestList();
     this.createAcceptedList();
     this.setupKeyboardListener();
@@ -322,11 +355,15 @@ export class QuestAcceptPhaseUI extends BaseComponent {
    * @param quests - 依頼リスト
    */
   private createQuestCards(quests: Quest[]): void {
+    // Issue #355: スクロール位置をリセット
+    this.resetScroll();
+
+    const targetContainer = this.questCardScrollContainer ?? this.container;
     for (let i = 0; i < quests.length; i++) {
       const quest = quests[i];
       const position = this.calculateCardPosition(i);
       const questCard = this.createQuestCard(quest, position);
-      this.container.add(questCard.getContainer());
+      targetContainer.add(questCard.getContainer());
       this.setupCardClickHandler(questCard, quest);
       this.questCards.push(questCard);
     }
@@ -414,6 +451,9 @@ export class QuestAcceptPhaseUI extends BaseComponent {
     // 【キーボードリスナー破棄】
     this.removeKeyboardListener();
 
+    // 【スクロールハンドラ破棄】Issue #355
+    this.removeScrollHandler();
+
     // 【カード破棄】: すべてのQuestCardUIを破棄
     this.destroyExistingCards();
 
@@ -425,6 +465,9 @@ export class QuestAcceptPhaseUI extends BaseComponent {
 
     // 【モーダル破棄】
     this.destroyModal();
+
+    // 【スクロールエリア破棄】Issue #355
+    this.destroyCardScrollArea();
 
     // 【コンテナ破棄】: 最後にコンテナ自体を破棄
     if (this.container) {
@@ -635,6 +678,160 @@ export class QuestAcceptPhaseUI extends BaseComponent {
    */
   public canAcceptMore(): boolean {
     return this._acceptedCount < QuestAcceptPhaseUI.QUEST_ACCEPT_LIMIT;
+  }
+
+  // =============================================================================
+  // Issue #355: スクロール機能
+  // =============================================================================
+
+  /**
+   * 【カードスクロールエリア作成】: マスク付きスクロールコンテナを作成
+   *
+   * Issue #355: フッター被り防止のため、カードエリアにクリッピングマスクと
+   * マウスホイールスクロールを追加する。
+   */
+  private createCardScrollArea(): void {
+    // スクロール用サブコンテナ（カードはこの中に配置される）
+    this.questCardScrollContainer = this.scene.add.container(0, 0);
+    this.container.add(this.questCardScrollContainer);
+
+    // クリッピングマスクを適用
+    this.applyCardAreaMask();
+
+    // マウスホイールスクロールを設定
+    this.setupScrollHandler();
+  }
+
+  /**
+   * 【クリッピングマスク適用】: カードエリアの表示範囲をフッター上部までに制限
+   *
+   * GeometryMaskはワールド座標で動作するため、既知のレイアウト定数から計算する。
+   */
+  private applyCardAreaMask(): void {
+    if (!this.questCardScrollContainer) return;
+
+    const gameWidth = this.scene.cameras?.main?.width ?? 1280;
+    const gameHeight = this.scene.cameras?.main?.height ?? 720;
+
+    const maskX = MAIN_LAYOUT.SIDEBAR_WIDTH;
+    const maskY = MAIN_LAYOUT.HEADER_HEIGHT + QuestAcceptPhaseUI.CARD_AREA_OFFSET_Y;
+    const maskWidth = gameWidth - MAIN_LAYOUT.SIDEBAR_WIDTH;
+    const maskHeight =
+      gameHeight -
+      MAIN_LAYOUT.HEADER_HEIGHT -
+      MAIN_LAYOUT.FOOTER_HEIGHT -
+      QuestAcceptPhaseUI.CARD_AREA_OFFSET_Y;
+
+    try {
+      this.cardAreaMaskGraphics = this.scene.make.graphics({});
+      this.cardAreaMaskGraphics.fillStyle(0xffffff);
+      this.cardAreaMaskGraphics.fillRect(maskX, maskY, maskWidth, maskHeight);
+
+      const mask = this.cardAreaMaskGraphics.createGeometryMask();
+      this.questCardScrollContainer.setMask(mask);
+    } catch {
+      // make.graphicsが使用できない場合はマスクなしで動作
+    }
+  }
+
+  /**
+   * 【スクロールハンドラ設定】: マウスホイールでカードエリアをスクロール
+   */
+  private setupScrollHandler(): void {
+    this.wheelHandler = (
+      _pointer: Phaser.Input.Pointer,
+      _gameObjects: Phaser.GameObjects.GameObject[],
+      _deltaX: number,
+      deltaY: number,
+    ) => {
+      if (!this.container.visible) return;
+      this.applyScroll(deltaY);
+    };
+    this.scene.input?.on?.('wheel', this.wheelHandler);
+  }
+
+  /**
+   * 【スクロール適用】: deltaYに基づいてスクロールオフセットを更新
+   *
+   * @param deltaY - マウスホイールのdelta値
+   */
+  private applyScroll(deltaY: number): void {
+    if (!this.questCardScrollContainer) return;
+
+    const maxScroll = this.getMaxScrollOffset();
+    if (maxScroll <= 0) return;
+
+    this.scrollOffset = Math.min(
+      Math.max(this.scrollOffset + deltaY * QuestAcceptPhaseUI.SCROLL_SPEED, 0),
+      maxScroll,
+    );
+    this.questCardScrollContainer.y = -this.scrollOffset;
+  }
+
+  /**
+   * 【スクロールリセット】: スクロール位置を先頭に戻す
+   */
+  private resetScroll(): void {
+    this.scrollOffset = 0;
+    if (this.questCardScrollContainer) {
+      this.questCardScrollContainer.y = 0;
+    }
+  }
+
+  /**
+   * 【最大スクロールオフセット計算】: コンテンツがカードエリアを超える分のpx値
+   */
+  private getMaxScrollOffset(): number {
+    const totalContentHeight = this.getTotalCardContentHeight();
+    const visibleHeight = this.getCardAreaVisibleHeight();
+    return Math.max(0, totalContentHeight - visibleHeight);
+  }
+
+  /**
+   * 【カードコンテンツ総高さ取得】: 全カードを含む領域の高さ
+   */
+  private getTotalCardContentHeight(): number {
+    if (this.questCards.length === 0) return 0;
+    const rows = Math.ceil(this.questCards.length / QuestAcceptPhaseUI.GRID_COLUMNS);
+    return (
+      QuestAcceptPhaseUI.GRID_START_Y +
+      (rows - 1) * QuestAcceptPhaseUI.GRID_SPACING_Y +
+      QuestAcceptPhaseUI.CARD_HEIGHT / 2
+    );
+  }
+
+  /**
+   * 【カードエリア可視高さ取得】: マスク範囲内で見える高さ
+   */
+  private getCardAreaVisibleHeight(): number {
+    const gameHeight = this.scene.cameras?.main?.height ?? 720;
+    return (
+      gameHeight -
+      MAIN_LAYOUT.HEADER_HEIGHT -
+      MAIN_LAYOUT.FOOTER_HEIGHT -
+      QuestAcceptPhaseUI.CARD_AREA_OFFSET_Y
+    );
+  }
+
+  /**
+   * 【スクロールハンドラ解除】
+   */
+  private removeScrollHandler(): void {
+    if (this.wheelHandler) {
+      this.scene.input?.off?.('wheel', this.wheelHandler);
+      this.wheelHandler = null;
+    }
+  }
+
+  /**
+   * 【スクロールエリア破棄】: マスクとスクロールコンテナを破棄
+   */
+  private destroyCardScrollArea(): void {
+    if (this.cardAreaMaskGraphics) {
+      this.cardAreaMaskGraphics.destroy();
+      this.cardAreaMaskGraphics = null;
+    }
+    this.questCardScrollContainer = null;
   }
 
   // =============================================================================

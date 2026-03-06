@@ -102,6 +102,7 @@ const createMockContainer = () => ({
   setDepth: vi.fn().mockReturnThis(),
   setAlpha: vi.fn().mockReturnThis(),
   setScale: vi.fn().mockReturnThis(),
+  setMask: vi.fn().mockReturnThis(),
   add: vi.fn().mockReturnThis(),
   destroy: vi.fn(),
   bringToTop: vi.fn().mockReturnThis(),
@@ -149,6 +150,13 @@ function createMockScene(): Phaser.Scene {
     make: {
       text: vi.fn().mockImplementation(() => createMockText()),
       container: vi.fn().mockImplementation(() => createMockContainer()),
+      graphics: vi.fn().mockReturnValue({
+        fillStyle: vi.fn().mockReturnThis(),
+        fillRect: vi.fn().mockReturnThis(),
+        clear: vi.fn().mockReturnThis(),
+        createGeometryMask: vi.fn().mockReturnValue({}),
+        destroy: vi.fn(),
+      }),
     },
     data: {
       get: vi.fn().mockReturnValue({
@@ -160,6 +168,8 @@ function createMockScene(): Phaser.Scene {
       set: vi.fn(),
     },
     input: {
+      on: vi.fn(),
+      off: vi.fn(),
       keyboard: { on: vi.fn(), off: vi.fn() },
     },
     rexUI: {
@@ -363,7 +373,74 @@ describe('QuestAcceptPhaseUI - 掲示板・訪問依頼表示（TASK-0117）', (
   });
 
   // ===========================================================================
-  // テストケース5: 受注済み依頼の除外（Issue #356）
+  // テストケース5: スクロール機能（Issue #355）
+  // ===========================================================================
+
+  describe('スクロール機能（Issue #355）', () => {
+    it('create()時にscene.input.onでwheelイベントが登録される', async () => {
+      const { QuestAcceptPhaseUI } = await import('@presentation/ui/phases/QuestAcceptPhaseUI');
+      const phaseUI = new QuestAcceptPhaseUI(mockScene);
+
+      // create()でスクロールハンドラが設定される
+      phaseUI.create();
+
+      expect(mockScene.input.on).toHaveBeenCalledWith('wheel', expect.any(Function));
+    });
+
+    it('destroy()時にscene.input.offでwheelイベントが解除される', async () => {
+      const { QuestAcceptPhaseUI } = await import('@presentation/ui/phases/QuestAcceptPhaseUI');
+      const phaseUI = new QuestAcceptPhaseUI(mockScene);
+
+      phaseUI.create();
+      phaseUI.destroy();
+
+      expect(mockScene.input.off).toHaveBeenCalledWith('wheel', expect.any(Function));
+    });
+
+    it('3件以下の依頼では全カードが表示される', async () => {
+      const { QuestAcceptPhaseUI } = await import('@presentation/ui/phases/QuestAcceptPhaseUI');
+      const phaseUI = new QuestAcceptPhaseUI(mockScene);
+
+      const boardQuests = [
+        createMockQuest('board-1'),
+        createMockQuest('board-2'),
+        createMockQuest('board-3'),
+      ];
+
+      phaseUI.updateBoardQuests(boardQuests);
+
+      // 3件（1行）は表示可能範囲内
+      expect(phaseUI.getDisplayedQuestCount()).toBe(3);
+    });
+
+    it('依頼更新後もカード数が正しく反映される', async () => {
+      const { QuestAcceptPhaseUI } = await import('@presentation/ui/phases/QuestAcceptPhaseUI');
+      const phaseUI = new QuestAcceptPhaseUI(mockScene);
+
+      // 最初に3件
+      const boardQuests3 = [
+        createMockQuest('board-1'),
+        createMockQuest('board-2'),
+        createMockQuest('board-3'),
+      ];
+      phaseUI.updateBoardQuests(boardQuests3);
+      expect(phaseUI.getDisplayedQuestCount()).toBe(3);
+
+      // 5件に更新
+      const boardQuests5 = [
+        createMockQuest('board-1'),
+        createMockQuest('board-2'),
+        createMockQuest('board-3'),
+        createMockQuest('board-4'),
+        createMockQuest('board-5'),
+      ];
+      phaseUI.updateBoardQuests(boardQuests5);
+      expect(phaseUI.getDisplayedQuestCount()).toBe(5);
+    });
+  });
+
+  // ===========================================================================
+  // テストケース6: 受注済み依頼の除外（Issue #356）
   // ===========================================================================
 
   describe('受注済み依頼の除外（Issue #356）', () => {

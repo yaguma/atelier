@@ -21,6 +21,7 @@ import type { IAlchemyService } from '@domain/interfaces/alchemy-service.interfa
 import type { RexRoundRectangle } from '@presentation/types/rexui';
 import { BaseComponent } from '@presentation/ui/components/BaseComponent';
 import { THEME } from '@presentation/ui/theme';
+import { MAIN_LAYOUT } from '@shared/constants';
 import { getSelectionIndexFromKey, isKeyForAction } from '@shared/constants/keybindings';
 import type { CardId, Quality } from '@shared/types';
 import type { IRecipeCardMaster } from '@shared/types/master-data';
@@ -48,6 +49,8 @@ const ALCHEMY_PHASE_LAYOUT = {
   MATERIAL_LINE_HEIGHT: 22,
   /** 素材行のインデント（左端からのオフセット） */
   MATERIAL_INDENT: 30,
+  /** スクロール速度係数 */
+  SCROLL_SPEED: 0.5,
 } as const;
 
 /**
@@ -117,6 +120,28 @@ export class AlchemyPhaseUI extends BaseComponent {
   /** 現在のフォーカスインデックス（キーボードナビゲーション用） */
   private focusedRecipeIndex = 0;
 
+  /** スクロール用サブコンテナ（Issue #357） */
+  private recipeScrollContainer: Phaser.GameObjects.Container | null = null;
+
+  /** スクロールマスク用グラフィックス */
+  private scrollMaskGraphics: Phaser.GameObjects.Graphics | null = null;
+
+  /** スクロールオフセット */
+  private scrollOffset = 0;
+
+  /** マウスホイールハンドラ参照 */
+  private wheelHandler:
+    | ((
+        pointer: Phaser.Input.Pointer,
+        gameObjects: Phaser.GameObjects.GameObject[],
+        deltaX: number,
+        deltaY: number,
+      ) => void)
+    | null = null;
+
+  /** レシピリストの総コンテンツ高さ（スクロール計算用） */
+  private recipeListTotalHeight = 0;
+
   /**
    * コンストラクタ
    *
@@ -154,6 +179,7 @@ export class AlchemyPhaseUI extends BaseComponent {
    */
   create(): void {
     this.createTitle();
+    this.createRecipeScrollArea();
     this.loadRecipes();
     this.createRecipeList();
     this.setupKeyboardListener();
@@ -221,6 +247,10 @@ export class AlchemyPhaseUI extends BaseComponent {
       const cardHeight = this.calculateCardHeight(recipe.requiredMaterials.length);
       currentY += cardHeight + ALCHEMY_PHASE_LAYOUT.ITEM_SPACING;
     }
+
+    // スクロール計算用にリスト全体の高さを記録
+    this.recipeListTotalHeight = currentY;
+    this.resetScroll();
   }
 
   /**
@@ -311,8 +341,9 @@ export class AlchemyPhaseUI extends BaseComponent {
       materialY += ALCHEMY_PHASE_LAYOUT.MATERIAL_LINE_HEIGHT;
     }
 
-    // メインコンテナに追加（フェーズ切替時のsetVisible対応）
-    this.container.add(cardContainer);
+    // スクロールコンテナに追加（Issue #357: スクロール対応）
+    const targetContainer = this.recipeScrollContainer ?? this.container;
+    targetContainer.add(cardContainer);
 
     // インタラクション設定（調合可能なレシピのみ）
     if (craftable) {
@@ -558,6 +589,9 @@ export class AlchemyPhaseUI extends BaseComponent {
    * 既存のレシピラベルを破棄し、レシピリストを再読み込み・再作成する。
    */
   refresh(): void {
+    // スクロール位置をリセット（カード再作成前に実施）
+    this.resetScroll();
+
     // 既存のレシピカードを破棄（コンテナ破棄で子要素も一括破棄）
     for (const item of this.recipeLabels) {
       item.cardContainer.destroy(true);
@@ -580,10 +614,12 @@ export class AlchemyPhaseUI extends BaseComponent {
    */
   destroy(): void {
     this.removeKeyboardListener();
+    this.removeScrollHandler();
     for (const item of this.recipeLabels) {
       item.cardContainer.destroy(true);
     }
     this.recipeLabels = [];
+    this.destroyScrollArea();
     this.container.destroy();
   }
 
@@ -678,5 +714,129 @@ export class AlchemyPhaseUI extends BaseComponent {
       const scale = index === this.focusedRecipeIndex ? FOCUSED_SCALE : DEFAULT_SCALE;
       item.cardContainer.setScale(scale);
     });
+  }
+
+  // =============================================================================
+  // Issue #357: スクロール機能
+  // =============================================================================
+
+  /**
+   * レシピリスト用のスクロールエリアを作成
+   */
+  private createRecipeScrollArea(): void {
+    this.recipeScrollContainer = this.scene.add.container(0, 0);
+    this.container.add(this.recipeScrollContainer);
+    this.applyScrollMask();
+    this.setupScrollHandler();
+  }
+
+  /**
+   * GeometryMaskを適用してフッター領域をクリッピング
+   */
+  private applyScrollMask(): void {
+    if (!this.recipeScrollContainer) return;
+
+    try {
+      const gameWidth = this.scene.cameras.main.width;
+      const maskX = MAIN_LAYOUT.SIDEBAR_WIDTH;
+      const maskY = MAIN_LAYOUT.HEADER_HEIGHT + ALCHEMY_PHASE_LAYOUT.RECIPE_LIST_START_Y;
+      const maskWidth = gameWidth - MAIN_LAYOUT.SIDEBAR_WIDTH;
+      const maskHeight =
+        this.scene.cameras.main.height -
+        MAIN_LAYOUT.HEADER_HEIGHT -
+        MAIN_LAYOUT.FOOTER_HEIGHT -
+        ALCHEMY_PHASE_LAYOUT.RECIPE_LIST_START_Y;
+
+      this.scrollMaskGraphics = this.scene.make.graphics({});
+      this.scrollMaskGraphics.fillStyle(0xffffff);
+      this.scrollMaskGraphics.fillRect(maskX, maskY, maskWidth, maskHeight);
+
+      const mask = this.scrollMaskGraphics.createGeometryMask();
+      this.recipeScrollContainer.setMask(mask);
+    } catch {
+      // make.graphicsが使用できない場合はマスクなしで動作
+    }
+  }
+
+  /**
+   * マウスホイールスクロールハンドラを設定
+   */
+  private setupScrollHandler(): void {
+    this.wheelHandler = (
+      _pointer: Phaser.Input.Pointer,
+      _gameObjects: Phaser.GameObjects.GameObject[],
+      _deltaX: number,
+      deltaY: number,
+    ) => {
+      if (!this.container.visible) return;
+      this.applyScroll(deltaY);
+    };
+    this.scene.input?.on?.('wheel', this.wheelHandler);
+  }
+
+  /**
+   * スクロールを適用
+   */
+  private applyScroll(deltaY: number): void {
+    if (!this.recipeScrollContainer) return;
+
+    const maxOffset = this.getMaxScrollOffset();
+    if (maxOffset <= 0) return;
+
+    this.scrollOffset += deltaY * ALCHEMY_PHASE_LAYOUT.SCROLL_SPEED;
+    this.scrollOffset = Math.max(0, Math.min(this.scrollOffset, maxOffset));
+    this.recipeScrollContainer.y = -this.scrollOffset;
+  }
+
+  /**
+   * スクロール位置をリセット
+   */
+  private resetScroll(): void {
+    this.scrollOffset = 0;
+    if (this.recipeScrollContainer) {
+      this.recipeScrollContainer.y = 0;
+    }
+  }
+
+  /**
+   * 最大スクロールオフセットを計算
+   */
+  private getMaxScrollOffset(): number {
+    const visibleHeight = this.getRecipeAreaVisibleHeight();
+    return Math.max(0, this.recipeListTotalHeight - visibleHeight);
+  }
+
+  /**
+   * レシピエリアの可視高さを取得
+   */
+  private getRecipeAreaVisibleHeight(): number {
+    const gameHeight = this.scene.cameras.main.height;
+    return (
+      gameHeight -
+      MAIN_LAYOUT.HEADER_HEIGHT -
+      MAIN_LAYOUT.FOOTER_HEIGHT -
+      ALCHEMY_PHASE_LAYOUT.RECIPE_LIST_START_Y
+    );
+  }
+
+  /**
+   * マウスホイールハンドラを解除
+   */
+  private removeScrollHandler(): void {
+    if (this.wheelHandler) {
+      this.scene.input?.off?.('wheel', this.wheelHandler);
+      this.wheelHandler = null;
+    }
+  }
+
+  /**
+   * スクロールエリアを破棄
+   */
+  private destroyScrollArea(): void {
+    if (this.scrollMaskGraphics) {
+      this.scrollMaskGraphics.destroy();
+      this.scrollMaskGraphics = null;
+    }
+    this.recipeScrollContainer = null;
   }
 }
