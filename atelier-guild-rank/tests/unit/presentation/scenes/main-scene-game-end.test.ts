@@ -11,6 +11,12 @@
 
 import { GamePhase, GuildRank } from '@shared/types/common';
 import { GameEventType } from '@shared/types/events';
+import {
+  createMockEventBus,
+  createMockGameFlowManager,
+  createMockScene,
+  createMockStateManager,
+} from '@test-mocks/phaser-mocks';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // =============================================================================
@@ -93,118 +99,8 @@ vi.mock('@shared/services/di/container', () => ({
 }));
 
 // =============================================================================
-// モック作成ヘルパー
+// テスト固有のモックヘルパー
 // =============================================================================
-
-const createMockContainer = () => ({
-  setVisible: vi.fn().mockReturnThis(),
-  setPosition: vi.fn().mockReturnThis(),
-  setDepth: vi.fn().mockReturnThis(),
-  setAlpha: vi.fn().mockReturnThis(),
-  add: vi.fn().mockReturnThis(),
-  destroy: vi.fn(),
-  bringToTop: vi.fn().mockReturnThis(),
-  x: 0,
-  y: 0,
-  visible: true,
-});
-
-const createMockText = () => ({
-  setText: vi.fn().mockReturnThis(),
-  setOrigin: vi.fn().mockReturnThis(),
-  setStyle: vi.fn().mockReturnThis(),
-  setColor: vi.fn().mockReturnThis(),
-  setFontSize: vi.fn().mockReturnThis(),
-  destroy: vi.fn(),
-  text: '',
-});
-
-const createMockRexUI = () => ({
-  add: {
-    sizer: vi.fn().mockReturnValue({
-      layout: vi.fn(),
-      add: vi.fn().mockReturnThis(),
-      destroy: vi.fn(),
-    }),
-    label: vi.fn().mockReturnValue({
-      layout: vi.fn(),
-      setInteractive: vi.fn().mockReturnThis(),
-      on: vi.fn().mockReturnThis(),
-      destroy: vi.fn(),
-      setText: vi.fn().mockReturnThis(),
-    }),
-    roundRectangle: vi.fn().mockReturnValue({
-      setFillStyle: vi.fn().mockReturnThis(),
-      destroy: vi.fn(),
-    }),
-    scrollablePanel: vi.fn().mockReturnValue({
-      layout: vi.fn(),
-      destroy: vi.fn(),
-    }),
-  },
-});
-
-/**
- * EventBusモック（unsubscribe関数を返す版）
- */
-const createMockEventBus = () => {
-  const listeners = new Map<string, Array<(...args: unknown[]) => void>>();
-  return {
-    emit: vi.fn().mockImplementation((type: string, payload: unknown) => {
-      const busEvent = { type, payload, timestamp: Date.now() };
-      const handlers = listeners.get(type) || [];
-      for (const handler of handlers) {
-        handler(busEvent);
-      }
-    }),
-    on: vi.fn().mockImplementation((event: string, handler: (...args: unknown[]) => void) => {
-      const existing = listeners.get(event) || [];
-      existing.push(handler);
-      listeners.set(event, existing);
-      // unsubscribe関数を返す
-      return () => {
-        const current = listeners.get(event) || [];
-        const index = current.indexOf(handler);
-        if (index >= 0) current.splice(index, 1);
-      };
-    }),
-    off: vi.fn(),
-    listeners,
-  };
-};
-
-const createMockStateManager = () => ({
-  getState: vi.fn().mockReturnValue({
-    currentRank: GuildRank.E,
-    promotionGauge: 35,
-    remainingDays: 0,
-    currentDay: 30,
-    currentPhase: GamePhase.QUEST_ACCEPT,
-    gold: 1500,
-    actionPoints: 3,
-    comboCount: 0,
-    rankHp: 100,
-    isPromotionTest: false,
-  }),
-  updateState: vi.fn(),
-  setPhase: vi.fn(),
-  canTransitionTo: vi.fn().mockReturnValue(true),
-  addGold: vi.fn(),
-  spendGold: vi.fn().mockReturnValue(true),
-  addContribution: vi.fn(),
-});
-
-const createMockGameFlowManager = () => ({
-  getCurrentPhase: vi.fn().mockReturnValue(GamePhase.QUEST_ACCEPT),
-  canAdvancePhase: vi.fn().mockReturnValue(true),
-  startPhase: vi.fn(),
-  endPhase: vi.fn(),
-  startNewGame: vi.fn(),
-  continueGame: vi.fn(),
-  startDay: vi.fn(),
-  endDay: vi.fn(),
-  skipPhase: vi.fn(),
-});
 
 const createMockQuestService = () => ({
   acceptQuest: vi.fn().mockReturnValue(true),
@@ -220,100 +116,17 @@ const createMockQuestService = () => ({
   setQuestLimit: vi.fn(),
 });
 
-const createMockScene = () => {
-  const mockContainer = createMockContainer();
-  const mockText = createMockText();
-  const mockRexUI = createMockRexUI();
-
-  return {
-    add: {
-      container: vi.fn().mockImplementation((x: number, y: number) => ({
-        ...mockContainer,
-        x,
-        y,
-      })),
-      text: vi.fn().mockReturnValue(mockText),
-      graphics: vi.fn().mockReturnValue({
-        fillStyle: vi.fn().mockReturnThis(),
-        fillRect: vi.fn().mockReturnThis(),
-        fillRoundedRect: vi.fn().mockReturnThis(),
-        clear: vi.fn().mockReturnThis(),
-        destroy: vi.fn(),
-        lineStyle: vi.fn().mockReturnThis(),
-        beginPath: vi.fn().mockReturnThis(),
-        moveTo: vi.fn().mockReturnThis(),
-        lineTo: vi.fn().mockReturnThis(),
-        stroke: vi.fn().mockReturnThis(),
-        strokePath: vi.fn().mockReturnThis(),
-      }),
-      rectangle: vi.fn().mockReturnValue({
-        setFillStyle: vi.fn().mockReturnThis(),
-        setStrokeStyle: vi.fn().mockReturnThis(),
-        setOrigin: vi.fn().mockReturnThis(),
-        setInteractive: vi.fn().mockReturnThis(),
-        disableInteractive: vi.fn().mockReturnThis(),
-        setAlpha: vi.fn().mockReturnThis(),
-        on: vi.fn().mockReturnThis(),
-        destroy: vi.fn(),
-      }),
-      circle: vi.fn().mockReturnValue({
-        setFillStyle: vi.fn().mockReturnThis(),
-        setStrokeStyle: vi.fn().mockReturnThis(),
-        destroy: vi.fn(),
-      }),
-    },
-    make: {
-      text: vi.fn().mockReturnValue({
-        ...mockText,
-        setOrigin: vi.fn().mockReturnThis(),
-        setColor: vi.fn().mockReturnThis(),
-        setAlpha: vi.fn().mockReturnThis(),
-      }),
-      container: vi.fn().mockImplementation((config: { x?: number; y?: number }) => ({
-        ...mockContainer,
-        x: config?.x ?? 0,
-        y: config?.y ?? 0,
-      })),
-    },
-    cameras: {
-      main: {
-        centerX: 640,
-        centerY: 360,
-        width: 1280,
-        height: 720,
-      },
-    },
-    data: {
-      get: vi.fn().mockImplementation((key: string) => {
-        if (key === 'eventBus') return mockEventBusInstance;
-        return null;
-      }),
-      set: vi.fn(),
-    },
-    input: {
-      keyboard: { on: vi.fn(), off: vi.fn() },
-    },
-    rexUI: mockRexUI,
-    tweens: {
-      add: vi.fn().mockImplementation((config) => {
-        if (config.onComplete) config.onComplete();
-        return {};
-      }),
-      killTweensOf: vi.fn(),
-    },
-    scene: {
-      start: vi.fn(),
-    },
-  };
-};
-
 // =============================================================================
 // テストスイート
 // =============================================================================
 
 describe('MainScene ゲーム終了イベント購読 (Issue #361)', () => {
   beforeEach(() => {
-    mockStateManagerInstance = createMockStateManager();
+    mockStateManagerInstance = createMockStateManager({
+      remainingDays: 0,
+      currentDay: 30,
+      gold: 1500,
+    });
     mockGameFlowManagerInstance = createMockGameFlowManager();
     mockEventBusInstance = createMockEventBus();
     mockQuestServiceInstance = createMockQuestService();
@@ -327,35 +140,41 @@ describe('MainScene ゲーム終了イベント購読 (Issue #361)', () => {
    * MainSceneインスタンスを作成してcreate()を実行するヘルパー
    */
   // biome-ignore lint/suspicious/noExplicitAny: テスト用のモック設定
-  const setupMainScene = async (): Promise<{ mainScene: any; mockScene: any }> => {
+  const setupMainScene = async (): Promise<{ mainScene: any; mockSceneResult: any }> => {
     const { MainScene } = await import('@presentation/scenes/MainScene');
-    const mockScene = createMockScene();
+    const mockSceneResult = createMockScene({
+      dataGetHandler: (key: string) => {
+        if (key === 'eventBus') return mockEventBusInstance;
+        return null;
+      },
+    });
     const mainScene = new MainScene();
+    const sceneObj = mockSceneResult.scene as Record<string, unknown>;
 
     // モックを注入
     // @ts-expect-error - テストのためにprivateプロパティにアクセス
-    mainScene.add = mockScene.add;
+    mainScene.add = sceneObj.add;
     // @ts-expect-error - テストのためにprivateプロパティにアクセス
-    mainScene.make = mockScene.make;
+    mainScene.make = sceneObj.make;
     // @ts-expect-error - テストのためにprivateプロパティにアクセス
-    mainScene.cameras = mockScene.cameras;
+    mainScene.cameras = sceneObj.cameras;
     // @ts-expect-error - テストのためにprivateプロパティにアクセス
-    mainScene.rexUI = mockScene.rexUI;
+    mainScene.rexUI = sceneObj.rexUI;
     // @ts-expect-error - テストのためにprivateプロパティにアクセス
-    mainScene.data = mockScene.data;
+    mainScene.data = sceneObj.data;
     // @ts-expect-error - テストのためにprivateプロパティにアクセス
-    mainScene.input = mockScene.input;
+    mainScene.input = sceneObj.input;
     // @ts-expect-error - テストのためにprivateプロパティにアクセス
-    mainScene.scene = mockScene.scene;
+    mainScene.scene = sceneObj.scene;
 
     mainScene.create();
 
-    return { mainScene, mockScene };
+    return { mainScene, mockSceneResult };
   };
 
   describe('GAME_OVERイベント', () => {
     it('GAME_OVERイベント受信時にGameOverSceneへ遷移する', async () => {
-      const { mockScene } = await setupMainScene();
+      const { mockSceneResult } = await setupMainScene();
 
       // GAME_OVERイベントを発行
       mockEventBusInstance.emit(GameEventType.GAME_OVER, {
@@ -366,7 +185,9 @@ describe('MainScene ゲーム終了イベント購読 (Issue #361)', () => {
       });
 
       // GameOverSceneへ遷移すること
-      expect(mockScene.scene.start).toHaveBeenCalledWith('GameOverScene', {
+      const sceneObj = mockSceneResult.scene as Record<string, unknown>;
+      const sceneManager = sceneObj.scene as { start: ReturnType<typeof vi.fn> };
+      expect(sceneManager.start).toHaveBeenCalledWith('GameOverScene', {
         stats: expect.objectContaining({
           finalRank: GuildRank.E,
           totalDays: 30,
@@ -375,7 +196,7 @@ describe('MainScene ゲーム終了イベント購読 (Issue #361)', () => {
     });
 
     it('遷移時にGameEndStatsが正しく構築される', async () => {
-      // ゴールド1500の状態
+      // ゴールド2500の状態に設定
       mockStateManagerInstance.getState.mockReturnValue({
         currentRank: GuildRank.D,
         promotionGauge: 50,
@@ -389,7 +210,7 @@ describe('MainScene ゲーム終了イベント購読 (Issue #361)', () => {
         isPromotionTest: false,
       });
 
-      const { mockScene } = await setupMainScene();
+      const { mockSceneResult } = await setupMainScene();
 
       mockEventBusInstance.emit(GameEventType.GAME_OVER, {
         type: 'game_over',
@@ -398,7 +219,9 @@ describe('MainScene ゲーム終了イベント購読 (Issue #361)', () => {
         totalDays: 30,
       });
 
-      expect(mockScene.scene.start).toHaveBeenCalledWith('GameOverScene', {
+      const sceneObj = mockSceneResult.scene as Record<string, unknown>;
+      const sceneManager = sceneObj.scene as { start: ReturnType<typeof vi.fn> };
+      expect(sceneManager.start).toHaveBeenCalledWith('GameOverScene', {
         stats: {
           finalRank: GuildRank.D,
           totalDays: 30,
@@ -411,7 +234,7 @@ describe('MainScene ゲーム終了イベント購読 (Issue #361)', () => {
 
   describe('GAME_CLEAREDイベント', () => {
     it('GAME_CLEAREDイベント受信時にGameClearSceneへ遷移する', async () => {
-      const { mockScene } = await setupMainScene();
+      const { mockSceneResult } = await setupMainScene();
 
       // GAME_CLEAREDイベントを発行
       mockEventBusInstance.emit(GameEventType.GAME_CLEARED, {
@@ -422,7 +245,9 @@ describe('MainScene ゲーム終了イベント購読 (Issue #361)', () => {
       });
 
       // GameClearSceneへ遷移すること
-      expect(mockScene.scene.start).toHaveBeenCalledWith('GameClearScene', {
+      const sceneObj = mockSceneResult.scene as Record<string, unknown>;
+      const sceneManager = sceneObj.scene as { start: ReturnType<typeof vi.fn> };
+      expect(sceneManager.start).toHaveBeenCalledWith('GameClearScene', {
         stats: expect.objectContaining({
           finalRank: GuildRank.S,
           totalDays: 20,
@@ -444,7 +269,7 @@ describe('MainScene ゲーム終了イベント購読 (Issue #361)', () => {
         isPromotionTest: false,
       });
 
-      const { mockScene } = await setupMainScene();
+      const { mockSceneResult } = await setupMainScene();
 
       mockEventBusInstance.emit(GameEventType.GAME_CLEARED, {
         type: 'game_clear',
@@ -453,7 +278,9 @@ describe('MainScene ゲーム終了イベント購読 (Issue #361)', () => {
         totalDays: 20,
       });
 
-      expect(mockScene.scene.start).toHaveBeenCalledWith('GameClearScene', {
+      const sceneObj = mockSceneResult.scene as Record<string, unknown>;
+      const sceneManager = sceneObj.scene as { start: ReturnType<typeof vi.fn> };
+      expect(sceneManager.start).toHaveBeenCalledWith('GameClearScene', {
         stats: {
           finalRank: GuildRank.S,
           totalDays: 20,
@@ -491,7 +318,7 @@ describe('MainScene ゲーム終了イベント購読 (Issue #361)', () => {
 
   describe('shutdown時のクリーンアップ', () => {
     it('shutdown時にGAME_OVERイベント購読が解除される', async () => {
-      const { mainScene } = await setupMainScene();
+      const { mainScene, mockSceneResult } = await setupMainScene();
 
       // shutdown前にイベントが反応することを確認
       mockEventBusInstance.emit(GameEventType.GAME_OVER, {
@@ -501,14 +328,15 @@ describe('MainScene ゲーム終了イベント購読 (Issue #361)', () => {
         totalDays: 30,
       });
 
-      const sceneStartMock = mainScene.scene.start;
-      expect(sceneStartMock).toHaveBeenCalledTimes(1);
+      const sceneObj = mockSceneResult.scene as Record<string, unknown>;
+      const sceneManager = sceneObj.scene as { start: ReturnType<typeof vi.fn> };
+      expect(sceneManager.start).toHaveBeenCalledTimes(1);
 
       // shutdownを実行
       mainScene.shutdown();
 
       // shutdown後はイベントが反応しないことを確認
-      sceneStartMock.mockClear();
+      sceneManager.start.mockClear();
       mockEventBusInstance.emit(GameEventType.GAME_OVER, {
         type: 'game_over',
         reason: 'time_expired',
@@ -516,7 +344,7 @@ describe('MainScene ゲーム終了イベント購読 (Issue #361)', () => {
         totalDays: 30,
       });
 
-      expect(sceneStartMock).not.toHaveBeenCalled();
+      expect(sceneManager.start).not.toHaveBeenCalled();
     });
   });
 });

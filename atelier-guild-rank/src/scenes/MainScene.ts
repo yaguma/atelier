@@ -287,18 +287,25 @@ export class MainScene extends Phaser.Scene {
   }
 
   /**
-   * GAME_OVERイベントハンドラ
-   * Issue #361: ゲームオーバー時にGameOverSceneへ遷移
+   * GameEndConditionからGameEndStatsを構築する
+   * Issue #361: GAME_OVER/GAME_CLEARED共通のstats構築ロジック
    */
-  private handleGameOver(condition: GameEndCondition): void {
+  private buildGameEndStats(condition: GameEndCondition): GameEndStats {
     const state = this.stateManager.getState();
-    const stats: GameEndStats = {
+    return {
       finalRank: condition.finalRank,
       totalDays: condition.totalDays,
       totalDeliveries: 0, // TODO: 実際の納品数をStateから取得
       totalGold: state.gold,
     };
-    this.scene.start('GameOverScene', { stats });
+  }
+
+  /**
+   * GAME_OVERイベントハンドラ
+   * Issue #361: ゲームオーバー時にGameOverSceneへ遷移
+   */
+  private handleGameOver(condition: GameEndCondition): void {
+    this.scene.start('GameOverScene', { stats: this.buildGameEndStats(condition) });
   }
 
   /**
@@ -306,14 +313,7 @@ export class MainScene extends Phaser.Scene {
    * Issue #361: ゲームクリア時にGameClearSceneへ遷移
    */
   private handleGameCleared(condition: GameEndCondition): void {
-    const state = this.stateManager.getState();
-    const stats: GameEndStats = {
-      finalRank: condition.finalRank,
-      totalDays: condition.totalDays,
-      totalDeliveries: 0, // TODO: 実際の納品数をStateから取得
-      totalGold: state.gold,
-    };
-    this.scene.start('GameClearScene', { stats });
+    this.scene.start('GameClearScene', { stats: this.buildGameEndStats(condition) });
   }
 
   // ===========================================================================
