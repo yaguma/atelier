@@ -7,6 +7,7 @@
  */
 
 import { expect, test } from '../../fixtures/game.fixture';
+import { INITIAL_DAY_LIMIT } from '../../fixtures/test-data';
 import { KeyboardInputPage } from '../../pages/keyboard-input.page';
 import { MainPage } from '../../pages/main.page';
 import { TitlePage } from '../../pages/title.page';
@@ -253,7 +254,7 @@ test.describe('納品フェーズ - キーボード操作', () => {
   test('TC-E2E-DELIVER-004: キーボードで日を終了', async ({ gamePage }) => {
     // Arrange: 初期日数を確認
     const beforeState = await main.getGameState();
-    const initialDays = beforeState.remainingDays ?? 30;
+    const initialDays = beforeState.remainingDays ?? INITIAL_DAY_LIMIT;
 
     // Act: デバッグツールで日終了
     await main.endDay();
