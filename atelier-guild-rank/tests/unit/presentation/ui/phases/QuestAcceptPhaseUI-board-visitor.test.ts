@@ -361,4 +361,85 @@ describe('QuestAcceptPhaseUI - 掲示板・訪問依頼表示（TASK-0117）', (
       expect(phaseUI.getDisplayedQuestCount()).toBe(3);
     });
   });
+
+  // ===========================================================================
+  // テストケース5: 受注済み依頼の除外（Issue #356）
+  // ===========================================================================
+
+  describe('受注済み依頼の除外（Issue #356）', () => {
+    it('T-0356-01: removeAcceptedQuestで掲示板依頼が1件除外される', async () => {
+      const { QuestAcceptPhaseUI } = await import('@presentation/ui/phases/QuestAcceptPhaseUI');
+      const phaseUI = new QuestAcceptPhaseUI(mockScene);
+
+      const boardQuests = [
+        createMockQuest('board-1', '依頼者1'),
+        createMockQuest('board-2', '依頼者2'),
+        createMockQuest('board-3', '依頼者3'),
+      ];
+
+      phaseUI.updateBoardQuests(boardQuests);
+      expect(phaseUI.getDisplayedQuestCount()).toBe(3);
+
+      // 1件受注 → 2件に減る
+      phaseUI.removeAcceptedQuest('board-2');
+      expect(phaseUI.getDisplayedQuestCount()).toBe(2);
+    });
+
+    it('T-0356-02: removeAcceptedQuestで訪問依頼が除外される', async () => {
+      const { QuestAcceptPhaseUI } = await import('@presentation/ui/phases/QuestAcceptPhaseUI');
+      const phaseUI = new QuestAcceptPhaseUI(mockScene);
+
+      const visitorQuests = [
+        createMockQuest('visitor-1', '訪問者1'),
+        createMockQuest('visitor-2', '訪問者2'),
+      ];
+
+      phaseUI.updateVisitorQuests(visitorQuests);
+      phaseUI.switchTab('visitor');
+      expect(phaseUI.getDisplayedQuestCount()).toBe(2);
+
+      // 1件受注 → 1件に減る
+      phaseUI.removeAcceptedQuest('visitor-1');
+      expect(phaseUI.getDisplayedQuestCount()).toBe(1);
+    });
+
+    it('T-0356-03: 存在しないIDを指定しても件数が変わらない', async () => {
+      const { QuestAcceptPhaseUI } = await import('@presentation/ui/phases/QuestAcceptPhaseUI');
+      const phaseUI = new QuestAcceptPhaseUI(mockScene);
+
+      const boardQuests = [
+        createMockQuest('board-1', '依頼者1'),
+        createMockQuest('board-2', '依頼者2'),
+      ];
+
+      phaseUI.updateBoardQuests(boardQuests);
+      expect(phaseUI.getDisplayedQuestCount()).toBe(2);
+
+      phaseUI.removeAcceptedQuest('non-existent-id');
+      expect(phaseUI.getDisplayedQuestCount()).toBe(2);
+    });
+
+    it('T-0356-04: 受注後に別タブの依頼数に影響しない', async () => {
+      const { QuestAcceptPhaseUI } = await import('@presentation/ui/phases/QuestAcceptPhaseUI');
+      const phaseUI = new QuestAcceptPhaseUI(mockScene);
+
+      const boardQuests = [
+        createMockQuest('board-1'),
+        createMockQuest('board-2'),
+        createMockQuest('board-3'),
+      ];
+      const visitorQuests = [createMockQuest('visitor-1')];
+
+      phaseUI.updateBoardQuests(boardQuests);
+      phaseUI.updateVisitorQuests(visitorQuests);
+
+      // 掲示板タブで1件受注
+      phaseUI.removeAcceptedQuest('board-1');
+      expect(phaseUI.getDisplayedQuestCount()).toBe(2);
+
+      // 訪問タブに切り替え → 訪問は影響なし
+      phaseUI.switchTab('visitor');
+      expect(phaseUI.getDisplayedQuestCount()).toBe(1);
+    });
+  });
 });
