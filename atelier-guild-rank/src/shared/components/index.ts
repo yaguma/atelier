@@ -19,6 +19,12 @@ export { FooterUI } from './FooterUI';
 export { HeaderUI, type IHeaderUIData } from './HeaderUI';
 // PhaseTabUI
 export { PhaseTabUI } from './PhaseTabUI';
+// ScrollableContainer
+export {
+  ScrollableContainer,
+  type ScrollableContainerConfig,
+  type ScrollMaskBounds,
+} from './ScrollableContainer';
 // RewardCardDialog: Phaser.Events.EventEmitter継承のため、バレルエクスポートから除外
 // 直接インポートを使用: import { RewardCardDialog } from '@shared/components/RewardCardDialog';
 // Sidebar
