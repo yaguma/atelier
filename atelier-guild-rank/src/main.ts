@@ -17,7 +17,7 @@ import {
 import { Container, ServiceKeys } from '@shared/services/di/container';
 import type { IStateManager } from '@shared/services/state-manager';
 // debug.ts でグローバル型 (window.game, window.gameState, window.debug) が定義されている
-import '@shared/utils/debug';
+import { DebugTools } from '@shared/utils/debug';
 import Phaser from 'phaser';
 import RexUIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin';
 
@@ -180,11 +180,10 @@ window.gameState = () => {
 };
 
 /**
- * window.debug - デバッグツールを公開
+ * window.debug - デバッグツールを公開（同期初期化）
  *
  * 【用途】: 開発時のゲーム状態操作、E2Eテスト補助
  * 【注意】: 本番ビルドでは別途削除を検討
+ * Issue #365: 非同期importではE2Eテスト実行時に初期化が間に合わないため同期importに変更
  */
-import('@shared/utils/debug').then(({ DebugTools }) => {
-  window.debug = DebugTools;
-});
+window.debug = DebugTools;
