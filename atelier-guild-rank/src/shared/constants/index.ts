@@ -34,3 +34,4 @@ export {
   KEYBINDINGS,
   type KeybindingAction,
 } from './keybindings';
+export { MAIN_LAYOUT } from './layout';
