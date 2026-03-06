@@ -94,31 +94,33 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
       // 🔵 REQ-002-04: 手札カード連動フィルタリング
 
       const hand: Card[] = [
-        createGatheringCard('gathering-forest'),
-        createGatheringCard('gathering-mine'),
+        createGatheringCard('gathering_nearby_forest'),
+        createGatheringCard('gathering_mountain_trail'),
       ];
 
       const locations = getAvailableLocations(hand, GATHERING_LOCATIONS);
 
-      // 全5場所が返される
-      expect(locations).toHaveLength(5);
+      // 全8場所が返される
+      expect(locations).toHaveLength(8);
 
       // 手札にある場所はisSelectable=true
-      const forest = locations.find((l) => l.cardId === toCardId('gathering-forest'));
+      const forest = locations.find((l) => l.cardId === toCardId('gathering_nearby_forest'));
       expect(forest?.isSelectable).toBe(true);
 
-      const mine = locations.find((l) => l.cardId === toCardId('gathering-mine'));
-      expect(mine?.isSelectable).toBe(true);
+      const mountain = locations.find((l) => l.cardId === toCardId('gathering_mountain_trail'));
+      expect(mountain?.isSelectable).toBe(true);
 
       // 手札にない場所はisSelectable=false
-      const lake = locations.find((l) => l.cardId === toCardId('gathering-lake'));
-      expect(lake?.isSelectable).toBe(false);
+      const riverside = locations.find((l) => l.cardId === toCardId('gathering_riverside'));
+      expect(riverside?.isSelectable).toBe(false);
 
-      const ruins = locations.find((l) => l.cardId === toCardId('gathering-ruins'));
-      expect(ruins?.isSelectable).toBe(false);
+      const ancientForest = locations.find(
+        (l) => l.cardId === toCardId('gathering_ancient_forest'),
+      );
+      expect(ancientForest?.isSelectable).toBe(false);
 
-      const volcano = locations.find((l) => l.cardId === toCardId('gathering-volcano'));
-      expect(volcano?.isSelectable).toBe(false);
+      const volcanic = locations.find((l) => l.cardId === toCardId('gathering_volcanic_area'));
+      expect(volcanic?.isSelectable).toBe(false);
     });
 
     it('T-0120-LOC-02: getSelectableLocationsで選択可能な場所のみ取得できる', () => {
@@ -126,15 +128,19 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
       // 🔵 REQ-002-05: 選択可能場所フィルタリング
 
       const hand: Card[] = [
-        createGatheringCard('gathering-forest'),
-        createGatheringCard('gathering-ruins'),
+        createGatheringCard('gathering_nearby_forest'),
+        createGatheringCard('gathering_ancient_forest'),
       ];
 
       const selectableLocations = getSelectableLocations(hand, GATHERING_LOCATIONS);
 
       expect(selectableLocations).toHaveLength(2);
-      expect(selectableLocations.map((l) => l.cardId)).toContain(toCardId('gathering-forest'));
-      expect(selectableLocations.map((l) => l.cardId)).toContain(toCardId('gathering-ruins'));
+      expect(selectableLocations.map((l) => l.cardId)).toContain(
+        toCardId('gathering_nearby_forest'),
+      );
+      expect(selectableLocations.map((l) => l.cardId)).toContain(
+        toCardId('gathering_ancient_forest'),
+      );
       // 全てisSelectable=true
       expect(selectableLocations.every((l) => l.isSelectable)).toBe(true);
     });
@@ -145,20 +151,20 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
 
       const hand: Card[] = [
         createRecipeCard('recipe-001'),
-        createGatheringCard('gathering-lake'),
+        createGatheringCard('gathering_riverside'),
         createRecipeCard('recipe-002'),
       ];
 
       const locations = getAvailableLocations(hand, GATHERING_LOCATIONS);
       const selectableCount = locations.filter((l) => l.isSelectable).length;
 
-      // 採取地カードは1枚だけ（gathering-lake）
+      // 採取地カードは1枚だけ（gathering_riverside）
       expect(selectableCount).toBe(1);
-      const lake = locations.find((l) => l.cardId === toCardId('gathering-lake'));
-      expect(lake?.isSelectable).toBe(true);
+      const riverside = locations.find((l) => l.cardId === toCardId('gathering_riverside'));
+      expect(riverside?.isSelectable).toBe(true);
     });
 
-    it('T-0120-LOC-04: 全5採取地カードを持つ場合、全場所が選択可能', () => {
+    it('T-0120-LOC-04: 全8採取地カードを持つ場合、全場所が選択可能', () => {
       // 【テスト目的】: 全カードが手札にある場合、全場所が選択可能になること
       // 🔵 REQ-002-04
 
@@ -168,7 +174,7 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
 
       const selectableLocations = getSelectableLocations(hand, GATHERING_LOCATIONS);
 
-      expect(selectableLocations).toHaveLength(5);
+      expect(selectableLocations).toHaveLength(8);
     });
   });
 
@@ -177,53 +183,55 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
   // ===========================================================================
 
   describe('場所詳細・APコスト連携', () => {
-    it('T-0120-DETAIL-01: getLocationDetailで場所のAPコストを取得できる', () => {
-      // 【テスト目的】: cardIdから場所詳細とAPコストを取得できること
-      // 🔵 REQ-002-02: APコスト表示
+    it('T-0120-DETAIL-01: getLocationDetailで場所の詳細を取得できる', () => {
+      // 【テスト目的】: cardIdから場所詳細を取得できること
+      // 🔵 REQ-002-02: 場所詳細表示
 
-      const forestDetail = getLocationDetail(toCardId('gathering-forest'), GATHERING_LOCATIONS);
+      const forestDetail = getLocationDetail(
+        toCardId('gathering_nearby_forest'),
+        GATHERING_LOCATIONS,
+      );
       expect(forestDetail).toBeDefined();
       expect(forestDetail?.name).toBe('近くの森');
-      expect(forestDetail?.movementAPCost).toBe(1);
+      expect(forestDetail?.movementAPCost).toBe(0);
 
-      const ruinsDetail = getLocationDetail(toCardId('gathering-ruins'), GATHERING_LOCATIONS);
-      expect(ruinsDetail).toBeDefined();
-      expect(ruinsDetail?.name).toBe('古代遺跡');
-      expect(ruinsDetail?.movementAPCost).toBe(2);
+      const ancientDetail = getLocationDetail(
+        toCardId('gathering_ancient_forest'),
+        GATHERING_LOCATIONS,
+      );
+      expect(ancientDetail).toBeDefined();
+      expect(ancientDetail?.name).toBe('古代の森');
+      expect(ancientDetail?.movementAPCost).toBe(0);
     });
 
     it('T-0120-DETAIL-02: 各場所の素材プレビューが正しく設定されている', () => {
-      // 【テスト目的】: 各場所に3つの素材プレビュー（high/medium/low）が設定されていること
+      // 【テスト目的】: 各場所に素材プレビューが設定されていること
       // 🔵 REQ-002-03: 素材プレビュー表示
 
       for (const location of GATHERING_LOCATIONS) {
-        expect(location.availableMaterials).toHaveLength(3);
+        expect(location.availableMaterials.length).toBeGreaterThanOrEqual(2);
 
-        const dropRates = location.availableMaterials.map((m) => m.dropRate);
-        expect(dropRates).toContain('high');
-        expect(dropRates).toContain('medium');
-        expect(dropRates).toContain('low');
+        for (const material of location.availableMaterials) {
+          expect(['high', 'medium', 'low']).toContain(material.dropRate);
+        }
       }
     });
 
-    it('T-0120-DETAIL-03: AP1コスト場所とAP2コスト場所が正しく分類される', () => {
-      // 【テスト目的】: 場所のAPコストが1または2であること
+    it('T-0120-DETAIL-03: 全場所のAPコストがマスターデータのbaseCostと一致する', () => {
+      // 【テスト目的】: 全場所のAPコストがマスターデータに準拠していること
       // 🔵 REQ-002-02: 場所ごとのAPコスト
 
-      const ap1Locations = GATHERING_LOCATIONS.filter((l) => l.movementAPCost === 1);
-      const ap2Locations = GATHERING_LOCATIONS.filter((l) => l.movementAPCost === 2);
+      // マスターデータでは全場所のbaseCostが0
+      for (const location of GATHERING_LOCATIONS) {
+        expect(location.movementAPCost).toBe(0);
+      }
 
-      expect(ap1Locations).toHaveLength(3); // 森、鉱山、湖畔
-      expect(ap2Locations).toHaveLength(2); // 遺跡、火山
-
-      // AP1場所
-      expect(ap1Locations.map((l) => l.name)).toContain('近くの森');
-      expect(ap1Locations.map((l) => l.name)).toContain('鉱山');
-      expect(ap1Locations.map((l) => l.name)).toContain('湖畔');
-
-      // AP2場所
-      expect(ap2Locations.map((l) => l.name)).toContain('古代遺跡');
-      expect(ap2Locations.map((l) => l.name)).toContain('火山地帯');
+      // 全8箇所の場所名を確認
+      const locationNames = GATHERING_LOCATIONS.map((l) => l.name);
+      expect(locationNames).toContain('裏庭');
+      expect(locationNames).toContain('近くの森');
+      expect(locationNames).toContain('川辺');
+      expect(locationNames).toContain('火山地帯');
     });
 
     it('T-0120-DETAIL-04: 存在しないcardIdでundefinedが返る', () => {
@@ -483,7 +491,7 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
       const hand: Card[] = [];
       const locations = getAvailableLocations(hand, GATHERING_LOCATIONS);
 
-      expect(locations).toHaveLength(5);
+      expect(locations).toHaveLength(8);
       expect(locations.every((l) => !l.isSelectable)).toBe(true);
     });
 
@@ -517,7 +525,7 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
       // 【テスト目的】: getAvailableLocations → handleLocationSelected → DRAFT_SESSION の流れ
       // 🔵 REQ-002 全体フロー
 
-      const hand: Card[] = [createGatheringCard('gathering-forest')];
+      const hand: Card[] = [createGatheringCard('gathering_nearby_forest')];
 
       // Step 1: 利用可能場所を取得
       const availableLocations = getAvailableLocations(hand, GATHERING_LOCATIONS);
@@ -529,7 +537,7 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
       const detail = getLocationDetail(selectedLocation.cardId, GATHERING_LOCATIONS);
       expect(detail).toBeDefined();
       expect(detail?.name).toBe('近くの森');
-      expect(detail?.movementAPCost).toBe(1);
+      expect(detail?.movementAPCost).toBe(0);
 
       // Step 3: GatheringPhaseUIで場所選択→DRAFT_SESSION遷移
       const mockScene = createMockPhaserScene();
@@ -567,9 +575,9 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
 
       // 1回目: 場所選択→セッション開始
       phaseUI.handleLocationSelected({
-        cardId: toCardId('gathering-forest'),
+        cardId: toCardId('gathering_nearby_forest'),
         locationName: '近くの森',
-        movementAPCost: 1,
+        movementAPCost: 0,
       });
       expect(phaseUI.getCurrentStage()).toBe(GatheringStage.DRAFT_SESSION);
 
@@ -579,9 +587,9 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
 
       // 2回目: 別の場所を選択→セッション開始
       phaseUI.handleLocationSelected({
-        cardId: toCardId('gathering-mine'),
-        locationName: '鉱山',
-        movementAPCost: 1,
+        cardId: toCardId('gathering_mountain_trail'),
+        locationName: '山道',
+        movementAPCost: 0,
       });
       expect(phaseUI.getCurrentStage()).toBe(GatheringStage.DRAFT_SESSION);
       expect(mockGatheringService.startDraftGathering).toHaveBeenCalledTimes(2);

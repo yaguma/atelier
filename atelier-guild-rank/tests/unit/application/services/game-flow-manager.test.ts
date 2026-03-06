@@ -154,6 +154,10 @@ describe('GameFlowManager', () => {
       // 🔵 信頼性: 設計文書に明確に記載
       expect(mockDeckService.initialize).toHaveBeenCalledTimes(1); // 【確認内容】: デッキ初期化処理が1回実行されることを確認
 
+      // 【期待値確認】: DeckService.refillHand()が呼び出されて初期手札がドローされることを確認
+      // 🔵 信頼性: Issue #373 バグ修正 - initialize()だけでは手札が空のまま
+      expect(mockDeckService.refillHand).toHaveBeenCalledTimes(1);
+
       // 【期待値確認】: DAY_STARTEDイベントが発行されることを確認（startDay()の一部）
       // 🔵 信頼性: 設計文書に明確に記載
       expect(mockEventBus.emit).toHaveBeenCalledWith(

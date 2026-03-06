@@ -100,6 +100,11 @@ export class GameFlowManager implements IGameFlowManager {
     // 🔵 信頼性レベル: 設計文書に明記
     this.deckService.initialize(INITIAL_DECK);
 
+    // 【実装内容】: 初期手札をドロー
+    // 【処理方針】: initialize()はデッキ構築とシャッフルのみ行うため、手札補充を明示的に実行
+    // 🔵 信頼性レベル: Issue #373 バグ修正
+    this.deckService.refillHand();
+
     // 【実装内容】: 最初の日を開始
     // 【処理方針】: startDay()で日開始処理を実行
     // 🔵 信頼性レベル: 設計文書に明記
