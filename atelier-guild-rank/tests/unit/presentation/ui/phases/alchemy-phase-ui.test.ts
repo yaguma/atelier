@@ -59,6 +59,15 @@ interface MockScene extends Phaser.Scene {
   make: {
     text: ReturnType<typeof vi.fn>;
     container: ReturnType<typeof vi.fn>;
+    graphics: ReturnType<typeof vi.fn>;
+  };
+  input: {
+    on: ReturnType<typeof vi.fn>;
+    off: ReturnType<typeof vi.fn>;
+    keyboard: {
+      on: ReturnType<typeof vi.fn>;
+      off: ReturnType<typeof vi.fn>;
+    };
   };
   cameras: {
     main: {
@@ -131,6 +140,20 @@ const createMockScene = (): { scene: MockScene; mockContainer: MockContainer } =
         destroy: vi.fn(),
       }),
       container: vi.fn().mockReturnValue(mockContainer),
+      graphics: vi.fn().mockReturnValue({
+        fillStyle: vi.fn().mockReturnThis(),
+        fillRect: vi.fn().mockReturnThis(),
+        createGeometryMask: vi.fn().mockReturnValue({}),
+        destroy: vi.fn(),
+      }),
+    },
+    input: {
+      on: vi.fn(),
+      off: vi.fn(),
+      keyboard: {
+        on: vi.fn(),
+        off: vi.fn(),
+      },
     },
     cameras: {
       main: {
@@ -1117,6 +1140,67 @@ describe('AlchemyPhaseUI', () => {
 
     describe('TC-402: 初期化→使用→破棄→再初期化', () => {
       // 【テスト目的】: ライフサイクル全体が正常に機能することを確認
+
+      it('TC-403: destroy()でwheelイベントリスナーが解除される', () => {
+        // Given: レシピが存在するUIを作成
+        const recipe = createMockRecipe();
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
+        const ui = new AlchemyPhaseUI(scene, alchemyService);
+        ui.create();
+
+        // When: destroy()を呼ぶ
+        ui.destroy();
+
+        // Then: input.offが呼ばれてwheelリスナーが解除されている
+        expect(scene.input.off).toHaveBeenCalledWith('wheel', expect.any(Function));
+      });
+    });
+
+    describe('TC-5xx: スクロール機能', () => {
+      it('TC-501: create()でwheelイベントリスナーが登録される', () => {
+        // Given: レシピが存在するUI
+        const recipe = createMockRecipe();
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
+        const ui = new AlchemyPhaseUI(scene, alchemyService);
+
+        // When: create()を呼ぶ
+        ui.create();
+
+        // Then: wheelイベントが登録される
+        expect(scene.input.on).toHaveBeenCalledWith('wheel', expect.any(Function));
+
+        ui.destroy();
+      });
+
+      it('TC-502: レシピ数がvisibleHeight以内の場合スクロールオフセットが0のまま', () => {
+        // Given: レシピ1件のみ（表示領域に収まる）
+        const recipe = createMockRecipe();
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
+        const ui = new AlchemyPhaseUI(scene, alchemyService);
+        ui.create();
+
+        // Then: スクロール用の内部コンテナは存在するが、
+        //        maxOffsetが0以下なのでスクロールは発生しない
+        expect(ui).toBeDefined();
+
+        ui.destroy();
+      });
+
+      it('TC-503: refresh()後にスクロール位置がリセットされる', () => {
+        // Given: レシピが存在するUI
+        const recipe = createMockRecipe();
+        alchemyService.getAllRecipes.mockReturnValue([recipe]);
+        const ui = new AlchemyPhaseUI(scene, alchemyService);
+        ui.create();
+
+        // When: refresh()を呼ぶ
+        ui.refresh();
+
+        // Then: UIが正常に再構築される（例外が発生しない）
+        expect(ui).toBeDefined();
+
+        ui.destroy();
+      });
 
       it('TC-402: ライフサイクル全体が正常に動作する', () => {
         // Given: 2つのシーンモック

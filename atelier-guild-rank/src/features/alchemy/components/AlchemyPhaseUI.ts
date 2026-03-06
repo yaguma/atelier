@@ -589,6 +589,9 @@ export class AlchemyPhaseUI extends BaseComponent {
    * 既存のレシピラベルを破棄し、レシピリストを再読み込み・再作成する。
    */
   refresh(): void {
+    // スクロール位置をリセット（カード再作成前に実施）
+    this.resetScroll();
+
     // 既存のレシピカードを破棄（コンテナ破棄で子要素も一括破棄）
     for (const item of this.recipeLabels) {
       item.cardContainer.destroy(true);
