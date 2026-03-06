@@ -45,16 +45,33 @@ import type { GameEndCondition, IGameFlowManager } from './game-flow-manager.int
 /**
  * 【定数定義】: 初期デッキ構成
  * 【実装内容】: ゲーム開始時のデッキ構成（CardIdの配列）
- * 【暫定実装】: 現在は空配列として実装
- * 【将来的な実装】: 以下の実装方法を検討中
- *   - マスターデータから取得する方式
- *   - ゲームバランス調整用の設定ファイルから読み込む方式
- *   - ランク別の初期デッキを定義する方式
- * 【依存タスク】: カードマスターデータの実装完了後に正式な定義を追加予定
- * 【テスト影響】: 現在のテストはモックを使用しているため、空配列でも問題なく動作
- * 🟡 信頼性レベル: 暫定実装（後でマスターデータから取得）
+ * 【根拠】: balance-design.md セクション3.3「初期デッキ構成（15枚）」
+ *   - 採取地カード: 7枚 (47%) - 素材供給の安定化
+ *   - レシピカード: 5枚 (33%) - 調合オプションの確保
+ *   - 強化カード: 3枚 (20%) - ボーナスの機会提供
+ * 【カード選定基準】: unlockRank が G のカードのみを使用（ゲーム開始時の初期ランク）
+ * 🔵 信頼性レベル: バランス設計書に明記
  */
-const INITIAL_DECK: CardId[] = [] as CardId[];
+const INITIAL_DECK: CardId[] = [
+  // 採取地カード 7枚（Gランク）
+  'gathering_backyard' as CardId,
+  'gathering_backyard' as CardId,
+  'gathering_backyard' as CardId,
+  'gathering_nearby_forest' as CardId,
+  'gathering_nearby_forest' as CardId,
+  'gathering_nearby_forest' as CardId,
+  'gathering_nearby_forest' as CardId,
+  // レシピカード 5枚（Gランク）
+  'recipe_healing_potion' as CardId,
+  'recipe_healing_potion' as CardId,
+  'recipe_healing_potion' as CardId,
+  'recipe_healing_potion' as CardId,
+  'recipe_healing_potion' as CardId,
+  // 強化カード 3枚（Gランク）
+  'enhance_sage_catalyst' as CardId,
+  'enhance_sage_catalyst' as CardId,
+  'enhance_spirit_guide' as CardId,
+];
 
 /**
  * 【定数定義】: 1日の最大行動ポイント
