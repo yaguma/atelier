@@ -372,23 +372,11 @@ export class PhaseManager {
       const activeQuests = this.questService.getActiveQuests();
       sidebarUI.updateAcceptedQuests(activeQuests);
 
-      const availableQuests = this.questService.getAvailableQuests();
+      // Issue #356: 受注した依頼を表示リストから除外する
+      // getAvailableQuests()は掲示板・訪問・日次を混在して返すため使用しない
       const questAcceptUI = this.phaseUIs.get(GamePhase.QUEST_ACCEPT);
-      if (questAcceptUI && 'updateQuests' in questAcceptUI) {
-        const quests = availableQuests.map((q) => {
-          const client: IClient = {
-            id: q.clientId,
-            name: '依頼者',
-            type: 'VILLAGER',
-            contributionMultiplier: 1.0,
-            goldMultiplier: 1.0,
-            deadlineModifier: 0,
-            preferredQuestTypes: ['QUANTITY'],
-            unlockRank: 'G',
-          };
-          return new Quest(q, client);
-        });
-        (questAcceptUI as QuestAcceptPhaseUI).updateQuests(quests);
+      if (questAcceptUI && 'removeAcceptedQuest' in questAcceptUI) {
+        (questAcceptUI as QuestAcceptPhaseUI).removeAcceptedQuest(event.quest.id);
       }
     } catch (error) {
       console.error('Failed to accept quest:', error);

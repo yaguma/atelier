@@ -647,6 +647,21 @@ export class QuestAcceptPhaseUI extends BaseComponent {
   }
 
   /**
+   * 【機能概要】: 受注済み依頼を表示リストから除外
+   * Issue #356: 受注後にgetAvailableQuests()で全依頼を再取得せず、
+   * 現在の掲示板/訪問リストから該当依頼を除外して表示更新する
+   *
+   * @param questId - 除外する依頼のID
+   */
+  public removeAcceptedQuest(questId: string): void {
+    this._boardQuests = this._boardQuests.filter((q) => q.data.id !== questId);
+    this._visitorQuests = this._visitorQuests.filter((q) => q.data.id !== questId);
+
+    const quests = this._activeTab === 'board' ? this._boardQuests : this._visitorQuests;
+    this.updateQuests(quests);
+  }
+
+  /**
    * 【機能概要】: 受注済み数を設定
    * 【実装方針】: 外部から受注済み数を受け取り、上限チェックに使用
    * 🟡 信頼性レベル: REQ-005から妥当な推測
