@@ -13,6 +13,9 @@ import { TitlePage } from '../../pages/title.page';
 import { VisualRegressionPage } from '../../pages/visual-regression.page';
 
 test.describe('メイン画面 - フェーズ別ビジュアルテスト', () => {
+  // ビジュアルテストはフェーズスキップ＋スクリーンショット比較に時間がかかるため60秒に設定
+  test.describe.configure({ timeout: 60000 });
+
   let visual: VisualRegressionPage;
   let main: MainPage;
   let title: TitlePage;
@@ -21,6 +24,9 @@ test.describe('メイン画面 - フェーズ別ビジュアルテスト', () =>
     visual = new VisualRegressionPage(gamePage);
     main = new MainPage(gamePage);
     title = new TitlePage(gamePage);
+
+    // 乱数シードを固定（カード配置を決定的にする）
+    await visual.setRandomSeed(42);
 
     // 新規ゲームを開始してMainSceneへ遷移
     await title.waitForTitleLoad();
@@ -84,6 +90,8 @@ test.describe('メイン画面 - フェーズ別ビジュアルテスト', () =>
 });
 
 test.describe('メイン画面 - ヘッダー・サイドバー', () => {
+  test.describe.configure({ timeout: 60000 });
+
   let visual: VisualRegressionPage;
   let main: MainPage;
   let title: TitlePage;
@@ -92,6 +100,9 @@ test.describe('メイン画面 - ヘッダー・サイドバー', () => {
     visual = new VisualRegressionPage(gamePage);
     main = new MainPage(gamePage);
     title = new TitlePage(gamePage);
+
+    // 乱数シードを固定（カード配置を決定的にする）
+    await visual.setRandomSeed(42);
 
     // 新規ゲームを開始
     await title.waitForTitleLoad();
@@ -129,6 +140,8 @@ test.describe('メイン画面 - ヘッダー・サイドバー', () => {
 });
 
 test.describe('メイン画面 - ホバーエフェクト', () => {
+  test.describe.configure({ timeout: 60000 });
+
   let visual: VisualRegressionPage;
   let mouse: MouseInteractionPage;
   let main: MainPage;
@@ -139,6 +152,9 @@ test.describe('メイン画面 - ホバーエフェクト', () => {
     mouse = new MouseInteractionPage(gamePage);
     main = new MainPage(gamePage);
     title = new TitlePage(gamePage);
+
+    // 乱数シードを固定（カード配置を決定的にする）
+    await visual.setRandomSeed(42);
 
     // 新規ゲームを開始
     await title.waitForTitleLoad();

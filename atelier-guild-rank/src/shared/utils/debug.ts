@@ -231,6 +231,30 @@ export class DebugTools {
     localStorage.removeItem(SAVE_DATA_KEY);
   }
 
+  /**
+   * 【機能概要】: 乱数シードを固定する（E2Eテスト用）
+   * 【実装方針】: Math.randomをMulberry32シード付きPRNGで置換し、
+   *              ゲーム内の全乱数を決定的にする
+   * 【用途】: ビジュアルリグレッションテストで依頼カードの配置等を固定化
+   *
+   * @param seed - 乱数シード値
+   *
+   * @example
+   * ```typescript
+   * DebugTools.setRandomSeed(42); // 乱数を固定
+   * ```
+   */
+  static setRandomSeed(seed: number): void {
+    let state = seed;
+    Math.random = () => {
+      state += 0x6d2b79f5;
+      let z = state;
+      z = Math.imul(z ^ (z >>> 15), z | 1);
+      z ^= z + Math.imul(z ^ (z >>> 7), z | 61);
+      return ((z ^ (z >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
   // =============================================================================
   // E2Eテスト用UIインタラクションメソッド
   // =============================================================================

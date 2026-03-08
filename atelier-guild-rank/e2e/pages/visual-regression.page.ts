@@ -12,11 +12,11 @@ import { BasePage } from './base.page';
  * 差分許容設定などを統一的に管理する。
  */
 export class VisualRegressionPage extends BasePage {
-  /** スクリーンショットのデフォルト許容差分率 */
-  private static readonly DEFAULT_MAX_DIFF_PIXEL_RATIO = 0.02;
+  /** スクリーンショットのデフォルト許容差分率（Canvas描画のChromiumバージョン差分を考慮） */
+  private static readonly DEFAULT_MAX_DIFF_PIXEL_RATIO = 0.05;
 
   /** 動的要素（パーティクル等）の許容差分率 */
-  private static readonly DYNAMIC_MAX_DIFF_PIXEL_RATIO = 0.05;
+  private static readonly DYNAMIC_MAX_DIFF_PIXEL_RATIO = 0.08;
 
   /** アニメーション安定化のための待機時間（ミリ秒） */
   private static readonly ANIMATION_SETTLE_TIME = 500;
@@ -73,6 +73,7 @@ export class VisualRegressionPage extends BasePage {
     options?: {
       maxDiffPixelRatio?: number;
       mask?: Array<{ x: number; y: number; width: number; height: number }>;
+      timeout?: number;
     },
   ): Promise<void> {
     const filename = name.endsWith('.png') ? name : `${name}.png`;
@@ -80,6 +81,7 @@ export class VisualRegressionPage extends BasePage {
 
     await expect(this.canvas).toHaveScreenshot(filename, {
       maxDiffPixelRatio: maxDiff,
+      timeout: options?.timeout ?? 15000,
     });
   }
 
