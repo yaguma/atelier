@@ -23,7 +23,7 @@
  * （@shared/types/constants が @shared/constants を参照するため）
  */
 import type { ClientType, GuildRank, Quality, QuestType } from '@shared/types/common';
-import type { CardId } from '@shared/types/ids';
+import { type CardId, toCardId } from '@shared/types/ids';
 
 // =============================================================================
 // ランク関連定数（バランス設計書 2.2）
@@ -97,23 +97,23 @@ export const PLAYER_INITIAL = {
  */
 export const INITIAL_DECK: CardId[] = [
   // 採取地カード 7枚（Gランク）
-  'gathering_backyard' as CardId,
-  'gathering_backyard' as CardId,
-  'gathering_backyard' as CardId,
-  'gathering_nearby_forest' as CardId,
-  'gathering_nearby_forest' as CardId,
-  'gathering_nearby_forest' as CardId,
-  'gathering_nearby_forest' as CardId,
+  toCardId('gathering_backyard'),
+  toCardId('gathering_backyard'),
+  toCardId('gathering_backyard'),
+  toCardId('gathering_nearby_forest'),
+  toCardId('gathering_nearby_forest'),
+  toCardId('gathering_nearby_forest'),
+  toCardId('gathering_nearby_forest'),
   // レシピカード 5枚（Gランク）
-  'recipe_healing_potion' as CardId,
-  'recipe_healing_potion' as CardId,
-  'recipe_healing_potion' as CardId,
-  'recipe_healing_potion' as CardId,
-  'recipe_healing_potion' as CardId,
+  toCardId('recipe_healing_potion'),
+  toCardId('recipe_healing_potion'),
+  toCardId('recipe_healing_potion'),
+  toCardId('recipe_healing_potion'),
+  toCardId('recipe_healing_potion'),
   // 強化カード 3枚（Gランク）
-  'enhance_sage_catalyst' as CardId,
-  'enhance_sage_catalyst' as CardId,
-  'enhance_spirit_guide' as CardId,
+  toCardId('enhance_sage_catalyst'),
+  toCardId('enhance_sage_catalyst'),
+  toCardId('enhance_spirit_guide'),
 ];
 
 // =============================================================================
