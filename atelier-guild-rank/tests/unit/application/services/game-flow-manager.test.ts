@@ -154,6 +154,10 @@ describe('GameFlowManager', () => {
       // 🔵 信頼性: 設計文書に明確に記載
       expect(mockDeckService.initialize).toHaveBeenCalledTimes(1); // 【確認内容】: デッキ初期化処理が1回実行されることを確認
 
+      // 【期待値確認】: DeckService.refillHand()が呼び出されて初期手札がドローされることを確認
+      // 🔵 信頼性: Issue #373 バグ修正 - initialize()だけでは手札が空のまま
+      expect(mockDeckService.refillHand).toHaveBeenCalledTimes(1);
+
       // 【期待値確認】: DAY_STARTEDイベントが発行されることを確認（startDay()の一部）
       // 🔵 信頼性: 設計文書に明確に記載
       expect(mockEventBus.emit).toHaveBeenCalledWith(
@@ -162,6 +166,28 @@ describe('GameFlowManager', () => {
           day: 1,
         }),
       ); // 【確認内容】: 日開始イベントが発行されることを確認
+    });
+
+    it('T-0017-01b: 初期デッキがバランス設計書に準拠した15枚で構成される', () => {
+      gameFlowManager.startNewGame();
+
+      const initializeCall = mockDeckService.initialize.mock.calls[0];
+      const cardIds = initializeCall[0] as string[];
+
+      // balance-design.md セクション3.3: 初期デッキ構成（15枚）
+      expect(cardIds).toHaveLength(15);
+
+      // 採取地カード7枚 (47%)
+      const gatheringCards = cardIds.filter((id) => id.startsWith('gathering_'));
+      expect(gatheringCards).toHaveLength(7);
+
+      // レシピカード5枚 (33%)
+      const recipeCards = cardIds.filter((id) => id.startsWith('recipe_'));
+      expect(recipeCards).toHaveLength(5);
+
+      // 強化カード3枚 (20%)
+      const enhancementCards = cardIds.filter((id) => id.startsWith('enhance_'));
+      expect(enhancementCards).toHaveLength(3);
     });
 
     it('T-0017-02: 日開始処理が正しく実行される（日終了後のケース）', () => {

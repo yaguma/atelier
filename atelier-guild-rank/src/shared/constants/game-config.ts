@@ -23,6 +23,7 @@
  * （@shared/types/constants が @shared/constants を参照するため）
  */
 import type { ClientType, GuildRank, Quality, QuestType } from '@shared/types/common';
+import { type CardId, toCardId } from '@shared/types/ids';
 
 // =============================================================================
 // ランク関連定数（バランス設計書 2.2）
@@ -82,6 +83,38 @@ export const PLAYER_INITIAL = {
   /** 初期ランクHP */
   RANK_HP: 3,
 } as const;
+
+/**
+ * 初期デッキ構成
+ *
+ * ゲーム開始時のデッキ（CardIdの配列）。
+ * バランス設計書 セクション 3.3「初期デッキ構成（15枚）」に基づく。
+ *   - 採取地カード: 7枚 (47%) - 素材供給の安定化
+ *   - レシピカード: 5枚 (33%) - 調合オプションの確保
+ *   - 強化カード: 3枚 (20%) - ボーナスの機会提供
+ *
+ * カード選定基準: unlockRank が G のカードのみ（ゲーム開始時の初期ランク）
+ */
+export const INITIAL_DECK: CardId[] = [
+  // 採取地カード 7枚（Gランク）
+  toCardId('gathering_backyard'),
+  toCardId('gathering_backyard'),
+  toCardId('gathering_backyard'),
+  toCardId('gathering_nearby_forest'),
+  toCardId('gathering_nearby_forest'),
+  toCardId('gathering_nearby_forest'),
+  toCardId('gathering_nearby_forest'),
+  // レシピカード 5枚（Gランク）
+  toCardId('recipe_healing_potion'),
+  toCardId('recipe_healing_potion'),
+  toCardId('recipe_healing_potion'),
+  toCardId('recipe_healing_potion'),
+  toCardId('recipe_healing_potion'),
+  // 強化カード 3枚（Gランク）
+  toCardId('enhance_sage_catalyst'),
+  toCardId('enhance_sage_catalyst'),
+  toCardId('enhance_spirit_guide'),
+];
 
 // =============================================================================
 // 採取関連定数（バランス設計書 3.2）

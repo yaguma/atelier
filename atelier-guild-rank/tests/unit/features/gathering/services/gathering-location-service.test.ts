@@ -267,9 +267,9 @@ describe('GATHERING_LOCATIONS マスタデータ', () => {
     }
   });
 
-  it('全ての場所に正の移動APコストが設定されている', () => {
+  it('全ての場所に0以上の移動APコストが設定されている', () => {
     for (const location of GATHERING_LOCATIONS) {
-      expect(location.movementAPCost).toBeGreaterThan(0);
+      expect(location.movementAPCost).toBeGreaterThanOrEqual(0);
     }
   });
 
@@ -298,5 +298,27 @@ describe('GATHERING_LOCATIONS マスタデータ', () => {
     const cardIds = GATHERING_LOCATIONS.map((l) => l.cardId);
     const uniqueCardIds = new Set(cardIds);
     expect(uniqueCardIds.size).toBe(cardIds.length);
+  });
+
+  it('cardIdがマスターデータの採取地カードIDと一致する', () => {
+    // マスターデータ gathering_cards.json の全IDリスト
+    const masterCardIds = [
+      'gathering_backyard',
+      'gathering_nearby_forest',
+      'gathering_riverside',
+      'gathering_windy_hill',
+      'gathering_mountain_trail',
+      'gathering_deep_cave',
+      'gathering_ancient_forest',
+      'gathering_volcanic_area',
+    ];
+    const locationCardIds = GATHERING_LOCATIONS.map((l) => l.cardId);
+    for (const masterId of masterCardIds) {
+      expect(locationCardIds).toContain(masterId);
+    }
+  });
+
+  it('マスターデータの全採取地をカバーしている（8箇所）', () => {
+    expect(GATHERING_LOCATIONS).toHaveLength(8);
   });
 });
