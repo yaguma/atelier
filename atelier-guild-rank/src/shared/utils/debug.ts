@@ -231,6 +231,54 @@ export class DebugTools {
     localStorage.removeItem(SAVE_DATA_KEY);
   }
 
+  /** オリジナルのMath.random関数（復元用） */
+  private static originalMathRandom: (() => number) | null = null;
+
+  /**
+   * 【機能概要】: 乱数シードを固定する（E2Eテスト用）
+   * 【実装方針】: Math.randomをMulberry32シード付きPRNGで置換し、
+   *              ゲーム内の全乱数を決定的にする
+   * 【用途】: ビジュアルリグレッションテストで依頼カードの配置等を固定化
+   *
+   * @param seed - 乱数シード値
+   *
+   * @example
+   * ```typescript
+   * DebugTools.setRandomSeed(42); // 乱数を固定
+   * DebugTools.restoreRandomSeed(); // テスト後に復元
+   * ```
+   */
+  static setRandomSeed(seed: number): void {
+    if (!Number.isFinite(seed)) {
+      console.warn('Invalid seed value:', seed);
+      return;
+    }
+
+    if (!DebugTools.originalMathRandom) {
+      DebugTools.originalMathRandom = Math.random;
+    }
+
+    let state = seed;
+    Math.random = () => {
+      state += 0x6d2b79f5;
+      let z = state;
+      z = Math.imul(z ^ (z >>> 15), z | 1);
+      z ^= z + Math.imul(z ^ (z >>> 7), z | 61);
+      return ((z ^ (z >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  /**
+   * 【機能概要】: Math.randomを元の関数に復元する
+   * 【用途】: setRandomSeed()でシード固定した後、テスト間の独立性を確保するために復元
+   */
+  static restoreRandomSeed(): void {
+    if (DebugTools.originalMathRandom) {
+      Math.random = DebugTools.originalMathRandom;
+      DebugTools.originalMathRandom = null;
+    }
+  }
+
   // =============================================================================
   // E2Eテスト用UIインタラクションメソッド
   // =============================================================================
