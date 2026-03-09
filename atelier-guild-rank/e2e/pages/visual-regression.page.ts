@@ -12,7 +12,11 @@ import { BasePage } from './base.page';
  * 差分許容設定などを統一的に管理する。
  */
 export class VisualRegressionPage extends BasePage {
-  /** スクリーンショットのデフォルト許容差分率（Canvas描画のChromiumバージョン差分を考慮） */
+  /**
+   * スクリーンショットのデフォルト許容差分率
+   * Chromium v1208アップデートでCanvas描画に微差が発生（実測: 最大約3-4%差分）。
+   * シード固定後も描画エンジン由来の差異は残るため、余裕を持って5%に設定。
+   */
   private static readonly DEFAULT_MAX_DIFF_PIXEL_RATIO = 0.05;
 
   /** 動的要素（パーティクル等）の許容差分率 */
@@ -280,12 +284,22 @@ export class VisualRegressionPage extends BasePage {
   async setRandomSeed(seed: number): Promise<void> {
     await this.page.evaluate((s) => {
       const win = window as unknown as GameWindow;
-      // biome-ignore lint/suspicious/noExplicitAny: 動的プロパティアクセス
-      const debug = win.debug as any;
-      if (debug?.setRandomSeed) {
-        debug.setRandomSeed(s);
+      if (win.debug?.setRandomSeed) {
+        win.debug.setRandomSeed(s);
       }
     }, seed);
+  }
+
+  /**
+   * 乱数シード固定を解除し、元のMath.randomを復元する
+   */
+  async restoreRandomSeed(): Promise<void> {
+    await this.page.evaluate(() => {
+      const win = window as unknown as GameWindow;
+      if (win.debug?.restoreRandomSeed) {
+        win.debug.restoreRandomSeed();
+      }
+    });
   }
 
   /**
@@ -294,10 +308,8 @@ export class VisualRegressionPage extends BasePage {
   async hideTimestamp(): Promise<void> {
     await this.page.evaluate(() => {
       const win = window as unknown as GameWindow;
-      // biome-ignore lint/suspicious/noExplicitAny: 動的プロパティアクセス
-      const debug = win.debug as any;
-      if (debug?.hideTimestamp) {
-        debug.hideTimestamp();
+      if (win.debug?.hideTimestamp) {
+        win.debug.hideTimestamp();
       }
     });
   }

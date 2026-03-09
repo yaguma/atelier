@@ -25,13 +25,21 @@ test.describe('メイン画面 - フェーズ別ビジュアルテスト', () =>
     main = new MainPage(gamePage);
     title = new TitlePage(gamePage);
 
-    // 乱数シードを固定（カード配置を決定的にする）
+    // 乱数シードをゲーム起動前に固定（Math.randomを置換）
+    // BootScene完了後のTitleScene表示を待ってからシード設定するため、
+    // BootScene内の乱数使用には影響しないが、clickNewGame以降の
+    // カード生成・配置処理は決定的になる
     await visual.setRandomSeed(42);
 
     // 新規ゲームを開始してMainSceneへ遷移
     await title.waitForTitleLoad();
     await title.clickNewGame();
     await main.waitForMainLoad();
+  });
+
+  test.afterEach(async () => {
+    // テスト間の独立性を確保するためMath.randomを復元
+    await visual.restoreRandomSeed();
   });
 
   /**
@@ -101,13 +109,17 @@ test.describe('メイン画面 - ヘッダー・サイドバー', () => {
     main = new MainPage(gamePage);
     title = new TitlePage(gamePage);
 
-    // 乱数シードを固定（カード配置を決定的にする）
+    // 乱数シードをゲーム起動前に固定（カード配置を決定的にする）
     await visual.setRandomSeed(42);
 
     // 新規ゲームを開始
     await title.waitForTitleLoad();
     await title.clickNewGame();
     await main.waitForMainLoad();
+  });
+
+  test.afterEach(async () => {
+    await visual.restoreRandomSeed();
   });
 
   /**
@@ -153,13 +165,17 @@ test.describe('メイン画面 - ホバーエフェクト', () => {
     main = new MainPage(gamePage);
     title = new TitlePage(gamePage);
 
-    // 乱数シードを固定（カード配置を決定的にする）
+    // 乱数シードをゲーム起動前に固定（カード配置を決定的にする）
     await visual.setRandomSeed(42);
 
     // 新規ゲームを開始
     await title.waitForTitleLoad();
     await title.clickNewGame();
     await main.waitForMainLoad();
+  });
+
+  test.afterEach(async () => {
+    await visual.restoreRandomSeed();
   });
 
   /**

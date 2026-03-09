@@ -86,6 +86,10 @@ export interface DebugTools {
   clickContinue?: () => void;
   /** フェーズを直接切り替え（自由遷移） */
   switchPhase?: (phase: string) => void;
+  /** 乱数シードを固定（E2Eテスト用） */
+  setRandomSeed?: (seed: number) => void;
+  /** 乱数シード固定を解除し元のMath.randomを復元 */
+  restoreRandomSeed?: () => void;
 }
 
 /**
