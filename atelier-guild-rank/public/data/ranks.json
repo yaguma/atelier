@@ -17,9 +17,7 @@
     "name": "新人",
     "requiredContribution": 200,
     "dayLimit": 30,
-    "specialRules": [
-      { "type": "QUEST_LIMIT", "value": 2, "description": "同時受注2件まで" }
-    ],
+    "specialRules": [{ "type": "QUEST_LIMIT", "value": 2, "description": "同時受注2件まで" }],
     "promotionTest": {
       "requirements": [
         { "itemId": "healing_potion", "quantity": 3, "minQuality": "B" },
@@ -73,12 +71,14 @@
     "requiredContribution": 500,
     "dayLimit": 35,
     "specialRules": [
-      { "type": "QUALITY_REQUIRED", "condition": "C", "description": "品質C以上でないと受理されない" }
+      {
+        "type": "QUALITY_REQUIRED",
+        "condition": "C",
+        "description": "品質C以上でないと受理されない"
+      }
     ],
     "promotionTest": {
-      "requirements": [
-        { "itemId": "healing_potion", "quantity": 5, "minQuality": "B" }
-      ],
+      "requirements": [{ "itemId": "healing_potion", "quantity": 5, "minQuality": "B" }],
       "dayLimit": 3
     },
     "unlockedGatheringCards": ["gathering_volcano"],
@@ -114,9 +114,7 @@
       { "type": "DEADLINE_REDUCTION", "value": 2, "description": "期限-2日" }
     ],
     "promotionTest": {
-      "requirements": [
-        { "itemId": "legendary_item", "quantity": 1, "minQuality": "S" }
-      ],
+      "requirements": [{ "itemId": "legendary_item", "quantity": 1, "minQuality": "S" }],
       "dayLimit": 0
     },
     "unlockedGatheringCards": ["gathering_moonlit_spring"],
