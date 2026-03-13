@@ -233,7 +233,7 @@ export class AlchemyPhaseUI extends BaseComponent {
 
       // グリッド座標を計算
       const cardX = RECIPE_LIST_OFFSET_X + col * (ITEM_WIDTH + GRID_MARGIN_X);
-      const cardY = rowStartY[row];
+      const cardY = rowStartY[row] ?? 0;
 
       // レシピカードを作成（名前＋素材を含む統合カード）
       const labelInfo = this.createRecipeCard(
@@ -248,8 +248,8 @@ export class AlchemyPhaseUI extends BaseComponent {
 
     // Issue #368: ScrollableContainerにコンテンツ高さを通知
     const totalRows = Math.ceil(this.recipes.length / GRID_COLUMNS);
-    const lastRowY = totalRows > 0 ? rowStartY[totalRows - 1] : 0;
-    const lastRowHeight = totalRows > 0 ? rowMaxHeights[totalRows - 1] + ITEM_SPACING : 0;
+    const lastRowY = totalRows > 0 ? (rowStartY[totalRows - 1] ?? 0) : 0;
+    const lastRowHeight = totalRows > 0 ? (rowMaxHeights[totalRows - 1] ?? 0) + ITEM_SPACING : 0;
     this.scrollableContainer?.setContentHeight(lastRowY + lastRowHeight);
     this.resetScroll();
   }
