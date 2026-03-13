@@ -40,6 +40,10 @@ const ALCHEMY_PHASE_LAYOUT = {
   ITEM_WIDTH: 200,
   /** アイテム間スペーシング */
   ITEM_SPACING: 12,
+  /** グリッド列数 */
+  GRID_COLUMNS: 4,
+  /** グリッド水平マージン */
+  GRID_MARGIN_X: 16,
   /** 角丸半径 */
   BORDER_RADIUS: 8,
   /** パディング(水平) */
@@ -198,12 +202,24 @@ export class AlchemyPhaseUI extends BaseComponent {
   }
 
   /**
-   * レシピリストを作成（レシピ名＋必要素材を1つのカード内に表示）
+   * レシピリストを作成（グリッドレイアウト: レシピ名＋必要素材を1つのカード内に表示）
+   * Issue #374: 複数列グリッド配置で画面スペースを有効活用
    */
   private createRecipeList(): void {
-    let currentY = ALCHEMY_PHASE_LAYOUT.RECIPE_LIST_START_Y;
+    const { GRID_COLUMNS, ITEM_WIDTH, GRID_MARGIN_X, RECIPE_LIST_OFFSET_X, ITEM_SPACING } =
+      ALCHEMY_PHASE_LAYOUT;
 
-    for (const recipe of this.recipes) {
+    // 行ごとの最大カード高さを事前計算
+    const rowMaxHeights = this.calculateRowMaxHeights();
+
+    // 行ごとのY開始位置を累積計算
+    const rowStartY = this.calculateRowStartPositions(rowMaxHeights);
+
+    for (let i = 0; i < this.recipes.length; i++) {
+      const recipe = this.recipes[i];
+      const col = i % GRID_COLUMNS;
+      const row = Math.floor(i / GRID_COLUMNS);
+
       const checkResult = this.alchemyService.checkRecipeRequirements(
         recipe.id,
         this.availableMaterials,
@@ -215,24 +231,69 @@ export class AlchemyPhaseUI extends BaseComponent {
         missingMap.set(m.materialId, m.quantity);
       }
 
+      // グリッド座標を計算
+      const cardX = RECIPE_LIST_OFFSET_X + col * (ITEM_WIDTH + GRID_MARGIN_X);
+      const cardY = rowStartY[row] ?? 0;
+
       // レシピカードを作成（名前＋素材を含む統合カード）
       const labelInfo = this.createRecipeCard(
         recipe,
-        ALCHEMY_PHASE_LAYOUT.RECIPE_LIST_OFFSET_X,
-        currentY,
+        cardX,
+        cardY,
         checkResult.canCraft,
         missingMap,
       );
       this.recipeLabels.push(labelInfo);
-
-      // 次のカードのY位置を計算
-      const cardHeight = this.calculateCardHeight(recipe.requiredMaterials.length);
-      currentY += cardHeight + ALCHEMY_PHASE_LAYOUT.ITEM_SPACING;
     }
 
     // Issue #368: ScrollableContainerにコンテンツ高さを通知
-    this.scrollableContainer?.setContentHeight(currentY);
+    const totalRows = Math.ceil(this.recipes.length / GRID_COLUMNS);
+    const lastRowY = totalRows > 0 ? (rowStartY[totalRows - 1] ?? 0) : 0;
+    const lastRowHeight = totalRows > 0 ? (rowMaxHeights[totalRows - 1] ?? 0) + ITEM_SPACING : 0;
+    this.scrollableContainer?.setContentHeight(lastRowY + lastRowHeight);
     this.resetScroll();
+  }
+
+  /**
+   * 行ごとの最大カード高さを計算
+   * Issue #374: グリッドレイアウトで行内の高さを揃える
+   */
+  private calculateRowMaxHeights(): number[] {
+    const { GRID_COLUMNS } = ALCHEMY_PHASE_LAYOUT;
+    const totalRows = Math.ceil(this.recipes.length / GRID_COLUMNS);
+    const rowMaxHeights: number[] = [];
+
+    for (let row = 0; row < totalRows; row++) {
+      let maxHeight = 0;
+      for (let col = 0; col < GRID_COLUMNS; col++) {
+        const index = row * GRID_COLUMNS + col;
+        if (index >= this.recipes.length) break;
+        const height = this.calculateCardHeight(this.recipes[index].requiredMaterials.length);
+        if (height > maxHeight) {
+          maxHeight = height;
+        }
+      }
+      rowMaxHeights.push(maxHeight);
+    }
+
+    return rowMaxHeights;
+  }
+
+  /**
+   * 行ごとのY開始位置を累積計算
+   * Issue #374: 各行のY位置は前行の最大高さに基づく
+   */
+  private calculateRowStartPositions(rowMaxHeights: number[]): number[] {
+    const { RECIPE_LIST_START_Y, ITEM_SPACING } = ALCHEMY_PHASE_LAYOUT;
+    const rowStartY: number[] = [];
+    let currentY = RECIPE_LIST_START_Y;
+
+    for (let row = 0; row < rowMaxHeights.length; row++) {
+      rowStartY.push(currentY);
+      currentY += rowMaxHeights[row] + ITEM_SPACING;
+    }
+
+    return rowStartY;
   }
 
   /**
@@ -644,10 +705,14 @@ export class AlchemyPhaseUI extends BaseComponent {
       return;
     }
 
-    // 上下矢印キーでレシピをナビゲート
+    // 矢印キーでレシピをナビゲート（Issue #374: グリッドに対応）
     if (isKeyForAction(event.key, 'UP')) {
-      this.moveFocus(-1);
+      this.moveFocus(-ALCHEMY_PHASE_LAYOUT.GRID_COLUMNS);
     } else if (isKeyForAction(event.key, 'DOWN')) {
+      this.moveFocus(ALCHEMY_PHASE_LAYOUT.GRID_COLUMNS);
+    } else if (isKeyForAction(event.key, 'LEFT')) {
+      this.moveFocus(-1);
+    } else if (isKeyForAction(event.key, 'RIGHT')) {
       this.moveFocus(1);
     }
     // Enter/Spaceでフォーカス中のレシピを選択（調合可能なもののみ）

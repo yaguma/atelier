@@ -1227,4 +1227,203 @@ describe('AlchemyPhaseUI', () => {
       });
     });
   });
+
+  // ========================================
+  // 9. グリッドレイアウトテスト（Issue #374）
+  // ========================================
+
+  describe('グリッドレイアウト', () => {
+    it('TC-500: 複数レシピが4列グリッドで配置される', () => {
+      // Arrange: 5つのレシピ（4列なので2行になる）
+      const recipes = Array.from({ length: 5 }, (_, i) =>
+        createMockRecipe({
+          id: toCardId(`recipe-${i}`),
+          name: `レシピ${i}`,
+          requiredMaterials: [{ materialId: `mat-${i}`, quantity: 1 }],
+        }),
+      );
+      alchemyService.getAllRecipes.mockReturnValue(recipes);
+
+      // Act
+      const ui = new AlchemyPhaseUI(scene, alchemyService);
+      ui.create();
+
+      // Assert: 5つのレシピが読み込まれている
+      expect(ui.getRecipeCount()).toBe(5);
+
+      ui.destroy();
+    });
+
+    it('TC-501: レシピが0件の場合でもエラーにならない', () => {
+      // Arrange
+      alchemyService.getAllRecipes.mockReturnValue([]);
+
+      // Act & Assert: エラーなしで生成される
+      const ui = new AlchemyPhaseUI(scene, alchemyService);
+      ui.create();
+      expect(ui.getRecipeCount()).toBe(0);
+
+      ui.destroy();
+    });
+
+    it('TC-502: レシピが1件の場合でもグリッドが正しく動作する', () => {
+      // Arrange
+      const recipe = createMockRecipe();
+      alchemyService.getAllRecipes.mockReturnValue([recipe]);
+
+      // Act
+      const ui = new AlchemyPhaseUI(scene, alchemyService);
+      ui.create();
+
+      // Assert
+      expect(ui.getRecipeCount()).toBe(1);
+
+      ui.destroy();
+    });
+
+    it('TC-503: 素材数が異なるレシピが混在しても正しく配置される', () => {
+      // Arrange: 素材数が1〜3個のレシピ
+      const recipes = [
+        createMockRecipe({
+          id: toCardId('recipe-1mat'),
+          requiredMaterials: [{ materialId: 'mat-a', quantity: 1 }],
+        }),
+        createMockRecipe({
+          id: toCardId('recipe-3mat'),
+          requiredMaterials: [
+            { materialId: 'mat-a', quantity: 1 },
+            { materialId: 'mat-b', quantity: 1 },
+            { materialId: 'mat-c', quantity: 1 },
+          ],
+        }),
+        createMockRecipe({
+          id: toCardId('recipe-2mat'),
+          requiredMaterials: [
+            { materialId: 'mat-a', quantity: 1 },
+            { materialId: 'mat-b', quantity: 1 },
+          ],
+        }),
+      ];
+      alchemyService.getAllRecipes.mockReturnValue(recipes);
+
+      // Act & Assert: エラーなしで生成される
+      const ui = new AlchemyPhaseUI(scene, alchemyService);
+      ui.create();
+      expect(ui.getRecipeCount()).toBe(3);
+
+      ui.destroy();
+    });
+  });
+
+  // ========================================
+  // 10. キーボードナビゲーション グリッド対応テスト（Issue #374）
+  // ========================================
+
+  describe('キーボードナビゲーション（グリッド対応）', () => {
+    /**
+     * キーボードイベントをシミュレートする
+     */
+    const simulateKeydown = (key: string): void => {
+      // scene.input.keyboard.on('keydown', handler) で登録されたハンドラを取得して呼び出す
+      const keydownCalls = scene.input.keyboard.on.mock.calls.filter(
+        (call: unknown[]) => call[0] === 'keydown',
+      );
+      const handler = keydownCalls[keydownCalls.length - 1]?.[1] as
+        | ((event: { key: string }) => void)
+        | undefined;
+      if (handler) {
+        handler({ key });
+      }
+    };
+
+    it('TC-510: 左右矢印キーでフォーカスが移動する', () => {
+      // Arrange: 8つのレシピ（4列×2行）
+      const recipes = Array.from({ length: 8 }, (_, i) =>
+        createMockRecipe({
+          id: toCardId(`recipe-${i}`),
+          name: `レシピ${i}`,
+        }),
+      );
+      alchemyService.getAllRecipes.mockReturnValue(recipes);
+
+      const ui = new AlchemyPhaseUI(scene, alchemyService);
+      ui.create();
+
+      // Act: 右矢印キーを押す
+      simulateKeydown('ArrowRight');
+
+      // Assert: UIが正常に動作している（エラーなし）
+      expect(ui.getRecipeCount()).toBe(8);
+
+      ui.destroy();
+    });
+
+    it('TC-511: 上下矢印キーでグリッド列数分フォーカスが移動する', () => {
+      // Arrange: 8つのレシピ（4列×2行）
+      const recipes = Array.from({ length: 8 }, (_, i) =>
+        createMockRecipe({
+          id: toCardId(`recipe-${i}`),
+          name: `レシピ${i}`,
+        }),
+      );
+      alchemyService.getAllRecipes.mockReturnValue(recipes);
+
+      const ui = new AlchemyPhaseUI(scene, alchemyService);
+      ui.create();
+
+      // Act: 下矢印キーを押す（4列分移動）
+      simulateKeydown('ArrowDown');
+
+      // Assert: エラーなしで動作
+      expect(ui.getRecipeCount()).toBe(8);
+
+      ui.destroy();
+    });
+
+    it('TC-512: 先頭で上キーを押しても範囲外にならない', () => {
+      // Arrange
+      const recipes = Array.from({ length: 8 }, (_, i) =>
+        createMockRecipe({
+          id: toCardId(`recipe-${i}`),
+          name: `レシピ${i}`,
+        }),
+      );
+      alchemyService.getAllRecipes.mockReturnValue(recipes);
+
+      const ui = new AlchemyPhaseUI(scene, alchemyService);
+      ui.create();
+
+      // Act: 先頭で上キーを押す
+      simulateKeydown('ArrowUp');
+
+      // Assert: エラーなし（インデックスは0にクランプされる）
+      expect(ui.getRecipeCount()).toBe(8);
+
+      ui.destroy();
+    });
+
+    it('TC-513: 末尾で下キーを押しても範囲外にならない', () => {
+      // Arrange
+      const recipes = Array.from({ length: 3 }, (_, i) =>
+        createMockRecipe({
+          id: toCardId(`recipe-${i}`),
+          name: `レシピ${i}`,
+        }),
+      );
+      alchemyService.getAllRecipes.mockReturnValue(recipes);
+
+      const ui = new AlchemyPhaseUI(scene, alchemyService);
+      ui.create();
+
+      // Act: 下キーを複数回押す
+      simulateKeydown('ArrowDown');
+      simulateKeydown('ArrowDown');
+      simulateKeydown('ArrowDown');
+
+      // Assert: エラーなし（インデックスは最大値にクランプされる）
+      expect(ui.getRecipeCount()).toBe(3);
+
+      ui.destroy();
+    });
+  });
 });

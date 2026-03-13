@@ -68,9 +68,6 @@
     "deadlineModifier": 0,
     "preferredQuestTypes": ["SPECIFIC"],
     "unlockRank": "G",
-    "dialoguePatterns": [
-      "昇格試験の課題だ",
-      "{item}を{quantity}個納品せよ"
-    ]
+    "dialoguePatterns": ["昇格試験の課題だ", "{item}を{quantity}個納品せよ"]
   }
 ]
