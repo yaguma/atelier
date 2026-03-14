@@ -46,6 +46,7 @@ interface MockRectangle {
   setFillStyle: ReturnType<typeof vi.fn>;
   setStrokeStyle: ReturnType<typeof vi.fn>;
   setInteractive: ReturnType<typeof vi.fn>;
+  setName: ReturnType<typeof vi.fn>;
   on: ReturnType<typeof vi.fn>;
   destroy: ReturnType<typeof vi.fn>;
 }
@@ -116,6 +117,7 @@ const createMockScene = (): {
     setFillStyle: vi.fn().mockReturnThis(),
     setStrokeStyle: vi.fn().mockReturnThis(),
     setInteractive: vi.fn().mockReturnThis(),
+    setName: vi.fn().mockReturnThis(),
     on: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
   };

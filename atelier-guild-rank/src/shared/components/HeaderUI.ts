@@ -198,7 +198,7 @@ export class HeaderUI extends BaseComponent {
       HEADER_LAYOUT.HEIGHT,
       COLORS.BACKGROUND,
       0.95,
-    );
+    ).setName('HeaderUI.backgroundPanel');
     this.container.add(this._backgroundPanel);
 
     // 下部ボーダーライン
@@ -210,7 +210,7 @@ export class HeaderUI extends BaseComponent {
       2,
       COLORS.BORDER,
       1,
-    );
+    ).setName('HeaderUI.borderLine');
     this.container.add(borderLine);
 
     // ランクラベルを生成

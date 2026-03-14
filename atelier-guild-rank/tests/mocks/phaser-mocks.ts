@@ -62,6 +62,7 @@ export interface MockPhaserText {
   setPosition: ReturnType<typeof vi.fn>;
   setInteractive: ReturnType<typeof vi.fn>;
   setWordWrapWidth: ReturnType<typeof vi.fn>;
+  setName: ReturnType<typeof vi.fn>;
   on: ReturnType<typeof vi.fn>;
   destroy: ReturnType<typeof vi.fn>;
   text: string;
@@ -96,6 +97,7 @@ export interface MockPhaserRectangle {
   disableInteractive: ReturnType<typeof vi.fn>;
   setAlpha: ReturnType<typeof vi.fn>;
   setDepth: ReturnType<typeof vi.fn>;
+  setName: ReturnType<typeof vi.fn>;
   on: ReturnType<typeof vi.fn>;
   destroy: ReturnType<typeof vi.fn>;
 }
@@ -209,6 +211,7 @@ export const createMockText = (): MockPhaserText => ({
   setPosition: vi.fn().mockReturnThis(),
   setInteractive: vi.fn().mockReturnThis(),
   setWordWrapWidth: vi.fn().mockReturnThis(),
+  setName: vi.fn().mockReturnThis(),
   on: vi.fn().mockReturnThis(),
   destroy: vi.fn(),
   text: '',
@@ -243,6 +246,7 @@ export const createMockRectangle = (): MockPhaserRectangle => ({
   disableInteractive: vi.fn().mockReturnThis(),
   setAlpha: vi.fn().mockReturnThis(),
   setDepth: vi.fn().mockReturnThis(),
+  setName: vi.fn().mockReturnThis(),
   on: vi.fn().mockReturnThis(),
   destroy: vi.fn(),
 });

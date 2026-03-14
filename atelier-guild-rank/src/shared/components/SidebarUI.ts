@@ -220,25 +220,29 @@ export class SidebarUI extends BaseComponent {
    */
   create(): void {
     // 背景パネルを生成（半透明のダークグレー）
-    this._backgroundPanel = this.scene.add.rectangle(
-      SIDEBAR_LAYOUT.WIDTH / 2,
-      SIDEBAR_LAYOUT.HEIGHT / 2,
-      SIDEBAR_LAYOUT.WIDTH,
-      SIDEBAR_LAYOUT.HEIGHT,
-      COLORS.BACKGROUND,
-      0.95,
-    );
+    this._backgroundPanel = this.scene.add
+      .rectangle(
+        SIDEBAR_LAYOUT.WIDTH / 2,
+        SIDEBAR_LAYOUT.HEIGHT / 2,
+        SIDEBAR_LAYOUT.WIDTH,
+        SIDEBAR_LAYOUT.HEIGHT,
+        COLORS.BACKGROUND,
+        0.95,
+      )
+      .setName('SidebarUI.backgroundPanel');
     this.container.add(this._backgroundPanel);
 
     // 右側ボーダーライン
-    const borderLine = this.scene.add.rectangle(
-      SIDEBAR_LAYOUT.WIDTH - 1,
-      SIDEBAR_LAYOUT.HEIGHT / 2,
-      2,
-      SIDEBAR_LAYOUT.HEIGHT,
-      COLORS.BORDER,
-      1,
-    );
+    const borderLine = this.scene.add
+      .rectangle(
+        SIDEBAR_LAYOUT.WIDTH - 1,
+        SIDEBAR_LAYOUT.HEIGHT / 2,
+        2,
+        SIDEBAR_LAYOUT.HEIGHT,
+        COLORS.BORDER,
+        1,
+      )
+      .setName('SidebarUI.borderLine');
     this.container.add(borderLine);
 
     let currentY = SIDEBAR_LAYOUT.PADDING;
@@ -252,6 +256,7 @@ export class SidebarUI extends BaseComponent {
       COLORS.SECTION_HEADER,
       0.8,
     );
+    questsHeaderBg.setName('SidebarUI.questsHeaderBg');
     questsHeaderBg.setInteractive({ useHandCursor: true });
     questsHeaderBg.on('pointerover', () => questsHeaderBg.setFillStyle(0x4b5563, 0.9));
     questsHeaderBg.on('pointerout', () => questsHeaderBg.setFillStyle(COLORS.SECTION_HEADER, 0.8));
@@ -292,6 +297,7 @@ export class SidebarUI extends BaseComponent {
       COLORS.SECTION_HEADER,
       0.8,
     );
+    materialsHeaderBg.setName('SidebarUI.materialsHeaderBg');
     materialsHeaderBg.setInteractive({ useHandCursor: true });
     materialsHeaderBg.on('pointerover', () => materialsHeaderBg.setFillStyle(0x4b5563, 0.9));
     materialsHeaderBg.on('pointerout', () =>
@@ -333,6 +339,7 @@ export class SidebarUI extends BaseComponent {
       COLORS.SECTION_HEADER,
       0.8,
     );
+    craftedItemsHeaderBg.setName('SidebarUI.craftedItemsHeaderBg');
     craftedItemsHeaderBg.setInteractive({ useHandCursor: true });
     craftedItemsHeaderBg.on('pointerover', () => craftedItemsHeaderBg.setFillStyle(0x4b5563, 0.9));
     craftedItemsHeaderBg.on('pointerout', () =>
@@ -382,6 +389,7 @@ export class SidebarUI extends BaseComponent {
       36,
       COLORS.ACCENT,
     );
+    this._shopButtonBackground.setName('SidebarUI.shopButtonBg');
     this._shopButtonBackground.setInteractive({ useHandCursor: true });
     this._shopButtonBackground.on('pointerover', () => {
       this._shopButtonBackground?.setFillStyle(COLORS.ACCENT_HOVER);
