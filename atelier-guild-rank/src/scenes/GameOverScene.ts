@@ -325,9 +325,12 @@ export class GameOverScene extends Phaser.Scene {
       .setFillStyle(backgroundColor);
 
     const button = this.rexUI.add.label({
+      width: SIZES.BUTTON_WIDTH,
+      height: SIZES.BUTTON_HEIGHT,
       background: buttonBackground,
       text: buttonText,
       align: 'center',
+      space: { left: 10, right: 10, top: 10, bottom: 10 },
       x,
       y,
     });
