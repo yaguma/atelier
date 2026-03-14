@@ -212,7 +212,7 @@ export class PhaseTabUI extends BaseComponent {
         TAB_LAYOUT.TAB_WIDTH,
         TAB_LAYOUT.TAB_HEIGHT,
         isActive ? TAB_COLORS.ACTIVE : TAB_COLORS.INACTIVE,
-      );
+      ).setName(`PhaseTabUI.tabBg${i}`);
       bg.setInteractive({ useHandCursor: true });
       bg.on('pointerdown', () => this.handleTabClick(phase));
       this.container.add(bg);
@@ -231,6 +231,7 @@ export class PhaseTabUI extends BaseComponent {
         },
         add: false,
       });
+      text.setName(`PhaseTabUI.tabText${i}`);
       this.container.add(text);
       this._tabTexts.push(text);
     }
@@ -249,7 +250,7 @@ export class PhaseTabUI extends BaseComponent {
       TAB_LAYOUT.END_DAY_WIDTH,
       TAB_LAYOUT.END_DAY_HEIGHT,
       TAB_COLORS.END_DAY_BUTTON,
-    );
+    ).setName('PhaseTabUI.endDayBg');
     this._endDayBackground.setInteractive({ useHandCursor: true });
     this._endDayBackground.on('pointerover', () => {
       this._endDayBackground?.setFillStyle(TAB_COLORS.END_DAY_BUTTON_HOVER);
@@ -267,6 +268,7 @@ export class PhaseTabUI extends BaseComponent {
       style: { fontSize: '14px', color: '#FFFFFF', fontStyle: 'bold' },
       add: false,
     });
+    this._endDayText.setName('PhaseTabUI.endDayText');
     this.container.add(this._endDayText);
 
     // 休憩ボタン
@@ -280,7 +282,7 @@ export class PhaseTabUI extends BaseComponent {
       TAB_LAYOUT.REST_WIDTH,
       TAB_LAYOUT.REST_HEIGHT,
       TAB_COLORS.REST_BUTTON,
-    );
+    ).setName('PhaseTabUI.restBg');
     this._restBackground.setInteractive({ useHandCursor: true });
     this._restBackground.on('pointerover', () => {
       this._restBackground?.setFillStyle(TAB_COLORS.REST_BUTTON_HOVER);
@@ -298,6 +300,7 @@ export class PhaseTabUI extends BaseComponent {
       style: { fontSize: '14px', color: '#FFFFFF', fontStyle: 'bold' },
       add: false,
     });
+    this._restText.setName('PhaseTabUI.restText');
     this.container.add(this._restText);
 
     // PHASE_CHANGEDイベントの購読

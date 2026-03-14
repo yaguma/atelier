@@ -149,7 +149,7 @@ export class FooterUI extends BaseComponent {
       FOOTER_LAYOUT.HEIGHT,
       FOOTER_COLORS.BACKGROUND,
       0.95,
-    );
+    ).setName('FooterUI.backgroundPanel');
     this.container.add(this._backgroundPanel);
 
     // 上部ボーダーライン
@@ -161,7 +161,7 @@ export class FooterUI extends BaseComponent {
       2,
       FOOTER_COLORS.BORDER,
       1,
-    );
+    ).setName('FooterUI.borderLine');
     this.container.add(borderLine);
 
     // PhaseTabUIを作成・統合
@@ -189,7 +189,7 @@ export class FooterUI extends BaseComponent {
         FOOTER_LAYOUT.CARD_HEIGHT,
         FOOTER_COLORS.CARD_PLACEHOLDER,
         0.5,
-      );
+      ).setName(`FooterUI.cardPlaceholder${i}`);
       placeholder.setStrokeStyle(2, FOOTER_COLORS.CARD_PLACEHOLDER_BORDER);
       this.container.add(placeholder);
       this._handDisplayArea.push(placeholder);

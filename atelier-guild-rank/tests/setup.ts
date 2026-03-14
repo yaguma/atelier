@@ -15,6 +15,7 @@ const createMockGameObjectBase = () => ({
   removeAllListeners: vi.fn().mockReturnThis(),
   setData: vi.fn().mockReturnThis(),
   setBlendMode: vi.fn().mockReturnThis(),
+  setName: vi.fn().mockReturnThis(),
   on: vi.fn().mockReturnThis(),
   off: vi.fn().mockReturnThis(),
   destroy: vi.fn(),
@@ -37,6 +38,7 @@ class MockRectangle {
   removeAllListeners = vi.fn().mockReturnValue(this);
   setData = vi.fn().mockReturnValue(this);
   setBlendMode = vi.fn().mockReturnValue(this);
+  setName = vi.fn().mockReturnValue(this);
   on = vi.fn().mockReturnValue(this);
   off = vi.fn().mockReturnValue(this);
   destroy = vi.fn();

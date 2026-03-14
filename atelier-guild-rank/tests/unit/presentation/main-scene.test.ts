@@ -34,7 +34,9 @@ vi.mock('phaser', () => {
       Scene: class MockScene {},
       GameObjects: {
         Container: class MockContainer {},
-        Text: class MockText {},
+        Text: class MockText {
+          setName = vi.fn().mockReturnThis();
+        },
         Graphics: class MockGraphics {
           fillStyle = vi.fn().mockReturnThis();
           fillRect = vi.fn().mockReturnThis();
@@ -55,6 +57,7 @@ vi.mock('phaser', () => {
           setInteractive = vi.fn().mockReturnThis();
           disableInteractive = vi.fn().mockReturnThis();
           setAlpha = vi.fn().mockReturnThis();
+          setName = vi.fn().mockReturnThis();
           on = vi.fn().mockReturnThis();
           destroy = vi.fn();
         },
@@ -135,6 +138,7 @@ const createMockText = () => ({
   setStyle: vi.fn().mockReturnThis(),
   setColor: vi.fn().mockReturnThis(),
   setFontSize: vi.fn().mockReturnThis(),
+  setName: vi.fn().mockReturnThis(),
   destroy: vi.fn(),
   text: '',
 });
@@ -224,6 +228,7 @@ const createMockScene = () => {
           setInteractive: vi.fn().mockReturnThis(),
           disableInteractive: vi.fn().mockReturnThis(),
           setAlpha: vi.fn().mockReturnThis(),
+          setName: vi.fn().mockReturnThis(),
           on: vi.fn().mockReturnThis(),
           destroy: vi.fn(),
         }),
