@@ -314,6 +314,7 @@ export class GameClearScene extends Phaser.Scene {
     onClick: () => void,
   ): RexLabel {
     const buttonText = this.add.text(0, 0, text, {
+      fontFamily: THEME.fonts.primary,
       fontSize: STYLES.BUTTON_FONT_SIZE,
       color: THEME.colors.textOnPrimary,
     });
