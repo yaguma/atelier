@@ -39,8 +39,8 @@ const LAYOUT = {
   STATS_LINE_SPACING: 35,
   /** ボタンの開始Y座標 */
   BUTTON_START_Y: 550,
-  /** ボタン間のスペーシング */
-  BUTTON_SPACING: 150,
+  /** ボタン間のスペーシング（ボタン幅180 + 余白20） */
+  BUTTON_SPACING: 200,
 } as const;
 
 /**
