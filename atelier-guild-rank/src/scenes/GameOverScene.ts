@@ -39,8 +39,8 @@ const LAYOUT = {
   STATS_LINE_SPACING: 35,
   /** ボタンの開始Y座標 */
   BUTTON_START_Y: 550,
-  /** ボタン間のスペーシング */
-  BUTTON_SPACING: 150,
+  /** ボタン間のスペーシング（ボタン幅180 + 余白20） */
+  BUTTON_SPACING: 200,
 } as const;
 
 /**
@@ -223,8 +223,10 @@ export class GameOverScene extends Phaser.Scene {
   private createTitle(centerX: number): void {
     this.add
       .text(centerX, LAYOUT.TITLE_Y, TEXT.TITLE, {
+        fontFamily: THEME.fonts.primary,
         fontSize: STYLES.TITLE_FONT_SIZE,
         color: STYLES.TITLE_COLOR,
+        padding: { top: 4 },
       })
       .setOrigin(0.5);
   }
@@ -237,9 +239,11 @@ export class GameOverScene extends Phaser.Scene {
     const message = `${TEXT.MESSAGE_LINE1}\n${TEXT.MESSAGE_LINE2}`;
     this.add
       .text(centerX, LAYOUT.MESSAGE_Y, message, {
+        fontFamily: THEME.fonts.primary,
         fontSize: STYLES.MESSAGE_FONT_SIZE,
         color: STYLES.MESSAGE_COLOR,
         align: 'center',
+        padding: { top: 4 },
       })
       .setOrigin(0.5);
   }
@@ -259,8 +263,10 @@ export class GameOverScene extends Phaser.Scene {
     statsLines.forEach((line, index) => {
       this.add
         .text(centerX, LAYOUT.STATS_START_Y + index * LAYOUT.STATS_LINE_SPACING, line, {
+          fontFamily: THEME.fonts.primary,
           fontSize: STYLES.STATS_FONT_SIZE,
           color: STYLES.STATS_COLOR,
+          padding: { top: 4 },
         })
         .setOrigin(0.5);
     });
@@ -311,23 +317,27 @@ export class GameOverScene extends Phaser.Scene {
     backgroundColor: number,
     onClick: () => void,
   ): RexLabel {
+    const buttonBackground = this.rexUI.add.roundRectangle(
+      0,
+      0,
+      SIZES.BUTTON_WIDTH,
+      SIZES.BUTTON_HEIGHT,
+      SIZES.BUTTON_RADIUS,
+      backgroundColor,
+    );
     const buttonText = this.add.text(0, 0, text, {
+      fontFamily: THEME.fonts.primary,
       fontSize: STYLES.BUTTON_FONT_SIZE,
       color: THEME.colors.textOnPrimary,
     });
 
-    const buttonBackground = this.rexUI.add
-      .roundRectangle({
-        width: SIZES.BUTTON_WIDTH,
-        height: SIZES.BUTTON_HEIGHT,
-        radius: SIZES.BUTTON_RADIUS,
-      })
-      .setFillStyle(backgroundColor);
-
     const button = this.rexUI.add.label({
+      width: SIZES.BUTTON_WIDTH,
+      height: SIZES.BUTTON_HEIGHT,
       background: buttonBackground,
       text: buttonText,
       align: 'center',
+      space: { left: 10, right: 10, top: 10, bottom: 10 },
       x,
       y,
     });
