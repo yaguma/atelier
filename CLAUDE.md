@@ -61,6 +61,10 @@ pnpm test:e2e e2e/specs/game-flow.spec.ts
 
 詳細は `.claude/rules/architecture.md` を参照。
 
+### Planning
+
+計画フェーズのルールは `.claude/rules/planning.md` を参照。
+
 ### Directory Structure
 
 ```
