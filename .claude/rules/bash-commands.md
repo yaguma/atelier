@@ -267,6 +267,73 @@ pnpm --filter atelier-guild-rank test -- --run 2>&1 | tail -30
 
 ---
 
+## 安全性ルール
+
+### 破壊的コマンドの禁止
+
+以下のコマンドは原則禁止する。
+
+| コマンド | 理由 | 代替手段 |
+|---------|------|----------|
+| `rm -rf` | 意図しないファイル・ディレクトリの完全削除 | `git clean -n`で確認後、個別に削除 |
+| `> file` | ファイル内容の消失 | バックアップ後に操作 |
+
+ファイル・ディレクトリの削除が必要な場合は、以下の手順に従う。
+
+```bash
+# 1. 削除対象を事前に確認
+ls -la target_directory/
+
+# 2. 個別ファイルを削除（ワイルドカードは避ける）
+rm specific-file.txt
+
+# 3. 空ディレクトリの削除
+rmdir target_directory/
+
+# 4. 中身のあるディレクトリの削除が必要な場合
+#    中身を確認 → 個別にファイルを削除 → rmdirで空ディレクトリを削除
+ls target_directory/
+rm target_directory/file1.txt
+rm target_directory/file2.txt
+rmdir target_directory/
+```
+
+### コミット前チェックリスト
+
+コードを変更した場合、コミット前に以下を必ず実行する。
+
+```bash
+# 1. テスト実行
+pnpm test -- --run
+
+# 2. 型チェック
+pnpm typecheck
+
+# 3. リントチェック
+pnpm lint
+```
+
+全てパスしてからコミットすること。Lefthookのpre-commitフックでも検証されるが、事前に確認することで修正の手戻りを減らせる。
+
+### `cd` の安全な使用
+
+`cd`は作業ディレクトリを変更するため、後続コマンドに影響を与える。
+
+```bash
+# NG: cdで移動後、意図しないディレクトリで操作する危険性
+cd /some/directory
+rm *.tmp  # 現在のディレクトリが想定と異なる場合に危険
+
+# OK: 絶対パスを使用してcdを避ける
+rm /some/directory/*.tmp
+
+# OK: サブシェルでcdの影響を局所化する
+(cd /some/directory && ls)
+# 元のディレクトリに戻っている
+```
+
+---
+
 ## エラー発生時の対応
 
 ### リトライ前に原因を確認
