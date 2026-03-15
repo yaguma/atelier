@@ -316,32 +316,29 @@ git commit -m "fix: エラーを修正"
 
 関数名・変数名・クラス名を変更した場合、旧名が残っていないことを確認する。
 
-```bash
-# 旧名でgrepし、0件であることを確認
-# 例: calculateReward → computeReward にリネームした場合
-pnpm exec rg "calculateReward" --type ts
+Grepツールを使用して検証する（0件であればOK、ヒットした場合は変更漏れ）。
 
-# 0件であればOK。ヒットした場合は変更漏れなので修正する
+```
+# 例: calculateReward → computeReward にリネームした場合
+Grep: pattern="calculateReward", type="ts"
 ```
 
 ### インポートパス変更後の検証
 
 ファイル移動やディレクトリ構造変更でインポートパスが変わった場合、旧パスが残っていないことを確認する。
 
-```bash
-# 旧インポートパスでgrepし、0件であることを確認
+```
 # 例: @shared/utils/calc → @shared/services/calc に移動した場合
-pnpm exec rg "@shared/utils/calc" --type ts
+Grep: pattern="@shared/utils/calc", type="ts"
 ```
 
 ### 型名変更後の検証
 
 型名・インターフェース名を変更した場合、旧型名が残っていないことを確認する。
 
-```bash
-# 旧型名でgrepし、0件であることを確認
+```
 # 例: QuestData → Quest にリネームした場合
-pnpm exec rg "QuestData" --type ts
+Grep: pattern="QuestData", type="ts"
 ```
 
 ### 検証の実施タイミング
