@@ -305,3 +305,46 @@ git commit -m "fix: エラーを修正"
 | `ERR_MODULE_NOT_FOUND` | インポートパスの誤り | エイリアス設定を確認 |
 | `TypeScript errors` | 型エラー | `pnpm --filter atelier-guild-rank tsc --noEmit` で詳細確認 |
 | `LOCK_FILE_OUTDATED` | lockファイルの不整合 | `pnpm install` で再生成 |
+
+---
+
+## リファクタリング後検証
+
+マルチファイルにまたがるリファクタリング（リネーム、インポートパス変更、型名変更等）を行った後は、必ずgrep検証を実施して変更漏れがないことを確認する。
+
+### リネーム後の検証
+
+関数名・変数名・クラス名を変更した場合、旧名が残っていないことを確認する。
+
+```bash
+# 旧名でgrepし、0件であることを確認
+# 例: calculateReward → computeReward にリネームした場合
+pnpm exec rg "calculateReward" --type ts
+
+# 0件であればOK。ヒットした場合は変更漏れなので修正する
+```
+
+### インポートパス変更後の検証
+
+ファイル移動やディレクトリ構造変更でインポートパスが変わった場合、旧パスが残っていないことを確認する。
+
+```bash
+# 旧インポートパスでgrepし、0件であることを確認
+# 例: @shared/utils/calc → @shared/services/calc に移動した場合
+pnpm exec rg "@shared/utils/calc" --type ts
+```
+
+### 型名変更後の検証
+
+型名・インターフェース名を変更した場合、旧型名が残っていないことを確認する。
+
+```bash
+# 旧型名でgrepし、0件であることを確認
+# 例: QuestData → Quest にリネームした場合
+pnpm exec rg "QuestData" --type ts
+```
+
+### 検証の実施タイミング
+
+- リファクタリング完了後、コミット前に必ず実施
+- CIで検出される前にローカルで変更漏れを防止する
