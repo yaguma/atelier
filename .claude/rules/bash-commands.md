@@ -275,22 +275,27 @@ pnpm --filter atelier-guild-rank test -- --run 2>&1 | tail -30
 
 | コマンド | 理由 | 代替手段 |
 |---------|------|----------|
-| `rm -rf` | 意図しないファイル・ディレクトリの削除 | `git clean -n`で確認後、個別に削除 |
-| `rm -r` | 再帰削除のリスク | 個別ファイルを`rm`で削除 |
+| `rm -rf` | 意図しないファイル・ディレクトリの完全削除 | `git clean -n`で確認後、個別に削除 |
 | `> file` | ファイル内容の消失 | バックアップ後に操作 |
 
-破壊的操作が必要な場合は、以下の手順に従う。
+ファイル・ディレクトリの削除が必要な場合は、以下の手順に従う。
 
 ```bash
-# 1. 削除対象を事前に確認（ドライラン）
+# 1. 削除対象を事前に確認
 ls -la target_directory/
 
 # 2. 個別ファイルを削除（ワイルドカードは避ける）
 rm specific-file.txt
 
-# 3. ディレクトリ削除が必要な場合は中身を確認してから
+# 3. 空ディレクトリの削除
+rmdir target_directory/
+
+# 4. 中身のあるディレクトリの削除が必要な場合
+#    中身を確認 → 個別にファイルを削除 → rmdirで空ディレクトリを削除
 ls target_directory/
-rm -r target_directory/  # 中身を確認済みの場合のみ
+rm target_directory/file1.txt
+rm target_directory/file2.txt
+rmdir target_directory/
 ```
 
 ### コミット前チェックリスト
