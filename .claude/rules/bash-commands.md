@@ -267,6 +267,73 @@ pnpm --filter atelier-guild-rank test -- --run 2>&1 | tail -30
 
 ---
 
+## 安全性ルール
+
+### 破壊的コマンドの禁止
+
+以下のコマンドは原則禁止する。
+
+| コマンド | 理由 | 代替手段 |
+|---------|------|----------|
+| `rm -rf` | 意図しないファイル・ディレクトリの完全削除 | `git clean -n`で確認後、個別に削除 |
+| `> file` | ファイル内容の消失 | バックアップ後に操作 |
+
+ファイル・ディレクトリの削除が必要な場合は、以下の手順に従う。
+
+```bash
+# 1. 削除対象を事前に確認
+ls -la target_directory/
+
+# 2. 個別ファイルを削除（ワイルドカードは避ける）
+rm specific-file.txt
+
+# 3. 空ディレクトリの削除
+rmdir target_directory/
+
+# 4. 中身のあるディレクトリの削除が必要な場合
+#    中身を確認 → 個別にファイルを削除 → rmdirで空ディレクトリを削除
+ls target_directory/
+rm target_directory/file1.txt
+rm target_directory/file2.txt
+rmdir target_directory/
+```
+
+### コミット前チェックリスト
+
+コードを変更した場合、コミット前に以下を必ず実行する。
+
+```bash
+# 1. テスト実行
+pnpm test -- --run
+
+# 2. 型チェック
+pnpm typecheck
+
+# 3. リントチェック
+pnpm lint
+```
+
+全てパスしてからコミットすること。Lefthookのpre-commitフックでも検証されるが、事前に確認することで修正の手戻りを減らせる。
+
+### `cd` の安全な使用
+
+`cd`は作業ディレクトリを変更するため、後続コマンドに影響を与える。
+
+```bash
+# NG: cdで移動後、意図しないディレクトリで操作する危険性
+cd /some/directory
+rm *.tmp  # 現在のディレクトリが想定と異なる場合に危険
+
+# OK: 絶対パスを使用してcdを避ける
+rm /some/directory/*.tmp
+
+# OK: サブシェルでcdの影響を局所化する
+(cd /some/directory && ls)
+# 元のディレクトリに戻っている
+```
+
+---
+
 ## エラー発生時の対応
 
 ### リトライ前に原因を確認
@@ -305,3 +372,43 @@ git commit -m "fix: エラーを修正"
 | `ERR_MODULE_NOT_FOUND` | インポートパスの誤り | エイリアス設定を確認 |
 | `TypeScript errors` | 型エラー | `pnpm --filter atelier-guild-rank tsc --noEmit` で詳細確認 |
 | `LOCK_FILE_OUTDATED` | lockファイルの不整合 | `pnpm install` で再生成 |
+
+---
+
+## リファクタリング後検証
+
+マルチファイルにまたがるリファクタリング（リネーム、インポートパス変更、型名変更等）を行った後は、必ずgrep検証を実施して変更漏れがないことを確認する。
+
+### リネーム後の検証
+
+関数名・変数名・クラス名を変更した場合、旧名が残っていないことを確認する。
+
+Grepツールを使用して検証する（0件であればOK、ヒットした場合は変更漏れ）。
+
+```
+# 例: calculateReward → computeReward にリネームした場合
+Grep: pattern="calculateReward", type="ts"
+```
+
+### インポートパス変更後の検証
+
+ファイル移動やディレクトリ構造変更でインポートパスが変わった場合、旧パスが残っていないことを確認する。
+
+```
+# 例: @shared/utils/calc → @shared/services/calc に移動した場合
+Grep: pattern="@shared/utils/calc", type="ts"
+```
+
+### 型名変更後の検証
+
+型名・インターフェース名を変更した場合、旧型名が残っていないことを確認する。
+
+```
+# 例: QuestData → Quest にリネームした場合
+Grep: pattern="QuestData", type="ts"
+```
+
+### 検証の実施タイミング
+
+- リファクタリング完了後、コミット前に必ず実施
+- CIで検出される前にローカルで変更漏れを防止する

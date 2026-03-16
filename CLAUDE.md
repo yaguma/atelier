@@ -65,6 +65,10 @@ pnpm test:e2e e2e/specs/game-flow.spec.ts
 
 計画フェーズのルールは `.claude/rules/planning.md` を参照。
 
+### Pipeline
+
+PR作成からマージまでの標準フローは `.claude/rules/pipeline-rules.md` を参照。
+
 ### Directory Structure
 
 ```
