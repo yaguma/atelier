@@ -134,7 +134,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "filepath=$(node -e \"const a=JSON.parse(process.env.ARGUMENTS||'{}');console.log(a.file_path||'');\") && if [ -n \"$filepath\" ] && echo \"$filepath\" | grep -qE \"[.](ts|tsx)$\"; then cd atelier-guild-rank && npx biome check --write --no-errors-on-unmatched \"$filepath\" 2>/dev/null || true; fi",
+            "command": "filepath=$(node -e \"const a=JSON.parse(process.env.ARGUMENTS||'{}');console.log(a.file_path||'');\") && if [ -n \"$filepath\" ] && echo \"$filepath\" | grep -qE \"[.](ts|tsx)$\" && echo \"$filepath\" | grep -q \"atelier-guild-rank\"; then cd atelier-guild-rank && npx biome check --write --no-errors-on-unmatched \"$filepath\" 2>/dev/null || true; fi",
             "timeout": 30,
             "statusMessage": "Running Biome lint fix..."
           }
