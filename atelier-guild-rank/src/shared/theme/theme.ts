@@ -13,74 +13,79 @@
  */
 
 /**
- * 統一カラーパレット
+ * 統一カラーパレット（WARM系）
  *
  * @description
- * 各UIコンポーネントで分散定義されていたカラー定数を一元化。
- * 背景色、ボーダー色、テキスト色、品質色、UI要素色を体系的に定義。
+ * UI設計書（docs/design/atelier-guild-rank/ui-design/overview.md セクション7.1）に基づく
+ * 錬金術テーマのWARM系カラーパレット。茶色・ベージュを基調とする。
+ *
+ * 使い分けガイド:
+ * - Colors: 構造的・カテゴリ別のカラー定義（背景、ボーダー、テキスト、品質、カードタイプ、UI要素）
+ * - THEME.colors: 意味的カラー定義（primary, secondary, success, warning, error等）
  */
 export const Colors = {
-  // 背景色
+  // 背景色（WARM系: ベージュ・クリーム基調）
   background: {
-    primary: 0x2a2a3d, // メイン背景（UIBackgroundBuilder デフォルト）
-    secondary: 0x1a1a2e, // サブ背景
-    overlay: 0x000000, // オーバーレイ
-    card: 0x3a3a4d, // カード背景
+    primary: 0xf5f0e0, // メイン背景（温かみのあるクリーム）
+    secondary: 0xede3d0, // サブ背景（やや濃いクリーム）
+    overlay: 0x000000, // オーバーレイ（共通: 半透明黒）
+    card: 0xfff8dc, // カード背景（Cornsilk: UI設計書 #FFF8DC）
     parchment: 0xfffde7, // 依頼カード背景（Parchment風）
   },
 
-  // ボーダー色
+  // ボーダー色（WARM系: タン・ブラウン基調）
   border: {
-    primary: 0x4a4a5d, // メインボーダー（UIBackgroundBuilder デフォルト）
-    secondary: 0x5a5a6d, // サブボーダー
-    highlight: 0x6a6a7d, // ハイライトボーダー
+    primary: 0xc4a882, // メインボーダー（ウォームタン）
+    secondary: 0xd2b48c, // サブボーダー（タン）
+    highlight: 0xb8860b, // ハイライトボーダー（ダークゴールデンロッド）
     gold: 0xffd700, // ゴールドボーダー
     quest: 0xffd54f, // 依頼カードボーダー
-    dark: 0x333333, // ダークボーダー
+    dark: 0x8b7355, // ダークボーダー（ウォームブラウン）
   },
 
-  // テキスト色
+  // テキスト色（WARM背景上での可読性を確保）
   text: {
-    primary: 0xffffff, // メインテキスト（白）
-    secondary: 0xcccccc, // サブテキスト
-    muted: 0x888888, // 薄いテキスト
-    accent: 0xffd700, // アクセントテキスト（ゴールド）
-    error: 0xff4444, // エラーテキスト
-    success: 0x44ff44, // 成功テキスト
-    dark: 0x333333, // ダークテキスト
-    darkGray: 0x666666, // ダークグレーテキスト
+    primary: 0x333333, // メインテキスト（UI設計書 #333333）
+    secondary: 0x666666, // サブテキスト（UI設計書 #666666）
+    muted: 0x999999, // 薄いテキスト
+    accent: 0xdaa520, // アクセントテキスト（Goldenrod: UI設計書 #DAA520）
+    error: 0xb22222, // エラーテキスト（Firebrick: UI設計書 #B22222）
+    success: 0x228b22, // 成功テキスト（ForestGreen: UI設計書 #228B22）
+    dark: 0x333333, // ダークテキスト（primaryと同値）
+    darkGray: 0x666666, // ダークグレーテキスト（secondaryと同値）
+    light: 0xffffff, // ライトテキスト（着色ボタン上のテキスト用）
   },
 
-  // 品質色（アイテム・素材）
+  // 品質色（アイテム・素材レアリティ: UI設計書 セクション7.2）
   quality: {
-    common: 0xcccccc, // コモン（灰色）
-    uncommon: 0x44ff44, // アンコモン（緑）
-    rare: 0x4444ff, // レア（青）
-    epic: 0xaa44ff, // エピック（紫）
-    legendary: 0xffaa00, // レジェンダリー（オレンジ）
+    common: 0x808080, // コモン（グレー: UI設計書 #808080）
+    uncommon: 0x32cd32, // アンコモン（LimeGreen: UI設計書 #32CD32）
+    rare: 0x4169e1, // レア（RoyalBlue: UI設計書 #4169E1）
+    epic: 0x9932cc, // エピック（DarkOrchid: UI設計書 #9932CC）
+    legendary: 0xffd700, // レジェンダリー（Gold: UI設計書 #FFD700）
   },
 
-  // カードタイプ色
+  // カードタイプ色（UI設計書 セクション7.1）
   cardType: {
-    gathering: 0x90ee90, // 採取カード（LightGreen）
-    recipe: 0xffb6c1, // レシピカード（LightPink）
-    enhancement: 0xadd8e6, // 強化カード（LightBlue）
+    gathering: 0x90ee90, // 採取カード（LightGreen: UI設計書 #90EE90）
+    recipe: 0x87ceeb, // レシピカード（SkyBlue: UI設計書 #87CEEB）
+    enhancement: 0xdda0dd, // 強化カード（Plum: UI設計書 #DDA0DD）
     default: 0xffffff, // デフォルト（白）
   },
 
-  // UI要素色
+  // UI要素色（WARM系: ブラウン基調のボタン・プログレス）
   ui: {
     button: {
-      normal: 0x4a4a5d, // 通常状態
-      hover: 0x5a5a6d, // ホバー状態
-      active: 0x6a6a7d, // アクティブ状態
-      disabled: 0x2a2a3d, // 無効状態
+      normal: 0x8b4513, // 通常状態（SaddleBrown: THEME.colors.primary準拠）
+      hover: 0x9b5523, // ホバー状態（THEME.colors.primaryHover準拠）
+      active: 0xd2691e, // アクティブ状態（Chocolate: THEME.colors.secondary準拠）
+      disabled: 0xcccccc, // 無効状態（THEME.colors.disabled準拠）
       accept: 0x4caf50, // 受注ボタン（緑）
       acceptBorder: 0x388e3c, // 受注ボタンボーダー
     },
     progress: {
-      background: 0x2a2a3d, // プログレスバー背景
-      fill: 0x4a9eff, // プログレスバー塗り
+      background: 0xe0d5c0, // プログレスバー背景（ウォームベージュ）
+      fill: 0xdaa520, // プログレスバー塗り（Goldenrod: UI設計書 #DAA520）
       warning: 0xffaa00, // 警告状態
       danger: 0xff4444, // 危険状態
     },
