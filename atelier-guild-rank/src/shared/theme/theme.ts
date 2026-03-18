@@ -123,7 +123,7 @@ export const THEME = {
     textOnSecondary: '#FFFFFF', // 白 - セカンダリボタン上のテキスト色
     success: 0x228b22, // ForestGreen - 成功状態（錬金成功、クエスト達成など）
     warning: 0xdaa520, // Goldenrod - 警告状態（注意喚起、確認ダイアログなど）
-    error: 0x8b0000, // DarkRed - エラー状態（錬金失敗、エラーメッセージなど）
+    error: 0xb22222, // Firebrick - エラー状態（UI設計書 #B22222）
     disabled: 0xcccccc, // ライトグレー - 無効状態（非アクティブなUI要素）
   },
 
@@ -153,13 +153,13 @@ export const THEME = {
     xl: 32, // 最大スペーシング（画面レベルの余白）
   },
 
-  // 品質ごとの色定義
+  // 品質グレードごとの色定義（UI設計書 セクション7.3）
   qualityColors: {
-    D: 0x808080, // グレー
-    C: 0x00ff00, // 緑
-    B: 0x0080ff, // 青
-    A: 0xffd700, // ゴールド
-    S: 0xff00ff, // マゼンタ(紫)
+    D: 0x808080, // グレー（UI設計書 #808080）
+    C: 0xffffff, // 白（UI設計書 #FFFFFF）
+    B: 0x32cd32, // LimeGreen（UI設計書 #32CD32）
+    A: 0x4169e1, // RoyalBlue（UI設計書 #4169E1）
+    S: 0xffd700, // Gold（UI設計書 #FFD700）
   },
 
   // 品質ごとの光彩効果設定
