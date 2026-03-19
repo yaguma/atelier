@@ -55,9 +55,9 @@ describe('THEME定義', () => {
       expect(THEME.colors.warning).toBe(0xdaa520); // 🔵
     });
 
-    test('error カラーが DarkRed (0x8B0000) である', () => {
-      // 【確認内容】: エラー状態を示す赤色が定義されていることを確認
-      expect(THEME.colors.error).toBe(0x8b0000); // 🔵
+    test('error カラーが Firebrick (0xB22222) である', () => {
+      // 【確認内容】: エラー状態を示す赤色が定義されていることを確認（UI設計書 #B22222）
+      expect(THEME.colors.error).toBe(0xb22222); // 🔵
     });
 
     test('disabled カラーがグレー (0xCCCCCC) である', () => {

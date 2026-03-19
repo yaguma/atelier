@@ -196,8 +196,8 @@ describe('CardUI', () => {
         y: 0,
       });
 
-      // ピンク色（0xffb6c1）で背景が作成されたことを確認（コンストラクタ経由）
-      expect(Phaser.GameObjects.Rectangle).toHaveBeenCalledWith(scene, 0, 0, 120, 160, 0xffb6c1);
+      // スカイブルー（0x87ceeb）で背景が作成されたことを確認（コンストラクタ経由: UI設計書 #87CEEB）
+      expect(Phaser.GameObjects.Rectangle).toHaveBeenCalledWith(scene, 0, 0, 120, 160, 0x87ceeb);
 
       cardUI.destroy();
     });
@@ -209,8 +209,8 @@ describe('CardUI', () => {
         y: 0,
       });
 
-      // 青色（0xadd8e6）で背景が作成されたことを確認（コンストラクタ経由）
-      expect(Phaser.GameObjects.Rectangle).toHaveBeenCalledWith(scene, 0, 0, 120, 160, 0xadd8e6);
+      // プラム（0xdda0dd）で背景が作成されたことを確認（コンストラクタ経由: UI設計書 #DDA0DD）
+      expect(Phaser.GameObjects.Rectangle).toHaveBeenCalledWith(scene, 0, 0, 120, 160, 0xdda0dd);
 
       cardUI.destroy();
     });
