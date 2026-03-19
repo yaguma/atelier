@@ -48,8 +48,12 @@ const GATHERING_LAYOUT = {
   GATHERED_TITLE_Y: 370,
   /** 獲得素材表示Y */
   GATHERED_DISPLAY_Y: 410,
-  /** 獲得素材アイテム開始X（6列を中央揃え: 440 - 250 = 190） */
-  GATHERED_ITEM_START_X: 190,
+  /** 獲得素材の列数 */
+  GATHERED_COLUMNS: 4,
+  /** 獲得素材の列間隔 */
+  GATHERED_COLUMN_WIDTH: 130,
+  /** 獲得素材アイテム開始X（4列を中央揃え: 440 - (4*130)/2 = 180） */
+  GATHERED_ITEM_START_X: 180,
   /** 採取終了ボタンX */
   END_BUTTON_X: 440,
   /** 採取終了ボタンY */
@@ -320,8 +324,10 @@ export class GatheringPhaseUI extends BaseComponent {
 
     // 素材を表示
     materials.forEach((material, index) => {
-      const x = (index % 6) * 100 + GATHERING_LAYOUT.GATHERED_ITEM_START_X;
-      const y = Math.floor(index / 6) * 30;
+      const x =
+        (index % GATHERING_LAYOUT.GATHERED_COLUMNS) * GATHERING_LAYOUT.GATHERED_COLUMN_WIDTH +
+        GATHERING_LAYOUT.GATHERED_ITEM_START_X;
+      const y = Math.floor(index / GATHERING_LAYOUT.GATHERED_COLUMNS) * 30;
 
       const materialText = this.scene.make
         .text({
