@@ -119,6 +119,12 @@ export class AlchemyPhaseUI extends BaseComponent {
   /** rexUIラベルリスト（レシピ用） */
   private recipeLabels: RecipeLabelInfo[] = [];
 
+  /** 調合実行ボタンコンテナ */
+  private craftButtonContainer: Phaser.GameObjects.Container | null = null;
+
+  /** 品質プレビューテキスト */
+  private qualityPreviewText: Phaser.GameObjects.Text | null = null;
+
   /** キーボードイベントハンドラ参照（Issue #135） */
   private keyboardHandler: ((event: { key: string }) => void) | null = null;
 
@@ -168,6 +174,7 @@ export class AlchemyPhaseUI extends BaseComponent {
     this.createRecipeScrollArea();
     this.loadRecipes();
     this.createRecipeList();
+    this.createCraftButton();
     this.setupKeyboardListener();
     this.updateRecipeFocus();
   }
@@ -434,6 +441,12 @@ export class AlchemyPhaseUI extends BaseComponent {
 
     // 必要素材スロット数を計算
     this.updateMaterialSlots();
+
+    // Issue #413: 自動素材配置 - checkRecipeRequirementsのmatchedMaterialsを使用
+    this.autoPlaceMaterials(recipeId);
+
+    // 調合ボタンと品質プレビューを更新
+    this.updateCraftButtonVisibility();
   }
 
   /**
@@ -460,6 +473,111 @@ export class AlchemyPhaseUI extends BaseComponent {
       (sum, mat) => sum + mat.quantity,
       0,
     );
+  }
+
+  /**
+   * Issue #413: レシピ選択時に必要素材を自動配置
+   * checkRecipeRequirementsのmatchedMaterialsを利用して素材を配置する
+   */
+  private autoPlaceMaterials(recipeId: CardId): void {
+    // 既存の配置をクリア
+    this.placedMaterials = [];
+
+    const checkResult = this.alchemyService.checkRecipeRequirements(
+      recipeId,
+      this.availableMaterials,
+    );
+
+    if (!checkResult.canCraft) {
+      return;
+    }
+
+    // matchedMaterialsを配置済みリストに設定
+    this.placedMaterials = [...checkResult.matchedMaterials];
+
+    // 品質プレビューを更新
+    this.updateQualityPreview();
+  }
+
+  /**
+   * Issue #413: 調合実行ボタンを作成
+   */
+  private createCraftButton(): void {
+    const gameWidth = this.scene.cameras.main.width;
+    const gameHeight = this.scene.cameras.main.height;
+    const buttonWidth = 180;
+    const buttonHeight = 44;
+    const buttonX = gameWidth - MAIN_LAYOUT.SIDEBAR_WIDTH - buttonWidth / 2 - 20;
+    const buttonY = gameHeight - MAIN_LAYOUT.HEADER_HEIGHT - MAIN_LAYOUT.FOOTER_HEIGHT - 30;
+
+    this.craftButtonContainer = this.scene.add.container(buttonX, buttonY);
+
+    // ボタン背景
+    const bg = this.rexUI.add
+      .roundRectangle({
+        width: buttonWidth,
+        height: buttonHeight,
+        radius: 10,
+      })
+      .setFillStyle(THEME.colors.primary);
+    bg.setInteractive({ useHandCursor: true });
+    bg.on('pointerdown', () => {
+      this.executeCraft();
+    });
+
+    // ボタンテキスト
+    const buttonText = this.scene.make.text({
+      x: 0,
+      y: 0,
+      text: '調合実行',
+      style: {
+        fontSize: `${THEME.sizes.large}px`,
+        color: '#ffffff',
+        fontFamily: THEME.fonts.primary,
+        fontStyle: 'bold',
+      },
+      add: false,
+    });
+    buttonText.setOrigin(0.5);
+
+    this.craftButtonContainer.add([bg, buttonText]);
+
+    // 品質プレビューテキスト（ボタンの上に表示）
+    this.qualityPreviewText = this.scene.make.text({
+      x: 0,
+      y: -35,
+      text: '',
+      style: {
+        fontSize: `${THEME.sizes.medium}px`,
+        color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
+        fontFamily: THEME.fonts.primary,
+      },
+      add: false,
+    });
+    this.qualityPreviewText.setOrigin(0.5);
+    this.craftButtonContainer.add(this.qualityPreviewText);
+
+    this.container.add(this.craftButtonContainer);
+
+    // 初期状態は非表示
+    this.craftButtonContainer.setVisible(false);
+  }
+
+  /**
+   * Issue #413: 調合ボタンの表示/非表示を更新
+   */
+  private updateCraftButtonVisibility(): void {
+    if (!this.craftButtonContainer) return;
+
+    const enabled = this.isCraftButtonEnabled();
+    this.craftButtonContainer.setVisible(enabled);
+
+    // 品質プレビューテキストを更新
+    if (enabled && this.qualityPreview !== null) {
+      this.qualityPreviewText?.setText(`品質: ${this.qualityPreview}`);
+    } else {
+      this.qualityPreviewText?.setText('');
+    }
   }
 
   /**
@@ -536,16 +654,25 @@ export class AlchemyPhaseUI extends BaseComponent {
       return;
     }
 
+    // 使用する素材のinstanceIdを保持（リセット前に取得）
+    const usedMaterialIds = new Set(this.placedMaterials.map((m) => m.instanceId));
+
     // 調合実行
     const craftedItem = this.alchemyService.craft(this.selectedRecipeId, this.placedMaterials);
 
-    // コールバック呼び出し
+    // コールバック呼び出し（インベントリ更新）
     if (this.onCraftCompleteCallback) {
       this.onCraftCompleteCallback(craftedItem);
     }
 
-    // 状態リセット
+    // Issue #413: 使用素材をavailableMaterialsから除外してUI更新
+    this.availableMaterials = this.availableMaterials.filter(
+      (m) => !usedMaterialIds.has(m.instanceId),
+    );
+
+    // 状態リセット + UIリフレッシュ
     this.resetAfterCraft();
+    this.refresh();
   }
 
   /**
@@ -558,6 +685,7 @@ export class AlchemyPhaseUI extends BaseComponent {
     this.qualityPreview = null;
     this.materialSlotCount = 0;
     this.clearRecipeSelection();
+    this.updateCraftButtonVisibility();
   }
 
   /**
@@ -661,6 +789,11 @@ export class AlchemyPhaseUI extends BaseComponent {
       item.cardContainer.destroy(true);
     }
     this.recipeLabels = [];
+    if (this.craftButtonContainer) {
+      this.craftButtonContainer.destroy(true);
+      this.craftButtonContainer = null;
+    }
+    this.qualityPreviewText = null;
     this.destroyScrollArea();
     this.container.destroy();
   }
@@ -715,9 +848,12 @@ export class AlchemyPhaseUI extends BaseComponent {
     } else if (isKeyForAction(event.key, 'RIGHT')) {
       this.moveFocus(1);
     }
-    // Enter/Spaceでフォーカス中のレシピを選択（調合可能なもののみ）
+    // Enter/Spaceで調合実行（素材配置済みの場合）またはレシピ選択
     else if (isKeyForAction(event.key, 'CONFIRM')) {
-      if (this.focusedRecipeIndex >= 0 && this.focusedRecipeIndex < this.recipes.length) {
+      // Issue #413: 調合ボタンが有効なら調合実行を優先
+      if (this.isCraftButtonEnabled()) {
+        this.executeCraft();
+      } else if (this.focusedRecipeIndex >= 0 && this.focusedRecipeIndex < this.recipes.length) {
         const labelInfo = this.recipeLabels[this.focusedRecipeIndex];
         if (labelInfo?.craftable) {
           this.selectRecipe(labelInfo.recipe.id);
