@@ -53,12 +53,14 @@ const FOOTER_LAYOUT = {
   PADDING: 16,
   /** PhaseTabUIのY座標オフセット */
   PHASE_TAB_Y: 0,
+  /** 手札表示Y座標（タブ行と重ならないよう下部に配置） */
+  HAND_Y: 85,
   /** 手札表示開始X座標 */
   HAND_START_X: 320,
   /** カード幅 */
   CARD_WIDTH: 50,
   /** カード高さ */
-  CARD_HEIGHT: 70,
+  CARD_HEIGHT: 60,
   /** カード間のスペース */
   CARD_SPACING: 60,
 } as const;
@@ -178,7 +180,8 @@ export class FooterUI extends BaseComponent {
     this.container.add(this._phaseTabUI.getContainer());
 
     // 5つの手札プレースホルダー（矩形）を作成
-    const handY = FOOTER_LAYOUT.HEIGHT / 2;
+    // タブ行(Y=0〜40)と重ならないようY方向を下部に配置
+    const handY = FOOTER_LAYOUT.HAND_Y;
 
     for (let i = 0; i < HAND_DISPLAY_CAPACITY; i++) {
       const placeholder = new Phaser.GameObjects.Rectangle(
