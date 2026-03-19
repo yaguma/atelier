@@ -155,6 +155,9 @@ export class MaterialSlotUI extends BaseComponent {
    * @param enabled - 有効/無効
    */
   setInteractive(enabled: boolean): void {
+    // リスナーの累積追加を防ぐため、状態変更時は常に既存リスナーを解除する
+    this.container.removeAllListeners();
+
     if (enabled && this.material && this.clickCallback) {
       this.container.setInteractive(
         new Phaser.Geom.Rectangle(
@@ -182,7 +185,6 @@ export class MaterialSlotUI extends BaseComponent {
       });
     } else {
       this.container.removeInteractive();
-      this.container.removeAllListeners();
     }
   }
 
