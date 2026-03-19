@@ -19,6 +19,7 @@ import type { SidebarUI } from '@presentation/ui/components/SidebarUI';
 import { DeliveryPhaseUI } from '@presentation/ui/phases/DeliveryPhaseUI';
 import { QuestAcceptPhaseUI } from '@presentation/ui/phases/QuestAcceptPhaseUI';
 import { Container, ServiceKeys } from '@shared/services/di/container';
+import type { IStateManager } from '@shared/services/state-manager';
 import { GamePhase, VALID_GAME_PHASES } from '@shared/types/common';
 import { toMaterialId } from '@shared/types/ids';
 import type { IAttributeValue, IEffectValue, IUsedMaterial } from '@shared/types/materials';
@@ -290,6 +291,12 @@ export class PhaseManager {
 
     try {
       const result = gatheringService.endGathering(session.sessionId);
+
+      // AP消費処理: endGathering()が返すコスト情報を使用してAPを消費
+      if (result.cost.actionPointCost > 0 && container.has(ServiceKeys.StateManager)) {
+        const stateManager = container.resolve<IStateManager>(ServiceKeys.StateManager);
+        stateManager.spendActionPoints(result.cost.actionPointCost);
+      }
 
       if (container.has(ServiceKeys.InventoryService)) {
         const inventoryService = container.resolve<
