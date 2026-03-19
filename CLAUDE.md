@@ -6,8 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 「Atelier」は錬金術をテーマにしたギルドランク制デッキ構築RPGプロジェクト。
 
-このリポジトリは2つのプロジェクトを含む:
-- **atelier-guild-rank/**: Phaser 3 + TypeScript版（メイン開発）
+- **atelier-guild-rank/**: Phaser 3 + TypeScript版（メイン開発・pnpmモノレポ構成）
 - **Assets/**: Unity 6版（初期プロトタイプ、現在非アクティブ）
 
 ---
@@ -19,11 +18,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 # Development
 pnpm dev              # Start dev server (http://localhost:3000)
-pnpm build            # Build for production
+pnpm build            # Build for production (tsc && vite build)
 
 # Testing
-pnpm test             # Run unit/integration tests (Vitest)
-pnpm test:watch       # Watch mode
+pnpm test             # Run unit/integration tests (Vitest, watch mode)
+pnpm test -- --run    # One-shot test execution (CI/commit前チェック)
+pnpm test:watch       # Watch mode (明示的)
 pnpm test:coverage    # With coverage report
 pnpm test:e2e         # Run E2E tests (Playwright)
 pnpm test:e2e:headed  # E2E with browser visible
@@ -41,13 +41,21 @@ pnpm format           # Format code
 
 ```bash
 # Unit test - specific file
-pnpm test tests/unit/deck-service.test.ts
+pnpm test -- --run tests/unit/features/deck/deck-service.test.ts
 
 # Unit test - by pattern
-pnpm test -t "DeckService"
+pnpm test -- --run -t "DeckService"
 
 # E2E - specific file
 pnpm test:e2e e2e/specs/game-flow.spec.ts
+```
+
+### Commit前チェックリスト
+
+```bash
+pnpm test -- --run    # ユニットテスト
+pnpm typecheck        # 型チェック
+pnpm lint             # リントチェック
 ```
 
 ---
@@ -58,6 +66,7 @@ pnpm test:e2e e2e/specs/game-flow.spec.ts
 
 1. **Feature-Based Architecture** - 機能単位でのコード配置
 2. **Functional Core, Imperative Shell** - 純粋関数とI/Oの分離
+3. **Domain Layer** - ドメインエンティティ・インターフェース・値オブジェクトの分離
 
 詳細は `.claude/rules/architecture.md` を参照。
 
@@ -72,31 +81,68 @@ PR作成からマージまでの標準フローは `.claude/rules/pipeline-rules
 ### Directory Structure
 
 ```
-src/
-├── features/           # 機能単位のモジュール
-│   ├── quest/          # 依頼機能
-│   ├── alchemy/        # 調合機能
-│   ├── gathering/      # 採取機能
-│   ├── deck/           # デッキ機能
-│   ├── inventory/      # インベントリ機能
-│   ├── shop/           # ショップ機能
-│   └── rank/           # ランク機能
-├── shared/             # 機能横断の共通コード
-│   ├── components/     # 共通UIコンポーネント
-│   ├── services/       # 共通サービス（EventBus, StateManager等）
-│   ├── types/          # 共通型定義
-│   └── utils/          # ユーティリティ関数
-└── scenes/             # Phaserシーン（機能を組み合わせる）
+atelier-guild-rank/src/
+├── main.ts                  # エントリーポイント（Phaserゲーム初期化）
+├── features/                # 機能単位のモジュール（7機能）
+│   ├── quest/               # 依頼機能
+│   │   ├── components/      # UI コンポーネント
+│   │   ├── services/        # ビジネスロジック（純粋関数）
+│   │   └── types/           # 型定義
+│   ├── alchemy/             # 調合機能
+│   ├── gathering/           # 採取機能（+ data/）
+│   ├── deck/                # デッキ機能
+│   ├── inventory/           # インベントリ機能
+│   ├── shop/                # ショップ機能
+│   └── rank/                # ランク機能
+├── shared/                  # 機能横断の共通コード
+│   ├── components/          # 共通UIコンポーネント
+│   ├── constants/           # ゲーム定数（GAME_CONFIG）
+│   ├── domain/              # ドメイン層
+│   │   ├── entities/        # ドメインエンティティ
+│   │   ├── interfaces/      # ドメインインターフェース
+│   │   ├── services/        # ドメインサービス
+│   │   └── value-objects/   # 値オブジェクト
+│   ├── presentation/        # プレゼンテーション層
+│   │   ├── managers/        # マネージャー
+│   │   ├── input/           # 入力処理
+│   │   ├── scenes/          # シーンコンポーネント
+│   │   ├── types/           # rexUI型定義
+│   │   └── ui/              # UIコンポーネント・テーマ
+│   ├── services/            # コアサービス
+│   │   ├── state-manager/   # ゲーム状態管理（Single Source of Truth）
+│   │   ├── event-bus/       # Pub/Subイベントシステム
+│   │   ├── di/              # 依存性注入コンテナ
+│   │   ├── game-flow/       # ゲームフロー制御
+│   │   ├── save-load/       # セーブ/ロード（マイグレーション対応）
+│   │   ├── repositories/    # データアクセス層
+│   │   ├── loaders/         # アセットローダー
+│   │   └── input/           # 入力ハンドリング
+│   ├── theme/               # UIテーマ定数（THEME）
+│   ├── types/               # 共通型定義
+│   └── utils/               # ユーティリティ関数
+└── scenes/                  # Phaserシーン（機能を組み合わせる）
+    ├── BootScene.ts         # アセットロード・サービス初期化
+    ├── TitleScene.ts        # タイトル・セーブスロット選択
+    ├── MainScene.ts         # メインゲーム（4フェーズ制御）
+    ├── ShopScene.ts         # カード・アイテム購入
+    ├── RankUpScene.ts       # 昇格試験
+    ├── GameClearScene.ts    # ゲームクリア画面
+    ├── GameOverScene.ts     # ゲームオーバー画面
+    ├── components/          # シーン固有コンポーネント
+    ├── helpers/             # シーンヘルパー
+    └── types/               # シーン型定義
 ```
 
 ### Path Aliases
 
 ```typescript
-import { Quest, generateQuest } from '@features/quest';
+import { Quest } from '@domain/entities';           // ドメインエンティティ
+import { IEventBus } from '@domain/interfaces';     // ドメインインターフェース
+import { BaseComponent } from '@presentation/ui/components/BaseComponent';
+import { generateQuest } from '@features/quest';    // 機能モジュール
 import { Card } from '@features/deck';
-import { EventBus } from '@shared/services';
-import { Button } from '@shared/components';
-import { MainScene } from '@scenes/MainScene';
+import { EventBus } from '@shared/services';        // コアサービス
+import { MainScene } from '@scenes/MainScene';      // シーン
 ```
 
 ### Functional Core vs Imperative Shell
@@ -104,32 +150,51 @@ import { MainScene } from '@scenes/MainScene';
 | 部分 | 責務 | 配置場所 |
 |------|------|---------|
 | **Functional Core** | 純粋関数（計算、バリデーション） | `features/*/services/` |
-| **Imperative Shell** | I/O、状態管理、UI | `scenes/`, `shared/services/` |
+| **Domain Layer** | エンティティ、インターフェース、値オブジェクト | `shared/domain/` |
+| **Imperative Shell** | I/O、状態管理、UI | `scenes/`, `shared/services/`, `shared/presentation/` |
 
-### Phaser Scenes
+### Core Services
 
-- **BootScene**: アセットロード・サービス初期化
-- **TitleScene**: タイトル・セーブスロット選択
-- **MainScene**: メインゲーム（4フェーズ: 依頼受注→採取→調合→納品）
-- **ShopScene**: カード・アイテム購入
-- **RankUpScene**: 昇格試験
-- **GameOverScene / GameClearScene**: 結果画面
+| サービス | 責務 |
+|---------|------|
+| **StateManager** | ゲーム状態の一元管理（IGameState） |
+| **EventBus** | コンポーネント間Pub/Sub通信 |
+| **DIコンテナ** | 依存性注入（ServiceKeys, Container） |
+| **GameFlowService** | ゲームフェーズ遷移・フロー制御 |
+| **SaveLoadService** | セーブ/ロード + マイグレーション |
+| **QuestService** | 依頼生成・管理 |
+| **DeckService** | デッキ操作 |
+| **GatheringService** | 素材採取 |
+| **AlchemyService** | 調合計算 |
+| **InventoryService** | アイテム管理 |
+| **ShopService** | ショップ取引 |
+| **RankService** | ランク管理 |
+| **MaterialService** | 素材管理 |
+| **ArtifactService** | アーティファクト管理 |
+
+### Game Phase Flow
+
+```
+QUEST_ACCEPT → GATHERING → ALCHEMY → DELIVERY → QUEST_ACCEPT
+                                        ↓
+                                    DAY_END
+```
 
 ---
 
 ## Tech Stack
 
-| Category | Technology |
-|----------|------------|
-| Framework | Phaser 3.87+ / rexUI |
-| Language | TypeScript 5.x |
-| Build | Vite 5.x |
-| Package Manager | pnpm 9.x |
-| Linter/Formatter | Biome 2.x |
-| Unit Test | Vitest |
-| E2E Test | Playwright |
-| Git Hooks | Lefthook |
-| CSS | Tailwind CSS 4.x |
+| Category | Technology | Version |
+|----------|------------|---------|
+| Framework | Phaser 3 / rexUI | ^3.87.0 / ^1.80.0 |
+| Language | TypeScript | ^5.7.0 |
+| Build | Vite | ^5.4.0 |
+| Package Manager | pnpm (monorepo) | 9.15.0 |
+| Linter/Formatter | Biome | ^2.0.0 |
+| Unit Test | Vitest | ^4.0.17 |
+| E2E Test | Playwright | ^1.57.0 |
+| Git Hooks | Lefthook | ^2.0.15 |
+| CSS | Tailwind CSS | ^4.1.18 |
 
 ---
 
@@ -139,27 +204,32 @@ import { MainScene } from '@scenes/MainScene';
 
 ```
 tests/
-├── unit/           # ユニットテスト（src/と同じ階層構造）
-│   ├── features/   # 機能単位のテスト
-│   │   ├── quest/
-│   │   ├── alchemy/
-│   │   ├── deck/
-│   │   └── ...
-│   └── shared/     # 共通コードのテスト
-├── integration/    # 統合テスト（サービス連携）
-└── mocks/          # テスト用モック
+├── unit/              # ユニットテスト
+│   ├── features/      # 機能単位のテスト（src/features/と対応）
+│   ├── shared/        # 共通コードのテスト
+│   ├── presentation/  # UIコンポーネントテスト
+│   └── infrastructure/ # サービステスト
+├── integration/       # 統合テスト（サービス連携）
+└── mocks/             # テスト用モック
 
 e2e/
-├── specs/          # E2Eテストスペック
-├── pages/          # Page Objects
-└── fixtures/       # テストデータ
+├── specs/             # E2Eテストスペック
+│   ├── scenario/      # シナリオテスト
+│   ├── mouse/         # マウス操作テスト
+│   ├── keyboard/      # キーボード操作テスト
+│   ├── free-phase-navigation/  # フリーフェーズナビテスト
+│   └── visual/        # ビジュアルリグレッションテスト
+├── pages/             # Page Objects
+├── fixtures/          # テストデータ
+└── types/             # E2E型定義
 ```
 
 ### Test File Rules
 
 - **専用ディレクトリ配置**: テストファイルは `tests/` または `e2e/` に配置（`src/` 内に置かない）
-- **エイリアス使用**: テストファイルでは `@features/`、`@shared/` 等の絶対パスを使用（相対パス禁止）
+- **エイリアス使用**: テストファイルでは `@features/`、`@shared/`、`@domain/`、`@test-mocks/` 等の絶対パスを使用（相対パス禁止）
 - **命名規則**: `*.test.ts` または `*.spec.ts`
+- **テスト用モック**: `@test-mocks/*` エイリアスで `tests/mocks/` を参照
 
 ### Coverage Target
 
@@ -170,7 +240,7 @@ e2e/
 
 ## Code Style
 
-Biomeで自動適用:
+Biomeで自動適用（行幅: 100文字）:
 - インデント: 2スペース
 - クォート: シングルクォート
 - セミコロン: 必須
@@ -178,12 +248,54 @@ Biomeで自動適用:
 
 ---
 
-## Task Management
+## Constants Management
 
-タスクドキュメントは `docs/tasks/atelier-guild-rank/` で管理。
+| ファイル | 用途 | 判断基準 |
+|---------|------|---------|
+| `@shared/constants/game-config.ts` | ゲームバランスパラメータ | 変更するとゲームバランスが変わる |
+| `@shared/theme/theme.ts` | UI見た目パラメータ | 変更するとUIの見た目が変わる |
 
-- **overview.md**: 全タスク一覧・フェーズ構成
-- **phase-N/TASK-XXXX.md**: 個別タスク詳細
+---
+
+## Documentation
+
+```
+docs/
+├── design/                    # 設計ドキュメント
+│   └── atelier-guild-rank/    # メインプロジェクト設計
+│       ├── balance-design.md  # バランス設計書
+│       ├── architecture-*.md  # アーキテクチャ設計
+│       ├── core-systems-*.md  # コアシステム設計
+│       └── ui-design/         # UI設計仕様
+├── spec/                      # 仕様書
+├── tasks/                     # タスク管理
+│   └── atelier-guild-rank/    # タスク一覧・フェーズ構成
+├── testing/                   # テスト方針
+├── implements/                # 実装メモ
+└── reviews/                   # レビュー記録
+```
+
+---
+
+## Rules Reference
+
+`.claude/rules/` に13のルールファイルがある:
+
+| ファイル | 内容 |
+|---------|------|
+| `architecture.md` | Feature-Based + Functional Core/Imperative Shell |
+| `coding-style.md` | TypeScript命名規則・定数管理（GAME_CONFIG/THEME） |
+| `testing.md` | テスト方針・カバレッジ目標・ベストプラクティス |
+| `state-management.md` | StateManager + EventBus の使い方 |
+| `ui-components.md` | BaseComponent継承・ライフサイクル |
+| `phaser-best-practices.md` | シーン設計・rexUI・リソース管理 |
+| `performance.md` | update()最適化・オブジェクトプーリング |
+| `security.md` | 入力検証・XSS対策・チート対策 |
+| `git-workflow.md` | ブランチ・コミット規則（rebase禁止） |
+| `pipeline-rules.md` | PR→レビュー→マージの標準フロー |
+| `planning.md` | 計画は5箇条書き以内 |
+| `bash-commands.md` | pnpmモノレポ実行・安全なBash操作 |
+| `code-review.md` | レビュー基準（Critical/Warning/Info） |
 
 ---
 
