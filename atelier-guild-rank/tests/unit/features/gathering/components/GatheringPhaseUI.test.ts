@@ -8,6 +8,7 @@
  * @信頼性レベル 🔵 REQ-002・architecture.md・dataflow.md セクション4に基づく
  */
 
+import type { IDeckService } from '@domain/interfaces/deck-service.interface';
 import type { IGatheringService } from '@domain/interfaces/gathering-service.interface';
 import type { IGatheringLocation } from '@features/gathering';
 import { GATHERING_LOCATIONS, GatheringStage } from '@features/gathering';
@@ -164,6 +165,33 @@ function createMockGatheringService(): IGatheringService {
   } as unknown as IGatheringService;
 }
 
+function createMockDeckService(): IDeckService {
+  return {
+    getHand: vi.fn().mockReturnValue([
+      {
+        id: toCardId('gathering-forest'),
+        master: { type: 'GATHERING', name: '近くの森' },
+        isGatheringCard: () => true,
+        isRecipeCard: () => false,
+        isEnhancementCard: () => false,
+      },
+    ]),
+    getHandSize: vi.fn().mockReturnValue(1),
+    getDeckSize: vi.fn().mockReturnValue(15),
+    getDiscardSize: vi.fn().mockReturnValue(0),
+    drawHand: vi.fn(),
+    discardHand: vi.fn().mockReturnValue([]),
+    playCard: vi.fn(),
+    addCard: vi.fn(),
+    removeCard: vi.fn(),
+    initialize: vi.fn(),
+    reset: vi.fn(),
+    shuffleDeck: vi.fn(),
+    getDeck: vi.fn().mockReturnValue([]),
+    getDiscard: vi.fn().mockReturnValue([]),
+  } as unknown as IDeckService;
+}
+
 // =============================================================================
 // テスト
 // =============================================================================
@@ -171,11 +199,13 @@ function createMockGatheringService(): IGatheringService {
 describe('GatheringPhaseUI 変更（TASK-0114）', () => {
   let mockScene: Phaser.Scene;
   let mockGatheringService: IGatheringService;
+  let mockDeckService: IDeckService;
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockScene = createMockScene();
     mockGatheringService = createMockGatheringService();
+    mockDeckService = createMockDeckService();
   });
 
   // ===========================================================================
@@ -187,7 +217,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
       // 【テスト目的】: 採取フェーズ進入時にLocationSelectUIが表示される
       // 🔵 dataflow.md セクション4.2に基づく
 
-      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
       ui.create();
       ui.show();
 
@@ -195,7 +225,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
     });
 
     it('create()直後はステージが未設定（nullまたはLOCATION_SELECT）', () => {
-      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
       ui.create();
 
       // show()前でもgetCurrentStage()は呼べる
@@ -213,7 +243,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
       // 【テスト目的】: LocationSelectUIで場所を選択するとドラフト採取セッションが開始される
       // 🔵 dataflow.md セクション4.2に基づく
 
-      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
       ui.create();
       ui.show();
 
@@ -228,7 +258,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
     });
 
     it('場所選択後にGatheringServiceのstartDraftGatheringが呼ばれる', () => {
-      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
       ui.create();
       ui.show();
 
@@ -248,7 +278,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
 
   describe('アクティブセッション判定', () => {
     it('show()直後はアクティブセッションなし', () => {
-      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
       ui.create();
       ui.show();
 
@@ -256,7 +286,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
     });
 
     it('場所選択後はアクティブセッションあり', () => {
-      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
       ui.create();
       ui.show();
 
@@ -279,7 +309,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
       // 【テスト目的】: ドラフトセッション進行中にフェーズ切り替えが要求されると確認が必要
       // 🟡 EDGE-001・REQ-001-03・design-interview.md D3から妥当な推測
 
-      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
       ui.create();
       ui.show();
 
@@ -303,7 +333,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
     });
 
     it('アクティブセッションなしの場合、requestLeavePhase()は即座にonConfirmを呼ぶ', () => {
-      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
       ui.create();
       ui.show();
 
@@ -317,7 +347,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
     });
 
     it('confirmLeavePhase()でonConfirmが発火しセッションが破棄される', () => {
-      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
       ui.create();
       ui.show();
 
@@ -341,7 +371,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
     });
 
     it('cancelLeavePhase()でonCancelが発火しセッションが維持される', () => {
-      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
       ui.create();
       ui.show();
 
@@ -371,7 +401,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
 
   describe('セッション破棄', () => {
     it('discardSession()でLOCATION_SELECTに戻る', () => {
-      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
       ui.create();
       ui.show();
 
@@ -398,7 +428,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
 
   describe('場所データ設定（Issue #354）', () => {
     it('setAvailableLocations()で場所データが設定される', () => {
-      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
       ui.create();
 
       const locations: IGatheringLocation[] = GATHERING_LOCATIONS.map((loc) => ({
@@ -411,7 +441,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
     });
 
     it('show()後にsetAvailableLocations()を呼んでもエラーにならない', () => {
-      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
       ui.create();
       ui.show();
 
@@ -424,7 +454,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
     });
 
     it('setAvailableLocations()後にshow()でLocationSelectUIに場所が反映される', () => {
-      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
       ui.create();
 
       const locations: IGatheringLocation[] = GATHERING_LOCATIONS.map((loc) => ({
@@ -440,7 +470,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
     });
 
     it('discardSession()後に再度show()しても場所データが維持される', () => {
-      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
       ui.create();
 
       const locations: IGatheringLocation[] = GATHERING_LOCATIONS.map((loc) => ({
@@ -470,7 +500,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
 
   describe('destroy', () => {
     it('destroy()でリソースが解放される', () => {
-      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
       ui.create();
       ui.show();
 
@@ -478,7 +508,7 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
     });
 
     it('セッション進行中にdestroy()してもエラーにならない', () => {
-      const ui = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
       ui.create();
       ui.show();
 

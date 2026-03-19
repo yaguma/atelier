@@ -9,6 +9,7 @@
  * @信頼性レベル 🔵 REQ-002, EDGE-103, 設計文書architecture.mdより
  */
 
+import type { IDeckService } from '@domain/interfaces/deck-service.interface';
 import type { IGatheringService } from '@domain/interfaces/gathering-service.interface';
 import type { IGatheringLocation, ILocationSelectResult } from '@features/gathering';
 import {
@@ -78,6 +79,24 @@ const createMockGatheringService = (): IGatheringService =>
     canGather: vi.fn(() => true),
     calculateGatheringCost: vi.fn(() => ({ actionPointCost: 1, extraDays: 0 })),
   }) as unknown as IGatheringService;
+
+/**
+ * モックDeckServiceの作成
+ * 手札に採取カードを含むモック
+ */
+const createMockDeckService = (...cardIds: string[]): IDeckService =>
+  ({
+    getHand: vi.fn(() =>
+      cardIds.map((id) => ({
+        id: toCardId(id),
+        master: { type: 'GATHERING', name: id },
+        isGatheringCard: () => true,
+        isRecipeCard: () => false,
+        isEnhancementCard: () => false,
+      })),
+    ),
+    getHandSize: vi.fn(() => cardIds.length),
+  }) as unknown as IDeckService;
 
 // =============================================================================
 // テスト
@@ -267,7 +286,11 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
       const mockGatheringService = createMockGatheringService();
 
       const { GatheringPhaseUI } = await import('@features/gathering/components/GatheringPhaseUI');
-      const phaseUI = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const phaseUI = new GatheringPhaseUI(
+        mockScene,
+        mockGatheringService,
+        createMockDeckService('gathering-forest', 'gathering-mine'),
+      );
 
       expect(phaseUI.getCurrentStage()).toBe(GatheringStage.LOCATION_SELECT);
     });
@@ -280,7 +303,11 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
       const mockGatheringService = createMockGatheringService();
 
       const { GatheringPhaseUI } = await import('@features/gathering/components/GatheringPhaseUI');
-      const phaseUI = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const phaseUI = new GatheringPhaseUI(
+        mockScene,
+        mockGatheringService,
+        createMockDeckService('gathering-forest', 'gathering-mine'),
+      );
       phaseUI.create();
       phaseUI.show();
 
@@ -295,7 +322,11 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
       const mockGatheringService = createMockGatheringService();
 
       const { GatheringPhaseUI } = await import('@features/gathering/components/GatheringPhaseUI');
-      const phaseUI = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const phaseUI = new GatheringPhaseUI(
+        mockScene,
+        mockGatheringService,
+        createMockDeckService('gathering-forest', 'gathering-mine'),
+      );
       phaseUI.create();
       phaseUI.show();
 
@@ -319,7 +350,11 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
       const mockGatheringService = createMockGatheringService();
 
       const { GatheringPhaseUI } = await import('@features/gathering/components/GatheringPhaseUI');
-      const phaseUI = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const phaseUI = new GatheringPhaseUI(
+        mockScene,
+        mockGatheringService,
+        createMockDeckService('gathering-forest', 'gathering-mine'),
+      );
       phaseUI.create();
       phaseUI.show();
 
@@ -346,7 +381,11 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
       const mockGatheringService = createMockGatheringService();
 
       const { GatheringPhaseUI } = await import('@features/gathering/components/GatheringPhaseUI');
-      const phaseUI = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const phaseUI = new GatheringPhaseUI(
+        mockScene,
+        mockGatheringService,
+        createMockDeckService('gathering-forest', 'gathering-mine'),
+      );
       phaseUI.create();
       phaseUI.show();
 
@@ -373,7 +412,11 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
       const mockGatheringService = createMockGatheringService();
 
       const { GatheringPhaseUI } = await import('@features/gathering/components/GatheringPhaseUI');
-      const phaseUI = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const phaseUI = new GatheringPhaseUI(
+        mockScene,
+        mockGatheringService,
+        createMockDeckService('gathering-forest', 'gathering-mine'),
+      );
       phaseUI.create();
 
       const onConfirm = vi.fn();
@@ -394,7 +437,11 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
       const mockGatheringService = createMockGatheringService();
 
       const { GatheringPhaseUI } = await import('@features/gathering/components/GatheringPhaseUI');
-      const phaseUI = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const phaseUI = new GatheringPhaseUI(
+        mockScene,
+        mockGatheringService,
+        createMockDeckService('gathering-forest', 'gathering-mine'),
+      );
       phaseUI.create();
       phaseUI.show();
 
@@ -423,7 +470,11 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
       const mockGatheringService = createMockGatheringService();
 
       const { GatheringPhaseUI } = await import('@features/gathering/components/GatheringPhaseUI');
-      const phaseUI = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const phaseUI = new GatheringPhaseUI(
+        mockScene,
+        mockGatheringService,
+        createMockDeckService('gathering-forest', 'gathering-mine'),
+      );
       phaseUI.create();
       phaseUI.show();
 
@@ -454,7 +505,11 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
       const mockGatheringService = createMockGatheringService();
 
       const { GatheringPhaseUI } = await import('@features/gathering/components/GatheringPhaseUI');
-      const phaseUI = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const phaseUI = new GatheringPhaseUI(
+        mockScene,
+        mockGatheringService,
+        createMockDeckService('gathering-forest', 'gathering-mine'),
+      );
       phaseUI.create();
       phaseUI.show();
 
@@ -544,7 +599,11 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
       const mockGatheringService = createMockGatheringService();
 
       const { GatheringPhaseUI } = await import('@features/gathering/components/GatheringPhaseUI');
-      const phaseUI = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const phaseUI = new GatheringPhaseUI(
+        mockScene,
+        mockGatheringService,
+        createMockDeckService('gathering_nearby_forest'),
+      );
       phaseUI.create();
       phaseUI.show();
 
@@ -569,7 +628,11 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
       const mockGatheringService = createMockGatheringService();
 
       const { GatheringPhaseUI } = await import('@features/gathering/components/GatheringPhaseUI');
-      const phaseUI = new GatheringPhaseUI(mockScene, mockGatheringService);
+      const phaseUI = new GatheringPhaseUI(
+        mockScene,
+        mockGatheringService,
+        createMockDeckService('gathering_nearby_forest', 'gathering_mountain_trail'),
+      );
       phaseUI.create();
       phaseUI.show();
 

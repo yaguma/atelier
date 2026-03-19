@@ -106,8 +106,12 @@ export class PhaseManager {
     if (container.has(ServiceKeys.GatheringService)) {
       gatheringService = container.resolve<IGatheringService>(ServiceKeys.GatheringService);
     }
+    let deckService: IDeckService | undefined;
+    if (container.has(ServiceKeys.DeckService)) {
+      deckService = container.resolve<IDeckService>(ServiceKeys.DeckService);
+    }
     if (gatheringService) {
-      const gatheringUI = new GatheringPhaseUI(this.scene, gatheringService);
+      const gatheringUI = new GatheringPhaseUI(this.scene, gatheringService, deckService);
       gatheringUI.create();
       this.contentContainer.add(gatheringUI.getContainer());
       this.phaseUIs.set(GamePhase.GATHERING, gatheringUI);
