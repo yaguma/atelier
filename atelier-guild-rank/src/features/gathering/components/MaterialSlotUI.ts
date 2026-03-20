@@ -97,13 +97,18 @@ export class MaterialSlotUI extends BaseComponent {
       .setOrigin(0.5);
     this.container.add(this.iconText);
 
-    // 素材名
+    // 素材名（スロット枠からはみ出さないようwordWrapを設定）
     this.nameText = this.scene.make
       .text({
         x: 0,
         y: 15,
         text: '',
-        style: { fontSize: '12px', color: '#333333' },
+        style: {
+          fontSize: '12px',
+          color: '#333333',
+          wordWrap: { width: this.slotSize - 8 },
+          align: 'center',
+        },
         add: false,
       })
       .setOrigin(0.5);
@@ -127,8 +132,10 @@ export class MaterialSlotUI extends BaseComponent {
     const icon = this.getMaterialIcon(material.type);
     this.iconText.setText(icon);
 
-    // 名前設定
+    // 名前設定（スロット枠に収まるようフォントサイズを調整）
+    this.nameText.setFontSize(12);
     this.nameText.setText(material.name);
+    this.adjustNameTextSize();
 
     // 品質に応じた視覚効果を適用
     this.applyQualityEffect(material.quality);
@@ -334,6 +341,23 @@ export class MaterialSlotUI extends BaseComponent {
 
     // バッジをクリア
     this.qualityBadge.removeAll(true);
+  }
+
+  /**
+   * 素材名テキストがスロット枠に収まるようフォントサイズを自動縮小する
+   *
+   * スロット下部の余白を考慮し、テキスト高さが上限を超える場合に
+   * フォントサイズを段階的に縮小する。最小フォントサイズは8px。
+   */
+  private adjustNameTextSize(): void {
+    const maxTextHeight = this.slotSize / 2 - 15;
+    const minFontSize = 8;
+    let currentSize = 12;
+
+    while (this.nameText.height > maxTextHeight && currentSize > minFontSize) {
+      currentSize--;
+      this.nameText.setFontSize(currentSize);
+    }
   }
 
   /**
