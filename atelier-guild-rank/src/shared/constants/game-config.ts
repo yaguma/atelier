@@ -142,6 +142,24 @@ export const GATHERING_COST = {
 } as const;
 
 /**
+ * 追加採取APコスト設定
+ *
+ * presentationCount超過後の追加採取に対するAPコスト増加テーブル。
+ * 超過回数（currentRound - presentationCount）に基づいて追加APコストを決定する。
+ *
+ * Issue #408: かごの容量分だけ繰り返し採取できるようにする
+ */
+export const EXTRA_GATHERING_AP_COST = {
+  /** 追加採取APコスト閾値テーブル（超過回数 → 追加APコスト） */
+  thresholds: [
+    { maxExcess: 0, cost: 0 },
+    { maxExcess: 2, cost: 1 },
+    { maxExcess: 4, cost: 2 },
+    { maxExcess: Infinity, cost: 3 },
+  ],
+} as const;
+
+/**
  * 品質変動パラメータ
  *
  * 採取時の素材品質が基本品質から上下する確率閾値。

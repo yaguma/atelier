@@ -34,8 +34,10 @@ export interface IGatheringCardMaster {
   type: 'GATHERING';
   /** 基本コスト */
   baseCost: number;
-  /** 提示回数 */
+  /** 提示回数（基本採取回数、追加APなしで採取できる回数） */
   presentationCount: number;
+  /** かご容量（採取ラウンド上限、未設定時はpresentationCountにフォールバック） */
+  basketCapacity?: number;
   /** レア素材出現率（%） */
   rareRate: number;
   /** 素材プール（素材IDリスト） */

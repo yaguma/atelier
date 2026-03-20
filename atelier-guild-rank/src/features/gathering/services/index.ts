@@ -12,6 +12,8 @@
 export { calculateOverflow } from './ap-overflow-service';
 // --- 採取コスト計算 ---
 export { calculateGatheringCost } from './calculate-materials';
+// --- 追加採取APコスト計算 ---
+export { calculateExtraGatheringApCost } from './extra-gathering-ap-cost';
 // --- 採取実行 ---
 export type { GatherInput, GatherResult } from './gather';
 export { gather } from './gather';
