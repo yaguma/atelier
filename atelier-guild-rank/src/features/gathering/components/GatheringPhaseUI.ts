@@ -21,7 +21,6 @@ import type {
   DraftSession,
   IGatheringService,
 } from '@domain/interfaces/gathering-service.interface';
-import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
 import { Button } from '@presentation/ui/components/Button';
 import { THEME } from '@presentation/ui/theme';
 import { BaseComponent } from '@shared/components';
@@ -111,12 +110,16 @@ export class GatheringPhaseUI extends BaseComponent {
    * @param scene - Phaserシーン
    * @param gatheringService - 採取サービス
    * @param onEnd - 採取終了時のコールバック
+   *
+   * TODO(#422): optionalなdeckServiceとmaterialNameResolverがonEndの前にあるため、
+   * onEndだけ渡したい場合にundefinedを挟む必要がある。
+   * オプション引数をoptionsオブジェクトにまとめるリファクタリングを検討する。
    */
   constructor(
     scene: Phaser.Scene,
     private gatheringService: IGatheringService,
     private deckService?: IDeckService,
-    private masterDataRepo?: IMasterDataRepository,
+    private materialNameResolver?: (materialId: string) => string,
     onEnd?: () => void,
   ) {
     // Issue #137: 親コンテナに追加されるため、シーンには直接追加しない
@@ -421,12 +424,16 @@ export class GatheringPhaseUI extends BaseComponent {
    * @returns 素材名
    */
   private getMaterialName(materialId: MaterialId): string {
-    // マスタデータリポジトリから日本語名を取得
-    if (this.masterDataRepo) {
-      const material = this.masterDataRepo.getMaterialById(materialId);
-      if (material) {
-        return material.name;
+    // コールバック関数パターンで日本語名を解決（AlchemyPhaseUIと統一）
+    if (this.materialNameResolver) {
+      const resolvedName = this.materialNameResolver(materialId);
+      if (resolvedName === materialId) {
+        // リゾルバが素材IDをそのまま返した場合、素材が見つからなかった可能性がある
+        console.warn(
+          `GatheringPhaseUI: materialNameResolver returned raw ID for "${materialId}". Material may not exist in master data.`,
+        );
       }
+      return resolvedName;
     }
 
     // フォールバック: materialIdをそのまま返す

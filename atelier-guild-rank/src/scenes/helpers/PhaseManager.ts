@@ -112,15 +112,21 @@ export class PhaseManager {
       deckService = container.resolve<IDeckService>(ServiceKeys.DeckService);
     }
     if (gatheringService) {
-      let masterDataRepo: IMasterDataRepository | undefined;
+      let materialNameResolver: ((materialId: string) => string) | undefined;
       if (container.has(ServiceKeys.MasterDataRepository)) {
-        masterDataRepo = container.resolve<IMasterDataRepository>(ServiceKeys.MasterDataRepository);
+        const masterDataRepo = container.resolve<IMasterDataRepository>(
+          ServiceKeys.MasterDataRepository,
+        );
+        materialNameResolver = (materialId: string) => {
+          const material = masterDataRepo.getMaterialById(toMaterialId(materialId));
+          return material?.name ?? materialId;
+        };
       }
       const gatheringUI = new GatheringPhaseUI(
         this.scene,
         gatheringService,
         deckService,
-        masterDataRepo,
+        materialNameResolver,
       );
       gatheringUI.create();
       this.contentContainer.add(gatheringUI.getContainer());
