@@ -24,6 +24,7 @@ import type {
 } from '@domain/interfaces/gathering-service.interface';
 import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
 import type { IMaterialService } from '@domain/interfaces/material-service.interface';
+import { calculateExtraGatheringApCost } from '@features/gathering/services/extra-gathering-ap-cost';
 import type { IEventBus } from '@shared/services/event-bus';
 import type { MaterialId } from '@shared/types';
 import { ApplicationError, ErrorCodes } from '@shared/types/errors';
@@ -302,10 +303,23 @@ export class GatheringService implements IGatheringService {
         `Card is not a gathering card: ${session.card.id}`,
       );
     }
-    const cost = this.calculateGatheringCost(
+    const baseCost = this.calculateGatheringCost(
       session.card.master.baseCost,
       session.selectedMaterials.length,
     );
+
+    // 【追加APコスト累計】: presentationCount超過ラウンドごとの追加APコストを累計
+    // 各追加ラウンドの超過数に対してcalculateExtraGatheringApCostを呼び、合計する
+    // Issue #408: basketCapacity > presentationCount の場合、超過分の追加APコストが発生
+    let totalExtraApCost = 0;
+    for (let round = 1; round <= session.maxRounds; round++) {
+      totalExtraApCost += calculateExtraGatheringApCost(round, session.presentationCount);
+    }
+
+    const cost = {
+      actionPointCost: baseCost.actionPointCost + totalExtraApCost,
+      extraDays: baseCost.extraDays,
+    };
 
     // 【セッションを削除】: activeSessionsから削除
     // 【メモリ管理】: 終了したセッションは必ず削除
@@ -473,6 +487,9 @@ export class GatheringService implements IGatheringService {
     }
 
     // basketCapacityが設定されている場合はそちらを使用
+    // 【設計意図】: basketCapacityはカードの物理的な容量を表し、強化カード効果の影響を受けない。
+    // 強化カード（精霊の導き等）はpresentationCount（素材提示回数）のみに影響する。
+    // これにより basketCapacity > presentationCount の場合、超過ラウンドに追加APコストが発生する。
     if (card.master.basketCapacity !== undefined && card.master.basketCapacity > 0) {
       return card.master.basketCapacity;
     }

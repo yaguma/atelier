@@ -134,6 +134,20 @@ const mockGatheringCardMasters: Record<string, IGatheringCardMaster> = {
     unlockRank: GuildRank.RANK_B,
     description: '古代の遺跡',
   },
+  // basketCapacity > presentationCount のテスト用カード
+  gathering_deep_forest: {
+    id: 'gathering_deep_forest',
+    name: '深い森',
+    type: 'GATHERING',
+    baseCost: 1,
+    presentationCount: 2,
+    basketCapacity: 5,
+    materialPool: [toMaterialId('herb'), toMaterialId('mushroom'), toMaterialId('wood')],
+    rareRate: 10,
+    rarity: Rarity.UNCOMMON,
+    unlockRank: GuildRank.RANK_E,
+    description: 'バスケット容量が提示回数より大きい森',
+  },
 };
 
 // モックレシピカード（エラーケース用）
@@ -619,6 +633,62 @@ describe('GatheringService', () => {
         // 【期待値確認】: actionPointCostが4（基本コスト1+追加コスト3）、extraDaysが0
         expect(cost.actionPointCost).toBe(4); // 【確認内容】: コストが基本コスト1+追加コスト3=4である 🔵
         expect(cost.extraDays).toBe(0); // 【確認内容】: ペナルティが発生しない（6個以下） 🔵
+      });
+    });
+
+    describe('basketCapacity超過時の追加APコストがendGathering()に反映される', () => {
+      it('basketCapacity > presentationCountのカードで全ラウンド採取すると追加APコストが加算される', () => {
+        // 【テスト目的】: endGathering()が追加APコストを正しく累計して返すことを確認
+        // 【テスト内容】: presentationCount=2, basketCapacity=5のカードで5ラウンド採取
+        //   - ラウンド1,2: 追加AP 0（presentationCount以内）
+        //   - ラウンド3: 超過1 → 追加AP 1
+        //   - ラウンド4: 超過2 → 追加AP 1
+        //   - ラウンド5: 超過3 → 追加AP 2
+        //   合計追加AP: 0+0+1+1+2 = 4
+        // Issue #408: 追加APコストが実際に消費されることの検証
+
+        const cardMaster = mockGatheringCardMasters.gathering_deep_forest;
+        const card = new Card('card_deep_forest_001', cardMaster);
+        const session = gatheringService.startDraftGathering(card);
+
+        // maxRoundsはbasketCapacity=5、presentationCountは2
+        expect(session.maxRounds).toBe(5);
+        expect(session.presentationCount).toBe(2);
+
+        // 5ラウンド全て素材を選択
+        for (let i = 0; i < 5; i++) {
+          gatheringService.selectMaterial(session.sessionId, 0);
+        }
+
+        const result = gatheringService.endGathering(session.sessionId);
+
+        // baseCost=1, 5個選択の追加コスト=3, 追加APコスト累計=4
+        // 合計: 1 + 3 + 4 = 8
+        expect(result.cost.actionPointCost).toBe(8);
+        expect(result.cost.extraDays).toBe(0);
+      });
+
+      it('basketCapacity = presentationCountの場合、追加APコストは0', () => {
+        // 【テスト目的】: presentationCountとbasketCapacityが同じ場合は追加コストが発生しない
+        const cardMaster = mockGatheringCardMasters.gathering_forest;
+        const card = new Card('card_forest_no_extra', cardMaster);
+        const session = gatheringService.startDraftGathering(card);
+
+        // presentationCount=3, maxRounds=3（basketCapacity未設定のためフォールバック）
+        expect(session.maxRounds).toBe(3);
+        expect(session.presentationCount).toBe(3);
+
+        // 3ラウンド全て素材を選択
+        for (let i = 0; i < 3; i++) {
+          gatheringService.selectMaterial(session.sessionId, 0);
+        }
+
+        const result = gatheringService.endGathering(session.sessionId);
+
+        // baseCost=0, 3個選択の追加コスト=2, 追加APコスト=0（超過なし）
+        // 合計: 0 + 2 + 0 = 2
+        expect(result.cost.actionPointCost).toBe(2);
+        expect(result.cost.extraDays).toBe(0);
       });
     });
 

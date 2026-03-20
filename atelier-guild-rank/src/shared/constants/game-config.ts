@@ -150,9 +150,10 @@ export const GATHERING_COST = {
  * Issue #408: かごの容量分だけ繰り返し採取できるようにする
  */
 export const EXTRA_GATHERING_AP_COST = {
-  /** 追加採取APコスト閾値テーブル（超過回数 → 追加APコスト） */
+  /** 追加採取APコスト閾値テーブル（超過回数 → 追加APコスト）
+   * 注: excess <= 0 は calculateExtraGatheringApCost() 内で早期リターンされるため、
+   * maxExcess: 0 のエントリは不要 */
   thresholds: [
-    { maxExcess: 0, cost: 0 },
     { maxExcess: 2, cost: 1 },
     { maxExcess: 4, cost: 2 },
     { maxExcess: Infinity, cost: 3 },
