@@ -138,10 +138,30 @@ export class PhaseManager {
           return material?.name ?? materialId;
         };
       }
+      // Issue #413: onCraftCompleteコールバックを接続
+      // 調合完了後にインベントリにアイテムを追加し、使用素材を削除する
+      const onCraftComplete = (item: import('@domain/entities/ItemInstance').ItemInstance) => {
+        const diContainer = Container.getInstance();
+        if (diContainer.has(ServiceKeys.InventoryService)) {
+          const invService = diContainer.resolve<
+            import('@shared/domain/interfaces/inventory-service.interface').IInventoryService
+          >(ServiceKeys.InventoryService);
+
+          // 使用素材をインベントリから削除（アイテム追加前に実施）
+          if (item.usedMaterials.length > 0) {
+            const instanceIds = item.usedMaterials.map((m) => m.instanceId);
+            invService.removeMaterials(instanceIds);
+          }
+
+          // 調合で生成されたアイテムをインベントリに追加
+          invService.addItem(item);
+        }
+      };
+
       const alchemyUI = new AlchemyPhaseUI(
         this.scene,
         alchemyService,
-        undefined,
+        onCraftComplete,
         materialNameResolver,
       );
       alchemyUI.create();
