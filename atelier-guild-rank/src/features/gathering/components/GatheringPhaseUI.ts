@@ -21,6 +21,7 @@ import type {
   DraftSession,
   IGatheringService,
 } from '@domain/interfaces/gathering-service.interface';
+import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
 import { Button } from '@presentation/ui/components/Button';
 import { THEME } from '@presentation/ui/theme';
 import { BaseComponent } from '@shared/components';
@@ -115,6 +116,7 @@ export class GatheringPhaseUI extends BaseComponent {
     scene: Phaser.Scene,
     private gatheringService: IGatheringService,
     private deckService?: IDeckService,
+    private masterDataRepo?: IMasterDataRepository,
     onEnd?: () => void,
   ) {
     // Issue #137: 親コンテナに追加されるため、シーンには直接追加しない
@@ -419,20 +421,16 @@ export class GatheringPhaseUI extends BaseComponent {
    * @returns 素材名
    */
   private getMaterialName(materialId: MaterialId): string {
-    const nameMap: Record<string, string> = {
-      herb: '薬草',
-      ore: '鉄鉱',
-      mushroom: 'キノコ',
-      gem: '宝石',
-      bone: '骨',
-      flower: '花',
-      water: '水',
-      fire: '火',
-      ice: '氷',
-      wood: '木材',
-    };
+    // マスタデータリポジトリから日本語名を取得
+    if (this.masterDataRepo) {
+      const material = this.masterDataRepo.getMaterialById(materialId);
+      if (material) {
+        return material.name;
+      }
+    }
 
-    return nameMap[materialId] || materialId;
+    // フォールバック: materialIdをそのまま返す
+    return materialId;
   }
 
   /**

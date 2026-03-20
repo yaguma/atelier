@@ -112,7 +112,16 @@ export class PhaseManager {
       deckService = container.resolve<IDeckService>(ServiceKeys.DeckService);
     }
     if (gatheringService) {
-      const gatheringUI = new GatheringPhaseUI(this.scene, gatheringService, deckService);
+      let masterDataRepo: IMasterDataRepository | undefined;
+      if (container.has(ServiceKeys.MasterDataRepository)) {
+        masterDataRepo = container.resolve<IMasterDataRepository>(ServiceKeys.MasterDataRepository);
+      }
+      const gatheringUI = new GatheringPhaseUI(
+        this.scene,
+        gatheringService,
+        deckService,
+        masterDataRepo,
+      );
       gatheringUI.create();
       this.contentContainer.add(gatheringUI.getContainer());
       this.phaseUIs.set(GamePhase.GATHERING, gatheringUI);
