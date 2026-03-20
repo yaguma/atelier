@@ -39,6 +39,15 @@ export interface MaterialDisplay {
  * - クリックイベントの処理
  */
 export class MaterialSlotUI extends BaseComponent {
+  /** 素材名テキストのデフォルトフォントサイズ(px) */
+  private static readonly NAME_DEFAULT_FONT_SIZE = 12;
+  /** 素材名テキストの最小フォントサイズ(px) */
+  private static readonly NAME_MIN_FONT_SIZE = 8;
+  /** 素材名テキスト領域の下部マージン(px) */
+  private static readonly NAME_TEXT_BOTTOM_MARGIN = 15;
+  /** 素材名テキストの左右パディング(px) */
+  private static readonly NAME_TEXT_HORIZONTAL_PADDING = 8;
+
   private border!: Phaser.GameObjects.Graphics;
   private glowGraphics!: Phaser.GameObjects.Graphics;
   private iconText!: Phaser.GameObjects.Text;
@@ -104,9 +113,9 @@ export class MaterialSlotUI extends BaseComponent {
         y: 15,
         text: '',
         style: {
-          fontSize: '12px',
+          fontSize: `${MaterialSlotUI.NAME_DEFAULT_FONT_SIZE}px`,
           color: '#333333',
-          wordWrap: { width: this.slotSize - 8 },
+          wordWrap: { width: this.slotSize - MaterialSlotUI.NAME_TEXT_HORIZONTAL_PADDING },
           align: 'center',
         },
         add: false,
@@ -133,7 +142,7 @@ export class MaterialSlotUI extends BaseComponent {
     this.iconText.setText(icon);
 
     // 名前設定（スロット枠に収まるようフォントサイズを調整）
-    this.nameText.setFontSize(12);
+    this.nameText.setFontSize(MaterialSlotUI.NAME_DEFAULT_FONT_SIZE);
     this.nameText.setText(material.name);
     this.adjustNameTextSize();
 
@@ -350,11 +359,13 @@ export class MaterialSlotUI extends BaseComponent {
    * フォントサイズを段階的に縮小する。最小フォントサイズは8px。
    */
   private adjustNameTextSize(): void {
-    const maxTextHeight = this.slotSize / 2 - 15;
-    const minFontSize = 8;
-    let currentSize = 12;
+    const maxTextHeight = this.slotSize / 2 - MaterialSlotUI.NAME_TEXT_BOTTOM_MARGIN;
+    let currentSize = MaterialSlotUI.NAME_DEFAULT_FONT_SIZE;
 
-    while (this.nameText.height > maxTextHeight && currentSize > minFontSize) {
+    while (
+      this.nameText.height > maxTextHeight &&
+      currentSize > MaterialSlotUI.NAME_MIN_FONT_SIZE
+    ) {
       currentSize--;
       this.nameText.setFontSize(currentSize);
     }
