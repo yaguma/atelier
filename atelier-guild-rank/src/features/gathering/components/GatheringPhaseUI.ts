@@ -112,11 +112,16 @@ export class GatheringPhaseUI extends BaseComponent {
    * @param scene - Phaserシーン
    * @param gatheringService - 採取サービス
    * @param onEnd - 採取終了時のコールバック
+   *
+   * TODO(#422): optionalなdeckServiceとmaterialNameResolverがonEndの前にあるため、
+   * onEndだけ渡したい場合にundefinedを挟む必要がある。
+   * オプション引数をoptionsオブジェクトにまとめるリファクタリングを検討する。
    */
   constructor(
     scene: Phaser.Scene,
     private gatheringService: IGatheringService,
     private deckService?: IDeckService,
+    private materialNameResolver?: (materialId: string) => string,
     onEnd?: () => void,
   ) {
     // Issue #137: 親コンテナに追加されるため、シーンには直接追加しない
@@ -469,20 +474,20 @@ export class GatheringPhaseUI extends BaseComponent {
    * @returns 素材名
    */
   private getMaterialName(materialId: MaterialId): string {
-    const nameMap: Record<string, string> = {
-      herb: '薬草',
-      ore: '鉄鉱',
-      mushroom: 'キノコ',
-      gem: '宝石',
-      bone: '骨',
-      flower: '花',
-      water: '水',
-      fire: '火',
-      ice: '氷',
-      wood: '木材',
-    };
+    // コールバック関数パターンで日本語名を解決（AlchemyPhaseUIと統一）
+    if (this.materialNameResolver) {
+      const resolvedName = this.materialNameResolver(materialId);
+      if (resolvedName === materialId) {
+        // リゾルバが素材IDをそのまま返した場合、素材が見つからなかった可能性がある
+        console.warn(
+          `GatheringPhaseUI: materialNameResolver returned raw ID for "${materialId}". Material may not exist in master data.`,
+        );
+      }
+      return resolvedName;
+    }
 
-    return nameMap[materialId] || materialId;
+    // フォールバック: materialIdをそのまま返す
+    return materialId;
   }
 
   /**
