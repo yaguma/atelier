@@ -360,7 +360,7 @@ export class LocationSelectUI extends BaseComponent {
       text: '採取地マップ',
       style: {
         fontSize: `${THEME.sizes.large}px`,
-        color: '#FFFFFF',
+        color: `#${Colors.text.primary.toString(16).padStart(6, '0')}`,
         fontStyle: 'bold',
         fontFamily: THEME.fonts.primary,
       },
@@ -401,7 +401,7 @@ export class LocationSelectUI extends BaseComponent {
       text: location.name,
       style: {
         fontSize: `${THEME.sizes.medium}px`,
-        color: '#FFFFFF',
+        color: `#${Colors.text.primary.toString(16).padStart(6, '0')}`,
         fontStyle: 'bold',
         fontFamily: THEME.fonts.primary,
       },
@@ -433,7 +433,7 @@ export class LocationSelectUI extends BaseComponent {
       text: materialsStr,
       style: {
         fontSize: `${MAP_LAYOUT.MATERIAL_FONT_SIZE}px`,
-        color: '#CCCCCC',
+        color: `#${Colors.text.secondary.toString(16).padStart(6, '0')}`,
         fontFamily: THEME.fonts.primary,
       },
       add: false,
