@@ -39,6 +39,15 @@ export interface MaterialDisplay {
  * - クリックイベントの処理
  */
 export class MaterialSlotUI extends BaseComponent {
+  /** 素材名テキストのデフォルトフォントサイズ(px) */
+  private static readonly NAME_DEFAULT_FONT_SIZE = 12;
+  /** 素材名テキストの最小フォントサイズ(px) */
+  private static readonly NAME_MIN_FONT_SIZE = 8;
+  /** 素材名テキスト領域の下部マージン(px) */
+  private static readonly NAME_TEXT_BOTTOM_MARGIN = 15;
+  /** 素材名テキストの左右パディング(px) */
+  private static readonly NAME_TEXT_HORIZONTAL_PADDING = 8;
+
   private border!: Phaser.GameObjects.Graphics;
   private glowGraphics!: Phaser.GameObjects.Graphics;
   private iconText!: Phaser.GameObjects.Text;
@@ -97,13 +106,18 @@ export class MaterialSlotUI extends BaseComponent {
       .setOrigin(0.5);
     this.container.add(this.iconText);
 
-    // 素材名
+    // 素材名（スロット枠からはみ出さないようwordWrapを設定）
     this.nameText = this.scene.make
       .text({
         x: 0,
         y: 15,
         text: '',
-        style: { fontSize: '12px', color: '#333333' },
+        style: {
+          fontSize: `${MaterialSlotUI.NAME_DEFAULT_FONT_SIZE}px`,
+          color: '#333333',
+          wordWrap: { width: this.slotSize - MaterialSlotUI.NAME_TEXT_HORIZONTAL_PADDING },
+          align: 'center',
+        },
         add: false,
       })
       .setOrigin(0.5);
@@ -127,8 +141,10 @@ export class MaterialSlotUI extends BaseComponent {
     const icon = this.getMaterialIcon(material.type);
     this.iconText.setText(icon);
 
-    // 名前設定
+    // 名前設定（スロット枠に収まるようフォントサイズを調整）
+    this.nameText.setFontSize(MaterialSlotUI.NAME_DEFAULT_FONT_SIZE);
     this.nameText.setText(material.name);
+    this.adjustNameTextSize();
 
     // 品質に応じた視覚効果を適用
     this.applyQualityEffect(material.quality);
@@ -334,6 +350,25 @@ export class MaterialSlotUI extends BaseComponent {
 
     // バッジをクリア
     this.qualityBadge.removeAll(true);
+  }
+
+  /**
+   * 素材名テキストがスロット枠に収まるようフォントサイズを自動縮小する
+   *
+   * スロット下部の余白を考慮し、テキスト高さが上限を超える場合に
+   * フォントサイズを段階的に縮小する。最小フォントサイズは8px。
+   */
+  private adjustNameTextSize(): void {
+    const maxTextHeight = this.slotSize / 2 - MaterialSlotUI.NAME_TEXT_BOTTOM_MARGIN;
+    let currentSize = MaterialSlotUI.NAME_DEFAULT_FONT_SIZE;
+
+    while (
+      this.nameText.height > maxTextHeight &&
+      currentSize > MaterialSlotUI.NAME_MIN_FONT_SIZE
+    ) {
+      currentSize--;
+      this.nameText.setFontSize(currentSize);
+    }
   }
 
   /**
