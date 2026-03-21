@@ -27,6 +27,7 @@ import { BaseComponent } from '@shared/components';
 import { getSelectionIndexFromKey, isKeyForAction } from '@shared/constants/keybindings';
 import type { MaterialId, Quality } from '@shared/types';
 import type Phaser from 'phaser';
+import { calculateExtraGatheringApCost } from '../services/extra-gathering-ap-cost';
 import type { IGatheringLocation, ILocationSelectResult } from '../types/gathering-location';
 import { GatheringStage } from '../types/gathering-location';
 import { LocationSelectUI } from './LocationSelectUI';
@@ -74,6 +75,7 @@ export class GatheringPhaseUI extends BaseComponent {
   private gatheredDisplay!: Phaser.GameObjects.Container;
   private gatheredMaterialTexts: Phaser.GameObjects.Text[] = [];
   private remainingText!: Phaser.GameObjects.Text;
+  private extraApCostText!: Phaser.GameObjects.Text;
   private titleText!: Phaser.GameObjects.Text;
   private endButton!: Button;
 
@@ -128,6 +130,7 @@ export class GatheringPhaseUI extends BaseComponent {
   create(): void {
     this.createTitle();
     this.createRemainingCounter();
+    this.createExtraApCostDisplay();
     this.createMaterialPool();
     this.createGatheredDisplay();
     this.createEndButton();
@@ -175,6 +178,29 @@ export class GatheringPhaseUI extends BaseComponent {
       .setOrigin(0.5);
 
     this.container.add(this.remainingText);
+  }
+
+  /**
+   * 追加APコスト表示を作成
+   * Issue #408: presentationCount超過時に追加APコストを表示
+   */
+  private createExtraApCostDisplay(): void {
+    this.extraApCostText = this.scene.make
+      .text({
+        x: GATHERING_LAYOUT.CONTENT_CENTER_X,
+        y: 85,
+        text: '',
+        style: {
+          fontSize: `${THEME.sizes.small}px`,
+          color: '#ffaa00',
+          fontFamily: THEME.fonts.primary,
+        },
+        add: false,
+      })
+      .setOrigin(0.5);
+
+    this.extraApCostText.setVisible(false);
+    this.container.add(this.extraApCostText);
   }
 
   /**
@@ -262,9 +288,12 @@ export class GatheringPhaseUI extends BaseComponent {
   updateSession(session: DraftSession): void {
     this.session = session;
 
-    // 残り選択回数を更新
+    // 残り選択回数を更新（バスケット容量ベース）
     const remaining = session.maxRounds - session.currentRound + 1;
-    this.remainingText.setText(`残り選択回数: ${remaining}/${session.maxRounds}`);
+    this.remainingText.setText(`残り選択回数: ${remaining}/${session.maxRounds} (かご容量)`);
+
+    // 追加APコスト表示を更新（Issue #408）
+    this.updateExtraApCostDisplay(session);
 
     // 素材プールを更新
     this.updateMaterialPool(session.currentOptions);
@@ -275,6 +304,27 @@ export class GatheringPhaseUI extends BaseComponent {
     // 終了判定
     if (session.isComplete) {
       this.disableMaterialSelection();
+    }
+  }
+
+  /**
+   * 追加APコスト表示を更新
+   * Issue #408: presentationCount超過時に追加APコストを表示
+   */
+  private updateExtraApCostDisplay(session: DraftSession): void {
+    const extraCost = calculateExtraGatheringApCost(
+      session.currentRound,
+      session.presentationCount,
+    );
+
+    if (extraCost > 0) {
+      this.extraApCostText.setText(`⚡ 追加AP: +${extraCost}`);
+      this.extraApCostText.setVisible(true);
+    } else if (session.currentRound > session.presentationCount) {
+      this.extraApCostText.setText('⚡ 追加AP: +0');
+      this.extraApCostText.setVisible(true);
+    } else {
+      this.extraApCostText.setVisible(false);
     }
   }
 
@@ -633,6 +683,7 @@ export class GatheringPhaseUI extends BaseComponent {
     // 既存のUI要素（タイトル、カウンター、素材プール、獲得表示、ボタン）を表示
     if (this.titleText) this.titleText.setVisible(true);
     if (this.remainingText) this.remainingText.setVisible(true);
+    if (this.extraApCostText) this.extraApCostText.setVisible(false); // 初期は非表示
     for (const slot of this.materialSlots) {
       slot.setVisible(true);
     }
@@ -645,6 +696,7 @@ export class GatheringPhaseUI extends BaseComponent {
   private hideDraftSessionUI(): void {
     if (this.titleText) this.titleText.setVisible(false);
     if (this.remainingText) this.remainingText.setVisible(false);
+    if (this.extraApCostText) this.extraApCostText.setVisible(false);
     for (const slot of this.materialSlots) {
       slot.setVisible(false);
     }

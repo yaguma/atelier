@@ -43,6 +43,7 @@ export { GatheringStage, isGatheringCard } from './types';
 
 export type { GatherInput, GatherResult, SelectionError, SelectionResult } from './services';
 export {
+  calculateExtraGatheringApCost,
   calculateGatheringCost,
   calculateOverflow,
   gather,

@@ -21,8 +21,10 @@ export interface DraftSession {
   card: Card;
   /** 現在のラウンド（1〜maxRounds） */
   currentRound: number;
-  /** 最大ラウンド数（採取地により異なる） */
+  /** 最大ラウンド数（バスケット容量に基づく） */
   maxRounds: number;
+  /** 基本採取回数（追加APなしで採取できる回数） */
+  presentationCount: number;
   /** 選択済み素材 */
   selectedMaterials: MaterialInstance[];
   /** 現在の素材オプション（3つ） */

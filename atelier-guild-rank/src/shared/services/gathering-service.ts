@@ -24,6 +24,7 @@ import type {
 } from '@domain/interfaces/gathering-service.interface';
 import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
 import type { IMaterialService } from '@domain/interfaces/material-service.interface';
+import { calculateExtraGatheringApCost } from '@features/gathering/services/extra-gathering-ap-cost';
 import type { IEventBus } from '@shared/services/event-bus';
 import type { MaterialId } from '@shared/types';
 import { ApplicationError, ErrorCodes } from '@shared/types/errors';
@@ -118,6 +119,10 @@ export class GatheringService implements IGatheringService {
     // 【提示回数の決定】: カード基本値 + 強化カード効果を適用
     // 【強化カード】: 「精霊の導き」（提示回数+1）、「古代の地図」（提示回数+1）
     // 🔵 信頼性レベル: note.md・設計文書に明記
+    const presentationCount = this.calculatePresentationCount(card, enhancementCards);
+
+    // 【最大ラウンド数の決定】: バスケット容量ベース（Issue #408）
+    // basketCapacityが設定されていればそちらを使用、なければpresentationCountにフォールバック
     const maxRounds = this.calculateMaxRounds(card, enhancementCards);
 
     // 【素材オプション生成】: 3つの素材オプションを生成
@@ -131,6 +136,7 @@ export class GatheringService implements IGatheringService {
       card,
       currentRound: 1,
       maxRounds,
+      presentationCount,
       selectedMaterials: [],
       currentOptions,
       isComplete: false,
@@ -297,10 +303,23 @@ export class GatheringService implements IGatheringService {
         `Card is not a gathering card: ${session.card.id}`,
       );
     }
-    const cost = this.calculateGatheringCost(
+    const baseCost = this.calculateGatheringCost(
       session.card.master.baseCost,
       session.selectedMaterials.length,
     );
+
+    // 【追加APコスト累計】: presentationCount超過ラウンドごとの追加APコストを累計
+    // 各追加ラウンドの超過数に対してcalculateExtraGatheringApCostを呼び、合計する
+    // Issue #408: basketCapacity > presentationCount の場合、超過分の追加APコストが発生
+    let totalExtraApCost = 0;
+    for (let round = 1; round <= session.maxRounds; round++) {
+      totalExtraApCost += calculateExtraGatheringApCost(round, session.presentationCount);
+    }
+
+    const cost = {
+      actionPointCost: baseCost.actionPointCost + totalExtraApCost,
+      extraDays: baseCost.extraDays,
+    };
 
     // 【セッションを削除】: activeSessionsから削除
     // 【メモリ管理】: 終了したセッションは必ず削除
@@ -419,49 +438,64 @@ export class GatheringService implements IGatheringService {
   // =============================================================================
 
   /**
-   * 【機能概要】: 提示回数を計算
+   * 【機能概要】: 基本採取回数（presentationCount）を計算
    * 【実装方針】: カード基本値 + 強化カード効果を合計
    * 【強化カード効果】:
    *   - 「精霊の導き」: 提示回数+1
    *   - 「古代の地図」（アーティファクト）: 提示回数+1
-   * 【テスト対応】: T-0011-05 カード効果適用（提示回数が効果通り）
    * 🟡 信頼性レベル: note.md・要件定義書に記載あり（強化カードの具体的な実装は推測）
    */
-  private calculateMaxRounds(card: Card, enhancementCards?: Card[]): number {
-    // 【カード基本値】: 採取地カードの基本提示回数
-    // 🔵 信頼性レベル: note.md・設計文書に明記
-    // 【型ガード】: cardは必ず採取地カードであることを保証
+  private calculatePresentationCount(card: Card, enhancementCards?: Card[]): number {
     if (!isGatheringCardMaster(card.master)) {
       throw new ApplicationError(
         ErrorCodes.INVALID_CARD_TYPE,
         `Card is not a gathering card: ${card.id}`,
       );
     }
-    let maxRounds = card.master.presentationCount;
+    let count = card.master.presentationCount;
 
-    // 【強化カード効果】: 提示回数を増加させる効果
-    // 🟡 信頼性レベル: 要件定義書に記載あり（具体的な効果IDは推測）
     if (enhancementCards && enhancementCards.length > 0) {
       for (const enhancementCard of enhancementCards) {
-        // 【型ガード】: enhancementCardは必ず強化カードであることを保証
         if (!isEnhancementCardMaster(enhancementCard.master)) {
           continue;
         }
-
-        // 【効果判定】: 提示回数を増加させる効果かどうかを判定
-        // 【実装】: effect.typeが'INCREASE_PRESENTATION'の場合、提示回数を増加
-        // 🟡 信頼性レベル: 効果IDの具体的な名称は推測
         if (
           enhancementCard.master.effect.type === 'INCREASE_PRESENTATION' ||
           enhancementCard.master.name === '精霊の導き' ||
           enhancementCard.master.name === '古代の地図'
         ) {
-          maxRounds += 1;
+          count += 1;
         }
       }
     }
 
-    return maxRounds;
+    return count;
+  }
+
+  /**
+   * 【機能概要】: 最大ラウンド数を計算（バスケット容量ベース）
+   * 【実装方針】: basketCapacityが設定されていればそちらを使用、なければpresentationCountにフォールバック
+   * 【Issue #408】: かごの容量分だけ繰り返し採取できるようにする
+   * 🔵 信頼性レベル: Issue #408の要件に基づく
+   */
+  private calculateMaxRounds(card: Card, enhancementCards?: Card[]): number {
+    if (!isGatheringCardMaster(card.master)) {
+      throw new ApplicationError(
+        ErrorCodes.INVALID_CARD_TYPE,
+        `Card is not a gathering card: ${card.id}`,
+      );
+    }
+
+    // basketCapacityが設定されている場合はそちらを使用
+    // 【設計意図】: basketCapacityはカードの物理的な容量を表し、強化カード効果の影響を受けない。
+    // 強化カード（精霊の導き等）はpresentationCount（素材提示回数）のみに影響する。
+    // これにより basketCapacity > presentationCount の場合、超過ラウンドに追加APコストが発生する。
+    if (card.master.basketCapacity !== undefined && card.master.basketCapacity > 0) {
+      return card.master.basketCapacity;
+    }
+
+    // フォールバック: presentationCount + 強化カード効果
+    return this.calculatePresentationCount(card, enhancementCards);
   }
 
   /**
