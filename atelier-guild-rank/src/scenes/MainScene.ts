@@ -18,11 +18,13 @@ import { FooterUI } from '@presentation/ui/components/FooterUI';
 import { HeaderUI } from '@presentation/ui/components/HeaderUI';
 import { SidebarUI } from '@presentation/ui/components/SidebarUI';
 import { MAIN_LAYOUT } from '@shared/constants';
+import type { IMasterDataRepository } from '@shared/domain/interfaces/master-data-repository.interface';
 import type { GameEndCondition } from '@shared/services';
 import { Container, ServiceKeys } from '@shared/services/di/container';
 import { GamePhase } from '@shared/types/common';
 import type { GameEndStats, IPhaseChangedEvent } from '@shared/types/events';
 import { GameEventType } from '@shared/types/events';
+import { toItemId, toMaterialId } from '@shared/types/ids';
 import type { IQuest } from '@shared/types/quests';
 import Phaser from 'phaser';
 import { PhaseManager } from './helpers/PhaseManager';
@@ -188,7 +190,27 @@ export class MainScene extends Phaser.Scene {
     this.headerUI.create();
 
     // サイドバーUI（画面左側、ヘッダー下から開始）
-    this.sidebarUI = new SidebarUI(this, 0, LAYOUT.HEADER_HEIGHT);
+    // Issue #424: IMasterDataRepository経由で日本語名を解決するリゾルバを注入
+    const container = Container.getInstance();
+    let materialNameResolver: ((materialId: string) => string) | undefined;
+    let itemNameResolver: ((itemId: string) => string) | undefined;
+    if (container.has(ServiceKeys.MasterDataRepository)) {
+      const masterDataRepo = container.resolve<IMasterDataRepository>(
+        ServiceKeys.MasterDataRepository,
+      );
+      materialNameResolver = (materialId: string) => {
+        const material = masterDataRepo.getMaterialById(toMaterialId(materialId));
+        return material?.name ?? materialId;
+      };
+      itemNameResolver = (itemId: string) => {
+        const item = masterDataRepo.getItemById(toItemId(itemId));
+        return item?.name ?? itemId;
+      };
+    }
+    this.sidebarUI = new SidebarUI(this, 0, LAYOUT.HEADER_HEIGHT, {
+      materialNameResolver,
+      itemNameResolver,
+    });
     this.sidebarUI.create();
 
     // フッターUI（画面下部、サイドバー右側から開始）

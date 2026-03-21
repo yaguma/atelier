@@ -115,6 +115,9 @@ export class QuestAcceptPhaseUI extends BaseComponent {
   /** 受注上限 */
   private static readonly QUEST_ACCEPT_LIMIT = 3;
 
+  /** アイテム名解決関数（itemId → 日本語名） */
+  private itemNameResolver?: (itemId: string) => string;
+
   // =============================================================================
   // レイアウト定数
   // =============================================================================
@@ -160,12 +163,21 @@ export class QuestAcceptPhaseUI extends BaseComponent {
    * - UIコンポーネントの初期化
    *
    * @param scene - Phaserシーンインスタンス
+   * @param options - オプション設定
    */
-  constructor(scene: Phaser.Scene) {
+  constructor(
+    scene: Phaser.Scene,
+    options?: {
+      itemNameResolver?: (itemId: string) => string;
+    },
+  ) {
     // Issue #137: 親コンテナに追加されるため、シーンには直接追加しない
     super(scene, QuestAcceptPhaseUI.COMPONENT_X, QuestAcceptPhaseUI.COMPONENT_Y, {
       addToScene: false,
     });
+
+    // Issue #424: アイテム名解決関数を保持
+    this.itemNameResolver = options?.itemNameResolver;
 
     // 【EventBusの取得】: シーンデータからEventBusを取得
     this.initializeEventBus();
@@ -385,6 +397,7 @@ export class QuestAcceptPhaseUI extends BaseComponent {
       x: position.x,
       y: position.y,
       interactive: true,
+      itemNameResolver: this.itemNameResolver,
     });
   }
 
@@ -517,6 +530,7 @@ export class QuestAcceptPhaseUI extends BaseComponent {
       onClose: () => {
         this.closeQuestDetailModal();
       },
+      itemNameResolver: this.itemNameResolver,
     });
     this.currentModal.create();
   }

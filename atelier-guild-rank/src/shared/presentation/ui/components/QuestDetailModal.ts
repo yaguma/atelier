@@ -32,6 +32,8 @@ export interface QuestDetailModalConfig {
   onAccept: (quest: Quest) => void;
   /** 閉じるボタンクリック時のコールバック */
   onClose: () => void;
+  /** アイテム名解決関数（itemId → 日本語名） */
+  itemNameResolver?: (itemId: string) => string;
 }
 
 /**
@@ -289,7 +291,10 @@ export class QuestDetailModal extends BaseComponent {
     this.panel.add(clientNameText);
 
     // 【条件】: 達成条件を表示
-    const conditionLabel = QuestDetailModal.formatCondition(this.quest.condition);
+    const conditionLabel = QuestDetailModal.formatCondition(
+      this.quest.condition,
+      this.config.itemNameResolver,
+    );
     const conditionText = this.scene.add.text(
       QuestDetailModal.TEXT_LEFT_MARGIN,
       QuestDetailModal.CONDITION_Y,
@@ -444,16 +449,23 @@ export class QuestDetailModal extends BaseComponent {
    * @param condition - 依頼条件
    * @returns フォーマット済み条件テキスト
    */
-  private static formatCondition(condition: {
-    type: string;
-    itemId?: string;
-    category?: string;
-    minQuality?: string;
-    quantity?: number;
-  }): string {
+  private static formatCondition(
+    condition: {
+      type: string;
+      itemId?: string;
+      category?: string;
+      minQuality?: string;
+      quantity?: number;
+    },
+    itemNameResolver?: (itemId: string) => string,
+  ): string {
     switch (condition.type) {
-      case 'SPECIFIC':
-        return `${condition.itemId ?? '指定品'}を納品`;
+      case 'SPECIFIC': {
+        const itemName = condition.itemId
+          ? (itemNameResolver?.(condition.itemId) ?? condition.itemId)
+          : '指定品';
+        return `${itemName}を納品`;
+      }
       case 'CATEGORY':
         return `${condition.category ?? 'カテゴリ'}の品を納品`;
       case 'QUALITY':

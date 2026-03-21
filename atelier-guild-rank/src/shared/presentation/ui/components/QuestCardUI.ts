@@ -26,6 +26,8 @@ export interface QuestCardUIConfig {
   y: number;
   /** インタラクティブにするか（デフォルト: true） */
   interactive?: boolean;
+  /** アイテム名解決関数（itemId → 日本語名） */
+  itemNameResolver?: (itemId: string) => string;
 }
 
 /**
@@ -202,7 +204,10 @@ export class QuestCardUI extends BaseComponent {
    * 【設計意図】: プレイヤーが何を納品すべきか即座に判断できるよう表示
    */
   private createConditionInfo(): void {
-    const conditionLabel = QuestCardUI.formatCondition(this.quest.condition);
+    const conditionLabel = QuestCardUI.formatCondition(
+      this.quest.condition,
+      this.config.itemNameResolver,
+    );
 
     const conditionY =
       QuestCardUI.CARD_HEIGHT / 2 - QuestCardUI.PADDING - QuestCardUI.TEXT_CONDITION_OFFSET;
@@ -227,16 +232,23 @@ export class QuestCardUI extends BaseComponent {
    * @param condition - 依頼条件
    * @returns フォーマット済み条件テキスト
    */
-  private static formatCondition(condition: {
-    type: string;
-    itemId?: string;
-    category?: string;
-    minQuality?: string;
-    quantity?: number;
-  }): string {
+  private static formatCondition(
+    condition: {
+      type: string;
+      itemId?: string;
+      category?: string;
+      minQuality?: string;
+      quantity?: number;
+    },
+    itemNameResolver?: (itemId: string) => string,
+  ): string {
     switch (condition.type) {
-      case 'SPECIFIC':
-        return `条件: ${condition.itemId ?? '指定品'}を納品`;
+      case 'SPECIFIC': {
+        const itemName = condition.itemId
+          ? (itemNameResolver?.(condition.itemId) ?? condition.itemId)
+          : '指定品';
+        return `条件: ${itemName}を納品`;
+      }
       case 'CATEGORY':
         return `条件: ${condition.category ?? 'カテゴリ'}の品を納品`;
       case 'QUALITY':

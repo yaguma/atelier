@@ -21,7 +21,7 @@ import { QuestAcceptPhaseUI } from '@presentation/ui/phases/QuestAcceptPhaseUI';
 import { Container, ServiceKeys } from '@shared/services/di/container';
 import type { IStateManager } from '@shared/services/state-manager';
 import { GamePhase, VALID_GAME_PHASES } from '@shared/types/common';
-import { toMaterialId } from '@shared/types/ids';
+import { toItemId, toMaterialId } from '@shared/types/ids';
 import type { IAttributeValue, IEffectValue, IUsedMaterial } from '@shared/types/materials';
 import type { IClient, IQuest } from '@shared/types/quests';
 import type Phaser from 'phaser';
@@ -81,7 +81,18 @@ export class PhaseManager {
     const container = Container.getInstance();
 
     // QuestAcceptPhaseUI
-    const questAcceptUI = new QuestAcceptPhaseUI(this.scene);
+    // Issue #424: IMasterDataRepository経由でアイテム名を日本語解決
+    let itemNameResolver: ((itemId: string) => string) | undefined;
+    if (container.has(ServiceKeys.MasterDataRepository)) {
+      const masterDataRepo = container.resolve<IMasterDataRepository>(
+        ServiceKeys.MasterDataRepository,
+      );
+      itemNameResolver = (itemId: string) => {
+        const item = masterDataRepo.getItemById(toItemId(itemId));
+        return item?.name ?? itemId;
+      };
+    }
+    const questAcceptUI = new QuestAcceptPhaseUI(this.scene, { itemNameResolver });
     this.contentContainer.add(questAcceptUI.getContainer());
     this.phaseUIs.set(GamePhase.QUEST_ACCEPT, questAcceptUI);
 
