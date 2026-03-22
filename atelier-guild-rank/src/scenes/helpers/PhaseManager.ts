@@ -70,6 +70,44 @@ export class PhaseManager {
   }
 
   // ===========================================================================
+  // リゾルバ生成（DRY原則: 全箇所で共通化）
+  // ===========================================================================
+
+  /**
+   * 素材名リゾルバを生成する
+   * IMasterDataRepository経由でmaterialIdから日本語名を解決する
+   */
+  createMaterialNameResolver(): ((materialId: string) => string) | undefined {
+    const diContainer = Container.getInstance();
+    if (!diContainer.has(ServiceKeys.MasterDataRepository)) return undefined;
+
+    const masterDataRepo = diContainer.resolve<IMasterDataRepository>(
+      ServiceKeys.MasterDataRepository,
+    );
+    return (materialId: string) => {
+      const material = masterDataRepo.getMaterialById(toMaterialId(materialId));
+      return material?.name ?? materialId;
+    };
+  }
+
+  /**
+   * アイテム名リゾルバを生成する
+   * IMasterDataRepository経由でitemIdから日本語名を解決する
+   */
+  createItemNameResolver(): ((itemId: string) => string) | undefined {
+    const diContainer = Container.getInstance();
+    if (!diContainer.has(ServiceKeys.MasterDataRepository)) return undefined;
+
+    const masterDataRepo = diContainer.resolve<IMasterDataRepository>(
+      ServiceKeys.MasterDataRepository,
+    );
+    return (itemId: string) => {
+      const item = masterDataRepo.getItemById(toItemId(itemId));
+      return item?.name ?? itemId;
+    };
+  }
+
+  // ===========================================================================
   // フェーズUI作成
   // ===========================================================================
 
@@ -78,29 +116,20 @@ export class PhaseManager {
    * TASK-0052: 各フェーズUIインスタンスを作成してphaseUIsマップに登録
    */
   createPhaseUIs(): void {
-    const container = Container.getInstance();
+    const diContainer = Container.getInstance();
 
     // QuestAcceptPhaseUI
     // Issue #424: IMasterDataRepository経由でアイテム名を日本語解決
-    let itemNameResolver: ((itemId: string) => string) | undefined;
-    if (container.has(ServiceKeys.MasterDataRepository)) {
-      const masterDataRepo = container.resolve<IMasterDataRepository>(
-        ServiceKeys.MasterDataRepository,
-      );
-      itemNameResolver = (itemId: string) => {
-        const item = masterDataRepo.getItemById(toItemId(itemId));
-        return item?.name ?? itemId;
-      };
-    }
+    const itemNameResolver = this.createItemNameResolver();
     const questAcceptUI = new QuestAcceptPhaseUI(this.scene, { itemNameResolver });
     this.contentContainer.add(questAcceptUI.getContainer());
     this.phaseUIs.set(GamePhase.QUEST_ACCEPT, questAcceptUI);
 
     // GatheringPhaseUI
-    this.createGatheringUI(container);
+    this.createGatheringUI(diContainer);
 
     // AlchemyPhaseUI
-    this.createAlchemyUI(container);
+    this.createAlchemyUI(diContainer);
 
     // DeliveryPhaseUI
     const deliveryUI = new DeliveryPhaseUI(this.scene);
@@ -113,26 +142,17 @@ export class PhaseManager {
     }
   }
 
-  private createGatheringUI(container: ReturnType<typeof Container.getInstance>): void {
+  private createGatheringUI(diContainer: ReturnType<typeof Container.getInstance>): void {
     let gatheringService: IGatheringService | null = null;
-    if (container.has(ServiceKeys.GatheringService)) {
-      gatheringService = container.resolve<IGatheringService>(ServiceKeys.GatheringService);
+    if (diContainer.has(ServiceKeys.GatheringService)) {
+      gatheringService = diContainer.resolve<IGatheringService>(ServiceKeys.GatheringService);
     }
     let deckService: IDeckService | undefined;
-    if (container.has(ServiceKeys.DeckService)) {
-      deckService = container.resolve<IDeckService>(ServiceKeys.DeckService);
+    if (diContainer.has(ServiceKeys.DeckService)) {
+      deckService = diContainer.resolve<IDeckService>(ServiceKeys.DeckService);
     }
     if (gatheringService) {
-      let materialNameResolver: ((materialId: string) => string) | undefined;
-      if (container.has(ServiceKeys.MasterDataRepository)) {
-        const masterDataRepo = container.resolve<IMasterDataRepository>(
-          ServiceKeys.MasterDataRepository,
-        );
-        materialNameResolver = (materialId: string) => {
-          const material = masterDataRepo.getMaterialById(toMaterialId(materialId));
-          return material?.name ?? materialId;
-        };
-      }
+      const materialNameResolver = this.createMaterialNameResolver();
       const gatheringUI = new GatheringPhaseUI(
         this.scene,
         gatheringService,
@@ -148,29 +168,20 @@ export class PhaseManager {
     }
   }
 
-  private createAlchemyUI(container: ReturnType<typeof Container.getInstance>): void {
+  private createAlchemyUI(diContainer: ReturnType<typeof Container.getInstance>): void {
     let alchemyService: IAlchemyService | null = null;
-    if (container.has(ServiceKeys.AlchemyService)) {
-      alchemyService = container.resolve<IAlchemyService>(ServiceKeys.AlchemyService);
+    if (diContainer.has(ServiceKeys.AlchemyService)) {
+      alchemyService = diContainer.resolve<IAlchemyService>(ServiceKeys.AlchemyService);
     }
     if (alchemyService) {
-      let materialNameResolver: ((materialId: string) => string) | undefined;
-      if (container.has(ServiceKeys.MasterDataRepository)) {
-        const masterDataRepo = container.resolve<IMasterDataRepository>(
-          ServiceKeys.MasterDataRepository,
-        );
-        materialNameResolver = (materialId: string) => {
-          const material = masterDataRepo.getMaterialById(toMaterialId(materialId));
-          return material?.name ?? materialId;
-        };
-      }
+      const materialNameResolver = this.createMaterialNameResolver();
       // Issue #413: onCraftCompleteコールバックを接続
       // 調合完了後にインベントリにアイテムを追加し、使用素材を削除する
       const onCraftComplete = (item: import('@domain/entities/ItemInstance').ItemInstance) => {
-        const diContainer = Container.getInstance();
-        if (diContainer.has(ServiceKeys.InventoryService)) {
-          const invService = diContainer.resolve<
-            import('@shared/domain/interfaces/inventory-service.interface').IInventoryService
+        const craftContainer = Container.getInstance();
+        if (craftContainer.has(ServiceKeys.InventoryService)) {
+          const invService = craftContainer.resolve<
+            import('@domain/interfaces/inventory-service.interface').IInventoryService
           >(ServiceKeys.InventoryService);
 
           // 使用素材をインベントリから削除（アイテム追加前に実施）
@@ -298,7 +309,7 @@ export class PhaseManager {
    * LocationSelectUIに反映して場所選択ステージを表示する。
    */
   private initializeGatheringSession(): void {
-    const container = Container.getInstance();
+    const diContainer = Container.getInstance();
 
     const gatheringUI = this.phaseUIs.get(GamePhase.GATHERING);
     if (!(gatheringUI instanceof GatheringPhaseUI)) {
@@ -306,8 +317,8 @@ export class PhaseManager {
     }
 
     // 手札カードIDから選択可能な採取場所を計算
-    if (container.has(ServiceKeys.DeckService)) {
-      const deckService = container.resolve<IDeckService>(ServiceKeys.DeckService);
+    if (diContainer.has(ServiceKeys.DeckService)) {
+      const deckService = diContainer.resolve<IDeckService>(ServiceKeys.DeckService);
       const hand = deckService.getHand();
       const gatheringCardIds = new Set(
         hand.filter((card) => card.type === 'GATHERING').map((card) => card.id),
@@ -327,10 +338,10 @@ export class PhaseManager {
    * 採取セッションを終了し、獲得素材をインベントリに保存する
    */
   private finalizeGatheringSession(): void {
-    const container = Container.getInstance();
+    const diContainer = Container.getInstance();
 
-    if (!container.has(ServiceKeys.GatheringService)) return;
-    const gatheringService = container.resolve<IGatheringService>(ServiceKeys.GatheringService);
+    if (!diContainer.has(ServiceKeys.GatheringService)) return;
+    const gatheringService = diContainer.resolve<IGatheringService>(ServiceKeys.GatheringService);
 
     const session = gatheringService.getCurrentSession();
     if (!session) return;
@@ -339,14 +350,14 @@ export class PhaseManager {
       const result = gatheringService.endGathering(session.sessionId);
 
       // AP消費処理: endGathering()が返すコスト情報を使用してAPを消費
-      if (result.cost.actionPointCost > 0 && container.has(ServiceKeys.StateManager)) {
-        const stateManager = container.resolve<IStateManager>(ServiceKeys.StateManager);
+      if (result.cost.actionPointCost > 0 && diContainer.has(ServiceKeys.StateManager)) {
+        const stateManager = diContainer.resolve<IStateManager>(ServiceKeys.StateManager);
         stateManager.spendActionPoints(result.cost.actionPointCost);
       }
 
-      if (container.has(ServiceKeys.InventoryService)) {
-        const inventoryService = container.resolve<
-          import('@shared/domain/interfaces/inventory-service.interface').IInventoryService
+      if (diContainer.has(ServiceKeys.InventoryService)) {
+        const inventoryService = diContainer.resolve<
+          import('@domain/interfaces/inventory-service.interface').IInventoryService
         >(ServiceKeys.InventoryService);
         inventoryService.addMaterials(result.materials);
       }
@@ -359,14 +370,14 @@ export class PhaseManager {
    * 調合フェーズを初期化
    */
   private initializeAlchemyPhase(): void {
-    const container = Container.getInstance();
+    const diContainer = Container.getInstance();
 
-    if (!container.has(ServiceKeys.InventoryService)) {
+    if (!diContainer.has(ServiceKeys.InventoryService)) {
       console.warn('InventoryService is not available');
       return;
     }
-    const inventoryService = container.resolve<
-      import('@shared/domain/interfaces/inventory-service.interface').IInventoryService
+    const inventoryService = diContainer.resolve<
+      import('@domain/interfaces/inventory-service.interface').IInventoryService
     >(ServiceKeys.InventoryService);
 
     const materials = inventoryService.getMaterials();
@@ -386,11 +397,11 @@ export class PhaseManager {
    * InventoryServiceとQuestServiceから最新データを取得して表示する
    */
   updateSidebar(sidebarUI: SidebarUI): void {
-    const container = Container.getInstance();
+    const diContainer = Container.getInstance();
 
-    if (!container.has(ServiceKeys.InventoryService)) return;
-    const inventoryService = container.resolve<
-      import('@shared/domain/interfaces/inventory-service.interface').IInventoryService
+    if (!diContainer.has(ServiceKeys.InventoryService)) return;
+    const inventoryService = diContainer.resolve<
+      import('@domain/interfaces/inventory-service.interface').IInventoryService
     >(ServiceKeys.InventoryService);
 
     const materials = inventoryService.getMaterials().map((m) => ({

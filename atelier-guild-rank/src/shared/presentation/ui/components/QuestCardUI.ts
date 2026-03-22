@@ -10,6 +10,7 @@
  */
 
 import type { Quest } from '@domain/entities/Quest';
+import { formatCondition } from '@shared/utils';
 import type Phaser from 'phaser';
 import { Colors } from '../theme';
 import { BaseComponent } from './BaseComponent';
@@ -204,10 +205,10 @@ export class QuestCardUI extends BaseComponent {
    * 【設計意図】: プレイヤーが何を納品すべきか即座に判断できるよう表示
    */
   private createConditionInfo(): void {
-    const conditionLabel = QuestCardUI.formatCondition(
-      this.quest.condition,
-      this.config.itemNameResolver,
-    );
+    const conditionLabel = formatCondition(this.quest.condition, {
+      itemNameResolver: this.config.itemNameResolver,
+      withPrefix: true,
+    });
 
     const conditionY =
       QuestCardUI.CARD_HEIGHT / 2 - QuestCardUI.PADDING - QuestCardUI.TEXT_CONDITION_OFFSET;
@@ -224,48 +225,6 @@ export class QuestCardUI extends BaseComponent {
     );
     this.conditionText.setOrigin(0, 0);
     this.container.add(this.conditionText);
-  }
-
-  /**
-   * 【条件フォーマット】: IQuestConditionから表示用テキストを生成
-   *
-   * @param condition - 依頼条件
-   * @returns フォーマット済み条件テキスト
-   */
-  private static formatCondition(
-    condition: {
-      type: string;
-      itemId?: string;
-      category?: string;
-      minQuality?: string;
-      quantity?: number;
-    },
-    itemNameResolver?: (itemId: string) => string,
-  ): string {
-    switch (condition.type) {
-      case 'SPECIFIC': {
-        const itemName = condition.itemId
-          ? (itemNameResolver?.(condition.itemId) ?? condition.itemId)
-          : '指定品';
-        return `条件: ${itemName}を納品`;
-      }
-      case 'CATEGORY':
-        return `条件: ${condition.category ?? 'カテゴリ'}の品を納品`;
-      case 'QUALITY':
-        return `条件: 品質${condition.minQuality ?? 'D'}以上`;
-      case 'QUANTITY':
-        return `条件: ${condition.quantity ?? 1}個納品`;
-      case 'ATTRIBUTE':
-        return '条件: 特定属性が必要';
-      case 'EFFECT':
-        return '条件: 特定効果が必要';
-      case 'MATERIAL':
-        return '条件: レア素材を使用';
-      case 'COMPOUND':
-        return '条件: 複合条件';
-      default:
-        return `条件: ${condition.type}`;
-    }
   }
 
   /**
