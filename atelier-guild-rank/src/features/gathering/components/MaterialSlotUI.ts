@@ -14,7 +14,7 @@
  * 品質エフェクト関連メソッドを別ファイル（quality-effects.ts等）に分離を検討する。
  */
 
-import { THEME } from '@presentation/ui/theme';
+import { Colors, THEME, toColorStr } from '@presentation/ui/theme';
 import { BaseComponent } from '@shared/components';
 import type { MaterialId, Quality } from '@shared/types';
 import Phaser from 'phaser';
@@ -114,7 +114,7 @@ export class MaterialSlotUI extends BaseComponent {
         text: '',
         style: {
           fontSize: `${MaterialSlotUI.NAME_DEFAULT_FONT_SIZE}px`,
-          color: '#333333',
+          color: toColorStr(Colors.text.primary),
           wordWrap: { width: this.slotSize - MaterialSlotUI.NAME_TEXT_HORIZONTAL_PADDING },
           align: 'center',
         },
@@ -308,7 +308,10 @@ export class MaterialSlotUI extends BaseComponent {
         text: quality,
         style: {
           fontSize: '14px',
-          color: quality === 'D' ? '#FFFFFF' : '#000000',
+          color:
+            quality === 'D' || quality === 'C'
+              ? toColorStr(Colors.text.light)
+              : toColorStr(Colors.text.dark),
           fontStyle: 'bold',
         },
         add: false,

@@ -54,6 +54,10 @@ export const Colors = {
     dark: 0x333333, // ダークテキスト（primaryと同値）
     darkGray: 0x666666, // ダークグレーテキスト（secondaryと同値）
     light: 0xffffff, // ライトテキスト（着色ボタン上のテキスト用）
+    gold: 0xffd700, // ゴールドテキスト（Gold: 昇格・報酬表示用）
+    bonus: 0x44ff44, // ボーナステキスト（昇格ボーナス表示用）
+    dimGray: 0x888888, // 淡いグレーテキスト（空リスト・ヒント表示用）
+    softGray: 0xcccccc, // ソフトグレーテキスト（品質・補助情報用）
   },
 
   // 品質色（アイテム・素材レアリティ: UI設計書 セクション7.2）
@@ -90,8 +94,28 @@ export const Colors = {
       danger: 0xff4444, // 危険状態
     },
     placeholder: 0xcccccc, // プレースホルダー色
+    status: {
+      success: 0x4caf50, // 成功・納品完了（Material Green）
+      info: 0x2196f3, // 情報・選択中（Material Blue）
+      warning: 0xff9800, // 警告（Material Orange）
+      danger: 0xf44336, // 危険・期限切れ（Material Red）
+    },
   },
 } as const;
+
+/**
+ * 数値カラー(0xRRGGBB)をCSS文字列(#RRGGBB)に変換する
+ *
+ * @param color - 数値カラー値
+ * @returns CSS色文字列
+ *
+ * @example
+ * toColorStr(Colors.text.primary) // '#333333'
+ * toColorStr(0xff0000)            // '#ff0000'
+ */
+export function toColorStr(color: number): string {
+  return `#${color.toString(16).padStart(6, '0')}`;
+}
 
 /** カラーキーの型定義 */
 export type ColorKey = keyof typeof Colors;

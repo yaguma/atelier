@@ -22,7 +22,7 @@ import type {
   IGatheringService,
 } from '@domain/interfaces/gathering-service.interface';
 import { Button } from '@presentation/ui/components/Button';
-import { THEME } from '@presentation/ui/theme';
+import { Colors, THEME, toColorStr } from '@presentation/ui/theme';
 import { BaseComponent } from '@shared/components';
 import { getSelectionIndexFromKey, isKeyForAction } from '@shared/constants/keybindings';
 import type { MaterialId, Quality } from '@shared/types';
@@ -153,7 +153,7 @@ export class GatheringPhaseUI extends BaseComponent {
         text: '🌿 採取フェーズ',
         style: {
           fontSize: `${THEME.sizes.xlarge}px`,
-          color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
+          color: toColorStr(THEME.colors.text),
           fontFamily: THEME.fonts.primary,
           fontStyle: 'bold',
         },
@@ -175,7 +175,7 @@ export class GatheringPhaseUI extends BaseComponent {
         text: '残り選択回数: 0/0',
         style: {
           fontSize: `${THEME.sizes.medium}px`,
-          color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
+          color: toColorStr(THEME.colors.text),
           fontFamily: THEME.fonts.primary,
         },
         add: false,
@@ -197,7 +197,7 @@ export class GatheringPhaseUI extends BaseComponent {
         text: '',
         style: {
           fontSize: `${THEME.sizes.small}px`,
-          color: '#ffaa00',
+          color: toColorStr(Colors.ui.progress.warning),
           fontFamily: THEME.fonts.primary,
         },
         add: false,
@@ -244,7 +244,7 @@ export class GatheringPhaseUI extends BaseComponent {
         text: '獲得素材:',
         style: {
           fontSize: `${THEME.sizes.medium}px`,
-          color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
+          color: toColorStr(THEME.colors.text),
           fontFamily: THEME.fonts.primary,
           fontStyle: 'bold',
         },
@@ -391,7 +391,7 @@ export class GatheringPhaseUI extends BaseComponent {
           text: `[${this.getMaterialName(material.master.id)} ${material.quality}]`,
           style: {
             fontSize: `${THEME.sizes.small}px`,
-            color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
+            color: toColorStr(THEME.colors.text),
             fontFamily: THEME.fonts.primary,
           },
           add: false,

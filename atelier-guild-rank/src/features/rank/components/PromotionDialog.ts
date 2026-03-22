@@ -7,7 +7,7 @@
  */
 
 import { BaseComponent } from '@shared/components';
-import { Colors, THEME } from '@shared/theme';
+import { Colors, THEME, toColorStr } from '@shared/theme';
 import type { GuildRank } from '@shared/types';
 import type { ISpecialRule } from '@shared/types/master-data';
 import Phaser from 'phaser';
@@ -25,11 +25,15 @@ const DIALOG = {
 
 /** テキストスタイル */
 const TEXT_STYLES = {
-  TITLE: { fontSize: `${THEME.sizes.xlarge}px`, color: '#ffd700', fontStyle: 'bold' },
-  RANK: { fontSize: `${THEME.sizes.large}px`, color: '#ffffff' },
-  BONUS: { fontSize: `${THEME.sizes.medium}px`, color: '#44ff44' },
-  RULE_HEADER: { fontSize: `${THEME.sizes.medium}px`, color: '#ffffff' },
-  RULE_ITEM: { fontSize: `${THEME.sizes.small}px`, color: '#cccccc' },
+  TITLE: {
+    fontSize: `${THEME.sizes.xlarge}px`,
+    color: toColorStr(Colors.text.gold),
+    fontStyle: 'bold',
+  },
+  RANK: { fontSize: `${THEME.sizes.large}px`, color: toColorStr(Colors.text.light) },
+  BONUS: { fontSize: `${THEME.sizes.medium}px`, color: toColorStr(Colors.text.bonus) },
+  RULE_HEADER: { fontSize: `${THEME.sizes.medium}px`, color: toColorStr(Colors.text.light) },
+  RULE_ITEM: { fontSize: `${THEME.sizes.small}px`, color: toColorStr(Colors.text.softGray) },
 } as const;
 
 /** レイアウトオフセット */

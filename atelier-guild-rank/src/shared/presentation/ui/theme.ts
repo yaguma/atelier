@@ -13,4 +13,4 @@ export type {
   ColorKey,
   TextColorKey,
 } from '@shared/theme';
-export { Colors, THEME } from '@shared/theme';
+export { Colors, THEME, toColorStr } from '@shared/theme';
