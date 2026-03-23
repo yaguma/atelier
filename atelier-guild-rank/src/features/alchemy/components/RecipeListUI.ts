@@ -264,9 +264,14 @@ export class RecipeListUI extends BaseComponent {
 
   /**
    * コンポーネントを破棄
+   * Issue #426: リスナー解除漏れを修正
    */
   destroy(): void {
     for (const item of this.labels) {
+      // pointerdownリスナーを解除してからラベルを破棄
+      if (typeof item.label.off === 'function') {
+        item.label.off('pointerdown');
+      }
       item.label.destroy();
     }
     this.labels = [];
