@@ -5,6 +5,7 @@
 
 import type { DeliveryQuestPanelConfig } from '@features/quest/components/DeliveryQuestPanel';
 import { DeliveryQuestPanel } from '@features/quest/components/DeliveryQuestPanel';
+import { Colors, toColorStr } from '@shared/theme';
 import type { IQuest } from '@shared/types/quests';
 import type Phaser from 'phaser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -219,10 +220,10 @@ describe('DeliveryQuestPanel', () => {
         (call: unknown[]) => typeof call[2] === 'string' && (call[2] as string).includes('あと1日'),
       );
       expect(deadlineCall).toBeDefined();
-      // 危険色(#f44336)のスタイルが使用されている
+      // 危険色（Colors.ui.progress.danger）のスタイルが使用されている
       if (deadlineCall) {
         const style = deadlineCall[3] as { color?: string };
-        expect(style.color).toBe('#f44336');
+        expect(style.color).toBe(toColorStr(Colors.ui.progress.danger));
       }
     });
   });

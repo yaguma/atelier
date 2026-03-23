@@ -31,6 +31,7 @@ export const Colors = {
     overlay: 0x000000, // オーバーレイ（共通: 半透明黒）
     card: 0xfff8dc, // カード背景（Cornsilk: UI設計書 #FFF8DC）
     parchment: 0xfffde7, // 依頼カード背景（Parchment風）
+    dark: 0x333333, // ダーク背景（パネル背景用）
   },
 
   // ボーダー色（WARM系: タン・ブラウン基調）
@@ -90,16 +91,12 @@ export const Colors = {
     progress: {
       background: 0xe0d5c0, // プログレスバー背景（ウォームベージュ）
       fill: 0xdaa520, // プログレスバー塗り（Goldenrod: UI設計書 #DAA520）
+      success: 0x4caf50, // 成功・納品完了（Material Green）
+      info: 0x2196f3, // 情報・選択中（Material Blue）
       warning: 0xffaa00, // 警告状態
       danger: 0xff4444, // 危険状態
     },
     placeholder: 0xcccccc, // プレースホルダー色
-    status: {
-      success: 0x4caf50, // 成功・納品完了（Material Green）
-      info: 0x2196f3, // 情報・選択中（Material Blue）
-      warning: 0xff9800, // 警告（Material Orange）
-      danger: 0xf44336, // 危険・期限切れ（Material Red）
-    },
   },
 } as const;
 

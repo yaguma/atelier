@@ -30,25 +30,28 @@ const UI_STYLES = {
     fontStyle: 'bold',
   },
   DESCRIPTION: { fontSize: `${THEME.sizes.small}px`, color: toColorStr(Colors.text.softGray) },
-  REWARD: { fontSize: `${THEME.sizes.small}px`, color: toColorStr(Colors.ui.status.success) },
-  DEADLINE_NORMAL: { fontSize: `${THEME.sizes.small}px`, color: toColorStr(Colors.ui.status.info) },
+  REWARD: { fontSize: `${THEME.sizes.small}px`, color: toColorStr(Colors.ui.progress.success) },
+  DEADLINE_NORMAL: {
+    fontSize: `${THEME.sizes.small}px`,
+    color: toColorStr(Colors.ui.progress.info),
+  },
   DEADLINE_WARNING: {
     fontSize: `${THEME.sizes.small}px`,
-    color: toColorStr(Colors.ui.status.warning),
+    color: toColorStr(Colors.ui.progress.warning),
   },
   DEADLINE_DANGER: {
     fontSize: `${THEME.sizes.small}px`,
-    color: toColorStr(Colors.ui.status.danger),
+    color: toColorStr(Colors.ui.progress.danger),
   },
 } as const;
 
 /** 色定数 */
 const PANEL_COLORS = {
-  BORDER_NORMAL: Colors.ui.status.success,
-  BORDER_SELECTED: Colors.ui.status.info,
-  BORDER_WARNING: Colors.ui.status.warning,
-  BORDER_DANGER: Colors.ui.status.danger,
-  BACKGROUND: Colors.text.primary,
+  BORDER_NORMAL: Colors.ui.progress.success,
+  BORDER_SELECTED: Colors.ui.progress.info,
+  BORDER_WARNING: Colors.ui.progress.warning,
+  BORDER_DANGER: Colors.ui.progress.danger,
+  BACKGROUND: Colors.background.dark,
   DELIVER_BUTTON: Colors.ui.button.accept,
 } as const;
 
