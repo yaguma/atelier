@@ -308,7 +308,7 @@ export class MaterialSlotUI extends BaseComponent {
         text: quality,
         style: {
           fontSize: '14px',
-          color: quality === 'D' ? '#FFFFFF' : '#000000',
+          color: quality === 'D' || quality === 'S' ? '#FFFFFF' : '#000000',
           fontStyle: 'bold',
         },
         add: false,
