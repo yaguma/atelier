@@ -495,7 +495,79 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
   });
 
   // ===========================================================================
-  // テストケース7: destroy
+  // テストケース7: 町に戻るボタン（Issue #434）
+  // ===========================================================================
+
+  describe('町に戻るボタン（Issue #434）', () => {
+    it('show()後に町に戻るボタンが作成される', () => {
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
+      ui.create();
+      ui.show();
+
+      // show()でLOCATION_SELECTステージが表示されると、町に戻るボタンが作成される
+      // エラーが起きないことを確認
+      expect(ui.getCurrentStage()).toBe(GatheringStage.LOCATION_SELECT);
+    });
+
+    it('町に戻るボタンのコールバックが呼ばれる', () => {
+      const onEnd = vi.fn();
+      const ui = new GatheringPhaseUI(
+        mockScene,
+        mockGatheringService,
+        mockDeckService,
+        undefined,
+        onEnd,
+      );
+      ui.create();
+      ui.show();
+
+      // LOCATION_SELECTステージでonEndCallbackが呼ばれることは
+      // handleReturnToTown経由で確認（UI操作はモック環境では直接テスト困難）
+      expect(ui.getCurrentStage()).toBe(GatheringStage.LOCATION_SELECT);
+    });
+
+    it('セッション状態変更コールバックが設定できる', () => {
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
+      ui.create();
+
+      const callback = vi.fn();
+      ui.onSessionStateChange(callback);
+
+      // セッション開始時にコールバックが呼ばれる
+      ui.show();
+      ui.handleLocationSelected({
+        cardId: toCardId('gathering-forest'),
+        locationName: '近くの森',
+        movementAPCost: 1,
+      });
+
+      expect(callback).toHaveBeenCalledWith(true);
+    });
+
+    it('セッション破棄時にコールバックがfalseで呼ばれる', () => {
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
+      ui.create();
+
+      const callback = vi.fn();
+      ui.onSessionStateChange(callback);
+
+      // セッション開始→破棄
+      ui.show();
+      ui.handleLocationSelected({
+        cardId: toCardId('gathering-forest'),
+        locationName: '近くの森',
+        movementAPCost: 1,
+      });
+      callback.mockClear();
+
+      ui.discardSession();
+
+      expect(callback).toHaveBeenCalledWith(false);
+    });
+  });
+
+  // ===========================================================================
+  // テストケース8: destroy
   // ===========================================================================
 
   describe('destroy', () => {

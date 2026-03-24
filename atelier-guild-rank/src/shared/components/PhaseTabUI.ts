@@ -32,10 +32,14 @@ const TAB_COLORS = {
   ACTIVE: 0x6366f1,
   /** 非アクティブタブ背景 */
   INACTIVE: 0x374151,
+  /** 無効化タブ背景（Issue #434） */
+  DISABLED: 0x1f2937,
   /** アクティブタブテキスト */
   ACTIVE_TEXT: '#FFFFFF',
   /** 非アクティブタブテキスト */
   INACTIVE_TEXT: '#9CA3AF',
+  /** 無効化タブテキスト（Issue #434） */
+  DISABLED_TEXT: '#4B5563',
   /** 日終了ボタン背景 */
   END_DAY_BUTTON: 0xef4444,
   /** 日終了ボタンホバー */
@@ -131,6 +135,15 @@ export class PhaseTabUI extends BaseComponent {
 
   /** 破棄済みフラグ */
   private _isDestroyed = false;
+
+  /** Issue #434: タブが無効化されているか */
+  private _tabsDisabled = false;
+
+  /** Issue #434: 遷移失敗通知テキスト */
+  private _notificationText: Phaser.GameObjects.Text | null = null;
+
+  /** Issue #434: 通知タイマー */
+  private _notificationTimer: Phaser.Time.TimerEvent | null = null;
 
   // ===========================================================================
   // 視覚要素
@@ -326,6 +339,9 @@ export class PhaseTabUI extends BaseComponent {
     this._unsubscribePhaseChanged?.();
     this._unsubscribePhaseChanged = null;
 
+    // Issue #434: 通知のクリーンアップ
+    this.hideNotification();
+
     // コンテナ破棄
     this.container.destroy(true);
   }
@@ -375,6 +391,24 @@ export class PhaseTabUI extends BaseComponent {
     this.handleRestClick();
   }
 
+  /**
+   * タブの有効/無効を設定する（Issue #434）
+   * 採取セッション中はタブを無効化し、フェーズ遷移を制限する
+   *
+   * @param disabled - trueでタブを無効化、falseで有効化
+   */
+  setTabsDisabled(disabled: boolean): void {
+    this._tabsDisabled = disabled;
+    this.updateTabDisabledState();
+  }
+
+  /**
+   * タブが無効化されているかを取得する（Issue #434）
+   */
+  isTabsDisabled(): boolean {
+    return this._tabsDisabled;
+  }
+
   // ===========================================================================
   // プライベートメソッド
   // ===========================================================================
@@ -388,6 +422,12 @@ export class PhaseTabUI extends BaseComponent {
   private handleTabClick(targetPhase: GamePhase): void {
     // 同じフェーズへの遷移はスキップ
     if (targetPhase === this._activePhase) {
+      return;
+    }
+
+    // Issue #434: タブ無効化中はフェーズ遷移を拒否して通知を表示
+    if (this._tabsDisabled) {
+      this.showNotification('採取中は町に戻ってからフェーズを切り替えてください');
       return;
     }
 
@@ -428,6 +468,21 @@ export class PhaseTabUI extends BaseComponent {
       const bg = this._tabBackgrounds[i];
       const text = this._tabTexts[i];
 
+      // Issue #434: 無効化中は無効化スタイルを適用
+      if (this._tabsDisabled && !isActive) {
+        if (bg?.setFillStyle) {
+          bg.setFillStyle(TAB_COLORS.DISABLED);
+        }
+        if (text?.setStyle) {
+          text.setStyle({
+            fontSize: '14px',
+            color: TAB_COLORS.DISABLED_TEXT,
+            fontStyle: 'normal',
+          });
+        }
+        continue;
+      }
+
       // 背景色の更新
       if (bg?.setFillStyle) {
         bg.setFillStyle(isActive ? TAB_COLORS.ACTIVE : TAB_COLORS.INACTIVE);
@@ -441,6 +496,89 @@ export class PhaseTabUI extends BaseComponent {
           fontStyle: isActive ? 'bold' : 'normal',
         });
       }
+    }
+  }
+
+  /**
+   * タブの無効化状態を視覚的に更新する（Issue #434）
+   */
+  private updateTabDisabledState(): void {
+    for (let i = 0; i < VALID_GAME_PHASES.length; i++) {
+      const phase = VALID_GAME_PHASES[i];
+      const isActive = phase === this._activePhase;
+      const bg = this._tabBackgrounds[i];
+      const text = this._tabTexts[i];
+
+      if (this._tabsDisabled && !isActive) {
+        // 無効化スタイル
+        if (bg?.setFillStyle) {
+          bg.setFillStyle(TAB_COLORS.DISABLED);
+        }
+        if (text?.setStyle) {
+          text.setStyle({
+            fontSize: '14px',
+            color: TAB_COLORS.DISABLED_TEXT,
+            fontStyle: 'normal',
+          });
+        }
+      } else {
+        // 通常スタイルに復帰
+        if (bg?.setFillStyle) {
+          bg.setFillStyle(isActive ? TAB_COLORS.ACTIVE : TAB_COLORS.INACTIVE);
+        }
+        if (text?.setStyle) {
+          text.setStyle({
+            fontSize: '14px',
+            color: isActive ? TAB_COLORS.ACTIVE_TEXT : TAB_COLORS.INACTIVE_TEXT,
+            fontStyle: isActive ? 'bold' : 'normal',
+          });
+        }
+      }
+    }
+  }
+
+  /**
+   * 遷移失敗通知を表示する（Issue #434）
+   * 一定時間後に自動消去する
+   *
+   * @param message - 通知メッセージ
+   */
+  private showNotification(message: string): void {
+    // 既存の通知を消去
+    this.hideNotification();
+
+    // 通知テキストを作成（タブ行の下に表示）
+    this._notificationText = this.scene.make.text({
+      x: TAB_LAYOUT.TAB_START_X,
+      y: TAB_LAYOUT.TAB_Y + TAB_LAYOUT.TAB_HEIGHT / 2 + 8,
+      text: message,
+      style: {
+        fontSize: '12px',
+        color: '#F87171',
+        fontStyle: 'bold',
+      },
+      add: false,
+    });
+    this._notificationText.setName('PhaseTabUI.notification');
+    this.container.add(this._notificationText);
+
+    // 3秒後に自動消去
+    this._notificationTimer = this.scene.time.delayedCall(3000, () => {
+      this.hideNotification();
+    });
+  }
+
+  /**
+   * 通知を非表示にする（Issue #434）
+   */
+  private hideNotification(): void {
+    if (this._notificationText) {
+      this._notificationText.destroy();
+      this._notificationText = null;
+    }
+    if (this._notificationTimer) {
+      this._notificationTimer.remove();
+      this._notificationTimer = null;
     }
   }
 }

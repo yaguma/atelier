@@ -133,6 +133,9 @@ const createMockScene = (): {
         return text;
       }),
     },
+    time: {
+      delayedCall: vi.fn().mockReturnValue({ remove: vi.fn() }),
+    },
   } as unknown as MockScene;
 
   return { scene, mockContainer, mockTexts, mockRectangles };
@@ -360,6 +363,64 @@ describe('PhaseTabUI（TASK-0111）', () => {
       const restRect = mockRectangles[5];
       expect(restRect).toBeDefined();
       expect(restRect?.setInteractive).toHaveBeenCalled();
+    });
+  });
+
+  // ===========================================================================
+  // テストケース6: タブ無効化（Issue #434）
+  // ===========================================================================
+
+  describe('Issue #434: タブ無効化', () => {
+    it('setTabsDisabled(true)でタブが無効化される', () => {
+      phaseTabUI.create();
+      phaseTabUI.setTabsDisabled(true);
+
+      expect(phaseTabUI.isTabsDisabled()).toBe(true);
+    });
+
+    it('setTabsDisabled(false)でタブが有効化される', () => {
+      phaseTabUI.create();
+      phaseTabUI.setTabsDisabled(true);
+      phaseTabUI.setTabsDisabled(false);
+
+      expect(phaseTabUI.isTabsDisabled()).toBe(false);
+    });
+
+    it('タブ無効化中はswitchPhaseが呼ばれない', () => {
+      phaseTabUI.create();
+      phaseTabUI.setTabsDisabled(true);
+
+      phaseTabUI.simulateTabClick(GamePhase.ALCHEMY);
+
+      expect(mockGameFlowManager.switchPhase).not.toHaveBeenCalled();
+    });
+
+    it('タブ有効化後はswitchPhaseが呼ばれる', () => {
+      phaseTabUI.create();
+      phaseTabUI.setTabsDisabled(true);
+      phaseTabUI.setTabsDisabled(false);
+
+      phaseTabUI.simulateTabClick(GamePhase.ALCHEMY);
+
+      expect(mockGameFlowManager.switchPhase).toHaveBeenCalledTimes(1);
+    });
+
+    it('タブ無効化中も日終了ボタンは動作する', () => {
+      phaseTabUI.create();
+      phaseTabUI.setTabsDisabled(true);
+
+      phaseTabUI.simulateEndDayClick();
+
+      expect(mockGameFlowManager.requestEndDay).toHaveBeenCalledTimes(1);
+    });
+
+    it('タブ無効化中も休憩ボタンは動作する', () => {
+      phaseTabUI.create();
+      phaseTabUI.setTabsDisabled(true);
+
+      phaseTabUI.simulateRestClick();
+
+      expect(mockGameFlowManager.rest).toHaveBeenCalledTimes(1);
     });
   });
 
