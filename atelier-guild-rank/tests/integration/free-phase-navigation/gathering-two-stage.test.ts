@@ -535,7 +535,166 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
   });
 
   // ===========================================================================
-  // テストケース5: 空手札状態（エッジケース）
+  // テストケース5: onEndCallback呼び出し検証
+  // ===========================================================================
+
+  describe('onEndCallback呼び出し検証', () => {
+    it('T-0120-END-01: GatheringPhaseUIにonEndCallbackを渡してインスタンス作成できる', async () => {
+      // 【テスト目的】: onEndCallbackがコンストラクタで正しく受け取られること
+      // 🔵 Issue #432: AP消費のためにonEndCallbackの受け渡しを検証
+
+      const mockScene = createMockPhaserScene();
+      const mockGatheringService = createMockGatheringService();
+      const onEnd = vi.fn();
+
+      const { GatheringPhaseUI } = await import('@features/gathering/components/GatheringPhaseUI');
+      const phaseUI = new GatheringPhaseUI(
+        mockScene,
+        mockGatheringService,
+        createMockDeckService('gathering_nearby_forest'),
+        undefined,
+        onEnd,
+      );
+
+      // コンストラクタでコールバックが保存されていることを間接的に検証
+      // （エラーなくインスタンスが作成できること）
+      expect(phaseUI).toBeDefined();
+      expect(phaseUI.getCurrentStage()).toBe(GatheringStage.LOCATION_SELECT);
+    });
+
+    it('T-0120-END-02: onEndCallbackなしでもGatheringPhaseUIが正常動作する', async () => {
+      // 【テスト目的】: onEndCallbackがundefinedでもエラーにならないこと
+      // 🟡 EDGE: コールバック未指定時の防御
+
+      const mockScene = createMockPhaserScene();
+      const mockGatheringService = createMockGatheringService();
+
+      const { GatheringPhaseUI } = await import('@features/gathering/components/GatheringPhaseUI');
+      const phaseUI = new GatheringPhaseUI(
+        mockScene,
+        mockGatheringService,
+        createMockDeckService('gathering_nearby_forest'),
+      );
+      phaseUI.create();
+      phaseUI.show();
+
+      // セッション開始（onEndCallbackなしでもエラーにならない）
+      phaseUI.handleLocationSelected({
+        cardId: toCardId('gathering_nearby_forest'),
+        locationName: '近くの森',
+        movementAPCost: 0,
+      });
+
+      expect(phaseUI.getCurrentStage()).toBe(GatheringStage.DRAFT_SESSION);
+    });
+
+    it('T-0120-END-03: セッション完了時にselectMaterial経由でonEndCallbackが呼ばれる', async () => {
+      // 【テスト目的】: 素材選択でisComplete=trueになった時にonEndCallbackが実行されること
+      // 🔵 Issue #432: AP消費処理のためのコールバック呼び出しを検証
+
+      const mockScene = createMockPhaserScene();
+      const mockGatheringService = createMockGatheringService();
+
+      // handleMaterialSelect内でselectMaterial後に呼ばれる
+      // handleLocationSelectedはgetCurrentSessionを呼ばないため、
+      // 最初の呼び出しからisComplete=trueを返す
+      (mockGatheringService.getCurrentSession as ReturnType<typeof vi.fn>).mockReturnValue({
+        sessionId: 'test-session-001',
+        card: createGatheringCard('gathering_nearby_forest'),
+        currentRound: 1,
+        maxRounds: 1,
+        presentationCount: 3,
+        selectedMaterials: [{ materialId: 'herb', quality: 'B', quantity: 1 }],
+        currentOptions: [],
+        isComplete: true,
+      });
+
+      const onEnd = vi.fn();
+      const { GatheringPhaseUI } = await import('@features/gathering/components/GatheringPhaseUI');
+      const phaseUI = new GatheringPhaseUI(
+        mockScene,
+        mockGatheringService,
+        createMockDeckService('gathering_nearby_forest'),
+        undefined,
+        onEnd,
+      );
+      phaseUI.create();
+      phaseUI.show();
+
+      // セッション開始
+      phaseUI.handleLocationSelected({
+        cardId: toCardId('gathering_nearby_forest'),
+        locationName: '近くの森',
+        movementAPCost: 0,
+      });
+
+      expect(phaseUI.getCurrentStage()).toBe(GatheringStage.DRAFT_SESSION);
+      expect(onEnd).not.toHaveBeenCalled();
+
+      // updateSessionのUI更新部分はPhaserモックの制約でエラーになるため、
+      // セッション状態のみ更新するスタブに置き換える
+      vi.spyOn(phaseUI, 'updateSession').mockImplementation(() => {});
+
+      // handleMaterialSelectを公開APIとしてテスト
+      phaseUI.handleMaterialSelect(0);
+
+      expect(mockGatheringService.selectMaterial).toHaveBeenCalledTimes(1);
+      expect(onEnd).toHaveBeenCalledTimes(1);
+    });
+
+    it('T-0120-END-04: セッション未完了時にはonEndCallbackが呼ばれない', async () => {
+      // 【テスト目的】: isComplete=falseの間はonEndCallbackが呼ばれないこと
+
+      const mockScene = createMockPhaserScene();
+      const mockGatheringService = createMockGatheringService();
+
+      // 常にisComplete=falseを返す
+      (mockGatheringService.getCurrentSession as ReturnType<typeof vi.fn>).mockReturnValue({
+        sessionId: 'test-session-001',
+        card: createGatheringCard('gathering_nearby_forest'),
+        currentRound: 1,
+        maxRounds: 3,
+        presentationCount: 3,
+        selectedMaterials: [],
+        currentOptions: [
+          { materialId: 'herb', quality: 'B', quantity: 1 },
+          { materialId: 'mushroom', quality: 'C', quantity: 1 },
+        ],
+        isComplete: false,
+      });
+
+      const onEnd = vi.fn();
+      const { GatheringPhaseUI } = await import('@features/gathering/components/GatheringPhaseUI');
+      const phaseUI = new GatheringPhaseUI(
+        mockScene,
+        mockGatheringService,
+        createMockDeckService('gathering_nearby_forest'),
+        undefined,
+        onEnd,
+      );
+      phaseUI.create();
+      phaseUI.show();
+
+      // セッション開始
+      phaseUI.handleLocationSelected({
+        cardId: toCardId('gathering_nearby_forest'),
+        locationName: '近くの森',
+        movementAPCost: 0,
+      });
+
+      // updateSessionのUI更新部分はPhaserモックの制約でエラーになるため、スタブに置き換え
+      vi.spyOn(phaseUI, 'updateSession').mockImplementation(() => {});
+
+      // 素材選択（isComplete=falseのまま）
+      phaseUI.handleMaterialSelect(0);
+
+      expect(mockGatheringService.selectMaterial).toHaveBeenCalledTimes(1);
+      expect(onEnd).not.toHaveBeenCalled();
+    });
+  });
+
+  // ===========================================================================
+  // テストケース6: 空手札状態（エッジケース）（旧テストケース5）
   // ===========================================================================
 
   describe('空手札状態（エッジケース）', () => {
@@ -572,7 +731,7 @@ describe('採取2段階化 統合テスト（TASK-0120）', () => {
   });
 
   // ===========================================================================
-  // テストケース6: 場所選択→ドラフト採取 E2E連携
+  // テストケース7: 場所選択→ドラフト採取 E2E連携（旧テストケース6）
   // ===========================================================================
 
   describe('場所選択→ドラフト採取 E2E連携', () => {
@@ -683,6 +842,9 @@ function createMockPhaserScene(): Phaser.Scene {
     setStyle: vi.fn().mockReturnThis(),
     setFillStyle: vi.fn().mockReturnThis(),
     setStrokeStyle: vi.fn().mockReturnThis(),
+    setFontSize: vi.fn().mockReturnThis(),
+    setColor: vi.fn().mockReturnThis(),
+    setWordWrapWidth: vi.fn().mockReturnThis(),
     on: vi.fn().mockReturnThis(),
     off: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
