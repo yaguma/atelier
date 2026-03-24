@@ -153,11 +153,16 @@ export class PhaseManager {
     }
     if (gatheringService) {
       const materialNameResolver = this.createMaterialNameResolver();
+      const onEnd = (): void => {
+        this.finalizeGatheringSession();
+      };
+
       const gatheringUI = new GatheringPhaseUI(
         this.scene,
         gatheringService,
         deckService,
         materialNameResolver,
+        onEnd,
       );
       gatheringUI.create();
       this.contentContainer.add(gatheringUI.getContainer());
