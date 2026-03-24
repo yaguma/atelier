@@ -194,20 +194,37 @@ export class SidebarUI extends BaseComponent {
   // コンストラクタ
   // ===========================================================================
 
+  /** 素材名解決関数（materialId → 日本語名） */
+  private materialNameResolver?: (materialId: string) => string;
+
+  /** アイテム名解決関数（itemId → 日本語名） */
+  private itemNameResolver?: (itemId: string) => string;
+
   /**
    * コンストラクタ
    *
    * @param scene - Phaserシーンインスタンス
    * @param x - X座標
    * @param y - Y座標
+   * @param options - オプション設定
    * @throws {Error} sceneがnullまたはundefinedの場合
    */
-  constructor(scene: Phaser.Scene, x: number, y: number) {
+  constructor(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    options?: {
+      materialNameResolver?: (materialId: string) => string;
+      itemNameResolver?: (itemId: string) => string;
+    },
+  ) {
     // BaseComponentでも検証するが、テストで期待する具体的なエラーメッセージのため
     if (!scene) {
       throw new Error('scene is required');
     }
     super(scene, x, y);
+    this.materialNameResolver = options?.materialNameResolver;
+    this.itemNameResolver = options?.itemNameResolver;
   }
 
   // ===========================================================================
@@ -586,7 +603,7 @@ export class SidebarUI extends BaseComponent {
       const matText = this.scene.add.text(
         SIDEBAR_LAYOUT.PADDING + 4,
         y,
-        `${material.materialId} (${material.quality})`,
+        `${this.resolveMaterialName(material.materialId)} (${material.quality})`,
         {
           fontSize: '12px',
           color: '#D1D5DB',
@@ -637,7 +654,7 @@ export class SidebarUI extends BaseComponent {
       const itemText = this.scene.add.text(
         SIDEBAR_LAYOUT.PADDING + 4,
         y,
-        `${item.itemId} (${item.quality})`,
+        `${this.resolveItemName(item.itemId)} (${item.quality})`,
         {
           fontSize: '12px',
           color: '#D1D5DB',
@@ -791,5 +808,37 @@ export class SidebarUI extends BaseComponent {
         this.updateCraftedItemsListUI();
         break;
     }
+  }
+
+  // ===========================================================================
+  // 名前解決メソッド
+  // ===========================================================================
+
+  /**
+   * 素材IDから日本語名を解決する
+   * materialNameResolverが設定されていない場合はIDをそのまま返す
+   *
+   * @param materialId - 素材ID
+   * @returns 日本語名またはID
+   */
+  private resolveMaterialName(materialId: string): string {
+    if (this.materialNameResolver) {
+      return this.materialNameResolver(materialId);
+    }
+    return materialId;
+  }
+
+  /**
+   * アイテムIDから日本語名を解決する
+   * itemNameResolverが設定されていない場合はIDをそのまま返す
+   *
+   * @param itemId - アイテムID
+   * @returns 日本語名またはID
+   */
+  private resolveItemName(itemId: string): string {
+    if (this.itemNameResolver) {
+      return this.itemNameResolver(itemId);
+    }
+    return itemId;
   }
 }

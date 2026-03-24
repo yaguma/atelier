@@ -19,6 +19,7 @@
  */
 
 import type { Quest } from '@domain/entities/Quest';
+import { formatCondition } from '@shared/utils';
 import type Phaser from 'phaser';
 import { BaseComponent } from './BaseComponent';
 
@@ -32,6 +33,8 @@ export interface QuestDetailModalConfig {
   onAccept: (quest: Quest) => void;
   /** 閉じるボタンクリック時のコールバック */
   onClose: () => void;
+  /** アイテム名解決関数（itemId → 日本語名） */
+  itemNameResolver?: (itemId: string) => string;
 }
 
 /**
@@ -289,7 +292,9 @@ export class QuestDetailModal extends BaseComponent {
     this.panel.add(clientNameText);
 
     // 【条件】: 達成条件を表示
-    const conditionLabel = QuestDetailModal.formatCondition(this.quest.condition);
+    const conditionLabel = formatCondition(this.quest.condition, {
+      itemNameResolver: this.config.itemNameResolver,
+    });
     const conditionText = this.scene.add.text(
       QuestDetailModal.TEXT_LEFT_MARGIN,
       QuestDetailModal.CONDITION_Y,
@@ -436,41 +441,6 @@ export class QuestDetailModal extends BaseComponent {
       duration: QuestDetailModal.OPEN_PANEL_DURATION,
       ease: 'Back.Out',
     });
-  }
-
-  /**
-   * 【条件フォーマット】: IQuestConditionから表示用テキストを生成
-   *
-   * @param condition - 依頼条件
-   * @returns フォーマット済み条件テキスト
-   */
-  private static formatCondition(condition: {
-    type: string;
-    itemId?: string;
-    category?: string;
-    minQuality?: string;
-    quantity?: number;
-  }): string {
-    switch (condition.type) {
-      case 'SPECIFIC':
-        return `${condition.itemId ?? '指定品'}を納品`;
-      case 'CATEGORY':
-        return `${condition.category ?? 'カテゴリ'}の品を納品`;
-      case 'QUALITY':
-        return `品質${condition.minQuality ?? 'D'}以上`;
-      case 'QUANTITY':
-        return `${condition.quantity ?? 1}個納品`;
-      case 'ATTRIBUTE':
-        return '特定属性が必要';
-      case 'EFFECT':
-        return '特定効果が必要';
-      case 'MATERIAL':
-        return 'レア素材を使用';
-      case 'COMPOUND':
-        return '複合条件';
-      default:
-        return condition.type;
-    }
   }
 
   /**

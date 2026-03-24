@@ -126,11 +126,17 @@ export class MainScene extends Phaser.Scene {
     // Issue #115: EventBusをシーンデータに設定
     this.data.set('eventBus', this.eventBus);
 
+    // コンテンツコンテナを先に作成（PhaseManagerのコンストラクタで必要）
+    this._contentContainer = this.add.container(LAYOUT.SIDEBAR_WIDTH, LAYOUT.HEADER_HEIGHT);
+    this._contentContainer.name = 'MainScene.contentContainer';
+
+    // フェーズUI管理を初期化（リゾルバ生成メソッドをレイアウト作成時に使用するため先に作成）
+    this.phaseManager = new PhaseManager(this, this._contentContainer, this.questService);
+
     // UIコンポーネントの作成
     this.createLayoutComponents();
 
-    // フェーズUI管理を初期化
-    this.phaseManager = new PhaseManager(this, this._contentContainer, this.questService);
+    // フェーズUIを作成
     this.phaseManager.createPhaseUIs();
 
     // イベント購読の設定
@@ -162,11 +168,11 @@ export class MainScene extends Phaser.Scene {
    * DIコンテナからサービスを取得
    */
   private initializeServicesFromContainer(): void {
-    const container = Container.getInstance();
-    this.stateManager = container.resolve(ServiceKeys.StateManager);
-    this.gameFlowManager = container.resolve(ServiceKeys.GameFlowManager);
-    this.eventBus = container.resolve(ServiceKeys.EventBus);
-    this.questService = container.resolve(ServiceKeys.QuestService);
+    const diContainer = Container.getInstance();
+    this.stateManager = diContainer.resolve(ServiceKeys.StateManager);
+    this.gameFlowManager = diContainer.resolve(ServiceKeys.GameFlowManager);
+    this.eventBus = diContainer.resolve(ServiceKeys.EventBus);
+    this.questService = diContainer.resolve(ServiceKeys.QuestService);
   }
 
   /**
@@ -188,7 +194,13 @@ export class MainScene extends Phaser.Scene {
     this.headerUI.create();
 
     // サイドバーUI（画面左側、ヘッダー下から開始）
-    this.sidebarUI = new SidebarUI(this, 0, LAYOUT.HEADER_HEIGHT);
+    // Issue #424: PhaseManagerのリゾルバ生成メソッド経由で日本語名を解決
+    const materialNameResolver = this.phaseManager.createMaterialNameResolver();
+    const itemNameResolver = this.phaseManager.createItemNameResolver();
+    this.sidebarUI = new SidebarUI(this, 0, LAYOUT.HEADER_HEIGHT, {
+      materialNameResolver,
+      itemNameResolver,
+    });
     this.sidebarUI.create();
 
     // フッターUI（画面下部、サイドバー右側から開始）
@@ -203,10 +215,6 @@ export class MainScene extends Phaser.Scene {
       GamePhase.QUEST_ACCEPT,
     );
     this.footerUI.create();
-
-    // コンテンツコンテナ（中央エリア）
-    this._contentContainer = this.add.container(LAYOUT.SIDEBAR_WIDTH, LAYOUT.HEADER_HEIGHT);
-    this._contentContainer.name = 'MainScene.contentContainer';
   }
 
   // ===========================================================================
