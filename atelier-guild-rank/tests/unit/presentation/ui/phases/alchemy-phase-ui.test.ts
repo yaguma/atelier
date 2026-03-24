@@ -170,6 +170,7 @@ const createMockScene = (): { scene: MockScene; mockContainer: MockContainer } =
           setPosition: vi.fn().mockReturnThis(),
           setInteractive: vi.fn().mockReturnThis(),
           on: vi.fn().mockReturnThis(),
+          off: vi.fn().mockReturnThis(),
         }),
         label: vi.fn().mockReturnValue(mockLabel),
         scrollablePanel: vi.fn().mockReturnValue({

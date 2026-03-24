@@ -128,6 +128,9 @@ export class AlchemyPhaseUI extends BaseComponent {
   /** キーボードイベントハンドラ参照（Issue #135） */
   private keyboardHandler: ((event: { key: string }) => void) | null = null;
 
+  /** 調合ボタン背景の参照（Issue #426: リスナー解除用） */
+  private craftButtonBg: RexRoundRectangle | null = null;
+
   /** 現在のフォーカスインデックス（キーボードナビゲーション用） */
   private focusedRecipeIndex = 0;
 
@@ -512,7 +515,7 @@ export class AlchemyPhaseUI extends BaseComponent {
 
     this.craftButtonContainer = this.scene.add.container(buttonX, buttonY);
 
-    // ボタン背景
+    // ボタン背景（Issue #426: リスナー解除用に参照を保持）
     const bg = this.rexUI.add
       .roundRectangle({
         width: buttonWidth,
@@ -524,6 +527,7 @@ export class AlchemyPhaseUI extends BaseComponent {
     bg.on('pointerdown', () => {
       this.executeCraft();
     });
+    this.craftButtonBg = bg;
 
     // ボタンテキスト
     const buttonText = this.scene.make.text({
@@ -763,11 +767,8 @@ export class AlchemyPhaseUI extends BaseComponent {
     // スクロール位置をリセット（カード再作成前に実施）
     this.resetScroll();
 
-    // 既存のレシピカードを破棄（コンテナ破棄で子要素も一括破棄）
-    for (const item of this.recipeLabels) {
-      item.cardContainer.destroy(true);
-    }
-    this.recipeLabels = [];
+    // 既存のレシピカードを破棄（Issue #426: リスナー解除してからコンテナ破棄）
+    this.cleanupRecipeLabels();
 
     // 選択状態をリセット
     this.selectedRecipeId = null;
@@ -782,20 +783,44 @@ export class AlchemyPhaseUI extends BaseComponent {
 
   /**
    * コンポーネントを破棄
+   * Issue #426: リスナー解除漏れを修正
    */
   destroy(): void {
     this.removeKeyboardListener();
+    this.cleanupRecipeLabels();
+    this.cleanupCraftButton();
+    this.qualityPreviewText = null;
+    this.destroyScrollArea();
+    this.container.destroy();
+  }
+
+  /**
+   * レシピラベルのリスナーを解除してから破棄
+   * Issue #426: refresh()とdestroy()で共通利用
+   */
+  private cleanupRecipeLabels(): void {
     for (const item of this.recipeLabels) {
+      if (item.craftable) {
+        item.background.off('pointerdown');
+      }
       item.cardContainer.destroy(true);
     }
     this.recipeLabels = [];
+  }
+
+  /**
+   * 調合ボタンのリスナーを解除してから破棄
+   * Issue #426: destroy()でリスナー解除を確実に実施
+   */
+  private cleanupCraftButton(): void {
+    if (this.craftButtonBg) {
+      this.craftButtonBg.off('pointerdown');
+      this.craftButtonBg = null;
+    }
     if (this.craftButtonContainer) {
       this.craftButtonContainer.destroy(true);
       this.craftButtonContainer = null;
     }
-    this.qualityPreviewText = null;
-    this.destroyScrollArea();
-    this.container.destroy();
   }
 
   // =============================================================================
