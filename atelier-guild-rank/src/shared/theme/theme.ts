@@ -31,6 +31,7 @@ export const Colors = {
     overlay: 0x000000, // オーバーレイ（共通: 半透明黒）
     card: 0xfff8dc, // カード背景（Cornsilk: UI設計書 #FFF8DC）
     parchment: 0xfffde7, // 依頼カード背景（Parchment風）
+    dark: 0x333333, // ダーク背景（パネル背景用）
   },
 
   // ボーダー色（WARM系: タン・ブラウン基調）
@@ -54,6 +55,10 @@ export const Colors = {
     dark: 0x333333, // ダークテキスト（primaryと同値）
     darkGray: 0x666666, // ダークグレーテキスト（secondaryと同値）
     light: 0xffffff, // ライトテキスト（着色ボタン上のテキスト用）
+    gold: 0xffd700, // ゴールドテキスト（Gold: 昇格・報酬表示用）
+    bonus: 0x44ff44, // ボーナステキスト（昇格ボーナス表示用）
+    dimGray: 0x888888, // 淡いグレーテキスト（空リスト・ヒント表示用）
+    softGray: 0xcccccc, // ソフトグレーテキスト（品質・補助情報用）
   },
 
   // 品質色（アイテム・素材レアリティ: UI設計書 セクション7.2）
@@ -86,12 +91,28 @@ export const Colors = {
     progress: {
       background: 0xe0d5c0, // プログレスバー背景（ウォームベージュ）
       fill: 0xdaa520, // プログレスバー塗り（Goldenrod: UI設計書 #DAA520）
+      success: 0x4caf50, // 成功・納品完了（Material Green）
+      info: 0x2196f3, // 情報・選択中（Material Blue）
       warning: 0xffaa00, // 警告状態
       danger: 0xff4444, // 危険状態
     },
     placeholder: 0xcccccc, // プレースホルダー色
   },
 } as const;
+
+/**
+ * 数値カラー(0xRRGGBB)をCSS文字列(#RRGGBB)に変換する
+ *
+ * @param color - 数値カラー値
+ * @returns CSS色文字列
+ *
+ * @example
+ * toColorStr(Colors.text.primary) // '#333333'
+ * toColorStr(0xff0000)            // '#ff0000'
+ */
+export function toColorStr(color: number): string {
+  return `#${color.toString(16).padStart(6, '0')}`;
+}
 
 /** カラーキーの型定義 */
 export type ColorKey = keyof typeof Colors;

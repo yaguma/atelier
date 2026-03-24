@@ -8,7 +8,7 @@
 
 import type { ItemInstance } from '@domain/entities/ItemInstance';
 import { BaseComponent } from '@shared/components';
-import { Colors, THEME } from '@shared/theme';
+import { Colors, THEME, toColorStr } from '@shared/theme';
 import Phaser from 'phaser';
 
 // =============================================================================
@@ -25,10 +25,10 @@ const CARD = {
 
 /** テキストスタイル */
 const TEXT_STYLES = {
-  LABEL: { fontSize: `${THEME.sizes.medium}px`, color: '#ffffff' },
-  ITEM_NAME: { fontSize: `${THEME.sizes.small}px`, color: '#ffffff' },
-  ITEM_QUALITY: { fontSize: '10px', color: '#cccccc' },
-  EMPTY_MESSAGE: { fontSize: `${THEME.sizes.small}px`, color: '#888888' },
+  LABEL: { fontSize: `${THEME.sizes.medium}px`, color: toColorStr(Colors.text.light) },
+  ITEM_NAME: { fontSize: `${THEME.sizes.small}px`, color: toColorStr(Colors.text.light) },
+  ITEM_QUALITY: { fontSize: '10px', color: toColorStr(Colors.text.softGray) },
+  EMPTY_MESSAGE: { fontSize: `${THEME.sizes.small}px`, color: toColorStr(Colors.text.dimGray) },
 } as const;
 
 /** レイアウト */

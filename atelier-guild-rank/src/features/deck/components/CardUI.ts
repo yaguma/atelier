@@ -9,7 +9,7 @@
  * カードタイプに応じた色分け、インタラクティブな操作、アニメーション効果を実装。
  */
 
-import { Colors } from '@presentation/ui/theme';
+import { Colors, toColorStr } from '@presentation/ui/theme';
 import { AnimationPresets } from '@presentation/ui/utils/AnimationPresets';
 import { BaseComponent } from '@shared/components';
 import Phaser from 'phaser';
@@ -110,7 +110,7 @@ export class CardUI extends BaseComponent {
       CardUI.CARD_HEIGHT,
       color,
     );
-    this.background.setStrokeStyle(2, 0x333333);
+    this.background.setStrokeStyle(2, Colors.text.primary);
     this.container.add(this.background);
   }
 
@@ -147,9 +147,9 @@ export class CardUI extends BaseComponent {
       iconY,
       CardUI.ICON_SIZE,
       CardUI.ICON_SIZE,
-      0xcccccc,
+      Colors.ui.placeholder,
     );
-    this.iconPlaceholder.setStrokeStyle(1, 0x666666);
+    this.iconPlaceholder.setStrokeStyle(1, Colors.text.secondary);
     this.container.add(this.iconPlaceholder);
   }
 
@@ -173,7 +173,7 @@ export class CardUI extends BaseComponent {
       text: this.card.name,
       style: {
         fontSize: '14px',
-        color: '#000000',
+        color: toColorStr(Colors.text.dark),
         fontStyle: 'bold',
         align: 'center',
         wordWrap: { width: CardUI.CARD_WIDTH - CardUI.PADDING * 2 },
@@ -204,7 +204,7 @@ export class CardUI extends BaseComponent {
       text: `⚡ ${this.card.cost}`,
       style: {
         fontSize: '12px',
-        color: '#000000',
+        color: toColorStr(Colors.text.dark),
         align: 'center',
       },
       add: false,
@@ -238,7 +238,7 @@ export class CardUI extends BaseComponent {
       text: effectDescription,
       style: {
         fontSize: '10px',
-        color: '#333333',
+        color: toColorStr(Colors.text.primary),
         align: 'center',
         wordWrap: { width: CardUI.CARD_WIDTH - CardUI.PADDING * 2 },
       },

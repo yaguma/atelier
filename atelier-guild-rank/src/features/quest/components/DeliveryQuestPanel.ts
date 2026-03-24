@@ -6,6 +6,7 @@
  * 依頼内容、報酬、期限などを表示し、納品処理を実行する。
  */
 
+import { Colors, THEME, toColorStr } from '@shared/theme';
 import type { IQuest } from '@shared/types/quests';
 import type Phaser from 'phaser';
 
@@ -23,22 +24,35 @@ const UI_LAYOUT = {
 
 /** スタイル定数 */
 const UI_STYLES = {
-  TITLE: { fontSize: '16px', color: '#ffffff', fontStyle: 'bold' },
-  DESCRIPTION: { fontSize: '14px', color: '#cccccc' },
-  REWARD: { fontSize: '14px', color: '#4caf50' },
-  DEADLINE_NORMAL: { fontSize: '14px', color: '#2196f3' },
-  DEADLINE_WARNING: { fontSize: '14px', color: '#ff9800' },
-  DEADLINE_DANGER: { fontSize: '14px', color: '#f44336' },
+  TITLE: {
+    fontSize: `${THEME.sizes.medium}px`,
+    color: toColorStr(Colors.text.light),
+    fontStyle: 'bold',
+  },
+  DESCRIPTION: { fontSize: `${THEME.sizes.small}px`, color: toColorStr(Colors.text.softGray) },
+  REWARD: { fontSize: `${THEME.sizes.small}px`, color: toColorStr(Colors.ui.progress.success) },
+  DEADLINE_NORMAL: {
+    fontSize: `${THEME.sizes.small}px`,
+    color: toColorStr(Colors.ui.progress.info),
+  },
+  DEADLINE_WARNING: {
+    fontSize: `${THEME.sizes.small}px`,
+    color: toColorStr(Colors.ui.progress.warning),
+  },
+  DEADLINE_DANGER: {
+    fontSize: `${THEME.sizes.small}px`,
+    color: toColorStr(Colors.ui.progress.danger),
+  },
 } as const;
 
 /** 色定数 */
 const PANEL_COLORS = {
-  BORDER_NORMAL: 0x4caf50,
-  BORDER_SELECTED: 0x2196f3,
-  BORDER_WARNING: 0xff9800,
-  BORDER_DANGER: 0xf44336,
-  BACKGROUND: 0x333333,
-  DELIVER_BUTTON: 0x4caf50,
+  BORDER_NORMAL: Colors.ui.progress.success,
+  BORDER_SELECTED: Colors.ui.progress.info,
+  BORDER_WARNING: Colors.ui.progress.warning,
+  BORDER_DANGER: Colors.ui.progress.danger,
+  BACKGROUND: Colors.background.dark,
+  DELIVER_BUTTON: Colors.ui.button.accept,
 } as const;
 
 /** 期限警告定数 */

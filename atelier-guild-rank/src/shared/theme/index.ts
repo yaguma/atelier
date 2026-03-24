@@ -12,4 +12,4 @@ export type {
   ColorKey,
   TextColorKey,
 } from './theme';
-export { Colors, THEME } from './theme';
+export { Colors, THEME, toColorStr } from './theme';
