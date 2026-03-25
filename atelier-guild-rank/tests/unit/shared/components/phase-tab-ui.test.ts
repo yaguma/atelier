@@ -414,6 +414,16 @@ describe('PhaseTabUI（TASK-0111）', () => {
       expect(mockGameFlowManager.requestEndDay).toHaveBeenCalledTimes(1);
     });
 
+    it('タブ無効化中に日終了ボタンを押すとタブが再有効化される', () => {
+      phaseTabUI.create();
+      phaseTabUI.setTabsDisabled(true);
+      expect(phaseTabUI.isTabsDisabled()).toBe(true);
+
+      phaseTabUI.simulateEndDayClick();
+
+      expect(phaseTabUI.isTabsDisabled()).toBe(false);
+    });
+
     it('タブ無効化中も休憩ボタンは動作する', () => {
       phaseTabUI.create();
       phaseTabUI.setTabsDisabled(true);

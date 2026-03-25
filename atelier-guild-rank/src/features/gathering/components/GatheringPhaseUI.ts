@@ -788,6 +788,14 @@ export class GatheringPhaseUI extends BaseComponent {
   }
 
   /**
+   * 町に戻るボタンクリックをシミュレート（テスト用）
+   * PhaseTabUI.simulateTabClick()と同じパターン
+   */
+  simulateReturnToTown(): void {
+    this.handleReturnToTown();
+  }
+
+  /**
    * 町に戻るボタンクリック時の処理
    * 採取フェーズを終了し、依頼受注フェーズに遷移する
    */

@@ -440,8 +440,16 @@ export class PhaseTabUI extends BaseComponent {
   /**
    * 日終了ボタンクリック時の処理
    * 🔵 信頼性レベル: REQ-004・REQ-004-01「残りAP破棄→日終了」より
+   *
+   * Issue #434: 採取セッション中に日終了が押された場合、
+   * タブ無効化状態を解除してから日終了を実行する。
+   * セッション自体のクリーンアップはGameFlowManagerの日終了処理で行われる。
    */
   private handleEndDayClick(): void {
+    // Issue #434: 採取セッション中のタブ無効化を解除
+    if (this._tabsDisabled) {
+      this.setTabsDisabled(false);
+    }
     this.gameFlowManager.requestEndDay();
   }
 

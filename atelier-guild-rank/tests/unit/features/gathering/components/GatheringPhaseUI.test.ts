@@ -521,9 +521,10 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
       ui.create();
       ui.show();
 
-      // LOCATION_SELECTステージでonEndCallbackが呼ばれることは
-      // handleReturnToTown経由で確認（UI操作はモック環境では直接テスト困難）
-      expect(ui.getCurrentStage()).toBe(GatheringStage.LOCATION_SELECT);
+      // simulateReturnToTown()経由でonEndCallbackが呼ばれることを検証
+      ui.simulateReturnToTown();
+
+      expect(onEnd).toHaveBeenCalledTimes(1);
     });
 
     it('セッション状態変更コールバックが設定できる', () => {
