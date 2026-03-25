@@ -190,8 +190,19 @@ export async function initializeServices(config?: ServiceInitializationConfig): 
 
     // =============================================================================
     // 15. GameFlowManager初期化（StateManager、DeckService、QuestService、EventBusに依存）
+    // Issue #434: activeOperationCheckerにGatheringServiceのセッション状態チェックを設定
     // =============================================================================
-    const gameFlowManager = new GameFlowManager(stateManager, deckService, questService, eventBus);
+    const activeOperationChecker = (): boolean => {
+      const session = gatheringService.getCurrentSession();
+      return session !== null && !session.isComplete;
+    };
+    const gameFlowManager = new GameFlowManager(
+      stateManager,
+      deckService,
+      questService,
+      eventBus,
+      activeOperationChecker,
+    );
     container.register(ServiceKeys.GameFlowManager, gameFlowManager);
 
     return container;

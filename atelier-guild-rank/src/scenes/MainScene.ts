@@ -13,6 +13,7 @@
  * @信頼性レベル 🔵 requirements.md セクション2.1に基づく
  */
 
+import { GatheringPhaseUI } from '@features/gathering';
 import type { IQuestService } from '@features/quest';
 import { FooterUI } from '@presentation/ui/components/FooterUI';
 import { HeaderUI } from '@presentation/ui/components/HeaderUI';
@@ -139,6 +140,9 @@ export class MainScene extends Phaser.Scene {
     // フェーズUIを作成
     this.phaseManager.createPhaseUIs();
 
+    // Issue #434: 採取セッション状態変更とPhaseTabUIの連携を設定
+    this.setupGatheringSessionCallback();
+
     // イベント購読の設定
     this.setupEventSubscriptions();
 
@@ -215,6 +219,22 @@ export class MainScene extends Phaser.Scene {
       GamePhase.QUEST_ACCEPT,
     );
     this.footerUI.create();
+  }
+
+  /**
+   * 採取セッション状態変更とPhaseTabUIの連携を設定（Issue #434）
+   * GatheringPhaseUIのセッション状態が変わった時にPhaseTabUIのタブを無効化/有効化する
+   */
+  private setupGatheringSessionCallback(): void {
+    const gatheringUI = this.phaseManager.getPhaseUI(GamePhase.GATHERING);
+    if (!(gatheringUI instanceof GatheringPhaseUI)) return;
+
+    const phaseTabUI = this.footerUI.getPhaseTabUI();
+    if (!phaseTabUI) return;
+
+    gatheringUI.onSessionStateChange((hasActiveSession: boolean) => {
+      phaseTabUI.setTabsDisabled(hasActiveSession);
+    });
   }
 
   // ===========================================================================
