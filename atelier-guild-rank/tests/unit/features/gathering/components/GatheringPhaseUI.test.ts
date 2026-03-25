@@ -495,7 +495,35 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
   });
 
   // ===========================================================================
-  // テストケース7: destroy
+  // テストケース7: onEndコールバック（Issue #432）
+  // ===========================================================================
+
+  describe('onEndコールバック（Issue #432）', () => {
+    it('コンストラクタでonEndコールバックを渡せる', () => {
+      const onEnd = vi.fn();
+      const ui = new GatheringPhaseUI(
+        mockScene,
+        mockGatheringService,
+        mockDeckService,
+        undefined,
+        onEnd,
+      );
+      ui.create();
+
+      // コールバックが設定されていてもエラーにならない
+      expect(ui).toBeDefined();
+    });
+
+    it('onEndコールバックなしでもエラーにならない（後方互換性）', () => {
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
+      ui.create();
+
+      expect(ui).toBeDefined();
+    });
+  });
+
+  // ===========================================================================
+  // テストケース8: destroy
   // ===========================================================================
 
   describe('destroy', () => {
