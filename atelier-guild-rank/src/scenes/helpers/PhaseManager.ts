@@ -59,6 +59,9 @@ export class PhaseManager {
     [GamePhase.DELIVERY]: false,
   };
 
+  /** 採取セッション終了処理の二重呼び出し防止フラグ */
+  private _isFinalizingGathering = false;
+
   constructor(
     scene: Phaser.Scene,
     contentContainer: Phaser.GameObjects.Container,
@@ -153,11 +156,16 @@ export class PhaseManager {
     }
     if (gatheringService) {
       const materialNameResolver = this.createMaterialNameResolver();
+      const onEnd = (): void => {
+        this.finalizeGatheringSession();
+      };
+
       const gatheringUI = new GatheringPhaseUI(
         this.scene,
         gatheringService,
         deckService,
         materialNameResolver,
+        onEnd,
       );
       gatheringUI.create();
       this.contentContainer.add(gatheringUI.getContainer());
@@ -274,6 +282,9 @@ export class PhaseManager {
     }
 
     // フェーズ固有の初期化
+    if (phase === GamePhase.QUEST_ACCEPT) {
+      this.initializeQuestAcceptPhase();
+    }
     if (phase === GamePhase.GATHERING) {
       this.initializeGatheringSession();
     }
@@ -301,6 +312,18 @@ export class PhaseManager {
   // ===========================================================================
   // フェーズ固有の初期化・終了処理
   // ===========================================================================
+
+  /**
+   * 依頼受注フェーズを初期化
+   * Issue #431: 受注済み依頼をメインコンテンツエリアに表示
+   */
+  private initializeQuestAcceptPhase(): void {
+    const questAcceptUI = this.phaseUIs.get(GamePhase.QUEST_ACCEPT);
+    if (questAcceptUI && 'updateAcceptedQuests' in questAcceptUI) {
+      const activeQuests = this.questService.getActiveQuests();
+      (questAcceptUI as QuestAcceptPhaseUI).updateAcceptedQuests(activeQuests);
+    }
+  }
 
   /**
    * 採取フェーズを初期化（場所選択ステージ）
@@ -336,17 +359,23 @@ export class PhaseManager {
 
   /**
    * 採取セッションを終了し、獲得素材をインベントリに保存する
+   *
+   * onEndコールバック経由とshowPhase()経由の2箇所から呼ばれる可能性があるため、
+   * ガードフラグで二重呼び出しを防止する。
    */
   private finalizeGatheringSession(): void {
-    const diContainer = Container.getInstance();
-
-    if (!diContainer.has(ServiceKeys.GatheringService)) return;
-    const gatheringService = diContainer.resolve<IGatheringService>(ServiceKeys.GatheringService);
-
-    const session = gatheringService.getCurrentSession();
-    if (!session) return;
+    if (this._isFinalizingGathering) return;
+    this._isFinalizingGathering = true;
 
     try {
+      const diContainer = Container.getInstance();
+
+      if (!diContainer.has(ServiceKeys.GatheringService)) return;
+      const gatheringService = diContainer.resolve<IGatheringService>(ServiceKeys.GatheringService);
+
+      const session = gatheringService.getCurrentSession();
+      if (!session) return;
+
       const result = gatheringService.endGathering(session.sessionId);
 
       // AP消費処理: endGathering()が返すコスト情報を使用してAPを消費
@@ -363,6 +392,8 @@ export class PhaseManager {
       }
     } catch (error) {
       console.error('Failed to finalize gathering session:', error);
+    } finally {
+      this._isFinalizingGathering = false;
     }
   }
 
@@ -445,6 +476,11 @@ export class PhaseManager {
       const questAcceptUI = this.phaseUIs.get(GamePhase.QUEST_ACCEPT);
       if (questAcceptUI && 'removeAcceptedQuest' in questAcceptUI) {
         (questAcceptUI as QuestAcceptPhaseUI).removeAcceptedQuest(event.quest.id);
+      }
+
+      // Issue #431: 受注済み依頼リストをメインコンテンツエリアに表示更新
+      if (questAcceptUI && 'updateAcceptedQuests' in questAcceptUI) {
+        (questAcceptUI as QuestAcceptPhaseUI).updateAcceptedQuests(activeQuests);
       }
     } catch (error) {
       console.error('Failed to accept quest:', error);

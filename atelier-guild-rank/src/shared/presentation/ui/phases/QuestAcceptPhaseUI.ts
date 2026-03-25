@@ -15,11 +15,12 @@
  * ```
  */
 
-import type { Quest } from '@domain/entities/Quest';
+import { Quest } from '@domain/entities/Quest';
 import { ScrollableContainer } from '@shared/components/ScrollableContainer';
 import { MAIN_LAYOUT } from '@shared/constants';
 import { getSelectionIndexFromKey, isKeyForAction } from '@shared/constants/keybindings';
 import { GameEventType } from '@shared/types/events';
+import type { IActiveQuest } from '@shared/types/quests';
 import type Phaser from 'phaser';
 import type { RexScrollablePanel } from '../../types/rexui';
 import { BaseComponent } from '../components/BaseComponent';
@@ -119,6 +120,19 @@ export class QuestAcceptPhaseUI extends BaseComponent {
   private itemNameResolver?: (itemId: string) => string;
 
   // =============================================================================
+  // 受注済み依頼表示（Issue #431）
+  // =============================================================================
+
+  /** 受注済み依頼カードリスト */
+  private acceptedQuestCards: QuestCardUI[] = [];
+
+  /** 受注済み依頼セクションタイトル */
+  private acceptedSectionTitle: Phaser.GameObjects.Text | null = null;
+
+  /** 受注済み依頼セクション区切り線 */
+  private acceptedSectionDivider: Phaser.GameObjects.Rectangle | null = null;
+
+  // =============================================================================
   // レイアウト定数
   // =============================================================================
 
@@ -153,6 +167,15 @@ export class QuestAcceptPhaseUI extends BaseComponent {
   private static readonly TITLE_FONT_SIZE = '24px';
   private static readonly TITLE_COLOR = '#000000';
   private static readonly TITLE_TEXT = '📋 本日の依頼';
+
+  /**
+   * 【受注済みセクション定数】: 受注済み依頼の表示レイアウト（Issue #431）
+   */
+  private static readonly ACCEPTED_SECTION_TITLE = '📌 受注済み依頼';
+  private static readonly ACCEPTED_SECTION_FONT_SIZE = '20px';
+  private static readonly ACCEPTED_SECTION_COLOR = '#333333';
+  private static readonly ACCEPTED_CARD_START_X = 200;
+  private static readonly ACCEPTED_CARD_SPACING_X = 300;
 
   /**
    * 【コンストラクタ】: 依頼受注フェーズUIを初期化
@@ -458,6 +481,10 @@ export class QuestAcceptPhaseUI extends BaseComponent {
     // 【受注済みリスト破棄】
     this.destroyAcceptedList();
 
+    // 【受注済み依頼カード破棄】Issue #431
+    this.destroyAcceptedQuestCards();
+    this.destroyAcceptedSectionHeader();
+
     // 【タイトルテキスト破棄】
     this.destroyTitleText();
 
@@ -677,6 +704,188 @@ export class QuestAcceptPhaseUI extends BaseComponent {
    */
   public canAcceptMore(): boolean {
     return this._acceptedCount < QuestAcceptPhaseUI.QUEST_ACCEPT_LIMIT;
+  }
+
+  // =============================================================================
+  // Issue #431: 受注済み依頼表示
+  // =============================================================================
+
+  /**
+   * 【受注済み依頼表示更新】: 受注済み依頼をカード形式でメインコンテンツエリアに表示
+   *
+   * 【設計意図】:
+   * - 受注済み依頼の詳細（必要素材、報酬、期限等）をカード形式で確認可能にする
+   * - 新規依頼リストの下に「受注済み依頼」セクションとして表示
+   * - IActiveQuestからQuestエンティティを復元してQuestCardUIで表示
+   *
+   * @param activeQuests - 受注済み依頼リスト
+   */
+  public updateAcceptedQuests(activeQuests: IActiveQuest[]): void {
+    // 既存の受注済みカードを破棄
+    this.destroyAcceptedQuestCards();
+
+    if (!activeQuests || activeQuests.length === 0) {
+      this.destroyAcceptedSectionHeader();
+      return;
+    }
+
+    const targetContainer = this.scrollableContainer?.getScrollContainer() ?? this.container;
+
+    // 受注済みセクションのY位置を計算（新規依頼カードの下）
+    const acceptedSectionY = this.calculateAcceptedSectionY();
+
+    // セクションタイトルを作成
+    this.createAcceptedSectionHeader(targetContainer, acceptedSectionY);
+
+    // 受注済み依頼カードを横一列で配置
+    const cardStartY = acceptedSectionY + 40;
+    for (let i = 0; i < activeQuests.length; i++) {
+      const activeQuest = activeQuests[i];
+      const quest = new Quest(activeQuest.quest, activeQuest.client);
+      const x =
+        QuestAcceptPhaseUI.ACCEPTED_CARD_START_X + i * QuestAcceptPhaseUI.ACCEPTED_CARD_SPACING_X;
+
+      const questCard = new QuestCardUI(this.scene, {
+        quest,
+        x,
+        y: cardStartY,
+        interactive: true,
+        itemNameResolver: this.itemNameResolver,
+      });
+      targetContainer.add(questCard.getContainer());
+
+      // クリックで詳細モーダルを開く（受注ボタンなし、閲覧のみ）
+      const background = questCard.getBackground();
+      if (background?.on) {
+        background.on('pointerdown', () => {
+          this.openAcceptedQuestDetailModal(quest, activeQuest.remainingDays);
+        });
+      }
+
+      this.acceptedQuestCards.push(questCard);
+    }
+
+    // スクロールコンテンツ高さを更新
+    this.scrollableContainer?.setContentHeight(this.getTotalContentHeight());
+  }
+
+  /**
+   * 【受注済み依頼詳細モーダルを開く】: 受注済み依頼の詳細を閲覧専用モーダルで表示
+   *
+   * 【設計意図】:
+   * - 受注済み依頼は受注ボタンを表示せず、閲覧のみ可能にする
+   * - 残り日数の情報を確認できるようにする
+   *
+   * @param quest - 依頼エンティティ
+   * @param remainingDays - 残り日数
+   */
+  private openAcceptedQuestDetailModal(quest: Quest, remainingDays: number): void {
+    if (this.currentModal) {
+      return;
+    }
+
+    // 残り日数を反映したQuestデータを作成
+    const questWithRemainingDays = new Quest(
+      { ...quest.data, deadline: remainingDays },
+      quest.client,
+    );
+
+    this.currentModal = new QuestDetailModal(this.scene, {
+      quest: questWithRemainingDays,
+      onAccept: () => {
+        // 受注済みの場合は受注ボタンを押しても閉じるだけ
+        this.closeQuestDetailModal();
+      },
+      onClose: () => {
+        this.closeQuestDetailModal();
+      },
+      itemNameResolver: this.itemNameResolver,
+    });
+    this.currentModal.create();
+  }
+
+  /**
+   * 【受注済みセクションのY位置を計算】: 新規依頼カードの下の位置を返す
+   */
+  private calculateAcceptedSectionY(): number {
+    if (this.questCards.length === 0) {
+      return QuestAcceptPhaseUI.GRID_START_Y;
+    }
+    const rows = Math.ceil(this.questCards.length / QuestAcceptPhaseUI.GRID_COLUMNS);
+    return QuestAcceptPhaseUI.GRID_START_Y + rows * QuestAcceptPhaseUI.GRID_SPACING_Y + 20;
+  }
+
+  /**
+   * 【受注済みセクションヘッダー作成】: タイトルと区切り線を作成
+   */
+  private createAcceptedSectionHeader(
+    targetContainer: Phaser.GameObjects.Container,
+    sectionY: number,
+  ): void {
+    this.destroyAcceptedSectionHeader();
+
+    // 区切り線
+    this.acceptedSectionDivider = this.scene.add.rectangle(440, sectionY - 15, 700, 2, 0xcccccc);
+    targetContainer.add(this.acceptedSectionDivider);
+
+    // セクションタイトル
+    this.acceptedSectionTitle = this.scene.add.text(
+      440,
+      sectionY,
+      QuestAcceptPhaseUI.ACCEPTED_SECTION_TITLE,
+      {
+        fontSize: QuestAcceptPhaseUI.ACCEPTED_SECTION_FONT_SIZE,
+        color: QuestAcceptPhaseUI.ACCEPTED_SECTION_COLOR,
+        fontStyle: 'bold',
+      },
+    );
+    this.acceptedSectionTitle.setOrigin(0.5, 0);
+    targetContainer.add(this.acceptedSectionTitle);
+  }
+
+  /**
+   * 【受注済みセクションヘッダー破棄】
+   */
+  private destroyAcceptedSectionHeader(): void {
+    if (this.acceptedSectionTitle) {
+      this.acceptedSectionTitle.destroy();
+      this.acceptedSectionTitle = null;
+    }
+    if (this.acceptedSectionDivider) {
+      this.acceptedSectionDivider.destroy();
+      this.acceptedSectionDivider = null;
+    }
+  }
+
+  /**
+   * 【受注済み依頼カード破棄】: 受注済み依頼のカードを全て破棄
+   */
+  private destroyAcceptedQuestCards(): void {
+    for (const card of this.acceptedQuestCards) {
+      if (card?.destroy) {
+        card.destroy();
+      }
+    }
+    this.acceptedQuestCards = [];
+  }
+
+  /**
+   * 【全コンテンツ高さ取得】: 新規依頼 + 受注済み依頼を含む総高さ
+   */
+  private getTotalContentHeight(): number {
+    const baseHeight = this.getTotalCardContentHeight();
+    if (this.acceptedQuestCards.length === 0) {
+      return baseHeight;
+    }
+    // 受注済みセクション: タイトル(40) + カード(180/2=90) + マージン(40)
+    return this.calculateAcceptedSectionY() + 40 + QuestAcceptPhaseUI.CARD_HEIGHT;
+  }
+
+  /**
+   * 【受注済み依頼カード数取得】: テスト用アクセサ
+   */
+  public getAcceptedQuestCount(): number {
+    return this.acceptedQuestCards.length;
   }
 
   // =============================================================================

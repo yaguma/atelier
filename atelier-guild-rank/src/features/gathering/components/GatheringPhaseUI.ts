@@ -203,7 +203,7 @@ export class GatheringPhaseUI extends BaseComponent {
     this.extraApCostText = this.scene.make
       .text({
         x: GATHERING_LAYOUT.CONTENT_CENTER_X,
-        y: 85,
+        y: 100,
         text: '',
         style: {
           fontSize: `${THEME.sizes.small}px`,
@@ -423,21 +423,35 @@ export class GatheringPhaseUI extends BaseComponent {
   }
 
   /**
-   * 素材選択時の処理
+   * 素材選択時の処理（UIスロットクリックハンドラ）
    *
    * @param material - 選択された素材
    */
   private onMaterialSelect(material: MaterialDisplay): void {
     if (!this.session) return;
 
+    // 選択インデックスを取得(currentOptionsから)
+    const optionIndex = this.session.currentOptions.findIndex(
+      (opt) => opt.materialId === material.id,
+    );
+
+    if (optionIndex === -1) return;
+
+    this.handleMaterialSelect(optionIndex);
+  }
+
+  /**
+   * 素材選択を実行する
+   *
+   * GatheringServiceに素材選択を委譲し、セッション更新・完了判定を行う。
+   * UIスロットクリック時はonMaterialSelect経由で呼ばれる。
+   *
+   * @param optionIndex - currentOptions内の素材インデックス
+   */
+  handleMaterialSelect(optionIndex: number): void {
+    if (!this.session) return;
+
     try {
-      // 選択インデックスを取得(currentOptionsから)
-      const optionIndex = this.session.currentOptions.findIndex(
-        (opt) => opt.materialId === material.id,
-      );
-
-      if (optionIndex === -1) return;
-
       // GatheringServiceで選択を実行
       this.gatheringService.selectMaterial(this.session.sessionId, optionIndex);
 
