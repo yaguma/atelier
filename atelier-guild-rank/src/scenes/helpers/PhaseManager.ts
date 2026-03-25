@@ -274,6 +274,9 @@ export class PhaseManager {
     }
 
     // フェーズ固有の初期化
+    if (phase === GamePhase.QUEST_ACCEPT) {
+      this.initializeQuestAcceptPhase();
+    }
     if (phase === GamePhase.GATHERING) {
       this.initializeGatheringSession();
     }
@@ -301,6 +304,18 @@ export class PhaseManager {
   // ===========================================================================
   // フェーズ固有の初期化・終了処理
   // ===========================================================================
+
+  /**
+   * 依頼受注フェーズを初期化
+   * Issue #431: 受注済み依頼をメインコンテンツエリアに表示
+   */
+  private initializeQuestAcceptPhase(): void {
+    const questAcceptUI = this.phaseUIs.get(GamePhase.QUEST_ACCEPT);
+    if (questAcceptUI && 'updateAcceptedQuests' in questAcceptUI) {
+      const activeQuests = this.questService.getActiveQuests();
+      (questAcceptUI as QuestAcceptPhaseUI).updateAcceptedQuests(activeQuests);
+    }
+  }
 
   /**
    * 採取フェーズを初期化（場所選択ステージ）
@@ -445,6 +460,11 @@ export class PhaseManager {
       const questAcceptUI = this.phaseUIs.get(GamePhase.QUEST_ACCEPT);
       if (questAcceptUI && 'removeAcceptedQuest' in questAcceptUI) {
         (questAcceptUI as QuestAcceptPhaseUI).removeAcceptedQuest(event.quest.id);
+      }
+
+      // Issue #431: 受注済み依頼リストをメインコンテンツエリアに表示更新
+      if (questAcceptUI && 'updateAcceptedQuests' in questAcceptUI) {
+        (questAcceptUI as QuestAcceptPhaseUI).updateAcceptedQuests(activeQuests);
       }
     } catch (error) {
       console.error('Failed to accept quest:', error);
