@@ -160,6 +160,7 @@ export class QuestAcceptPhaseUI extends BaseComponent {
   private static readonly CARD_AREA_OFFSET_Y = 60;
   private static readonly SCROLL_SPEED = 0.5;
   private static readonly CARD_HEIGHT = 180;
+  private static readonly ACCEPTED_SECTION_MARGIN = 120;
 
   /**
    * 【タイトルスタイル定数】: タイトルテキストのスタイル
@@ -812,7 +813,11 @@ export class QuestAcceptPhaseUI extends BaseComponent {
       return QuestAcceptPhaseUI.GRID_START_Y;
     }
     const rows = Math.ceil(this.questCards.length / QuestAcceptPhaseUI.GRID_COLUMNS);
-    return QuestAcceptPhaseUI.GRID_START_Y + rows * QuestAcceptPhaseUI.GRID_SPACING_Y + 20;
+    return (
+      QuestAcceptPhaseUI.GRID_START_Y +
+      rows * QuestAcceptPhaseUI.GRID_SPACING_Y +
+      QuestAcceptPhaseUI.ACCEPTED_SECTION_MARGIN
+    );
   }
 
   /**
