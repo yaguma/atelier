@@ -163,7 +163,7 @@ export class QuestAcceptPhaseUI extends BaseComponent {
   private static readonly CARD_AREA_OFFSET_Y = 60;
   private static readonly SCROLL_SPEED = 0.5;
   private static readonly CARD_HEIGHT = 180;
-  private static readonly ACCEPTED_SECTION_MARGIN = 120;
+  private static readonly ACCEPTED_SECTION_MARGIN = 60;
 
   /**
    * 【タイトルスタイル定数】: タイトルテキストのスタイル
@@ -751,7 +751,7 @@ export class QuestAcceptPhaseUI extends BaseComponent {
 
     // 受注済み依頼カードを横一列で配置
     // カードは中央配置のためCARD_HEIGHT/2分下にオフセットが必要
-    const sectionHeaderHeight = 30;
+    const sectionHeaderHeight = 45;
     const cardStartY = acceptedSectionY + sectionHeaderHeight + QuestAcceptPhaseUI.CARD_HEIGHT / 2;
     for (let i = 0; i < activeQuests.length; i++) {
       const activeQuest = activeQuests[i];
@@ -896,7 +896,7 @@ export class QuestAcceptPhaseUI extends BaseComponent {
       return baseHeight;
     }
     // 受注済みセクション: ヘッダー(30) + カード全高(180) + マージン(10)
-    const sectionHeaderHeight = 30;
+    const sectionHeaderHeight = 45;
     return (
       this.calculateAcceptedSectionY() + sectionHeaderHeight + QuestAcceptPhaseUI.CARD_HEIGHT + 10
     );
