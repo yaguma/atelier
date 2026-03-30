@@ -126,6 +126,9 @@ export class QuestAcceptPhaseUI extends BaseComponent {
   /** 受注済み依頼カードリスト */
   private acceptedQuestCards: QuestCardUI[] = [];
 
+  /** 最後に受け取った受注済み依頼データ（グリッド再配置用） */
+  private lastActiveQuests: IActiveQuest[] = [];
+
   /** 受注済み依頼セクションタイトル */
   private acceptedSectionTitle: Phaser.GameObjects.Text | null = null;
 
@@ -391,6 +394,11 @@ export class QuestAcceptPhaseUI extends BaseComponent {
 
     // Issue #368: ScrollableContainerにコンテンツ高さを通知
     this.scrollableContainer?.setContentHeight(this.getTotalCardContentHeight());
+
+    // Issue #441: グリッドカード作成後、受注済みカードを正しいY位置に再配置
+    if (this.lastActiveQuests.length > 0) {
+      this.updateAcceptedQuests(this.lastActiveQuests);
+    }
   }
 
   /**
@@ -722,6 +730,9 @@ export class QuestAcceptPhaseUI extends BaseComponent {
    * @param activeQuests - 受注済み依頼リスト
    */
   public updateAcceptedQuests(activeQuests: IActiveQuest[]): void {
+    // 受注済み依頼データを保持（グリッド再構築時の再配置用）
+    this.lastActiveQuests = activeQuests || [];
+
     // 既存の受注済みカードを破棄
     this.destroyAcceptedQuestCards();
 
