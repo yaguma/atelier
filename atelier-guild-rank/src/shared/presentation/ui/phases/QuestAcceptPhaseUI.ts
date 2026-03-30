@@ -163,7 +163,7 @@ export class QuestAcceptPhaseUI extends BaseComponent {
   private static readonly CARD_AREA_OFFSET_Y = 60;
   private static readonly SCROLL_SPEED = 0.5;
   private static readonly CARD_HEIGHT = 180;
-  private static readonly ACCEPTED_SECTION_MARGIN = 60;
+  private static readonly ACCEPTED_SECTION_MARGIN = 30;
 
   /**
    * 【タイトルスタイル定数】: タイトルテキストのスタイル
@@ -842,14 +842,14 @@ export class QuestAcceptPhaseUI extends BaseComponent {
   ): void {
     this.destroyAcceptedSectionHeader();
 
-    // 区切り線
-    this.acceptedSectionDivider = this.scene.add.rectangle(440, sectionY - 15, 700, 2, 0xcccccc);
+    // 区切り線（タイトルの上に十分な余白を確保）
+    this.acceptedSectionDivider = this.scene.add.rectangle(440, sectionY, 700, 2, 0xcccccc);
     targetContainer.add(this.acceptedSectionDivider);
 
-    // セクションタイトル
+    // セクションタイトル（区切り線の下に配置）
     this.acceptedSectionTitle = this.scene.add.text(
       440,
-      sectionY,
+      sectionY + 10,
       QuestAcceptPhaseUI.ACCEPTED_SECTION_TITLE,
       {
         fontSize: QuestAcceptPhaseUI.ACCEPTED_SECTION_FONT_SIZE,
