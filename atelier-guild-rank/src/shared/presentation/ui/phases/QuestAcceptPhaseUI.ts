@@ -847,14 +847,16 @@ export class QuestAcceptPhaseUI extends BaseComponent {
     targetContainer.add(this.acceptedSectionDivider);
 
     // セクションタイトル（区切り線の下に配置）
+    // Issue #441: Phaserテキスト描画で日本語文字上部が見切れる問題をpaddingで対策
     this.acceptedSectionTitle = this.scene.add.text(
       440,
-      sectionY + 30,
+      sectionY + 15,
       QuestAcceptPhaseUI.ACCEPTED_SECTION_TITLE,
       {
         fontSize: QuestAcceptPhaseUI.ACCEPTED_SECTION_FONT_SIZE,
         color: QuestAcceptPhaseUI.ACCEPTED_SECTION_COLOR,
         fontStyle: 'bold',
+        padding: { top: 8 },
       },
     );
     this.acceptedSectionTitle.setOrigin(0.5, 0);
