@@ -176,6 +176,31 @@ const unsubscribe = eventBus.on(GameEventType.PHASE_CHANGED, handler);
 unsubscribe();
 ```
 
+## 日本語テキスト描画の注意
+
+Phaserのテキスト描画（`scene.add.text()`）では、日本語文字の上部が見切れることがある。内部キャンバスのサイズ計算がフォントメトリクスに完全に対応していないため。
+
+### 対策: `padding`の指定
+
+```typescript
+// NG: 日本語文字（特に「受」「愛」等）の上部が見切れる
+this.scene.add.text(x, y, 'テキスト', {
+  fontSize: '20px',
+});
+
+// OK: padding.topを指定して上部の余白を確保
+this.scene.add.text(x, y, 'テキスト', {
+  fontSize: '20px',
+  padding: { top: 8 },
+});
+```
+
+### 適用が必要なケース
+
+- セクションヘッダー等、太字・大きめの日本語テキスト
+- 特にフォントサイズ16px以上のテキスト
+- 文字上部に画数の多い漢字（受、愛、変など）を含む場合
+
 ## 禁止事項
 
 - `update()`内での重い処理（オブジェクト生成、DOM操作等）
