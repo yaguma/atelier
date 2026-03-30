@@ -849,7 +849,7 @@ export class QuestAcceptPhaseUI extends BaseComponent {
     // セクションタイトル（区切り線の下に配置）
     this.acceptedSectionTitle = this.scene.add.text(
       440,
-      sectionY + 10,
+      sectionY + 20,
       QuestAcceptPhaseUI.ACCEPTED_SECTION_TITLE,
       {
         fontSize: QuestAcceptPhaseUI.ACCEPTED_SECTION_FONT_SIZE,
