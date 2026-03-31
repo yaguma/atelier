@@ -203,7 +203,7 @@ export class GatheringPhaseUI extends BaseComponent {
     this.extraApCostText = this.scene.make
       .text({
         x: GATHERING_LAYOUT.CONTENT_CENTER_X,
-        y: 100,
+        y: 85,
         text: '',
         style: {
           fontSize: `${THEME.sizes.small}px`,
