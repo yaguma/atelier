@@ -631,9 +631,13 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
       expect(onEnd).toHaveBeenCalledTimes(1);
     });
 
-    it('endGathering後に町に戻るボタンが表示される', () => {
+    it('endGathering後にセッション状態変更が通知される', () => {
       const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
       ui.create();
+
+      const sessionStateCallback = vi.fn();
+      ui.onSessionStateChange(sessionStateCallback);
+
       ui.show();
 
       // セッション開始
@@ -642,12 +646,15 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
         locationName: '近くの森',
         movementAPCost: 1,
       });
+      sessionStateCallback.mockClear();
 
       // 採取終了
       ui.simulateEndGathering();
 
-      // LOCATION_SELECTに戻り、町に戻るボタンが再表示されること
+      // LOCATION_SELECTに戻ること
       expect(ui.getCurrentStage()).toBe(GatheringStage.LOCATION_SELECT);
+      // セッション終了がタブUIに通知されること（false = セッションなし）
+      expect(sessionStateCallback).toHaveBeenCalledWith(false);
     });
   });
 
