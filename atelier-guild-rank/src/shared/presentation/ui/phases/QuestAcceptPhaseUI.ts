@@ -126,6 +126,9 @@ export class QuestAcceptPhaseUI extends BaseComponent {
   /** 受注済み依頼カードリスト */
   private acceptedQuestCards: QuestCardUI[] = [];
 
+  /** 最後に受け取った受注済み依頼データ（グリッド再配置用） */
+  private lastActiveQuests: IActiveQuest[] = [];
+
   /** 受注済み依頼セクションタイトル */
   private acceptedSectionTitle: Phaser.GameObjects.Text | null = null;
 
@@ -160,6 +163,7 @@ export class QuestAcceptPhaseUI extends BaseComponent {
   private static readonly CARD_AREA_OFFSET_Y = 60;
   private static readonly SCROLL_SPEED = 0.5;
   private static readonly CARD_HEIGHT = 180;
+  private static readonly ACCEPTED_SECTION_MARGIN = 30;
 
   /**
    * 【タイトルスタイル定数】: タイトルテキストのスタイル
@@ -390,6 +394,11 @@ export class QuestAcceptPhaseUI extends BaseComponent {
 
     // Issue #368: ScrollableContainerにコンテンツ高さを通知
     this.scrollableContainer?.setContentHeight(this.getTotalCardContentHeight());
+
+    // Issue #441: グリッドカード作成後、受注済みカードを正しいY位置に再配置
+    if (this.lastActiveQuests.length > 0) {
+      this.updateAcceptedQuests(this.lastActiveQuests);
+    }
   }
 
   /**
@@ -721,6 +730,9 @@ export class QuestAcceptPhaseUI extends BaseComponent {
    * @param activeQuests - 受注済み依頼リスト
    */
   public updateAcceptedQuests(activeQuests: IActiveQuest[]): void {
+    // 受注済み依頼データを保持（グリッド再構築時の再配置用）
+    this.lastActiveQuests = activeQuests || [];
+
     // 既存の受注済みカードを破棄
     this.destroyAcceptedQuestCards();
 
@@ -738,7 +750,9 @@ export class QuestAcceptPhaseUI extends BaseComponent {
     this.createAcceptedSectionHeader(targetContainer, acceptedSectionY);
 
     // 受注済み依頼カードを横一列で配置
-    const cardStartY = acceptedSectionY + 40;
+    // カードは中央配置のためCARD_HEIGHT/2分下にオフセットが必要
+    const sectionHeaderHeight = 60;
+    const cardStartY = acceptedSectionY + sectionHeaderHeight + QuestAcceptPhaseUI.CARD_HEIGHT / 2;
     for (let i = 0; i < activeQuests.length; i++) {
       const activeQuest = activeQuests[i];
       const quest = new Quest(activeQuest.quest, activeQuest.client);
@@ -812,7 +826,11 @@ export class QuestAcceptPhaseUI extends BaseComponent {
       return QuestAcceptPhaseUI.GRID_START_Y;
     }
     const rows = Math.ceil(this.questCards.length / QuestAcceptPhaseUI.GRID_COLUMNS);
-    return QuestAcceptPhaseUI.GRID_START_Y + rows * QuestAcceptPhaseUI.GRID_SPACING_Y + 20;
+    return (
+      QuestAcceptPhaseUI.GRID_START_Y +
+      rows * QuestAcceptPhaseUI.GRID_SPACING_Y +
+      QuestAcceptPhaseUI.ACCEPTED_SECTION_MARGIN
+    );
   }
 
   /**
@@ -824,19 +842,21 @@ export class QuestAcceptPhaseUI extends BaseComponent {
   ): void {
     this.destroyAcceptedSectionHeader();
 
-    // 区切り線
-    this.acceptedSectionDivider = this.scene.add.rectangle(440, sectionY - 15, 700, 2, 0xcccccc);
+    // 区切り線（タイトルの上に十分な余白を確保）
+    this.acceptedSectionDivider = this.scene.add.rectangle(440, sectionY, 700, 2, 0xcccccc);
     targetContainer.add(this.acceptedSectionDivider);
 
-    // セクションタイトル
+    // セクションタイトル（区切り線の下に配置）
+    // Issue #441: Phaserテキスト描画で日本語文字上部が見切れる問題をpaddingで対策
     this.acceptedSectionTitle = this.scene.add.text(
       440,
-      sectionY,
+      sectionY + 15,
       QuestAcceptPhaseUI.ACCEPTED_SECTION_TITLE,
       {
         fontSize: QuestAcceptPhaseUI.ACCEPTED_SECTION_FONT_SIZE,
         color: QuestAcceptPhaseUI.ACCEPTED_SECTION_COLOR,
         fontStyle: 'bold',
+        padding: { top: 8 },
       },
     );
     this.acceptedSectionTitle.setOrigin(0.5, 0);
@@ -877,8 +897,11 @@ export class QuestAcceptPhaseUI extends BaseComponent {
     if (this.acceptedQuestCards.length === 0) {
       return baseHeight;
     }
-    // 受注済みセクション: タイトル(40) + カード(180/2=90) + マージン(40)
-    return this.calculateAcceptedSectionY() + 40 + QuestAcceptPhaseUI.CARD_HEIGHT;
+    // 受注済みセクション: ヘッダー(30) + カード全高(180) + マージン(10)
+    const sectionHeaderHeight = 60;
+    return (
+      this.calculateAcceptedSectionY() + sectionHeaderHeight + QuestAcceptPhaseUI.CARD_HEIGHT + 10
+    );
   }
 
   /**
