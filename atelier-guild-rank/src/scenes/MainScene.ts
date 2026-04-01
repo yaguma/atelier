@@ -281,6 +281,13 @@ export class MainScene extends Phaser.Scene {
       }),
     );
 
+    // Issue #443: AP超過による自動日進行時にヘッダーを更新
+    this.unsubscribeHandlers.push(
+      this.eventBus.on(GameEventType.DAY_ENDED, () => {
+        this.updateHeader();
+      }),
+    );
+
     // Issue #361: ゲーム終了イベントの購読
     this.unsubscribeHandlers.push(
       this.eventBus.on<GameEndCondition>(GameEventType.GAME_OVER, (busEvent) => {

@@ -13,12 +13,13 @@ import type { IAlchemyService } from '@features/alchemy';
 import { AlchemyPhaseUI } from '@features/alchemy';
 import type { IDeckService } from '@features/deck';
 import type { IGatheringLocation, IGatheringService } from '@features/gathering';
-import { GATHERING_LOCATIONS, GatheringPhaseUI } from '@features/gathering';
+import { calculateOverflow, GATHERING_LOCATIONS, GatheringPhaseUI } from '@features/gathering';
 import type { IQuestService } from '@features/quest';
 import type { SidebarUI } from '@presentation/ui/components/SidebarUI';
 import { DeliveryPhaseUI } from '@presentation/ui/phases/DeliveryPhaseUI';
 import { QuestAcceptPhaseUI } from '@presentation/ui/phases/QuestAcceptPhaseUI';
 import { Container, ServiceKeys } from '@shared/services/di/container';
+import type { IGameFlowManager } from '@shared/services/game-flow';
 import type { IStateManager } from '@shared/services/state-manager';
 import { GamePhase, VALID_GAME_PHASES } from '@shared/types/common';
 import { toItemId, toMaterialId } from '@shared/types/ids';
@@ -378,10 +379,32 @@ export class PhaseManager {
 
       const result = gatheringService.endGathering(session.sessionId);
 
-      // AP消費処理: endGathering()が返すコスト情報を使用してAPを消費
+      // AP消費処理: calculateOverflowでAP超過を計算し、適切に処理
+      // Issue #443: spendActionPoints()はAP不足時にfalseを返すだけで消費しないため、
+      // AP超過時はprocessAPOverflow()で日数消費も含めて処理する
       if (result.cost.actionPointCost > 0 && diContainer.has(ServiceKeys.StateManager)) {
         const stateManager = diContainer.resolve<IStateManager>(ServiceKeys.StateManager);
-        stateManager.spendActionPoints(result.cost.actionPointCost);
+        const currentAP = stateManager.getState().actionPoints;
+
+        const overflowResult = calculateOverflow({
+          currentAP,
+          consumeAP: result.cost.actionPointCost,
+        });
+
+        if (overflowResult.hasOverflow) {
+          // AP超過: 日数消費を伴うAP処理
+          // APを0にしてからprocessAPOverflowで日進行処理
+          stateManager.updateState({ actionPoints: 0 });
+          if (diContainer.has(ServiceKeys.GameFlowManager)) {
+            const gameFlowManager = diContainer.resolve<IGameFlowManager>(
+              ServiceKeys.GameFlowManager,
+            );
+            gameFlowManager.processAPOverflow(overflowResult);
+          }
+        } else {
+          // AP超過なし: 通常のAP消費
+          stateManager.spendActionPoints(result.cost.actionPointCost);
+        }
       }
 
       if (diContainer.has(ServiceKeys.InventoryService)) {

@@ -464,6 +464,45 @@ describe('MainSceneヘッダー更新（Issue #443）', () => {
   // GATHERING_ENDEDイベントの購読確認
   // ===========================================================================
 
+  // ===========================================================================
+  // DAY_ENDEDイベントでヘッダー更新
+  // ===========================================================================
+
+  describe('DAY_ENDEDイベントでヘッダーが更新される', () => {
+    it('DAY_ENDEDイベント発行時にupdateHeader()が呼ばれる', async () => {
+      const { mockEventBus, mockStateManager } = await createAndInitMainScene();
+
+      mockHeaderUpdateFn.mockClear();
+
+      // AP超過による日進行後の状態をシミュレート
+      mockStateManager.getState.mockReturnValue({
+        currentRank: GuildRank.E,
+        promotionGauge: 35,
+        remainingDays: 18,
+        currentDay: 3,
+        currentPhase: GamePhase.GATHERING,
+        gold: 500,
+        actionPoints: 2,
+        comboCount: 0,
+        rankHp: 100,
+        isPromotionTest: false,
+      });
+
+      mockEventBus.emit(GameEventType.DAY_ENDED, {
+        failedQuests: [],
+        remainingDays: 18,
+        currentDay: 3,
+      });
+
+      expect(mockHeaderUpdateFn).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actionPoints: 2,
+          remainingDays: 18,
+        }),
+      );
+    });
+  });
+
   describe('GATHERING_ENDEDイベント購読', () => {
     it('MainScene.create()でGATHERING_ENDEDイベントが購読される', async () => {
       const { mockEventBus } = await createAndInitMainScene();
