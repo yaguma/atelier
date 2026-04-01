@@ -596,6 +596,62 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
   });
 
   // ===========================================================================
+  // テストケース7c: 採取終了後にLOCATION_SELECTに戻る（Issue #444）
+  // ===========================================================================
+
+  describe('採取終了後にLOCATION_SELECTに戻る（Issue #444）', () => {
+    it('endGathering後にステージがLOCATION_SELECTに戻る', () => {
+      const onEnd = vi.fn();
+      const ui = new GatheringPhaseUI(
+        mockScene,
+        mockGatheringService,
+        mockDeckService,
+        undefined,
+        onEnd,
+      );
+      ui.create();
+      ui.show();
+
+      // セッション開始
+      ui.handleLocationSelected({
+        cardId: toCardId('gathering-forest'),
+        locationName: '近くの森',
+        movementAPCost: 1,
+      });
+      expect(ui.getCurrentStage()).toBe(GatheringStage.DRAFT_SESSION);
+
+      // 採取終了をシミュレート
+      ui.simulateEndGathering();
+
+      // LOCATION_SELECTに戻ること
+      expect(ui.getCurrentStage()).toBe(GatheringStage.LOCATION_SELECT);
+      // セッションがクリアされること
+      expect(ui.hasActiveSession()).toBe(false);
+      // onEndCallbackが呼ばれること
+      expect(onEnd).toHaveBeenCalledTimes(1);
+    });
+
+    it('endGathering後に町に戻るボタンが表示される', () => {
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
+      ui.create();
+      ui.show();
+
+      // セッション開始
+      ui.handleLocationSelected({
+        cardId: toCardId('gathering-forest'),
+        locationName: '近くの森',
+        movementAPCost: 1,
+      });
+
+      // 採取終了
+      ui.simulateEndGathering();
+
+      // LOCATION_SELECTに戻り、町に戻るボタンが再表示されること
+      expect(ui.getCurrentStage()).toBe(GatheringStage.LOCATION_SELECT);
+    });
+  });
+
+  // ===========================================================================
   // テストケース8: destroy
   // ===========================================================================
 

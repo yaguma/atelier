@@ -482,16 +482,24 @@ export class GatheringPhaseUI extends BaseComponent {
 
   /**
    * 採取終了処理
+   *
+   * Issue #444: セッション終了後にLOCATION_SELECTステージに戻し、
+   * 町に戻るボタンを再表示する。
    */
   private endGathering(): void {
     this.disableMaterialSelection();
 
-    // Issue #434: セッション終了をタブUIに通知
-    this.notifySessionStateChange();
-
     if (this.onEndCallback) {
       this.onEndCallback();
     }
+
+    // Issue #444: セッションをクリアしてLOCATION_SELECTに戻る
+    this.session = null;
+    this._currentStage = GatheringStage.LOCATION_SELECT;
+    this.showLocationSelectStage();
+
+    // Issue #434: セッション終了をタブUIに通知
+    this.notifySessionStateChange();
   }
 
   /**
@@ -807,6 +815,14 @@ export class GatheringPhaseUI extends BaseComponent {
    */
   simulateReturnToTown(): void {
     this.handleReturnToTown();
+  }
+
+  /**
+   * 採取終了をシミュレート（テスト用）
+   * endButtonクリック時と同じ処理を実行する
+   */
+  simulateEndGathering(): void {
+    this.endGathering();
   }
 
   /**
