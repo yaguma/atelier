@@ -39,8 +39,8 @@ const GATHERING_LAYOUT = {
   CONTENT_CENTER_X: 440,
   /** 素材プール開始X（3列を中央揃え: 440 - 120 = 320） */
   POOL_START_X: 320,
-  /** 素材プール開始Y */
-  POOL_START_Y: 130,
+  /** 素材プール開始Y（追加APコスト表示y=85との重なり防止のため余白を確保） */
+  POOL_START_Y: 150,
   /** 素材プール列間隔 */
   POOL_SPACING_X: 120,
   /** 素材プール行間隔 */
@@ -203,7 +203,7 @@ export class GatheringPhaseUI extends BaseComponent {
     this.extraApCostText = this.scene.make
       .text({
         x: GATHERING_LAYOUT.CONTENT_CENTER_X,
-        y: 100,
+        y: 85,
         text: '',
         style: {
           fontSize: `${THEME.sizes.small}px`,
