@@ -251,6 +251,8 @@ export class MainScene extends Phaser.Scene {
       this.eventBus.on<IPhaseChangedEvent>(GameEventType.PHASE_CHANGED, (busEvent) => {
         this.phaseManager.showPhase(busEvent.payload.newPhase);
         this.phaseManager.updateSidebar(this.sidebarUI);
+        // Issue #443: フェーズ切替時にヘッダーを更新（AP/ゴールド等の最新状態を反映）
+        this.updateHeader();
       }),
     );
 
@@ -269,6 +271,13 @@ export class MainScene extends Phaser.Scene {
     this.unsubscribeHandlers.push(
       this.eventBus.on<{ quest: IQuest }>(GameEventType.QUEST_ACCEPTED, (busEvent) => {
         this.phaseManager.handleQuestAccepted(busEvent.payload, this.sidebarUI);
+      }),
+    );
+
+    // Issue #443: 採取終了時にヘッダーのAP表示を更新
+    this.unsubscribeHandlers.push(
+      this.eventBus.on(GameEventType.GATHERING_ENDED, () => {
+        this.updateHeader();
       }),
     );
 
