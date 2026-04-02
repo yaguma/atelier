@@ -27,6 +27,7 @@ function createMockContainer() {
     setVisible: vi.fn().mockReturnThis(),
     setAlpha: vi.fn().mockReturnThis(),
     setScale: vi.fn().mockReturnThis(),
+    setSize: vi.fn().mockReturnThis(),
     setInteractive: vi.fn().mockReturnThis(),
     removeInteractive: vi.fn().mockReturnThis(),
     removeAllListeners: vi.fn().mockReturnThis(),
@@ -62,6 +63,7 @@ function createMockRexUI() {
     layout: vi.fn().mockReturnThis(),
     setVisible: vi.fn().mockReturnThis(),
     setAlpha: vi.fn().mockReturnThis(),
+    setPosition: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
   };
 
@@ -523,38 +525,10 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
   });
 
   // ===========================================================================
-  // テストケース7b: 町に戻るボタン（Issue #434）
+  // テストケース7b: セッション状態変更コールバック（Issue #434）
   // ===========================================================================
 
-  describe('町に戻るボタン（Issue #434）', () => {
-    it('show()後に町に戻るボタンが作成される', () => {
-      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
-      ui.create();
-      ui.show();
-
-      // show()でLOCATION_SELECTステージが表示されると、町に戻るボタンが作成される
-      // エラーが起きないことを確認
-      expect(ui.getCurrentStage()).toBe(GatheringStage.LOCATION_SELECT);
-    });
-
-    it('町に戻るボタンのコールバックが呼ばれる', () => {
-      const onEnd = vi.fn();
-      const ui = new GatheringPhaseUI(
-        mockScene,
-        mockGatheringService,
-        mockDeckService,
-        undefined,
-        onEnd,
-      );
-      ui.create();
-      ui.show();
-
-      // simulateReturnToTown()経由でonEndCallbackが呼ばれることを検証
-      ui.simulateReturnToTown();
-
-      expect(onEnd).toHaveBeenCalledTimes(1);
-    });
-
+  describe('セッション状態変更コールバック（Issue #434）', () => {
     it('セッション状態変更コールバックが設定できる', () => {
       const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
       ui.create();
@@ -592,6 +566,69 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
       ui.discardSession();
 
       expect(callback).toHaveBeenCalledWith(false);
+    });
+  });
+
+  // ===========================================================================
+  // テストケース7c: 採取終了後にLOCATION_SELECTに戻る（Issue #444）
+  // ===========================================================================
+
+  describe('採取終了後にLOCATION_SELECTに戻る（Issue #444）', () => {
+    it('endGathering後にステージがLOCATION_SELECTに戻る', () => {
+      const onEnd = vi.fn();
+      const ui = new GatheringPhaseUI(
+        mockScene,
+        mockGatheringService,
+        mockDeckService,
+        undefined,
+        onEnd,
+      );
+      ui.create();
+      ui.show();
+
+      // セッション開始
+      ui.handleLocationSelected({
+        cardId: toCardId('gathering-forest'),
+        locationName: '近くの森',
+        movementAPCost: 1,
+      });
+      expect(ui.getCurrentStage()).toBe(GatheringStage.DRAFT_SESSION);
+
+      // 採取終了をシミュレート
+      ui.simulateEndGathering();
+
+      // LOCATION_SELECTに戻ること
+      expect(ui.getCurrentStage()).toBe(GatheringStage.LOCATION_SELECT);
+      // セッションがクリアされること
+      expect(ui.hasActiveSession()).toBe(false);
+      // onEndCallbackが呼ばれること
+      expect(onEnd).toHaveBeenCalledTimes(1);
+    });
+
+    it('endGathering後にセッション状態変更が通知される', () => {
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
+      ui.create();
+
+      const sessionStateCallback = vi.fn();
+      ui.onSessionStateChange(sessionStateCallback);
+
+      ui.show();
+
+      // セッション開始
+      ui.handleLocationSelected({
+        cardId: toCardId('gathering-forest'),
+        locationName: '近くの森',
+        movementAPCost: 1,
+      });
+      sessionStateCallback.mockClear();
+
+      // 採取終了
+      ui.simulateEndGathering();
+
+      // LOCATION_SELECTに戻ること
+      expect(ui.getCurrentStage()).toBe(GatheringStage.LOCATION_SELECT);
+      // セッション終了がタブUIに通知されること（false = セッションなし）
+      expect(sessionStateCallback).toHaveBeenCalledWith(false);
     });
   });
 
