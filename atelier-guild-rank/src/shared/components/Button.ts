@@ -119,7 +119,8 @@ export class Button extends BaseComponent {
     this.normalColor = backgroundColor;
     this.hoverColor = hoverColor;
 
-    // 背景を生成
+    // 背景を生成（rexUI Labelの子要素として管理されるため、
+    // シーンのdisplayListからは後で削除する）
     this.background = this.rexUI.add
       .roundRectangle({
         width: width || 120,
@@ -127,11 +128,17 @@ export class Button extends BaseComponent {
         radius: 8,
       })
       .setFillStyle(backgroundColor);
+    if (this.scene.children?.remove) {
+      this.scene.children.remove(this.background);
+    }
 
-    // テキストを生成
-    const textObject = this.scene.add.text(0, 0, text, {
-      fontSize: '16px',
-      color: textColor,
+    // テキストを生成（make.textでシーンのdisplayListへの直接追加を回避）
+    const textObject = this.scene.make.text({
+      x: 0,
+      y: 0,
+      text,
+      style: { fontSize: '16px', color: textColor },
+      add: false,
     });
 
     // rexUI Labelを生成
@@ -141,8 +148,12 @@ export class Button extends BaseComponent {
       align: 'center',
     });
 
-    // Issue #450: rexUI LabelをBaseComponentのコンテナに追加し、
-    // コンテナ階層に組み込むことで親コンテナの座標に追従させる
+    // Issue #450: rexUI Labelをコンテナ階層に組み込む
+    // rexUI.add.label()はシーンのdisplayListに自動追加されるため、
+    // コンテナに移動する前にdisplayListから削除する
+    if (this.scene.children?.remove) {
+      this.scene.children.remove(this.label);
+    }
     this.container.add(this.label);
 
     // インタラクティブに設定

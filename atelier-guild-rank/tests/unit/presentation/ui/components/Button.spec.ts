@@ -90,6 +90,14 @@ describe('Button', () => {
           setStyle: vi.fn().mockReturnThis(),
         }),
       },
+      make: {
+        text: vi.fn().mockReturnValue({
+          setStyle: vi.fn().mockReturnThis(),
+        }),
+      },
+      children: {
+        remove: vi.fn(),
+      },
       tweens: {
         add: vi.fn().mockReturnThis(),
       },
@@ -135,12 +143,11 @@ describe('Button', () => {
         onClick: mockCallback,
       });
 
-      // テキストが'確定'であることを確認
-      expect(scene.add.text).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.anything(),
-        '確定',
-        expect.anything(),
+      // テキストが'確定'であることを確認（make.textで生成される）
+      expect(scene.make.text).toHaveBeenCalledWith(
+        expect.objectContaining({
+          text: '確定',
+        }),
       ); // 🔵
     });
 
