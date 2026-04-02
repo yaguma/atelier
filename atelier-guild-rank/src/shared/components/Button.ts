@@ -113,8 +113,10 @@ export class Button extends BaseComponent {
     this.hoverColor = hoverColor;
 
     // 背景（角丸Rectangle）をcontainerローカル座標(0,0)に配置
+    // scene.addはdisplayListに追加するため、container.add後にdisplayListから除去する
     this.bg = this.scene.add.rectangle(0, 0, width, height, backgroundColor);
     this.bg.setOrigin(0.5);
+    this.scene.children.remove(this.bg);
     this.container.add(this.bg);
 
     // テキストをcontainerローカル座標(0,0)に中央配置
@@ -123,6 +125,7 @@ export class Button extends BaseComponent {
       color: textColor,
     });
     this.textObj.setOrigin(0.5);
+    this.scene.children.remove(this.textObj);
     this.container.add(this.textObj);
 
     // containerをインタラクティブに設定（背景サイズでヒット領域を定義）

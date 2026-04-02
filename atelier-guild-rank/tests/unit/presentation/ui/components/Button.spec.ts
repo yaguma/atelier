@@ -66,6 +66,9 @@ describe('Button', () => {
         rectangle: vi.fn().mockReturnValue(mockRect),
         text: vi.fn().mockReturnValue(mockText),
       },
+      children: {
+        remove: vi.fn(),
+      },
       tweens: {
         add: vi.fn().mockReturnThis(),
       },
