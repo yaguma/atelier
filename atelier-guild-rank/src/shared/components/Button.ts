@@ -5,15 +5,14 @@
  * @description
  * ゲーム内で使用される全てのボタンの基底となるコンポーネント。
  * プライマリボタン、セカンダリボタン、テキストボタン、アイコンボタンの4種類を提供。
- * rexUI の Label コンポーネントをラップして、統一されたスタイルとインタラクションを実現。
  *
- * Issue #450: rexUI LabelはPhaserのcontainer階層とは異なる独自の描画パイプラインを持つため、
- * BaseComponentのcontainerではなく、label自体の位置・可視性を直接制御する。
+ * Issue #450: rexUI LabelはPhaserのcontainer階層と互換性がないため、
+ * PhaserネイティブのRoundedRectangle + Textで実装し、container階層で
+ * 正しく位置・可視性・深度が管理されるようにする。
  */
 
-import type { RexLabel, RexRoundRectangle } from '@presentation/types/rexui';
 import { THEME } from '@presentation/ui/theme';
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 import { BaseComponent } from './BaseComponent';
 
 /**
@@ -41,27 +40,25 @@ export interface ButtonConfig {
 
 /**
  * Buttonコンポーネント
+ *
+ * PhaserネイティブのGameObjectsのみで構成し、
+ * BaseComponentのcontainer階層で正しく管理される。
  */
 export class Button extends BaseComponent {
   private config: ButtonConfig;
-  // TASK-0059: rexUI型定義を適用
-  private label: RexLabel | null = null;
   private _enabled: boolean;
-  // TASK-0039: ホバーエフェクト用のプロパティ
-  // TASK-0059: rexUI型定義を適用
-  private background: RexRoundRectangle | null = null;
+  private bg: Phaser.GameObjects.Rectangle | null = null;
+  private textObj: Phaser.GameObjects.Text | null = null;
   private normalColor: number = 0;
   private hoverColor: number = 0;
 
   constructor(scene: Phaser.Scene, x: number, y: number, config: ButtonConfig) {
     super(scene, x, y);
 
-    // バリデーション: textが空文字列の場合はエラー（アイコンボタンの場合は除く）
     if (config.text === '' && config.type !== ButtonType.ICON) {
       throw new Error('text is required for non-icon buttons');
     }
 
-    // バリデーション: onClickがnullまたはundefinedの場合はエラー
     if (!config.onClick) {
       throw new Error('onClick callback is required');
     }
@@ -74,15 +71,11 @@ export class Button extends BaseComponent {
 
     this._enabled = this.config.enabled ?? true;
 
-    // ボタンを生成
     this.create();
   }
 
-  /**
-   * ボタンを生成する（BaseComponentの抽象メソッド実装）
-   */
   public create(): void {
-    const { text, type, width, height } = this.config;
+    const { text, type, width = 120, height = 40 } = this.config;
 
     // スタイルを決定
     let backgroundColor: number;
@@ -103,7 +96,7 @@ export class Button extends BaseComponent {
       case ButtonType.TEXT:
         backgroundColor = 0x000000;
         hoverColor = 0x000000;
-        textColor = `#${THEME.colors.primary.toString(16)}`;
+        textColor = `#${THEME.colors.primary.toString(16).padStart(6, '0')}`;
         break;
       case ButtonType.ICON:
         backgroundColor = THEME.colors.secondary;
@@ -116,193 +109,118 @@ export class Button extends BaseComponent {
         textColor = THEME.colors.textOnPrimary;
     }
 
-    // TASK-0039: ホバーエフェクト用に色を保存
     this.normalColor = backgroundColor;
     this.hoverColor = hoverColor;
 
-    // 背景を生成
-    this.background = this.rexUI.add
-      .roundRectangle({
-        width: width || 120,
-        height: height || 40,
-        radius: 8,
-      })
-      .setFillStyle(backgroundColor);
+    // 背景（角丸Rectangle）をcontainerローカル座標(0,0)に配置
+    this.bg = this.scene.add.rectangle(0, 0, width, height, backgroundColor);
+    this.bg.setOrigin(0.5);
+    this.container.add(this.bg);
 
-    // テキストを生成
-    const textObject = this.scene.add.text(0, 0, text, {
+    // テキストをcontainerローカル座標(0,0)に中央配置
+    this.textObj = this.scene.add.text(0, 0, text, {
       fontSize: '16px',
       color: textColor,
     });
+    this.textObj.setOrigin(0.5);
+    this.container.add(this.textObj);
 
-    // rexUI Labelを生成
-    this.label = this.rexUI.add.label({
-      background: this.background,
-      text: textObject,
-      align: 'center',
-    });
+    // containerをインタラクティブに設定（背景サイズでヒット領域を定義）
+    this.container.setSize(width, height);
+    this.container.setInteractive(
+      new Phaser.Geom.Rectangle(-width / 2, -height / 2, width, height),
+      Phaser.Geom.Rectangle.Contains,
+    );
 
-    // Issue #450: rexUI LabelはPhaserのcontainer階層に組み込めないため、
-    // labelの位置をコンストラクタで指定されたx,yに直接設定する
-    this.label.setPosition(this.container.x, this.container.y);
+    // ホバーエフェクト・クリックイベント
+    this.container.on('pointerover', () => this.onPointerOver());
+    this.container.on('pointerout', () => this.onPointerOut());
+    this.container.on('pointerdown', () => this.onPointerDown());
+    this.container.on('pointerup', () => this.onPointerUp());
 
-    // インタラクティブに設定
-    this.label.setInteractive();
-
-    // TASK-0039: ホバーエフェクトのイベントリスナーを登録
-    this.label.on('pointerover', () => this.onPointerOver());
-    this.label.on('pointerout', () => this.onPointerOut());
-    this.label.on('pointerdown', () => this.onPointerDown());
-    this.label.on('pointerup', () => this.onPointerUp());
-
-    // レイアウトを適用
-    this.label.layout();
-
-    // 有効/無効状態を反映
     this.updateEnabledState();
   }
 
-  /**
-   * ボタンの有効/無効状態を更新する
-   */
   private updateEnabledState(): void {
-    if (!this.label) return;
     if (this._enabled) {
-      this.label.setAlpha(1.0);
+      this.container.setAlpha(1.0);
     } else {
-      this.label.setAlpha(0.5);
+      this.container.setAlpha(0.5);
     }
   }
 
-  /**
-   * TASK-0039: マウスオーバー時の処理
-   * ボタンを拡大し、背景色を変更する
-   */
   private onPointerOver(): void {
     if (!this._enabled) return;
-
-    // 拡大アニメーション
     this.scene.tweens.add({
-      targets: this.label,
+      targets: this.container,
       scaleX: 1.05,
       scaleY: 1.05,
       duration: 100,
       ease: 'Power2',
     });
-
-    // 背景色変更
-    this.setHighlight(true);
+    if (this.bg) {
+      this.bg.setFillStyle(this.hoverColor);
+    }
   }
 
-  /**
-   * TASK-0039: マウスアウト時の処理
-   * ボタンを元のサイズに戻し、背景色を元に戻す
-   */
   private onPointerOut(): void {
-    // 元のサイズに戻す
     this.scene.tweens.add({
-      targets: this.label,
+      targets: this.container,
       scaleX: 1,
       scaleY: 1,
       duration: 100,
       ease: 'Power2',
     });
-
-    // 背景色を元に戻す
-    this.setHighlight(false);
+    if (this.bg) {
+      this.bg.setFillStyle(this.normalColor);
+    }
   }
 
-  /**
-   * TASK-0039: マウス押下時の処理
-   * ボタンを縮小してフィードバックを与える
-   */
   private onPointerDown(): void {
     if (!this._enabled) return;
-
-    // 縮小アニメーション
     this.scene.tweens.add({
-      targets: this.label,
+      targets: this.container,
       scaleX: 0.95,
       scaleY: 0.95,
       duration: 50,
     });
-
-    // onClick コールバックを実行
     this.config.onClick();
   }
 
-  /**
-   * TASK-0039: マウスボタン解放時の処理
-   * ホバー状態のサイズに戻す
-   */
   private onPointerUp(): void {
     if (!this._enabled) return;
-
-    // ホバー状態のサイズに戻す
     this.scene.tweens.add({
-      targets: this.label,
+      targets: this.container,
       scaleX: 1.05,
       scaleY: 1.05,
       duration: 50,
     });
   }
 
-  /**
-   * TASK-0039: 背景色のハイライト設定
-   * @param enabled ハイライトを有効にする場合はtrue、無効にする場合はfalse
-   */
-  private setHighlight(enabled: boolean): void {
-    if (!this.background) return;
-
-    const color = enabled ? this.hoverColor : this.normalColor;
-    this.background.setFillStyle(color);
-  }
-
-  /**
-   * Issue #450: rexUI Labelの可視性を直接制御する
-   */
-  override setVisible(visible: boolean): this {
-    super.setVisible(visible);
-    if (this.label) {
-      this.label.setVisible(visible);
-    }
-    return this;
-  }
-
-  /**
-   * ボタンの有効/無効を設定する
-   * @param enabled 有効にする場合はtrue、無効にする場合はfalse
-   * @returns メソッドチェーン用に自身を返す
-   */
   public setEnabled(enabled: boolean): this {
     this._enabled = enabled;
     this.updateEnabledState();
     return this;
   }
 
-  /**
-   * ボタンが有効かどうかを取得する
-   * @returns 有効な場合はtrue、無効な場合はfalse
-   */
   public isEnabled(): boolean {
     return this._enabled;
   }
 
-  /**
-   * ボタンを破棄する（BaseComponentの抽象メソッド実装）
-   */
   public destroy(): void {
-    if (this.label !== null) {
-      this.label.destroy();
-      this.label = null;
-    }
+    this.container.off('pointerover');
+    this.container.off('pointerout');
+    this.container.off('pointerdown');
+    this.container.off('pointerup');
 
-    // TASK-0039: backgroundの破棄を追加
-    if (this.background !== null) {
-      this.background.destroy();
-      this.background = null;
+    if (this.bg !== null) {
+      this.bg.destroy();
+      this.bg = null;
     }
-
+    if (this.textObj !== null) {
+      this.textObj.destroy();
+      this.textObj = null;
+    }
     if (this.container) {
       this.container.destroy();
     }

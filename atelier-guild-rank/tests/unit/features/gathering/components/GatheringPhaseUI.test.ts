@@ -27,6 +27,7 @@ function createMockContainer() {
     setVisible: vi.fn().mockReturnThis(),
     setAlpha: vi.fn().mockReturnThis(),
     setScale: vi.fn().mockReturnThis(),
+    setSize: vi.fn().mockReturnThis(),
     setInteractive: vi.fn().mockReturnThis(),
     removeInteractive: vi.fn().mockReturnThis(),
     removeAllListeners: vi.fn().mockReturnThis(),
