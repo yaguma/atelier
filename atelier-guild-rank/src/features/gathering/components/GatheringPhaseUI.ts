@@ -58,7 +58,7 @@ const GATHERING_LAYOUT = {
   /** 採取終了ボタンX */
   END_BUTTON_X: 440,
   /** 採取終了ボタンY */
-  END_BUTTON_Y: 470,
+  END_BUTTON_Y: 510,
 } as const;
 
 /**
