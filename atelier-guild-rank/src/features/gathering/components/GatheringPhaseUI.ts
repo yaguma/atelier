@@ -59,10 +59,6 @@ const GATHERING_LAYOUT = {
   END_BUTTON_X: 440,
   /** 採取終了ボタンY */
   END_BUTTON_Y: 470,
-  /** 町に戻るボタンX（マップ右下付近に配置） */
-  RETURN_BUTTON_X: 500,
-  /** 町に戻るボタンY */
-  RETURN_BUTTON_Y: 470,
 } as const;
 
 /**
@@ -82,9 +78,6 @@ export class GatheringPhaseUI extends BaseComponent {
   private extraApCostText!: Phaser.GameObjects.Text;
   private titleText!: Phaser.GameObjects.Text;
   private endButton!: Button;
-
-  /** Issue #434: 町に戻るボタン（場所選択ステージに表示） */
-  private returnToTownButton: Button | null = null;
 
   private session: DraftSession | null = null;
   private onEndCallback?: () => void;
@@ -724,9 +717,6 @@ export class GatheringPhaseUI extends BaseComponent {
     if (this._availableLocations.length > 0) {
       this._locationSelectUI.updateLocations(this._availableLocations);
     }
-
-    // Issue #434: 町に戻るボタンを表示
-    this.showReturnToTownButton();
   }
 
   /**
@@ -737,9 +727,6 @@ export class GatheringPhaseUI extends BaseComponent {
     if (this._locationSelectUI) {
       this._locationSelectUI.setVisible(false);
     }
-
-    // Issue #434: 町に戻るボタンを非表示
-    this.hideReturnToTownButton();
 
     // ドラフトセッションUIを表示
     this.showDraftSessionUI();
@@ -772,67 +759,12 @@ export class GatheringPhaseUI extends BaseComponent {
     if (this.endButton) this.endButton.setVisible(false);
   }
 
-  // =============================================================================
-  // Issue #434: 町に戻るボタン
-  // =============================================================================
-
-  /**
-   * 町に戻るボタンを表示する（場所選択ステージ用）
-   */
-  private showReturnToTownButton(): void {
-    if (!this.returnToTownButton) {
-      this.returnToTownButton = new Button(
-        this.scene,
-        GATHERING_LAYOUT.RETURN_BUTTON_X,
-        GATHERING_LAYOUT.RETURN_BUTTON_Y,
-        {
-          text: '町に戻る',
-          onClick: () => {
-            this.handleReturnToTown();
-          },
-          width: 120,
-          height: 40,
-        },
-      );
-      // Buttonコンストラクタ内でcreate()が呼ばれるため、ここでは呼ばない
-      this.container.add(this.returnToTownButton.getContainer());
-    }
-    this.returnToTownButton.setVisible(true);
-  }
-
-  /**
-   * 町に戻るボタンを非表示にする
-   */
-  private hideReturnToTownButton(): void {
-    if (this.returnToTownButton) {
-      this.returnToTownButton.setVisible(false);
-    }
-  }
-
-  /**
-   * 町に戻るボタンクリックをシミュレート（テスト用）
-   * PhaseTabUI.simulateTabClick()と同じパターン
-   */
-  simulateReturnToTown(): void {
-    this.handleReturnToTown();
-  }
-
   /**
    * 採取終了をシミュレート（テスト用）
    * endButtonクリック時と同じ処理を実行する
    */
   simulateEndGathering(): void {
     this.endGathering();
-  }
-
-  /**
-   * 町に戻るボタンクリック時の処理
-   * 採取フェーズを終了し、依頼受注フェーズに遷移する
-   */
-  private handleReturnToTown(): void {
-    if (this.onEndCallback) {
-      this.onEndCallback();
-    }
   }
 
   /**
@@ -844,11 +776,6 @@ export class GatheringPhaseUI extends BaseComponent {
     if (this._locationSelectUI) {
       this._locationSelectUI.destroy();
       this._locationSelectUI = null;
-    }
-    // Issue #434: 町に戻るボタンの破棄
-    if (this.returnToTownButton) {
-      this.returnToTownButton.destroy();
-      this.returnToTownButton = null;
     }
     this._onSessionStateChangeCallback = null;
     this._pendingLeaveConfirm = null;

@@ -524,38 +524,10 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
   });
 
   // ===========================================================================
-  // テストケース7b: 町に戻るボタン（Issue #434）
+  // テストケース7b: セッション状態変更コールバック（Issue #434）
   // ===========================================================================
 
-  describe('町に戻るボタン（Issue #434）', () => {
-    it('show()後に町に戻るボタンが作成される', () => {
-      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
-      ui.create();
-      ui.show();
-
-      // show()でLOCATION_SELECTステージが表示されると、町に戻るボタンが作成される
-      // エラーが起きないことを確認
-      expect(ui.getCurrentStage()).toBe(GatheringStage.LOCATION_SELECT);
-    });
-
-    it('町に戻るボタンのコールバックが呼ばれる', () => {
-      const onEnd = vi.fn();
-      const ui = new GatheringPhaseUI(
-        mockScene,
-        mockGatheringService,
-        mockDeckService,
-        undefined,
-        onEnd,
-      );
-      ui.create();
-      ui.show();
-
-      // simulateReturnToTown()経由でonEndCallbackが呼ばれることを検証
-      ui.simulateReturnToTown();
-
-      expect(onEnd).toHaveBeenCalledTimes(1);
-    });
-
+  describe('セッション状態変更コールバック（Issue #434）', () => {
     it('セッション状態変更コールバックが設定できる', () => {
       const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
       ui.create();
