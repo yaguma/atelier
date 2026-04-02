@@ -6,6 +6,9 @@
  * ゲーム内で使用される全てのボタンの基底となるコンポーネント。
  * プライマリボタン、セカンダリボタン、テキストボタン、アイコンボタンの4種類を提供。
  * rexUI の Label コンポーネントをラップして、統一されたスタイルとインタラクションを実現。
+ *
+ * Issue #450: rexUI LabelはPhaserのcontainer階層とは異なる独自の描画パイプラインを持つため、
+ * BaseComponentのcontainerではなく、label自体の位置・可視性を直接制御する。
  */
 
 import type { RexLabel, RexRoundRectangle } from '@presentation/types/rexui';
@@ -41,8 +44,6 @@ export interface ButtonConfig {
  */
 export class Button extends BaseComponent {
   private config: ButtonConfig;
-  // 【修正内容】: [W-003]への対応 - 型定義の厳密化
-  // 【修正理由】: TypeScriptの型推論を正しく機能させるため
   // TASK-0059: rexUI型定義を適用
   private label: RexLabel | null = null;
   private _enabled: boolean;
@@ -119,8 +120,7 @@ export class Button extends BaseComponent {
     this.normalColor = backgroundColor;
     this.hoverColor = hoverColor;
 
-    // 背景を生成（rexUI Labelの子要素として管理されるため、
-    // シーンのdisplayListからは後で削除する）
+    // 背景を生成
     this.background = this.rexUI.add
       .roundRectangle({
         width: width || 120,
@@ -128,17 +128,11 @@ export class Button extends BaseComponent {
         radius: 8,
       })
       .setFillStyle(backgroundColor);
-    if (this.scene.children?.remove) {
-      this.scene.children.remove(this.background);
-    }
 
-    // テキストを生成（make.textでシーンのdisplayListへの直接追加を回避）
-    const textObject = this.scene.make.text({
-      x: 0,
-      y: 0,
-      text,
-      style: { fontSize: '16px', color: textColor },
-      add: false,
+    // テキストを生成
+    const textObject = this.scene.add.text(0, 0, text, {
+      fontSize: '16px',
+      color: textColor,
     });
 
     // rexUI Labelを生成
@@ -148,13 +142,9 @@ export class Button extends BaseComponent {
       align: 'center',
     });
 
-    // Issue #450: rexUI Labelをコンテナ階層に組み込む
-    // rexUI.add.label()はシーンのdisplayListに自動追加されるため、
-    // コンテナに移動する前にdisplayListから削除する
-    if (this.scene.children?.remove) {
-      this.scene.children.remove(this.label);
-    }
-    this.container.add(this.label);
+    // Issue #450: rexUI LabelはPhaserのcontainer階層に組み込めないため、
+    // labelの位置をコンストラクタで指定されたx,yに直接設定する
+    this.label.setPosition(this.container.x, this.container.y);
 
     // インタラクティブに設定
     this.label.setInteractive();
@@ -269,7 +259,7 @@ export class Button extends BaseComponent {
   }
 
   /**
-   * Issue #450: 可視性設定をオーバーライドし、rexUI Labelの可視性も連動させる
+   * Issue #450: rexUI Labelの可視性を直接制御する
    */
   override setVisible(visible: boolean): this {
     super.setVisible(visible);
@@ -300,15 +290,8 @@ export class Button extends BaseComponent {
 
   /**
    * ボタンを破棄する（BaseComponentの抽象メソッド実装）
-   *
-   * 【修正内容】: [W-002][W-003]への対応
-   * 【修正理由】: メモリリーク防止と型安全性の向上
-   * 【修正前】: labelのみ破棄、nullチェックがif (this.label)
-   * 【修正後】: labelとcontainerを破棄、nullチェックがif (this.label !== null)
-   * 🟡 信頼性レベル: Phaserのベストプラクティスに基づく
    */
   public destroy(): void {
-    // 【修正ポイント1】: W-003対応 - 厳密なnullチェック
     if (this.label !== null) {
       this.label.destroy();
       this.label = null;
@@ -320,8 +303,6 @@ export class Button extends BaseComponent {
       this.background = null;
     }
 
-    // 【修正ポイント2】: W-002対応 - containerの破棄を追加
-    // BaseComponentが保持するcontainerも破棄してメモリリークを防止
     if (this.container) {
       this.container.destroy();
     }

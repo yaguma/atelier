@@ -62,6 +62,7 @@ function createMockRexUI() {
     layout: vi.fn().mockReturnThis(),
     setVisible: vi.fn().mockReturnThis(),
     setAlpha: vi.fn().mockReturnThis(),
+    setPosition: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
   };
 

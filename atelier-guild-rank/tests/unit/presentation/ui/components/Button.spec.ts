@@ -69,6 +69,7 @@ describe('Button', () => {
       on: vi.fn().mockReturnThis(),
       setAlpha: vi.fn().mockReturnThis(),
       setVisible: vi.fn().mockReturnThis(),
+      setPosition: vi.fn().mockReturnThis(),
       layout: vi.fn().mockReturnThis(),
     };
 
@@ -76,7 +77,6 @@ describe('Button', () => {
     mockContainer = {
       setVisible: vi.fn().mockReturnThis(),
       setPosition: vi.fn().mockReturnThis(),
-      add: vi.fn().mockReturnThis(),
       x: 0,
       y: 0,
       visible: true,
@@ -89,14 +89,6 @@ describe('Button', () => {
         text: vi.fn().mockReturnValue({
           setStyle: vi.fn().mockReturnThis(),
         }),
-      },
-      make: {
-        text: vi.fn().mockReturnValue({
-          setStyle: vi.fn().mockReturnThis(),
-        }),
-      },
-      children: {
-        remove: vi.fn(),
       },
       tweens: {
         add: vi.fn().mockReturnThis(),
@@ -143,11 +135,12 @@ describe('Button', () => {
         onClick: mockCallback,
       });
 
-      // テキストが'確定'であることを確認（make.textで生成される）
-      expect(scene.make.text).toHaveBeenCalledWith(
-        expect.objectContaining({
-          text: '確定',
-        }),
+      // テキストが'確定'であることを確認
+      expect(scene.add.text).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        '確定',
+        expect.anything(),
       ); // 🔵
     });
 
