@@ -723,7 +723,6 @@ describe('GatheringService', () => {
       const card = new Card('card_forest_reroll_1', cardMaster);
       const session = gatheringService.startDraftGathering(card);
 
-      const originalOptions = [...session.currentOptions];
       const newOptions = gatheringService.rerollOptions(session.sessionId);
 
       // 新しいオプションが3つ返される
