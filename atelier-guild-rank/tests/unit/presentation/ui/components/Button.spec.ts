@@ -29,6 +29,7 @@ describe('Button', () => {
   let scene: Phaser.Scene;
   let mockCallback: () => void;
   let mockContainer: MockContainer;
+  let mockRect: Record<string, ReturnType<typeof vi.fn>>;
 
   beforeEach(() => {
     mockCallback = vi.fn() as () => void;
@@ -49,9 +50,12 @@ describe('Button', () => {
       name: '',
     };
 
-    const mockRect = {
+    mockRect = {
       setOrigin: vi.fn().mockReturnThis(),
       setFillStyle: vi.fn().mockReturnThis(),
+      setInteractive: vi.fn().mockReturnThis(),
+      on: vi.fn().mockReturnThis(),
+      off: vi.fn().mockReturnThis(),
       destroy: vi.fn(),
     };
 
@@ -114,7 +118,7 @@ describe('Button', () => {
         onClick: mockCallback,
       });
 
-      expect(mockContainer.on).toHaveBeenCalledWith('pointerdown', expect.any(Function));
+      expect(mockRect.on).toHaveBeenCalledWith('pointerdown', expect.any(Function));
     });
   });
 
@@ -162,7 +166,7 @@ describe('Button', () => {
       });
 
       // pointerdownハンドラを取得して呼ぶ
-      const pointerdownCall = mockContainer.on.mock.calls.find((call) => call[0] === 'pointerdown');
+      const pointerdownCall = mockRect.on.mock.calls.find((call) => call[0] === 'pointerdown');
       expect(pointerdownCall).toBeDefined();
       pointerdownCall[1]();
 
@@ -233,7 +237,7 @@ describe('Button', () => {
       });
 
       // pointerdownハンドラを取得して呼ぶ
-      const pointerdownCall = mockContainer.on.mock.calls.find((call) => call[0] === 'pointerdown');
+      const pointerdownCall = mockRect.on.mock.calls.find((call) => call[0] === 'pointerdown');
       pointerdownCall[1]();
 
       expect(mockCallback).not.toHaveBeenCalled();
@@ -280,7 +284,7 @@ describe('Button', () => {
       expect(button.isEnabled()).toBe(true);
 
       // pointerdownハンドラを取得して呼ぶ
-      const pointerdownCall = mockContainer.on.mock.calls.find((call) => call[0] === 'pointerdown');
+      const pointerdownCall = mockRect.on.mock.calls.find((call) => call[0] === 'pointerdown');
       pointerdownCall[1]();
 
       expect(mockCallback).toHaveBeenCalledTimes(1);

@@ -12,7 +12,7 @@
  */
 
 import { THEME } from '@presentation/ui/theme';
-import Phaser from 'phaser';
+import type Phaser from 'phaser';
 import { BaseComponent } from './BaseComponent';
 
 /**
@@ -130,18 +130,16 @@ export class Button extends BaseComponent {
     this.scene.children.remove(this.textObj);
     this.container.add(this.textObj);
 
-    // containerをインタラクティブに設定（背景サイズでヒット領域を定義）
-    this.container.setSize(width, height);
-    this.container.setInteractive(
-      new Phaser.Geom.Rectangle(-width / 2, -height / 2, width, height),
-      Phaser.Geom.Rectangle.Contains,
-    );
+    // Issue #450: 背景Rectangleをインタラクティブに設定
+    // containerのsetInteractiveは親container内でワールド座標変換が正しく行われないため、
+    // 子のRectangleに直接イベントを設定する
+    this.bg.setInteractive();
 
     // ホバーエフェクト・クリックイベント
-    this.container.on('pointerover', () => this.onPointerOver());
-    this.container.on('pointerout', () => this.onPointerOut());
-    this.container.on('pointerdown', () => this.onPointerDown());
-    this.container.on('pointerup', () => this.onPointerUp());
+    this.bg.on('pointerover', () => this.onPointerOver());
+    this.bg.on('pointerout', () => this.onPointerOut());
+    this.bg.on('pointerdown', () => this.onPointerDown());
+    this.bg.on('pointerup', () => this.onPointerUp());
 
     this.updateEnabledState();
   }
@@ -213,10 +211,12 @@ export class Button extends BaseComponent {
   }
 
   public destroy(): void {
-    this.container.off('pointerover');
-    this.container.off('pointerout');
-    this.container.off('pointerdown');
-    this.container.off('pointerup');
+    if (this.bg) {
+      this.bg.off('pointerover');
+      this.bg.off('pointerout');
+      this.bg.off('pointerdown');
+      this.bg.off('pointerup');
+    }
 
     if (this.bg !== null) {
       this.bg.destroy();
