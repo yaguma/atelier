@@ -36,6 +36,8 @@ export interface ButtonConfig {
   enabled?: boolean;
   width?: number;
   height?: number;
+  /** trueの場合、コンテナをシーンのdisplayListに追加しない（親containerに追加する場合） */
+  addToScene?: boolean;
 }
 
 /**
@@ -53,7 +55,7 @@ export class Button extends BaseComponent {
   private hoverColor: number = 0;
 
   constructor(scene: Phaser.Scene, x: number, y: number, config: ButtonConfig) {
-    super(scene, x, y);
+    super(scene, x, y, { addToScene: config.addToScene ?? true });
 
     if (config.text === '' && config.type !== ButtonType.ICON) {
       throw new Error('text is required for non-icon buttons');

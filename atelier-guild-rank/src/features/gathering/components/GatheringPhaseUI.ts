@@ -281,10 +281,10 @@ export class GatheringPhaseUI extends BaseComponent {
         },
         width: 120,
         height: 40,
+        addToScene: false,
       },
     );
-    this.endButton.create();
-
+    // Buttonコンストラクタ内でcreate()が呼ばれるため、ここでは呼ばない
     this.container.add(this.endButton.getContainer());
   }
 
