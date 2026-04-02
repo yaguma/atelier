@@ -68,6 +68,7 @@ describe('Button', () => {
       setInteractive: vi.fn().mockReturnThis(),
       on: vi.fn().mockReturnThis(),
       setAlpha: vi.fn().mockReturnThis(),
+      setVisible: vi.fn().mockReturnThis(),
       layout: vi.fn().mockReturnThis(),
     };
 
@@ -75,6 +76,7 @@ describe('Button', () => {
     mockContainer = {
       setVisible: vi.fn().mockReturnThis(),
       setPosition: vi.fn().mockReturnThis(),
+      add: vi.fn().mockReturnThis(),
       x: 0,
       y: 0,
       visible: true,

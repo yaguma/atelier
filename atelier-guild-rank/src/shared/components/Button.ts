@@ -141,6 +141,10 @@ export class Button extends BaseComponent {
       align: 'center',
     });
 
+    // Issue #450: rexUI LabelをBaseComponentのコンテナに追加し、
+    // コンテナ階層に組み込むことで親コンテナの座標に追従させる
+    this.container.add(this.label);
+
     // インタラクティブに設定
     this.label.setInteractive();
 
@@ -251,6 +255,17 @@ export class Button extends BaseComponent {
 
     const color = enabled ? this.hoverColor : this.normalColor;
     this.background.setFillStyle(color);
+  }
+
+  /**
+   * Issue #450: 可視性設定をオーバーライドし、rexUI Labelの可視性も連動させる
+   */
+  override setVisible(visible: boolean): this {
+    super.setVisible(visible);
+    if (this.label) {
+      this.label.setVisible(visible);
+    }
+    return this;
   }
 
   /**
