@@ -31,6 +31,8 @@ export interface DraftSession {
   currentOptions: MaterialOption[];
   /** 採取完了フラグ */
   isComplete: boolean;
+  /** リロール回数（Issue #445） */
+  rerollCount: number;
 }
 
 /**

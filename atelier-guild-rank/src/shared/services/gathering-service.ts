@@ -25,6 +25,7 @@ import type {
 import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
 import type { IMaterialService } from '@domain/interfaces/material-service.interface';
 import { calculateExtraGatheringApCost } from '@features/gathering/services/extra-gathering-ap-cost';
+import { GATHERING_REROLL } from '@shared/constants';
 import type { IEventBus } from '@shared/services/event-bus';
 import type { MaterialId } from '@shared/types';
 import { ApplicationError, ErrorCodes } from '@shared/types/errors';
@@ -140,6 +141,7 @@ export class GatheringService implements IGatheringService {
       selectedMaterials: [],
       currentOptions,
       isComplete: false,
+      rerollCount: 0,
     };
 
     // 【セッションを保存】: activeSessionsに保存
@@ -316,8 +318,11 @@ export class GatheringService implements IGatheringService {
       totalExtraApCost += calculateExtraGatheringApCost(round, session.presentationCount);
     }
 
+    // Issue #445: リロール分のAPコストを加算
+    const rerollApCost = session.rerollCount * GATHERING_REROLL.AP_COST;
+
     const cost = {
-      actionPointCost: baseCost.actionPointCost + totalExtraApCost,
+      actionPointCost: baseCost.actionPointCost + totalExtraApCost + rerollApCost,
       extraDays: baseCost.extraDays,
     };
 
@@ -399,6 +404,9 @@ export class GatheringService implements IGatheringService {
         'Cannot reroll options: session is complete',
       );
     }
+
+    // リロール回数をインクリメント
+    session.rerollCount++;
 
     // 素材オプションを再生成
     session.currentOptions = this.generateMaterialOptions(session.card);

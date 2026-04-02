@@ -309,8 +309,9 @@ export class GatheringPhaseUI extends BaseComponent {
       if (!updatedSession) return;
 
       this.updateSession(updatedSession);
-    } catch (error) {
-      console.error('Failed to reroll options:', error);
+    } catch (_error) {
+      // リロール失敗時はボタンを無効化
+      this.rerollButton?.setEnabled(false);
     }
   }
 

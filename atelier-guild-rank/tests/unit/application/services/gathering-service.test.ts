@@ -723,6 +723,8 @@ describe('GatheringService', () => {
       const card = new Card('card_forest_reroll_1', cardMaster);
       const session = gatheringService.startDraftGathering(card);
 
+      expect(session.rerollCount).toBe(0);
+
       const newOptions = gatheringService.rerollOptions(session.sessionId);
 
       // 新しいオプションが3つ返される
@@ -730,6 +732,8 @@ describe('GatheringService', () => {
       // セッションのcurrentOptionsが更新されている
       expect(session.currentOptions).toHaveLength(3);
       expect(session.currentOptions).toBe(newOptions);
+      // リロール回数がインクリメントされる
+      expect(session.rerollCount).toBe(1);
     });
 
     it('rerollOptions()でラウンドは進行しない', () => {
@@ -741,6 +745,24 @@ describe('GatheringService', () => {
       gatheringService.rerollOptions(session.sessionId);
 
       expect(session.currentRound).toBe(roundBefore);
+    });
+
+    it('リロール分のAPコストがendGathering時に加算される', () => {
+      const cardMaster = mockGatheringCardMasters.gathering_forest;
+      const card = new Card('card_forest_reroll_cost', cardMaster);
+      const session = gatheringService.startDraftGathering(card);
+
+      // 2回リロール
+      gatheringService.rerollOptions(session.sessionId);
+      gatheringService.rerollOptions(session.sessionId);
+      expect(session.rerollCount).toBe(2);
+
+      // 素材を1つ選択して終了
+      gatheringService.selectMaterial(session.sessionId, 0);
+      const result = gatheringService.endGathering(session.sessionId);
+
+      // baseCost(0) + 選択1個分(+1) + リロール2回分(+2) = 3
+      expect(result.cost.actionPointCost).toBe(3);
     });
 
     it('存在しないセッションIDでrerollOptions()するとエラー', () => {
