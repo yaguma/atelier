@@ -24,6 +24,7 @@ import type {
 import { Button } from '@presentation/ui/components/Button';
 import { Colors, THEME, toColorStr } from '@presentation/ui/theme';
 import { BaseComponent } from '@shared/components';
+import { GATHERING_REROLL } from '@shared/constants';
 import { getSelectionIndexFromKey, isKeyForAction } from '@shared/constants/keybindings';
 import type { MaterialId, Quality } from '@shared/types';
 import type Phaser from 'phaser';
@@ -55,6 +56,10 @@ const GATHERING_LAYOUT = {
   GATHERED_COLUMN_WIDTH: 130,
   /** 獲得素材アイテム開始X（4列を中央揃え: 440 - (4*130)/2 = 180） */
   GATHERED_ITEM_START_X: 180,
+  /** リロールボタンX（素材プール右側） */
+  REROLL_BUTTON_X: 620,
+  /** リロールボタンY（素材プールと同じ高さ帯） */
+  REROLL_BUTTON_Y: 210,
   /** 採取終了ボタンX */
   END_BUTTON_X: 440,
   /** 採取終了ボタンY */
@@ -78,6 +83,7 @@ export class GatheringPhaseUI extends BaseComponent {
   private extraApCostText!: Phaser.GameObjects.Text;
   private titleText!: Phaser.GameObjects.Text;
   private endButton!: Button;
+  private rerollButton!: Button;
 
   private session: DraftSession | null = null;
   private onEndCallback?: () => void;
@@ -140,6 +146,7 @@ export class GatheringPhaseUI extends BaseComponent {
     this.createRemainingCounter();
     this.createExtraApCostDisplay();
     this.createMaterialPool();
+    this.createRerollButton();
     this.createGatheredDisplay();
     this.createEndButton();
     this.setupKeyboardListener();
@@ -267,6 +274,47 @@ export class GatheringPhaseUI extends BaseComponent {
   }
 
   /**
+   * リロール（素材候補更新）ボタンを作成
+   * Issue #445: APを消費して素材候補を再生成する
+   */
+  private createRerollButton(): void {
+    this.rerollButton = new Button(
+      this.scene,
+      GATHERING_LAYOUT.REROLL_BUTTON_X,
+      GATHERING_LAYOUT.REROLL_BUTTON_Y,
+      {
+        text: `🔄 更新 (${GATHERING_REROLL.AP_COST}AP)`,
+        onClick: () => {
+          this.handleReroll();
+        },
+        width: 140,
+        height: 40,
+        addToScene: false,
+      },
+    );
+    this.container.add(this.rerollButton.getContainer());
+  }
+
+  /**
+   * リロール処理
+   * Issue #445: GatheringServiceにリロールを委譲し、セッションを更新する
+   */
+  private handleReroll(): void {
+    if (!this.session) return;
+
+    try {
+      this.gatheringService.rerollOptions(this.session.sessionId);
+
+      const updatedSession = this.gatheringService.getCurrentSession();
+      if (!updatedSession) return;
+
+      this.updateSession(updatedSession);
+    } catch (error) {
+      console.error('Failed to reroll options:', error);
+    }
+  }
+
+  /**
    * 採取終了ボタンを作成
    */
   private createEndButton(): void {
@@ -308,6 +356,11 @@ export class GatheringPhaseUI extends BaseComponent {
 
     // 獲得素材を更新
     this.updateGatheredMaterials(session.selectedMaterials);
+
+    // Issue #445: リロールボタンの有効/無効を更新
+    if (this.rerollButton && !session.isComplete) {
+      this.rerollButton.setEnabled(true);
+    }
 
     // 終了判定
     if (session.isComplete) {
@@ -471,6 +524,10 @@ export class GatheringPhaseUI extends BaseComponent {
     this.materialSlots.forEach((slot) => {
       slot.setInteractive(false);
     });
+    // Issue #445: セッション完了時はリロールも無効化
+    if (this.rerollButton) {
+      this.rerollButton.setEnabled(false);
+    }
   }
 
   /**
@@ -743,6 +800,7 @@ export class GatheringPhaseUI extends BaseComponent {
     for (const slot of this.materialSlots) {
       slot.setVisible(true);
     }
+    if (this.rerollButton) this.rerollButton.setVisible(true);
     if (this.endButton) this.endButton.setVisible(true);
   }
 
@@ -756,6 +814,7 @@ export class GatheringPhaseUI extends BaseComponent {
     for (const slot of this.materialSlots) {
       slot.setVisible(false);
     }
+    if (this.rerollButton) this.rerollButton.setVisible(false);
     if (this.endButton) this.endButton.setVisible(false);
   }
 
@@ -780,6 +839,9 @@ export class GatheringPhaseUI extends BaseComponent {
     this._onSessionStateChangeCallback = null;
     this._pendingLeaveConfirm = null;
     this._pendingLeaveCancel = null;
+    if (this.rerollButton) {
+      this.rerollButton.destroy();
+    }
     for (const slot of this.materialSlots) {
       slot.destroy();
     }
@@ -843,6 +905,10 @@ export class GatheringPhaseUI extends BaseComponent {
     // Enter/Spaceで選択中のスロットを選択
     else if (isKeyForAction(event.key, 'CONFIRM')) {
       this.selectSlotByIndex(this.focusedSlotIndex);
+    }
+    // Rキーでリロール（Issue #445）
+    else if (isKeyForAction(event.key, 'REROLL')) {
+      this.handleReroll();
     }
     // Nキーで採取終了
     else if (isKeyForAction(event.key, 'NEXT_PHASE')) {

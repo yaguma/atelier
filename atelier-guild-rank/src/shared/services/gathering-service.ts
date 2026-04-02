@@ -374,6 +374,39 @@ export class GatheringService implements IGatheringService {
   }
 
   // =============================================================================
+  // リロール（素材候補再生成）
+  // =============================================================================
+
+  /**
+   * 素材候補をリロール（再生成）する
+   * Issue #445: APを消費して現在の素材候補を再生成する
+   *
+   * @param sessionId - セッションID
+   * @returns 再生成された素材オプション
+   */
+  rerollOptions(sessionId: string): MaterialOption[] {
+    const session = this.activeSessions.get(sessionId);
+    if (!session) {
+      throw new ApplicationError(
+        ErrorCodes.SESSION_NOT_FOUND,
+        `Gathering session not found: ${sessionId}`,
+      );
+    }
+
+    if (session.isComplete) {
+      throw new ApplicationError(
+        ErrorCodes.INVALID_SELECTION,
+        'Cannot reroll options: session is complete',
+      );
+    }
+
+    // 素材オプションを再生成
+    session.currentOptions = this.generateMaterialOptions(session.card);
+
+    return session.currentOptions;
+  }
+
+  // =============================================================================
   // コスト計算メソッド
   // =============================================================================
 
