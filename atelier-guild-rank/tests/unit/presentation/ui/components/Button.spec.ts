@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Buttonコンポーネントのテスト
  * TASK-0018 Phase 2 共通UIコンポーネント基盤
