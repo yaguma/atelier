@@ -169,6 +169,20 @@ export class PhaseManager {
         onEnd,
       );
       gatheringUI.create();
+
+      // Issue #445: リロール時のAP即時消費コールバックを設定
+      if (diContainer.has(ServiceKeys.StateManager)) {
+        const stateManager = diContainer.resolve<IStateManager>(ServiceKeys.StateManager);
+        gatheringUI.onReroll((apCost: number): boolean => {
+          const currentAP = stateManager.getState().actionPoints;
+          if (currentAP < apCost) {
+            return false;
+          }
+          stateManager.spendActionPoints(apCost);
+          return true;
+        });
+      }
+
       this.contentContainer.add(gatheringUI.getContainer());
       this.phaseUIs.set(GamePhase.GATHERING, gatheringUI);
     } else {

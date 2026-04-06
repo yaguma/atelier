@@ -56,12 +56,12 @@ const GATHERING_LAYOUT = {
   GATHERED_COLUMN_WIDTH: 130,
   /** 獲得素材アイテム開始X（4列を中央揃え: 440 - (4*130)/2 = 180） */
   GATHERED_ITEM_START_X: 180,
-  /** リロールボタンX（素材プール右側） */
-  REROLL_BUTTON_X: 620,
-  /** リロールボタンY（素材プールと同じ高さ帯） */
-  REROLL_BUTTON_Y: 210,
-  /** 採取終了ボタンX */
-  END_BUTTON_X: 440,
+  /** リロールボタンX（採取終了ボタンの左側） */
+  REROLL_BUTTON_X: 360,
+  /** リロールボタンY */
+  REROLL_BUTTON_Y: 510,
+  /** 採取終了ボタンX（右側に配置） */
+  END_BUTTON_X: 520,
   /** 採取終了ボタンY */
   END_BUTTON_Y: 510,
 } as const;
@@ -87,6 +87,9 @@ export class GatheringPhaseUI extends BaseComponent {
 
   private session: DraftSession | null = null;
   private onEndCallback?: () => void;
+
+  /** Issue #445: リロール時のAP消費コールバック（成功時true、AP不足時false） */
+  private _onRerollCallback: ((apCost: number) => boolean) | null = null;
 
   /** Issue #434: セッション状態変更コールバック（タブ無効化連携用） */
   private _onSessionStateChangeCallback: ((hasActiveSession: boolean) => void) | null = null;
@@ -297,10 +300,20 @@ export class GatheringPhaseUI extends BaseComponent {
 
   /**
    * リロール処理
-   * Issue #445: GatheringServiceにリロールを委譲し、セッションを更新する
+   * Issue #445: AP消費コールバックを呼び、成功時にGatheringServiceでリロールを実行する
    */
   private handleReroll(): void {
     if (!this.session) return;
+
+    // AP消費コールバックがある場合、AP消費を試みる
+    if (this._onRerollCallback) {
+      const success = this._onRerollCallback(GATHERING_REROLL.AP_COST);
+      if (!success) {
+        // AP不足: リロールボタンを無効化
+        this.rerollButton?.setEnabled(false);
+        return;
+      }
+    }
 
     try {
       this.gatheringService.rerollOptions(this.session.sessionId);
@@ -629,6 +642,16 @@ export class GatheringPhaseUI extends BaseComponent {
   }
 
   /**
+   * リロール時のAP消費コールバックを設定する（Issue #445）
+   * コールバックはAPコストを引数に受け取り、消費成功時にtrue、AP不足時にfalseを返す。
+   *
+   * @param callback - AP消費コールバック
+   */
+  onReroll(callback: (apCost: number) => boolean): void {
+    this._onRerollCallback = callback;
+  }
+
+  /**
    * セッション状態変更コールバックを設定する（Issue #434）
    * 採取セッション開始/終了時にPhaseTabUIのタブ無効化を連携するために使用
    *
@@ -837,6 +860,7 @@ export class GatheringPhaseUI extends BaseComponent {
       this._locationSelectUI.destroy();
       this._locationSelectUI = null;
     }
+    this._onRerollCallback = null;
     this._onSessionStateChangeCallback = null;
     this._pendingLeaveConfirm = null;
     this._pendingLeaveCancel = null;

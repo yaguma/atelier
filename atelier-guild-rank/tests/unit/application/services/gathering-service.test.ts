@@ -747,7 +747,7 @@ describe('GatheringService', () => {
       expect(session.currentRound).toBe(roundBefore);
     });
 
-    it('リロール分のAPコストがendGathering時に加算される', () => {
+    it('リロール分のAPコストはendGatheringに含まれない（即時消費のため）', () => {
       const cardMaster = mockGatheringCardMasters.gathering_forest;
       const card = new Card('card_forest_reroll_cost', cardMaster);
       const session = gatheringService.startDraftGathering(card);
@@ -761,8 +761,8 @@ describe('GatheringService', () => {
       gatheringService.selectMaterial(session.sessionId, 0);
       const result = gatheringService.endGathering(session.sessionId);
 
-      // baseCost(0) + 選択1個分(+1) + リロール2回分(+2) = 3
-      expect(result.cost.actionPointCost).toBe(3);
+      // baseCost(0) + 選択1個分(+1) = 1（リロール分はPhaseManagerで即時消費）
+      expect(result.cost.actionPointCost).toBe(1);
     });
 
     it('存在しないセッションIDでrerollOptions()するとエラー', () => {

@@ -25,7 +25,6 @@ import type {
 import type { IMasterDataRepository } from '@domain/interfaces/master-data-repository.interface';
 import type { IMaterialService } from '@domain/interfaces/material-service.interface';
 import { calculateExtraGatheringApCost } from '@features/gathering/services/extra-gathering-ap-cost';
-import { GATHERING_REROLL } from '@shared/constants';
 import type { IEventBus } from '@shared/services/event-bus';
 import type { MaterialId } from '@shared/types';
 import { ApplicationError, ErrorCodes } from '@shared/types/errors';
@@ -318,11 +317,11 @@ export class GatheringService implements IGatheringService {
       totalExtraApCost += calculateExtraGatheringApCost(round, session.presentationCount);
     }
 
-    // Issue #445: リロール分のAPコストを加算
-    const rerollApCost = session.rerollCount * GATHERING_REROLL.AP_COST;
+    // Issue #445: リロール分のAPコストはPhaseManagerで即時消費されるため、
+    // endGatheringでは加算しない（二重計上防止）
 
     const cost = {
-      actionPointCost: baseCost.actionPointCost + totalExtraApCost + rerollApCost,
+      actionPointCost: baseCost.actionPointCost + totalExtraApCost,
       extraDays: baseCost.extraDays,
     };
 
