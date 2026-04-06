@@ -164,6 +164,7 @@ function createMockGatheringService(): IGatheringService {
     selectMaterial: vi.fn(),
     endGathering: vi.fn(),
     getCurrentSession: vi.fn().mockReturnValue(null),
+    rerollOptions: vi.fn().mockReturnValue([]),
   } as unknown as IGatheringService;
 }
 
@@ -646,6 +647,32 @@ describe('GatheringPhaseUI 変更（TASK-0114）', () => {
     });
 
     it('セッション進行中にdestroy()してもエラーにならない', () => {
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
+      ui.create();
+      ui.show();
+
+      ui.handleLocationSelected({
+        cardId: toCardId('gathering-forest'),
+        locationName: '近くの森',
+        movementAPCost: 1,
+      });
+
+      expect(() => ui.destroy()).not.toThrow();
+    });
+  });
+
+  // ===========================================================================
+  // テストケース: リロール機能（Issue #445）
+  // ===========================================================================
+
+  describe('リロール機能（Issue #445）', () => {
+    it('create()でリロールボタンが作成される（エラーなし）', () => {
+      const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
+
+      expect(() => ui.create()).not.toThrow();
+    });
+
+    it('リロールボタンを含むUIがdestroy()で正常に破棄される', () => {
       const ui = new GatheringPhaseUI(mockScene, mockGatheringService, mockDeckService);
       ui.create();
       ui.show();

@@ -31,6 +31,8 @@ export interface DraftSession {
   currentOptions: MaterialOption[];
   /** 採取完了フラグ */
   isComplete: boolean;
+  /** リロール回数（Issue #445） */
+  rerollCount: number;
 }
 
 /**
@@ -122,4 +124,12 @@ export interface IGatheringService {
    * @returns 採取コスト結果
    */
   calculateGatheringCost(baseCost: number, selectedCount: number): GatheringCostResult;
+
+  /**
+   * 素材候補をリロール（再生成）する
+   * Issue #445: APを消費して現在の素材候補を再生成する
+   * @param sessionId - セッションID
+   * @returns 再生成された素材オプション
+   */
+  rerollOptions(sessionId: string): MaterialOption[];
 }

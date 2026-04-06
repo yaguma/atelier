@@ -169,6 +169,36 @@ export class PhaseManager {
         onEnd,
       );
       gatheringUI.create();
+
+      // Issue #445: リロール時のAP即時消費コールバックを設定
+      // AP超過時は日数消費で対応（採取の追加ラウンドと同じパターン）
+      if (diContainer.has(ServiceKeys.StateManager)) {
+        const stateManager = diContainer.resolve<IStateManager>(ServiceKeys.StateManager);
+        gatheringUI.onReroll((apCost: number): boolean => {
+          const currentAP = stateManager.getState().actionPoints;
+          const overflowResult = calculateOverflow({ currentAP, consumeAP: apCost });
+
+          if (overflowResult.hasOverflow) {
+            // AP超過: 日数消費を伴うAP処理
+            stateManager.updateState({ actionPoints: 0 });
+            if (diContainer.has(ServiceKeys.GameFlowManager)) {
+              const gameFlowManager = diContainer.resolve<IGameFlowManager>(
+                ServiceKeys.GameFlowManager,
+              );
+              gameFlowManager.processAPOverflow(overflowResult);
+            }
+          } else {
+            // AP超過なし: 通常のAP消費
+            stateManager.spendActionPoints(apCost);
+          }
+
+          // ヘッダーのAP表示を即時更新
+          const mainScene = this.scene as { updateHeader?: () => void };
+          mainScene.updateHeader?.();
+          return true;
+        });
+      }
+
       this.contentContainer.add(gatheringUI.getContainer());
       this.phaseUIs.set(GamePhase.GATHERING, gatheringUI);
     } else {

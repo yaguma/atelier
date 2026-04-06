@@ -24,6 +24,7 @@ import type {
 import { Button } from '@presentation/ui/components/Button';
 import { Colors, THEME, toColorStr } from '@presentation/ui/theme';
 import { BaseComponent } from '@shared/components';
+import { GATHERING_REROLL } from '@shared/constants';
 import { getSelectionIndexFromKey, isKeyForAction } from '@shared/constants/keybindings';
 import type { MaterialId, Quality } from '@shared/types';
 import type Phaser from 'phaser';
@@ -55,8 +56,12 @@ const GATHERING_LAYOUT = {
   GATHERED_COLUMN_WIDTH: 130,
   /** 獲得素材アイテム開始X（4列を中央揃え: 440 - (4*130)/2 = 180） */
   GATHERED_ITEM_START_X: 180,
-  /** 採取終了ボタンX */
-  END_BUTTON_X: 440,
+  /** リロールボタンX（採取終了ボタンの左側） */
+  REROLL_BUTTON_X: 360,
+  /** リロールボタンY */
+  REROLL_BUTTON_Y: 510,
+  /** 採取終了ボタンX（右側に配置） */
+  END_BUTTON_X: 520,
   /** 採取終了ボタンY */
   END_BUTTON_Y: 510,
 } as const;
@@ -78,9 +83,13 @@ export class GatheringPhaseUI extends BaseComponent {
   private extraApCostText!: Phaser.GameObjects.Text;
   private titleText!: Phaser.GameObjects.Text;
   private endButton!: Button;
+  private rerollButton!: Button;
 
   private session: DraftSession | null = null;
   private onEndCallback?: () => void;
+
+  /** Issue #445: リロール時のAP消費コールバック（成功時true、AP不足時false） */
+  private _onRerollCallback: ((apCost: number) => boolean) | null = null;
 
   /** Issue #434: セッション状態変更コールバック（タブ無効化連携用） */
   private _onSessionStateChangeCallback: ((hasActiveSession: boolean) => void) | null = null;
@@ -140,6 +149,7 @@ export class GatheringPhaseUI extends BaseComponent {
     this.createRemainingCounter();
     this.createExtraApCostDisplay();
     this.createMaterialPool();
+    this.createRerollButton();
     this.createGatheredDisplay();
     this.createEndButton();
     this.setupKeyboardListener();
@@ -267,6 +277,58 @@ export class GatheringPhaseUI extends BaseComponent {
   }
 
   /**
+   * リロール（素材候補更新）ボタンを作成
+   * Issue #445: APを消費して素材候補を再生成する
+   */
+  private createRerollButton(): void {
+    this.rerollButton = new Button(
+      this.scene,
+      GATHERING_LAYOUT.REROLL_BUTTON_X,
+      GATHERING_LAYOUT.REROLL_BUTTON_Y,
+      {
+        text: `🔄 更新 (${GATHERING_REROLL.AP_COST}AP)`,
+        onClick: () => {
+          this.handleReroll();
+        },
+        width: 140,
+        height: 40,
+        addToScene: false,
+      },
+    );
+    this.container.add(this.rerollButton.getContainer());
+  }
+
+  /**
+   * リロール処理
+   * Issue #445: AP消費コールバックを呼び、成功時にGatheringServiceでリロールを実行する
+   */
+  private handleReroll(): void {
+    if (!this.session) return;
+
+    // AP消費コールバックがある場合、AP消費を試みる
+    if (this._onRerollCallback) {
+      const success = this._onRerollCallback(GATHERING_REROLL.AP_COST);
+      if (!success) {
+        // AP不足: リロールボタンを無効化
+        this.rerollButton?.setEnabled(false);
+        return;
+      }
+    }
+
+    try {
+      this.gatheringService.rerollOptions(this.session.sessionId);
+
+      const updatedSession = this.gatheringService.getCurrentSession();
+      if (!updatedSession) return;
+
+      this.updateSession(updatedSession);
+    } catch (_error) {
+      // リロール失敗時はボタンを無効化
+      this.rerollButton?.setEnabled(false);
+    }
+  }
+
+  /**
    * 採取終了ボタンを作成
    */
   private createEndButton(): void {
@@ -308,6 +370,11 @@ export class GatheringPhaseUI extends BaseComponent {
 
     // 獲得素材を更新
     this.updateGatheredMaterials(session.selectedMaterials);
+
+    // Issue #445: リロールボタンの有効/無効を更新
+    if (this.rerollButton && !session.isComplete) {
+      this.rerollButton.setEnabled(true);
+    }
 
     // 終了判定
     if (session.isComplete) {
@@ -471,6 +538,10 @@ export class GatheringPhaseUI extends BaseComponent {
     this.materialSlots.forEach((slot) => {
       slot.setInteractive(false);
     });
+    // Issue #445: セッション完了時はリロールも無効化
+    if (this.rerollButton) {
+      this.rerollButton.setEnabled(false);
+    }
   }
 
   /**
@@ -568,6 +639,16 @@ export class GatheringPhaseUI extends BaseComponent {
    */
   hasActiveSession(): boolean {
     return this.session !== null && !this.session.isComplete;
+  }
+
+  /**
+   * リロール時のAP消費コールバックを設定する（Issue #445）
+   * コールバックはAPコストを引数に受け取り、消費成功時にtrue、AP不足時にfalseを返す。
+   *
+   * @param callback - AP消費コールバック
+   */
+  onReroll(callback: (apCost: number) => boolean): void {
+    this._onRerollCallback = callback;
   }
 
   /**
@@ -743,6 +824,7 @@ export class GatheringPhaseUI extends BaseComponent {
     for (const slot of this.materialSlots) {
       slot.setVisible(true);
     }
+    if (this.rerollButton) this.rerollButton.setVisible(true);
     if (this.endButton) this.endButton.setVisible(true);
   }
 
@@ -756,6 +838,7 @@ export class GatheringPhaseUI extends BaseComponent {
     for (const slot of this.materialSlots) {
       slot.setVisible(false);
     }
+    if (this.rerollButton) this.rerollButton.setVisible(false);
     if (this.endButton) this.endButton.setVisible(false);
   }
 
@@ -777,9 +860,13 @@ export class GatheringPhaseUI extends BaseComponent {
       this._locationSelectUI.destroy();
       this._locationSelectUI = null;
     }
+    this._onRerollCallback = null;
     this._onSessionStateChangeCallback = null;
     this._pendingLeaveConfirm = null;
     this._pendingLeaveCancel = null;
+    if (this.rerollButton) {
+      this.rerollButton.destroy();
+    }
     for (const slot of this.materialSlots) {
       slot.destroy();
     }
@@ -843,6 +930,10 @@ export class GatheringPhaseUI extends BaseComponent {
     // Enter/Spaceで選択中のスロットを選択
     else if (isKeyForAction(event.key, 'CONFIRM')) {
       this.selectSlotByIndex(this.focusedSlotIndex);
+    }
+    // Rキーでリロール（Issue #445）
+    else if (isKeyForAction(event.key, 'REROLL')) {
+      this.handleReroll();
     }
     // Nキーで採取終了
     else if (isKeyForAction(event.key, 'NEXT_PHASE')) {

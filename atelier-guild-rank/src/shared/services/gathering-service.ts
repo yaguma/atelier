@@ -140,6 +140,7 @@ export class GatheringService implements IGatheringService {
       selectedMaterials: [],
       currentOptions,
       isComplete: false,
+      rerollCount: 0,
     };
 
     // 【セッションを保存】: activeSessionsに保存
@@ -316,6 +317,9 @@ export class GatheringService implements IGatheringService {
       totalExtraApCost += calculateExtraGatheringApCost(round, session.presentationCount);
     }
 
+    // Issue #445: リロール分のAPコストはPhaseManagerで即時消費されるため、
+    // endGatheringでは加算しない（二重計上防止）
+
     const cost = {
       actionPointCost: baseCost.actionPointCost + totalExtraApCost,
       extraDays: baseCost.extraDays,
@@ -371,6 +375,42 @@ export class GatheringService implements IGatheringService {
     // 【カードタイプ判定】: 採取地カードかどうかを判定
     // 🔵 信頼性レベル: note.md・設計文書に明記
     return card.isGatheringCard();
+  }
+
+  // =============================================================================
+  // リロール（素材候補再生成）
+  // =============================================================================
+
+  /**
+   * 素材候補をリロール（再生成）する
+   * Issue #445: APを消費して現在の素材候補を再生成する
+   *
+   * @param sessionId - セッションID
+   * @returns 再生成された素材オプション
+   */
+  rerollOptions(sessionId: string): MaterialOption[] {
+    const session = this.activeSessions.get(sessionId);
+    if (!session) {
+      throw new ApplicationError(
+        ErrorCodes.SESSION_NOT_FOUND,
+        `Gathering session not found: ${sessionId}`,
+      );
+    }
+
+    if (session.isComplete) {
+      throw new ApplicationError(
+        ErrorCodes.INVALID_SELECTION,
+        'Cannot reroll options: session is complete',
+      );
+    }
+
+    // リロール回数をインクリメント
+    session.rerollCount++;
+
+    // 素材オプションを再生成
+    session.currentOptions = this.generateMaterialOptions(session.card);
+
+    return session.currentOptions;
   }
 
   // =============================================================================

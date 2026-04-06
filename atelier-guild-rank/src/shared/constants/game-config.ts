@@ -161,6 +161,17 @@ export const EXTRA_GATHERING_AP_COST = {
 } as const;
 
 /**
+ * 素材候補リロールコスト
+ *
+ * 採取フェーズで素材候補を再生成する際のAPコスト。
+ * Issue #445: 素材候補リロール機能
+ */
+export const GATHERING_REROLL = {
+  /** リロール1回あたりのAPコスト */
+  AP_COST: 1,
+} as const;
+
+/**
  * 品質変動パラメータ
  *
  * 採取時の素材品質が基本品質から上下する確率閾値。
