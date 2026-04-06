@@ -179,6 +179,9 @@ export class PhaseManager {
             return false;
           }
           stateManager.spendActionPoints(apCost);
+          // ヘッダーのAP表示を即時更新
+          const mainScene = this.scene as { updateHeader?: () => void };
+          mainScene.updateHeader?.();
           return true;
         });
       }
