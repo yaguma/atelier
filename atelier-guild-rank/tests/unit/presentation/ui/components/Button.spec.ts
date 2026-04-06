@@ -229,7 +229,7 @@ describe('Button', () => {
 
   describe('T-0018-BTN-09: 無効化されたボタンのクリック', () => {
     test('無効化時はクリックが動作しない', () => {
-      const button = new Button(scene, 100, 200, {
+      new Button(scene, 100, 200, {
         text: '確定',
         onClick: mockCallback,
         enabled: false,
