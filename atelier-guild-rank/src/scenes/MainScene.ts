@@ -127,6 +127,20 @@ export class MainScene extends Phaser.Scene {
     // Issue #115: EventBusをシーンデータに設定
     this.data.set('eventBus', this.eventBus);
 
+    // Issue #453: DeliveryPhaseUI が scene.data 経由でサービスを取得するため登録
+    const diContainer = Container.getInstance();
+    this.data.set('questService', this.questService);
+    const tryResolve = <T>(key: string): T | null => {
+      try {
+        return diContainer.resolve<T>(key);
+      } catch {
+        return null;
+      }
+    };
+    this.data.set('inventoryService', tryResolve(ServiceKeys.InventoryService));
+    this.data.set('contributionCalculator', tryResolve(ServiceKeys.ContributionCalculator));
+    this.data.set('deckService', tryResolve(ServiceKeys.DeckService));
+
     // コンテンツコンテナを先に作成（PhaseManagerのコンストラクタで必要）
     this._contentContainer = this.add.container(LAYOUT.SIDEBAR_WIDTH, LAYOUT.HEADER_HEIGHT);
     this._contentContainer.name = 'MainScene.contentContainer';

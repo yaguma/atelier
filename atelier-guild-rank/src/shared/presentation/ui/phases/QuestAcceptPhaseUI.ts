@@ -807,13 +807,14 @@ export class QuestAcceptPhaseUI extends BaseComponent {
     this.currentModal = new QuestDetailModal(this.scene, {
       quest: questWithRemainingDays,
       onAccept: () => {
-        // 受注済みの場合は受注ボタンを押しても閉じるだけ
+        // 受注済みの場合は受注ボタンを押しても閉じるだけ（viewOnlyで非表示）
         this.closeQuestDetailModal();
       },
       onClose: () => {
         this.closeQuestDetailModal();
       },
       itemNameResolver: this.itemNameResolver,
+      viewOnly: true,
     });
     this.currentModal.create();
   }
