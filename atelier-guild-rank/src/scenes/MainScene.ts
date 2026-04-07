@@ -128,12 +128,14 @@ export class MainScene extends Phaser.Scene {
     this.data.set('eventBus', this.eventBus);
 
     // Issue #453: DeliveryPhaseUI が scene.data 経由でサービスを取得するため登録
+    // テスト環境では一部サービスが DI 未登録のため、resolve 失敗時は null を許容する
     const diContainer = Container.getInstance();
     this.data.set('questService', this.questService);
     const tryResolve = <T>(key: string): T | null => {
       try {
         return diContainer.resolve<T>(key);
-      } catch {
+      } catch (e) {
+        console.warn(`[MainScene] Failed to resolve ${key} for scene.data:`, e);
         return null;
       }
     };
