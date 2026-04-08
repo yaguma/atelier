@@ -45,9 +45,9 @@ const UI_LAYOUT = {
   QUEST_LIST_Y: 120,
   ITEM_SELECTOR_Y: 390,
   PREVIEW_Y: 300,
-  /** 納品ボタンX座標 */
-  BUTTON_X: 250,
-  BUTTON_Y: 350,
+  // Issue #453: プレビュー領域（X=20〜480, Y=300〜380 付近）と重ならないよう右側に配置
+  BUTTON_X: 620,
+  BUTTON_Y: 340,
   RESULT_PANEL_X: 400,
   RESULT_PANEL_Y: 250,
 } as const;
