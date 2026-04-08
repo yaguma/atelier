@@ -215,7 +215,12 @@ export class QuestDeliveryList {
    * @param quest - クリックされた依頼
    */
   private onQuestClick(quest: Quest): void {
-    this.selectedQuestId = quest.id;
+    // Issue #453: 同じ依頼を再クリックしたら選択解除する
+    if (this.selectedQuestId === quest.id) {
+      this.selectedQuestId = null;
+    } else {
+      this.selectedQuestId = quest.id;
+    }
     this.callbacks.onQuestSelect(quest);
   }
 

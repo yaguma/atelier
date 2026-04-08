@@ -202,7 +202,12 @@ export class ItemSelector {
    * @param item - クリックされたアイテム
    */
   private onItemClick(item: ItemInstance): void {
-    this.selectedItemId = item.instanceId;
+    // Issue #453: 同じアイテムを再クリックしたら選択解除する
+    if (this.selectedItemId === item.instanceId) {
+      this.selectedItemId = null;
+    } else {
+      this.selectedItemId = item.instanceId;
+    }
     this.callbacks.onItemSelect(item);
   }
 

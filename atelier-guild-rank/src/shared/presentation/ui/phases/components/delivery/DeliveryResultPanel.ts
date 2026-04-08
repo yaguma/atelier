@@ -34,18 +34,18 @@ const UI_TEXT = {
 const UI_STYLES = {
   TITLE: {
     fontSize: `${THEME.sizes.large}px`,
-    color: THEME.colors.textOnPrimary,
+    color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
     fontFamily: THEME.fonts.primary,
     fontStyle: 'bold',
   },
   CONTENT: {
     fontSize: `${THEME.sizes.medium}px`,
-    color: THEME.colors.textOnPrimary,
+    color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
     fontFamily: THEME.fonts.primary,
   },
   BUTTON: {
     fontSize: `${THEME.sizes.small}px`,
-    color: THEME.colors.textOnPrimary,
+    color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
     fontFamily: THEME.fonts.primary,
   },
 } as const;

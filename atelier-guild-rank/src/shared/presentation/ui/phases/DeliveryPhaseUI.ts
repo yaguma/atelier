@@ -40,7 +40,7 @@ const UI_LAYOUT = {
   TITLE_Y: 20,
   /** サブコンポーネントの左余白 */
   CONTENT_PADDING_X: 20,
-  QUEST_LIST_Y: 60,
+  QUEST_LIST_Y: 80,
   ITEM_SELECTOR_Y: 390,
   PREVIEW_Y: 300,
   /** 納品ボタンX座標 */
