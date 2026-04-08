@@ -381,7 +381,10 @@ export class DeliveryPhaseUI extends BaseComponent {
     this.refreshData();
   }
 
-  private refreshData(): void {
+  /**
+   * Issue #453: 納品フェーズ遷移時に外部から呼び出し、最新の受注依頼・所持アイテムを再読込する
+   */
+  public refreshData(): void {
     if (this.questService && this.questList)
       this.questList.setQuests(this.questService.getAcceptedQuests());
     if (this.inventoryService && this.itemSelector)

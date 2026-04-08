@@ -322,6 +322,13 @@ export class PhaseManager {
     if (phase === GamePhase.ALCHEMY) {
       this.initializeAlchemyPhase();
     }
+    // Issue #453: 納品フェーズ遷移時に受注依頼・所持アイテムを最新化する
+    if (phase === GamePhase.DELIVERY) {
+      const deliveryUI = this.phaseUIs.get(GamePhase.DELIVERY);
+      if (deliveryUI && 'refreshData' in deliveryUI) {
+        (deliveryUI as unknown as { refreshData: () => void }).refreshData();
+      }
+    }
 
     this._currentVisiblePhase = phase;
   }
