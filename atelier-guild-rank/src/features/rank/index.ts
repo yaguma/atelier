@@ -70,7 +70,16 @@ export type {
   DisplayRule,
   PromotionDialogConfig,
   RankBadgeConfig,
+  RankDetailSlidePanelConfig,
+  RankDetailUIConfig,
   RankProgressBarConfig,
   SpecialRuleDisplayConfig,
 } from './components';
-export { PromotionDialog, RankBadge, RankProgressBar, SpecialRuleDisplay } from './components';
+export {
+  PromotionDialog,
+  RankBadge,
+  RankDetailSlidePanel,
+  RankDetailUI,
+  RankProgressBar,
+  SpecialRuleDisplay,
+} from './components';
