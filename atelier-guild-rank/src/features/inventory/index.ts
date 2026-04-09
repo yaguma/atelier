@@ -78,7 +78,13 @@ export {
 
 export type {
   ItemInventoryUIConfig,
+  MaterialDetailSlidePanelConfig,
   MaterialDetailUIConfig,
   MaterialListUIConfig,
 } from './components';
-export { ItemInventoryUI, MaterialDetailUI, MaterialListUI } from './components';
+export {
+  ItemInventoryUI,
+  MaterialDetailSlidePanel,
+  MaterialDetailUI,
+  MaterialListUI,
+} from './components';

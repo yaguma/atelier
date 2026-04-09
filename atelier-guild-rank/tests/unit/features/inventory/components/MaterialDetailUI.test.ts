@@ -1,6 +1,6 @@
 /**
  * MaterialDetailUI コンポーネントテスト
- * TASK-0086: features/inventory/components作成
+ * Issue #473: MaterialDetailUI を SlidePanel ベースに刷新
  */
 
 import type { MaterialInstance } from '@domain/entities/MaterialInstance';
@@ -41,17 +41,27 @@ function createMockScene(): Phaser.Scene {
   const mockContainer = {
     setPosition: vi.fn().mockReturnThis(),
     setVisible: vi.fn().mockReturnThis(),
+    setAlpha: vi.fn().mockReturnThis(),
+    setDepth: vi.fn().mockReturnThis(),
     add: vi.fn().mockReturnThis(),
+    remove: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
-    x: 0,
-    y: 0,
+    x: 640,
+    y: 360,
   };
 
   const mockText = {
     setOrigin: vi.fn().mockReturnThis(),
     setWordWrapWidth: vi.fn().mockReturnThis(),
     setText: vi.fn().mockReturnThis(),
+    setInteractive: vi.fn().mockReturnThis(),
+    on: vi.fn().mockReturnThis(),
+    off: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
+  };
+
+  const mockTween = {
+    stop: vi.fn(),
   };
 
   const scene = {
@@ -62,6 +72,7 @@ function createMockScene(): Phaser.Scene {
         setStrokeStyle: vi.fn().mockReturnThis(),
         setFillStyle: vi.fn().mockReturnThis(),
         setInteractive: vi.fn().mockReturnThis(),
+        setDepth: vi.fn().mockReturnThis(),
         on: vi.fn().mockReturnThis(),
         off: vi.fn().mockReturnThis(),
         destroy: vi.fn(),
@@ -76,6 +87,19 @@ function createMockScene(): Phaser.Scene {
     },
     children: {
       remove: vi.fn(),
+    },
+    tweens: {
+      add: vi.fn().mockReturnValue(mockTween),
+      killTweensOf: vi.fn(),
+    },
+    input: {
+      keyboard: {
+        addKey: vi.fn().mockReturnValue({
+          on: vi.fn().mockReturnThis(),
+          off: vi.fn().mockReturnThis(),
+        }),
+        removeKey: vi.fn(),
+      },
     },
     rexUI: undefined,
   } as unknown as Phaser.Scene;
@@ -99,34 +123,47 @@ describe('MaterialDetailUI', () => {
     it('正しい設定でインスタンスを生成できる', () => {
       const config: MaterialDetailUIConfig = {
         material: createMockMaterial('inst-001'),
+        onClose: vi.fn(),
       };
 
-      const ui = new MaterialDetailUI(mockScene, 0, 0, config);
+      const ui = new MaterialDetailUI(mockScene, config);
       expect(ui).toBeDefined();
     });
 
     it('configがnullの場合エラーを投げる', () => {
       expect(
-        () => new MaterialDetailUI(mockScene, 0, 0, null as unknown as MaterialDetailUIConfig),
+        () => new MaterialDetailUI(mockScene, null as unknown as MaterialDetailUIConfig),
       ).toThrow('config is required');
     });
   });
 
   describe('create', () => {
-    it('create()で素材情報が表示される', () => {
+    it('create()でオーバーレイが作成される', () => {
       const config: MaterialDetailUIConfig = {
-        material: createMockMaterial('inst-001', { name: '火の結晶' }),
+        material: createMockMaterial('inst-001'),
+        onClose: vi.fn(),
       };
 
-      const ui = new MaterialDetailUI(mockScene, 0, 0, config);
+      const ui = new MaterialDetailUI(mockScene, config);
       ui.create();
 
-      const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
+      // オーバーレイ用の rectangle が作成される
+      expect(mockScene.add.rectangle).toHaveBeenCalled();
+    });
+
+    it('create()で素材名が表示される', () => {
+      const config: MaterialDetailUIConfig = {
+        material: createMockMaterial('inst-001', { name: '火の結晶' }),
+        onClose: vi.fn(),
+      };
+
+      const ui = new MaterialDetailUI(mockScene, config);
+      ui.create();
+
+      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
       const nameCall = textCalls.find(
         (call: unknown[]) =>
-          call[0] &&
-          typeof (call[0] as Record<string, unknown>).text === 'string' &&
-          ((call[0] as Record<string, unknown>).text as string).includes('火の結晶'),
+          typeof call[2] === 'string' && (call[2] as string).includes('火の結晶'),
       );
       expect(nameCall).toBeDefined();
     });
@@ -134,17 +171,15 @@ describe('MaterialDetailUI', () => {
     it('品質情報が表示される', () => {
       const config: MaterialDetailUIConfig = {
         material: createMockMaterial('inst-001', { quality: 'A' }),
+        onClose: vi.fn(),
       };
 
-      const ui = new MaterialDetailUI(mockScene, 0, 0, config);
+      const ui = new MaterialDetailUI(mockScene, config);
       ui.create();
 
-      const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
+      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
       const qualityCall = textCalls.find(
-        (call: unknown[]) =>
-          call[0] &&
-          typeof (call[0] as Record<string, unknown>).text === 'string' &&
-          ((call[0] as Record<string, unknown>).text as string).includes('A'),
+        (call: unknown[]) => typeof call[2] === 'string' && (call[2] as string).includes('A'),
       );
       expect(qualityCall).toBeDefined();
     });
@@ -152,19 +187,58 @@ describe('MaterialDetailUI', () => {
     it('属性情報が表示される', () => {
       const config: MaterialDetailUIConfig = {
         material: createMockMaterial('inst-001', { attributes: ['FIRE', 'WATER'] }),
+        onClose: vi.fn(),
       };
 
-      const ui = new MaterialDetailUI(mockScene, 0, 0, config);
+      const ui = new MaterialDetailUI(mockScene, config);
       ui.create();
 
-      const textCalls = (mockScene.make.text as ReturnType<typeof vi.fn>).mock.calls;
+      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
       const attrCall = textCalls.find(
-        (call: unknown[]) =>
-          call[0] &&
-          typeof (call[0] as Record<string, unknown>).text === 'string' &&
-          ((call[0] as Record<string, unknown>).text as string).includes('FIRE'),
+        (call: unknown[]) => typeof call[2] === 'string' && (call[2] as string).includes('FIRE'),
       );
       expect(attrCall).toBeDefined();
+    });
+
+    it('ESCキーリスナーが登録される', () => {
+      const config: MaterialDetailUIConfig = {
+        material: createMockMaterial('inst-001'),
+        onClose: vi.fn(),
+      };
+
+      const ui = new MaterialDetailUI(mockScene, config);
+      ui.create();
+
+      expect(mockScene.input.keyboard!.addKey).toHaveBeenCalledWith('ESC');
+    });
+
+    it('閉じるボタンが作成される', () => {
+      const config: MaterialDetailUIConfig = {
+        material: createMockMaterial('inst-001'),
+        onClose: vi.fn(),
+      };
+
+      const ui = new MaterialDetailUI(mockScene, config);
+      ui.create();
+
+      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+      const closeCall = textCalls.find(
+        (call: unknown[]) => typeof call[2] === 'string' && (call[2] as string).includes('閉じる'),
+      );
+      expect(closeCall).toBeDefined();
+    });
+
+    it('開くアニメーションが再生される', () => {
+      const config: MaterialDetailUIConfig = {
+        material: createMockMaterial('inst-001'),
+        onClose: vi.fn(),
+      };
+
+      const ui = new MaterialDetailUI(mockScene, config);
+      ui.create();
+
+      // tweens.add がオーバーレイのフェードインで呼ばれる
+      expect(mockScene.tweens.add).toHaveBeenCalled();
     });
   });
 
@@ -172,16 +246,92 @@ describe('MaterialDetailUI', () => {
     it('表示する素材を更新できる', () => {
       const config: MaterialDetailUIConfig = {
         material: createMockMaterial('inst-001', { name: '火の結晶' }),
+        onClose: vi.fn(),
       };
 
-      const ui = new MaterialDetailUI(mockScene, 0, 0, config);
+      const ui = new MaterialDetailUI(mockScene, config);
       ui.create();
 
       const newMaterial = createMockMaterial('inst-002', { name: '水の結晶' });
       ui.updateMaterial(newMaterial);
 
-      // 新しいテキストが設定されている
-      expect(mockScene.make.text).toHaveBeenCalled();
+      const textCalls = (mockScene.add.text as ReturnType<typeof vi.fn>).mock.calls;
+      const newNameCall = textCalls.find(
+        (call: unknown[]) =>
+          typeof call[2] === 'string' && (call[2] as string).includes('水の結晶'),
+      );
+      expect(newNameCall).toBeDefined();
+    });
+  });
+
+  describe('close', () => {
+    it('close()でアニメーションが実行される', () => {
+      const onClose = vi.fn();
+      const config: MaterialDetailUIConfig = {
+        material: createMockMaterial('inst-001'),
+        onClose,
+      };
+
+      const ui = new MaterialDetailUI(mockScene, config);
+      ui.create();
+
+      // tweens.add の呼び出し回数をリセット
+      (mockScene.tweens.add as ReturnType<typeof vi.fn>).mockClear();
+
+      ui.close();
+
+      // overlay フェードアウトの tween が追加される
+      expect(mockScene.tweens.add).toHaveBeenCalled();
+    });
+
+    it('close()のonCompleteでonCloseコールバックが呼ばれる', () => {
+      const onClose = vi.fn();
+      const config: MaterialDetailUIConfig = {
+        material: createMockMaterial('inst-001'),
+        onClose,
+      };
+
+      const ui = new MaterialDetailUI(mockScene, config);
+      ui.create();
+
+      // tweens.add が onComplete を同期実行するようモック
+      (mockScene.tweens.add as ReturnType<typeof vi.fn>).mockImplementation(
+        (tweenConfig: { onComplete?: () => void }) => {
+          tweenConfig.onComplete?.();
+          return { stop: vi.fn() };
+        },
+      );
+
+      ui.close();
+
+      expect(onClose).toHaveBeenCalledOnce();
+    });
+
+    it('destroy後にclose()のonCompleteが実行されてもonCloseは呼ばれない', () => {
+      const onClose = vi.fn();
+      const config: MaterialDetailUIConfig = {
+        material: createMockMaterial('inst-001'),
+        onClose,
+      };
+
+      const ui = new MaterialDetailUI(mockScene, config);
+      ui.create();
+
+      // tweens.add が onComplete をキャプチャするようモック
+      let capturedOnComplete: (() => void) | undefined;
+      (mockScene.tweens.add as ReturnType<typeof vi.fn>).mockImplementation(
+        (tweenConfig: { onComplete?: () => void }) => {
+          capturedOnComplete = tweenConfig.onComplete;
+          return { stop: vi.fn() };
+        },
+      );
+
+      ui.close();
+      ui.destroy();
+
+      // destroy後にonCompleteが呼ばれてもonCloseは呼ばれない
+      capturedOnComplete?.();
+      expect(onClose).not.toHaveBeenCalled();
     });
   });
 
@@ -189,9 +339,10 @@ describe('MaterialDetailUI', () => {
     it('destroy()でリソースが解放される', () => {
       const config: MaterialDetailUIConfig = {
         material: createMockMaterial('inst-001'),
+        onClose: vi.fn(),
       };
 
-      const ui = new MaterialDetailUI(mockScene, 0, 0, config);
+      const ui = new MaterialDetailUI(mockScene, config);
       ui.create();
 
       expect(() => ui.destroy()).not.toThrow();
@@ -200,11 +351,25 @@ describe('MaterialDetailUI', () => {
     it('create()前にdestroy()を呼んでもエラーにならない', () => {
       const config: MaterialDetailUIConfig = {
         material: createMockMaterial('inst-001'),
+        onClose: vi.fn(),
       };
 
-      const ui = new MaterialDetailUI(mockScene, 0, 0, config);
+      const ui = new MaterialDetailUI(mockScene, config);
 
       expect(() => ui.destroy()).not.toThrow();
+    });
+
+    it('ESCキーリスナーが解除される', () => {
+      const config: MaterialDetailUIConfig = {
+        material: createMockMaterial('inst-001'),
+        onClose: vi.fn(),
+      };
+
+      const ui = new MaterialDetailUI(mockScene, config);
+      ui.create();
+      ui.destroy();
+
+      expect(mockScene.input.keyboard!.removeKey).toHaveBeenCalledWith('ESC');
     });
   });
 });
