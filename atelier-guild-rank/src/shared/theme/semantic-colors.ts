@@ -20,23 +20,29 @@ export const SemanticColors = {
   text: {
     primary: Text.primary,
     secondary: Text.secondary,
+    /** アイコン・枠・非テキスト装飾用（WCAG AA コントラスト未保証、本文テキストには使用しない）。 */
     muted: Text.muted,
   },
   brand: {
+    /** アイコン・枠・非テキスト装飾用（WCAG AA コントラスト未保証、本文テキストには使用しない）。 */
     primary: Brand.primary,
+    /** アイコン・枠・非テキスト装飾用（WCAG AA コントラスト未保証、本文テキストには使用しない）。 */
     secondary: Brand.secondary,
     accent: Brand.accent,
   },
   status: {
     success: Status.success,
     warning: Status.warning,
+    /** アイコン・枠・非テキスト装飾用（WCAG AA コントラスト未保証、本文テキストには使用しない）。 */
     danger: Status.danger,
     info: Status.info,
   },
   quality: {
+    /** アイコン・枠・非テキスト装飾用（WCAG AA コントラスト未保証、本文テキストには使用しない）。 */
     D: Quality.D,
     C: Quality.C,
     B: Quality.B,
+    /** アイコン・枠・非テキスト装飾用（WCAG AA コントラスト未保証、本文テキストには使用しない）。 */
     A: Quality.A,
     S: Quality.S,
   },

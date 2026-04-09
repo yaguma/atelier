@@ -39,6 +39,31 @@ describe('contrastRatio', () => {
   });
 });
 
+describe('meetsWcagAa', () => {
+  describe('正常系', () => {
+    it('白と黒の組み合わせは AA を満たす (true)', () => {
+      expect(meetsWcagAa(0xffffff, 0x000000)).toBe(true);
+    });
+  });
+
+  describe('異常系', () => {
+    it('同色同士は AA を満たさない (false)', () => {
+      expect(meetsWcagAa(0x808080, 0x808080)).toBe(false);
+    });
+
+    it('近似した明度同士は AA を満たさない (false)', () => {
+      // 4.5:1 未満になる近い色
+      expect(meetsWcagAa(0x777777, 0x888888)).toBe(false);
+    });
+
+    it('閾値直下 (4:1 程度) は AA を満たさない (false)', () => {
+      // #595959 on #ffffff は約 7:1 なので満たす
+      // #878787 on #ffffff は約 3.9:1 で満たさない
+      expect(meetsWcagAa(0x878787, 0xffffff)).toBe(false);
+    });
+  });
+});
+
 describe('月下の錬金工房パレット WCAG AA 検証', () => {
   const { surface, text, brand, status, quality } = SemanticColors;
 
