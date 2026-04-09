@@ -27,6 +27,7 @@ import {
   createQuestServiceAdapter,
 } from '@shared/services/delivery-phase-adapters';
 import { Container, ServiceKeys } from '@shared/services/di/container';
+import { getPhaseConditionText } from '@shared/services/game-flow/phase-condition-text';
 import { GamePhase } from '@shared/types/common';
 import type { GameEndStats, IPhaseChangedEvent } from '@shared/types/events';
 import { GameEventType } from '@shared/types/events';
@@ -221,6 +222,9 @@ export class MainScene extends Phaser.Scene {
 
     // サイドバーの初期更新
     this.phaseManager.updateSidebar(this.sidebarUI);
+
+    // Issue #471: 到達条件テキストの初期設定
+    this.updatePhaseConditionText(initialPhase);
   }
 
   // ===========================================================================
@@ -271,11 +275,7 @@ export class MainScene extends Phaser.Scene {
       height: PHASE_RAIL_HEIGHT,
       current: this.stateManager.getState().currentPhase,
       onPhaseClick: (phase) => {
-        // IMainSceneGameFlowManager には switchPhase が無いため、
-        // PhaseTabUI と同じく IGameFlowManager 経由で呼び出す
-        const realGFM = this
-          .gameFlowManager as unknown as import('@shared/services/game-flow/game-flow-manager.interface').IGameFlowManager;
-        realGFM.switchPhase({ targetPhase: phase as GamePhase }).catch(() => {
+        this.gameFlowManager.switchPhase({ targetPhase: phase as GamePhase }).catch(() => {
           // フェーズ切り替え失敗時は何もしない（PHASE_CHANGEDイベントが発行されないため状態は変わらない）
         });
       },
@@ -360,6 +360,8 @@ export class MainScene extends Phaser.Scene {
         this.updateHeader();
         // Issue #458 Phase 4 A: PhaseRailのアクティブタブを更新
         this.phaseRail.setCurrent(busEvent.payload.newPhase);
+        // Issue #471: 到達条件テキストを更新
+        this.updatePhaseConditionText(busEvent.payload.newPhase);
       }),
     );
 
@@ -378,6 +380,8 @@ export class MainScene extends Phaser.Scene {
     this.unsubscribeHandlers.push(
       this.eventBus.on<{ quest: IQuest }>(GameEventType.QUEST_ACCEPTED, (busEvent) => {
         this.phaseManager.handleQuestAccepted(busEvent.payload, this.sidebarUI);
+        // Issue #471: 受注後にGATHERINGフェーズへ自動遷移
+        this.autoTransitionToGathering();
       }),
     );
 
@@ -465,6 +469,32 @@ export class MainScene extends Phaser.Scene {
    */
   private handleGameCleared(condition: GameEndCondition): void {
     this.scene.start('GameClearScene', { stats: this.buildGameEndStats(condition) });
+  }
+
+  // ===========================================================================
+  // フェーズ遷移自動化 (Issue #471)
+  // ===========================================================================
+
+  /**
+   * 受注後にGATHERINGフェーズへ自動遷移する
+   * 現在QUEST_ACCEPTフェーズの場合のみ遷移する
+   */
+  private autoTransitionToGathering(): void {
+    const currentPhase = this.stateManager.getState().currentPhase;
+    if (currentPhase !== GamePhase.QUEST_ACCEPT) return;
+
+    this.gameFlowManager.switchPhase({ targetPhase: GamePhase.GATHERING }).catch(() => {
+      // 遷移失敗時は何もしない（採取セッション中など）
+    });
+  }
+
+  /**
+   * 到達条件テキストを更新する
+   */
+  private updatePhaseConditionText(phase: GamePhase): void {
+    const hasActiveQuests = this.questService.getActiveQuests().length > 0;
+    const conditionText = getPhaseConditionText(phase, hasActiveQuests);
+    this.phaseRail.setConditionText(conditionText);
   }
 
   // ===========================================================================
