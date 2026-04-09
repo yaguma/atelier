@@ -35,6 +35,8 @@ init(data: { playerId: number; score: number }): void {
 }
 ```
 
+> **PlaywrightMCP 経由の注意**: 外部 `browser_evaluate` から `window.game.scene.start('X')` を呼ぶと呼び元シーンが stop されず重なって描画される。`scene.switch()` または明示的な `scene.stop(current); scene.start(next)` を使うこと。詳細は [`playwright-mcp.md`](./playwright-mcp.md) §「Phaser シーン遷移の作法」。
+
 ## rexUIプラグイン
 
 ### 初期化確認

@@ -5,6 +5,7 @@
 - TDD（テスト駆動開発）を推奨
 - テストをスキップせず、問題があれば修正
 - 実装詳細ではなく振る舞いをテスト
+- **回帰テストは Playwright CLI + Page Object（`e2e/`）で書く**。PlaywrightMCP は調査・再現・手動検証専用で、CI 実行しない（詳細は [`playwright-mcp.md`](./playwright-mcp.md)）
 
 ---
 
