@@ -37,11 +37,14 @@ function createMockScene(): Phaser.Scene {
 
   const mockScene = {
     add: {
+      // Issue #470: SlidePanel 合成版 QuestDetailModal は container.setVisible も使うので追加
       container: vi.fn().mockReturnValue({
         add: vi.fn(),
+        remove: vi.fn().mockReturnThis(),
         setDepth: vi.fn().mockReturnThis(),
         setScale: vi.fn().mockReturnThis(),
         setAlpha: vi.fn().mockReturnThis(),
+        setVisible: vi.fn().mockReturnThis(),
         destroy: vi.fn(),
         x: 0,
         y: 0,
@@ -51,14 +54,20 @@ function createMockScene(): Phaser.Scene {
         setOrigin: vi.fn().mockReturnThis(),
         setDepth: vi.fn().mockReturnThis(),
         setScale: vi.fn().mockReturnThis(),
+        setInteractive: vi.fn().mockReturnThis(),
+        on: vi.fn().mockReturnThis(),
         destroy: vi.fn(),
         active: true,
       }),
+      // Issue #470: SlidePanel が setStrokeStyle を呼ぶため追加
       rectangle: vi.fn().mockReturnValue({
         setOrigin: vi.fn().mockReturnThis(),
+        setStrokeStyle: vi.fn().mockReturnThis(),
+        setFillStyle: vi.fn().mockReturnThis(),
         setInteractive: vi.fn().mockReturnThis(),
         setDepth: vi.fn().mockReturnThis(),
         setAlpha: vi.fn().mockReturnThis(),
+        setVisible: vi.fn().mockReturnThis(),
         on: vi.fn().mockReturnThis(),
         off: vi.fn().mockReturnThis(),
         destroy: vi.fn(),
@@ -1070,6 +1079,111 @@ describe('QuestDetailModal', () => {
           const modal = new QuestDetailModal(mockScene, config);
           modal.create();
         }).not.toThrow();
+      });
+    });
+  });
+
+  // =============================================================================
+  // 1.7 SlidePanel 合成テストケース（Issue #470）
+  // =============================================================================
+
+  describe('1.7 SlidePanel 合成テストケース（Issue #470）', () => {
+    describe('TC-701: destroy() で二重破棄が発生しない', () => {
+      // 【テスト目的】: SlidePanel.destroy(false) 呼び出し後に container.destroy() が走っても
+      //   rectangle の destroy が 2 回以上呼ばれて以前の参照にアクセスしないことを確認
+      // 【対応要件】: Issue #470 Critical-2
+      test('destroy() を呼んでも例外が発生しない', () => {
+        const config: QuestDetailModalConfig = {
+          quest: mockQuest,
+          onAccept: mockOnAccept,
+          onClose: mockOnClose,
+        };
+
+        const modal = new QuestDetailModal(mockScene, config);
+        modal.create();
+
+        expect(() => modal.destroy()).not.toThrow();
+      });
+
+      test('destroy() 後に再度 destroy() を呼んでも例外が発生しない', () => {
+        const config: QuestDetailModalConfig = {
+          quest: mockQuest,
+          onAccept: mockOnAccept,
+          onClose: mockOnClose,
+        };
+
+        const modal = new QuestDetailModal(mockScene, config);
+        modal.create();
+        modal.destroy();
+
+        // 二重破棄の防御動作確認
+        expect(() => modal.destroy()).not.toThrow();
+      });
+    });
+
+    describe('TC-702: close() でオーバーレイと SlidePanel が同期フェードアウト', () => {
+      // 【テスト目的】: close() 呼び出し時に overlay の tween と SlidePanel の tween が
+      //   両方発行されることを確認
+      // 【対応要件】: Issue #470 Critical-1
+      test('close() でオーバーレイ tween と SlidePanel tween が両方発行される', () => {
+        const config: QuestDetailModalConfig = {
+          quest: mockQuest,
+          onAccept: mockOnAccept,
+          onClose: mockOnClose,
+        };
+
+        const modal = new QuestDetailModal(mockScene, config);
+        modal.create();
+
+        // create 時点で tweens.add が何度か呼ばれている（open アニメーション分）
+        const callsBeforeClose = (mockScene.tweens.add as ReturnType<typeof vi.fn>).mock.calls
+          .length;
+
+        modal.close();
+
+        // close 後は overlay の tween と SlidePanel の tween が追加で発行されるため
+        // tweens.add の呼び出し回数が 2 以上増えている
+        const callsAfterClose = (mockScene.tweens.add as ReturnType<typeof vi.fn>).mock.calls
+          .length;
+        expect(callsAfterClose - callsBeforeClose).toBeGreaterThanOrEqual(2);
+      });
+    });
+
+    describe('TC-703: close() で open tween と競合しない', () => {
+      // 【テスト目的】: open tween 進行中に close() を呼んでも overlay の tween が
+      //   killTweensOf で中断されてから close tween が発行されることを確認
+      // 【対応要件】: Issue #470 Warning-3
+      test('close() 呼び出し時に overlay の既存 tween がキャンセルされる', () => {
+        const config: QuestDetailModalConfig = {
+          quest: mockQuest,
+          onAccept: mockOnAccept,
+          onClose: mockOnClose,
+        };
+
+        const modal = new QuestDetailModal(mockScene, config);
+        modal.create();
+
+        // close を呼ぶと killTweensOf(overlay) が呼ばれる
+        modal.close();
+
+        expect(mockScene.tweens.killTweensOf).toHaveBeenCalled();
+      });
+
+      test('open 直後でも handleAccept は動作する（open 中の操作は許可）', () => {
+        const config: QuestDetailModalConfig = {
+          quest: mockQuest,
+          onAccept: mockOnAccept,
+          onClose: mockOnClose,
+        };
+
+        const modal = new QuestDetailModal(mockScene, config);
+        modal.create();
+
+        // open アニメーション中でも handleAccept は通る
+        modal.handleAccept();
+
+        expect(mockOnAccept).toHaveBeenCalledTimes(1);
+        expect(mockOnAccept).toHaveBeenCalledWith(mockQuest);
       });
     });
   });

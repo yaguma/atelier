@@ -51,6 +51,9 @@ export interface QuestDetailModalConfig {
  *
  * クラス名は後方互換のため `QuestDetailModal` を維持しているが、
  * 内部は SlidePanel 合成の詳細スライドパネルである。
+ *
+ * @deprecated Issue #470 以降は `QuestDetailSlidePanel` エイリアスの使用を推奨する。
+ *   既存の呼び出し箇所との後方互換のためクラス名は残している。
  */
 export class QuestDetailModal extends BaseComponent {
   /** 設定（コールバック関数を含む） */
@@ -336,6 +339,11 @@ export class QuestDetailModal extends BaseComponent {
 
   /**
    * 開くアニメーション再生: オーバーレイのフェードインと SlidePanel の open。
+   *
+   * Issue #470 Warning-3: open tween 中に close が走ると競合するため、close 側で
+   * overlay の tween を `killTweensOf` で先に kill してから close tween を発行する方式を採用する。
+   * open 中でもボタン操作（handleAccept/handleEscKey）は許可したいため、
+   * open 側では `animating` フラグは立てず、close/受注完了アニメ専用のフラグとして維持する。
    */
   private playOpenAnimation(): void {
     this.scene.tweens.add({
@@ -411,12 +419,25 @@ export class QuestDetailModal extends BaseComponent {
     });
   }
 
-  /** パネルを閉じる */
+  /**
+   * パネルを閉じる
+   *
+   * Issue #470 Critical-1: overlay の tween と SlidePanel の tween を同期させる。
+   * SlidePanel.close({ animate: true }) により両方が並行して alpha 0 にフェードアウトする。
+   *
+   * Issue #470 Warning-3: open tween が進行中に close が呼ばれた場合、overlay 上の
+   * open tween を先に kill してから close tween を発行し、競合を防ぐ。
+   */
   public close(): void {
     if (this.isDestroyed) return;
     if (this.animating) return;
 
     this.animating = true;
+
+    // open tween が進行中の場合にも安全なよう、overlay の tween を先にキャンセルする
+    if (this.scene.tweens?.killTweensOf) {
+      this.scene.tweens.killTweensOf(this.overlay);
+    }
 
     this.scene.tweens.add({
       targets: this.overlay,
@@ -429,8 +450,8 @@ export class QuestDetailModal extends BaseComponent {
       },
     });
 
-    // SlidePanel 側のフェードアウト
-    this.slidePanel.close();
+    // SlidePanel 側もフェードアウト tween で同期させる
+    this.slidePanel.close({ animate: true });
   }
 
   /** アニメーション中フラグ設定 */
@@ -477,12 +498,15 @@ export class QuestDetailModal extends BaseComponent {
       this.overlay.destroy();
     }
 
-    // SlidePanel 破棄
+    // SlidePanel の tween/bg 参照のみクリアし、container の破棄は親に任せる。
+    // Issue #470 Critical: panelContent は this.container.add() で親コンテナの子に
+    // なっているため、this.container.destroy(true) による連鎖破棄で SlidePanel の
+    // コンテナも破棄される。slidePanel.destroy(true) を呼ぶと二重破棄になる。
     if (this.slidePanel) {
-      this.slidePanel.destroy();
+      this.slidePanel.destroy(false);
     }
 
-    // コンテナ破棄
+    // コンテナ破棄（panelContent を含む全子要素を連鎖破棄）
     if (this.container) {
       this.container.destroy();
     }
