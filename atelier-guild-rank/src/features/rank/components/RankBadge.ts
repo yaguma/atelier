@@ -7,7 +7,7 @@
  */
 
 import { BaseComponent } from '@shared/components';
-import { Colors, THEME } from '@shared/theme';
+import { Colors, RANK_COLORS, THEME } from '@shared/theme';
 import type { GuildRank } from '@shared/types';
 import Phaser from 'phaser';
 
@@ -27,17 +27,8 @@ const TEXT_STYLES = {
   NAME: { fontSize: `${THEME.sizes.small}px`, color: '#cccccc' },
 } as const;
 
-/** ランクごとのバッジ色 */
-const RANK_BADGE_COLORS: Record<GuildRank, number> = {
-  G: 0x808080,
-  F: 0x6b8e23,
-  E: 0x2e8b57,
-  D: 0x4169e1,
-  C: 0x9932cc,
-  B: 0xdc143c,
-  A: 0xffd700,
-  S: 0xff1493,
-};
+/** ランクごとのバッジ色（@shared/theme の RANK_COLORS を参照） */
+const RANK_BADGE_COLORS = RANK_COLORS;
 
 /** ランク名称 */
 const RANK_NAMES: Record<GuildRank, string> = {
