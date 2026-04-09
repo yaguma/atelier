@@ -9,6 +9,7 @@
 
 import type { EventHandler } from '@shared/services';
 import type { GamePhase, GuildRank } from '@shared/types/common';
+import type { IPhaseSwitchRequest, IPhaseSwitchResult } from '@shared/types/phase-switch';
 
 // =============================================================================
 // サービスインターフェース（依存注入用）
@@ -51,6 +52,8 @@ export interface IMainSceneGameFlowManager {
   startDay(): void;
   endDay(): void;
   skipPhase(): void;
+  /** Issue #471: フェーズ自由切り替え */
+  switchPhase(request: IPhaseSwitchRequest): Promise<IPhaseSwitchResult>;
 }
 
 /**

@@ -275,11 +275,7 @@ export class MainScene extends Phaser.Scene {
       height: PHASE_RAIL_HEIGHT,
       current: this.stateManager.getState().currentPhase,
       onPhaseClick: (phase) => {
-        // IMainSceneGameFlowManager には switchPhase が無いため、
-        // PhaseTabUI と同じく IGameFlowManager 経由で呼び出す
-        const realGFM = this
-          .gameFlowManager as unknown as import('@shared/services/game-flow/game-flow-manager.interface').IGameFlowManager;
-        realGFM.switchPhase({ targetPhase: phase as GamePhase }).catch(() => {
+        this.gameFlowManager.switchPhase({ targetPhase: phase as GamePhase }).catch(() => {
           // フェーズ切り替え失敗時は何もしない（PHASE_CHANGEDイベントが発行されないため状態は変わらない）
         });
       },
@@ -487,9 +483,7 @@ export class MainScene extends Phaser.Scene {
     const currentPhase = this.stateManager.getState().currentPhase;
     if (currentPhase !== GamePhase.QUEST_ACCEPT) return;
 
-    const realGFM = this
-      .gameFlowManager as unknown as import('@shared/services/game-flow/game-flow-manager.interface').IGameFlowManager;
-    realGFM.switchPhase({ targetPhase: GamePhase.GATHERING }).catch(() => {
+    this.gameFlowManager.switchPhase({ targetPhase: GamePhase.GATHERING }).catch(() => {
       // 遷移失敗時は何もしない（採取セッション中など）
     });
   }

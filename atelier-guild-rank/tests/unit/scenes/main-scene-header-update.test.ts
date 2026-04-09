@@ -340,6 +340,7 @@ const createMockGameFlowManager = () => ({
   startDay: vi.fn(),
   endDay: vi.fn(),
   skipPhase: vi.fn(),
+  switchPhase: vi.fn().mockResolvedValue({ success: true }),
 });
 
 const createMockEventBus = () => {
@@ -527,6 +528,55 @@ describe('MainSceneヘッダー更新（Issue #443）', () => {
         (call: unknown[]) => call[0] === GameEventType.GATHERING_ENDED,
       );
       expect(gatheringEndedCalls.length).toBe(1);
+    });
+  });
+
+  // ===========================================================================
+  // Issue #471: 受注後のGATHERING自動遷移
+  // ===========================================================================
+
+  describe('QUEST_ACCEPTEDイベントでGATHERINGへ自動遷移（Issue #471）', () => {
+    it('QUEST_ACCEPT中に受注するとswitchPhase(GATHERING)が呼ばれる', async () => {
+      const { mockEventBus, mockGameFlowManager } = await createAndInitMainScene();
+      mockGameFlowManager.switchPhase.mockClear();
+
+      // QUEST_ACCEPTEDイベントを発行
+      mockEventBus.emit(GameEventType.QUEST_ACCEPTED, {
+        quest: { id: 'q1', name: 'テスト依頼' },
+      });
+
+      // switchPhase(GATHERING)が呼ばれることを確認
+      expect(mockGameFlowManager.switchPhase).toHaveBeenCalledWith({
+        targetPhase: GamePhase.GATHERING,
+      });
+    });
+
+    it('GATHERING中に受注してもswitchPhaseは呼ばれない', async () => {
+      const { mockEventBus, mockStateManager, mockGameFlowManager } =
+        await createAndInitMainScene();
+      mockGameFlowManager.switchPhase.mockClear();
+
+      // 現在フェーズをGATHERINGに変更
+      mockStateManager.getState.mockReturnValue({
+        currentRank: GuildRank.E,
+        promotionGauge: 35,
+        remainingDays: 25,
+        currentDay: 6,
+        currentPhase: GamePhase.GATHERING,
+        gold: 500,
+        actionPoints: 3,
+        comboCount: 0,
+        rankHp: 100,
+        isPromotionTest: false,
+      });
+
+      // QUEST_ACCEPTEDイベントを発行
+      mockEventBus.emit(GameEventType.QUEST_ACCEPTED, {
+        quest: { id: 'q1', name: 'テスト依頼' },
+      });
+
+      // switchPhaseは呼ばれないことを確認
+      expect(mockGameFlowManager.switchPhase).not.toHaveBeenCalled();
     });
   });
 });
