@@ -21,6 +21,11 @@ import { SidebarUI } from '@presentation/ui/components/SidebarUI';
 import { MAIN_LAYOUT } from '@shared/constants';
 import type { GameEndCondition } from '@shared/services';
 import {
+  formatApInsufficientMessage,
+  formatDeliverySuccessMessage,
+  formatGoldChangedMessage,
+} from '@shared/services';
+import {
   createContributionCalculatorAdapter,
   createDeckServiceAdapter,
   createInventoryServiceAdapter,
@@ -28,17 +33,13 @@ import {
 } from '@shared/services/delivery-phase-adapters';
 import { Container, ServiceKeys } from '@shared/services/di/container';
 import { getPhaseConditionText } from '@shared/services/game-flow/phase-condition-text';
-import {
-  formatApInsufficientMessage,
-  formatDeliverySuccessMessage,
-  formatGoldChangedMessage,
-} from '@shared/services/toast-message-formatter';
 import { GamePhase } from '@shared/types/common';
 import type {
   GameEndStats,
   IApInsufficientEvent,
   IGoldChangedEvent,
   IPhaseChangedEvent,
+  IQuestCompletedEvent,
 } from '@shared/types/events';
 import { GameEventType } from '@shared/types/events';
 import type { IQuest } from '@shared/types/quests';
@@ -420,20 +421,16 @@ export class MainScene extends Phaser.Scene {
 
     // Issue #472: 納品成功 Toast
     this.unsubscribeHandlers.push(
-      this.eventBus.on<{ quest: IQuest; gold: number; contribution: number }>(
-        GameEventType.QUEST_COMPLETED,
-        (busEvent) => {
-          const msg = formatDeliverySuccessMessage(
-            busEvent.payload.gold,
-            busEvent.payload.contribution,
-          );
-          this.toast.show(msg);
-          this.updateHeader();
-        },
-      ),
+      this.eventBus.on<IQuestCompletedEvent>(GameEventType.QUEST_COMPLETED, (busEvent) => {
+        const msg = formatDeliverySuccessMessage(
+          busEvent.payload.gold,
+          busEvent.payload.contribution,
+        );
+        this.toast.show(msg);
+      }),
     );
 
-    // Issue #472: ゴールド変動 Toast
+    // Issue #472: ゴールド変動 Toast（ヘッダー更新も兼ねる）
     this.unsubscribeHandlers.push(
       this.eventBus.on<IGoldChangedEvent>(GameEventType.GOLD_CHANGED, (busEvent) => {
         const msg = formatGoldChangedMessage(busEvent.payload.delta);

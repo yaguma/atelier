@@ -48,3 +48,9 @@ export {
   StateManager,
   VALID_PHASE_TRANSITIONS,
 } from './state-manager';
+// Toast Message Formatter (Issue #472)
+export {
+  formatApInsufficientMessage,
+  formatDeliverySuccessMessage,
+  formatGoldChangedMessage,
+} from './toast-message-formatter';

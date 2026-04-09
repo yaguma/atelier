@@ -224,21 +224,14 @@ describe('events.ts', () => {
       flavorText: 'Test',
     };
 
-    const sampleCraftedItem: ICraftedItem = {
-      itemId: toItemId('item-001'),
-      quality: Quality.A,
-      attributeValues: [],
-      effectValues: [],
-      usedMaterials: [],
-    };
-
     // TC-EVT-022
     it('IQuestCompletedEvent型がインポート可能', () => {
       const event: IQuestCompletedEvent = {
         type: GameEventType.QUEST_COMPLETED,
         timestamp: Date.now(),
         quest: sampleQuest,
-        deliveredItem: sampleCraftedItem,
+        contribution: 100,
+        gold: 50,
       };
       expect(event).toBeDefined();
     });
@@ -250,7 +243,8 @@ describe('events.ts', () => {
         type: GameEventType.QUEST_FAILED,
         timestamp: Date.now(),
         quest: sampleQuest,
-        deliveredItem: sampleCraftedItem,
+        contribution: 100,
+        gold: 50,
       };
       expect(invalid).toBeDefined();
     });
@@ -262,19 +256,21 @@ describe('events.ts', () => {
         type: GameEventType.QUEST_COMPLETED,
         timestamp: Date.now(),
         quest: 'not-a-quest',
-        deliveredItem: sampleCraftedItem,
+        contribution: 100,
+        gold: 50,
       };
       expect(invalid).toBeDefined();
     });
 
-    // TC-EVT-025
-    it('IQuestCompletedEvent.deliveredItemがICraftedItem型', () => {
+    // TC-EVT-025: Issue #472: deliveredItem → contribution/gold に変更
+    it('IQuestCompletedEvent.goldがnumber型', () => {
       // @ts-expect-error - 型違いで型エラー
       const invalid: IQuestCompletedEvent = {
         type: GameEventType.QUEST_COMPLETED,
         timestamp: Date.now(),
         quest: sampleQuest,
-        deliveredItem: 'not-an-item',
+        contribution: 100,
+        gold: 'not-a-number',
       };
       expect(invalid).toBeDefined();
     });

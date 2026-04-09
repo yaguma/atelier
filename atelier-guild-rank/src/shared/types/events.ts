@@ -82,13 +82,16 @@ export interface IPhaseChangedEvent extends IGameEvent {
 
 /**
  * 依頼完了イベント
+ * Issue #472: quest-service.ts の実際のペイロードに合わせて修正
  */
 export interface IQuestCompletedEvent extends IGameEvent {
   type: typeof GameEventType.QUEST_COMPLETED;
   /** 完了した依頼 */
   quest: IQuest;
-  /** 納品したアイテム */
-  deliveredItem: ICraftedItem;
+  /** 貢献度 */
+  contribution: number;
+  /** ゴールド報酬 */
+  gold: number;
 }
 
 // =============================================================================
