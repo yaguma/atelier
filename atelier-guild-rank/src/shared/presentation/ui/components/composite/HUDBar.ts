@@ -1,84 +1,479 @@
 /**
- * HUDBar - ゴールド/AP/日数/ランク/貢献度 共通HUD composite
+ * HUDBar - ゴールド/AP/日数/ランク/昇格ゲージ 共通HUD composite
  * Issue #456: UI刷新 Phase 2
+ * Issue #458: UI刷新 Phase 4 A準備 - HeaderUI 機能等価化
+ *
+ * @description
+ * 画面上部に常駐するゲーム状態HUD。既存 `HeaderUI` の視覚・データ契約と等価なAPIを提供する。
+ *
+ * 主な機能:
+ * - ランク表示
+ * - 昇格ゲージ（値に応じた色: 赤/黄/緑/水色）
+ * - 残り日数表示（色分け: 白/黄/赤/明るい赤+点滅）
+ * - 所持ゴールド（Gアイコン付き）
+ * - 行動ポイント（AP）
+ * - 貢献度（Phase 2 HUDBarData 互換フィールド）
+ *
+ * データ契約:
+ * - 新方式: `updateFromHeader(IHeaderUIData)` — HeaderUI とキー互換
+ * - 旧方式: `update(Partial<HUDBarData>)` — Phase 2 初期実装との互換保持
+ * - 双方向: `HUDBarData` は両者のフィールドをマージした superset で、alias
+ *   (`day` ↔ `remainingDays`、`rank` ↔ `currentRank`) は常に同期される
  */
 
 import { BaseComponent, type BaseComponentOptions } from '@shared/components';
-import { Colors, DesignTokens } from '@shared/theme';
+import { DesignTokens } from '@shared/theme';
+import type { GuildRank as GuildRankType } from '@shared/types/common';
+import { GuildRank } from '@shared/types/common';
 import type Phaser from 'phaser';
 
+// =============================================================================
+// 型定義
+// =============================================================================
+
+/**
+ * HeaderUI の更新データ契約 (from @shared/components/HeaderUI.IHeaderUIData)
+ * HUDBar が互換性を保つために参照する superset。
+ */
+export interface HUDHeaderData {
+  currentRank: GuildRankType;
+  promotionGauge: number;
+  remainingDays: number;
+  gold: number;
+  actionPoints: number;
+  maxActionPoints: number;
+}
+
+/**
+ * HUDBar の内部データ表現
+ * 既存 Phase 2 実装 (day/rank/contribution) と HeaderUI 互換
+ * (currentRank/promotionGauge/remainingDays) の superset。
+ */
 export interface HUDBarData {
   gold: number;
   actionPoints: number;
   maxActionPoints: number;
+  /** 残り日数 (HeaderUI 互換) */
+  remainingDays: number;
+  /** `remainingDays` のエイリアス（Phase 2 互換） */
   day: number;
+  /** ランク (HeaderUI 互換) */
+  currentRank: GuildRankType;
+  /** `currentRank` のエイリアス（Phase 2 互換）。string で指定可 */
   rank: string;
+  /** 昇格ゲージ値 (0-100) */
+  promotionGauge: number;
+  /** 貢献度（Phase 2 互換フィールド。表示は任意） */
   contribution: number;
 }
 
 export interface HUDBarOptions extends BaseComponentOptions {
   width?: number;
-  data?: HUDBarData;
+  data?: Partial<HUDBarData>;
 }
+
+// =============================================================================
+// 定数
+// =============================================================================
+
+/** HUDBar 用カラー定数（HeaderUI と同じ値を使用） */
+const HUD_COLORS = {
+  RED: 0xff6b6b,
+  YELLOW: 0xffd93d,
+  GREEN: 0x6bcb77,
+  CYAN: 0x4ecdc4,
+  WHITE: 0xffffff,
+  BRIGHT_RED: 0xff0000,
+  BACKGROUND: 0x1f2937,
+  BORDER: 0x374151,
+} as const;
+
+const DEFAULT_WIDTH = 824;
+const HUD_HEIGHT = 56;
+const PADDING = 16;
+const GAUGE_WIDTH = 100;
+const GAUGE_HEIGHT = 16;
 
 const DEFAULT_DATA: HUDBarData = {
   gold: 0,
   actionPoints: 0,
   maxActionPoints: 0,
+  remainingDays: 0,
   day: 0,
-  rank: '',
+  currentRank: GuildRank.G,
+  rank: GuildRank.G,
+  promotionGauge: 0,
   contribution: 0,
 };
 
+// =============================================================================
+// ヘルパ
+// =============================================================================
+
+const isValidGuildRank = (value: unknown): value is GuildRankType =>
+  Object.values(GuildRank).includes(value as GuildRankType);
+
+/** 昇格ゲージ値に応じた色を計算 */
+const calcPromotionGaugeColor = (value: number): number => {
+  if (value >= 100) return HUD_COLORS.CYAN;
+  if (value >= 60) return HUD_COLORS.GREEN;
+  if (value >= 30) return HUD_COLORS.YELLOW;
+  return HUD_COLORS.RED;
+};
+
+/** 残り日数に応じた色と点滅フラグを計算 */
+const calcRemainingDaysStyle = (days: number): { color: number; blinking: boolean } => {
+  if (days <= 3) return { color: HUD_COLORS.BRIGHT_RED, blinking: true };
+  if (days <= 5) return { color: HUD_COLORS.RED, blinking: false };
+  if (days <= 10) return { color: HUD_COLORS.YELLOW, blinking: false };
+  return { color: HUD_COLORS.WHITE, blinking: false };
+};
+
+const colorNumberToCss = (value: number): string =>
+  `#${value.toString(16).padStart(6, '0').toUpperCase()}`;
+
+// =============================================================================
+// HUDBar
+// =============================================================================
+
 export class HUDBar extends BaseComponent {
-  private width: number;
+  // 設定
+  private readonly width: number;
+
+  // 状態
   private data: HUDBarData;
-  private bg?: Phaser.GameObjects.Rectangle;
-  private text?: Phaser.GameObjects.Text;
+  private remainingDaysBlinking = false;
+
+  // 視覚要素
+  private rankTextEl: Phaser.GameObjects.Text | null = null;
+  private gaugeBackground: Phaser.GameObjects.Graphics | null = null;
+  private gaugeFill: Phaser.GameObjects.Graphics | null = null;
+  private daysTextEl: Phaser.GameObjects.Text | null = null;
+  private goldTextEl: Phaser.GameObjects.Text | null = null;
+  private apTextEl: Phaser.GameObjects.Text | null = null;
+  private contributionTextEl: Phaser.GameObjects.Text | null = null;
+  private blinkingTween: Phaser.Tweens.Tween | null = null;
 
   constructor(scene: Phaser.Scene, x: number, y: number, options: HUDBarOptions = {}) {
     super(scene, x, y, options);
-    this.width = options.width ?? 480;
-    this.data = { ...DEFAULT_DATA, ...(options.data ?? {}) };
+    this.width = options.width ?? DEFAULT_WIDTH;
+    this.data = this.mergeData(DEFAULT_DATA, options.data ?? {});
   }
+
+  // ===========================================================================
+  // ライフサイクル
+  // ===========================================================================
 
   create(): void {
-    const height = Math.max(44, DesignTokens.spacing.lg * 2);
-    const bg = this.scene.add.rectangle(0, 0, this.width, height, Colors.background.dark);
-    bg.setStrokeStyle(DesignTokens.border.thin, Colors.border.primary);
-    this.bg = bg;
+    const centerX = this.width / 2;
+    const centerY = HUD_HEIGHT / 2;
+
+    // 背景パネル
+    const bg = this.scene.add.rectangle(
+      centerX,
+      centerY,
+      this.width,
+      HUD_HEIGHT,
+      HUD_COLORS.BACKGROUND,
+      0.95,
+    );
+    if (bg.setName) bg.setName('HUDBar.backgroundPanel');
     this.container.add(bg);
+
+    // 下部ボーダー
+    const borderLine = this.scene.add.rectangle(
+      centerX,
+      HUD_HEIGHT - 1,
+      this.width,
+      2,
+      HUD_COLORS.BORDER,
+      1,
+    );
+    if (borderLine.setName) borderLine.setName('HUDBar.borderLine');
+    this.container.add(borderLine);
+
     this.container.setDepth(DesignTokens.zIndex.hud);
 
-    const text = this.scene.add.text(0, 0, this.formatLabel(), {
-      fontFamily: DesignTokens.fonts.primary,
-      fontSize: `${DesignTokens.sizes.medium}px`,
-      color: '#ffffff',
-      padding: { top: 4 },
+    // ランクラベル
+    const rankLabel = this.scene.make.text({
+      x: PADDING,
+      y: 12,
+      text: 'ランク:',
+      style: { fontSize: '14px', color: '#9CA3AF' },
+      add: false,
     });
-    text.setOrigin(0.5);
-    this.text = text;
-    this.container.add(text);
+    if (rankLabel.setName) rankLabel.setName('HUDBar.rankLabel');
+    this.container.add(rankLabel);
+
+    // ランクテキスト
+    this.rankTextEl = this.scene.make.text({
+      x: PADDING + 60,
+      y: 10,
+      text: '',
+      style: { fontSize: '18px', color: '#F9FAFB', fontStyle: 'bold' },
+      add: false,
+    });
+    if (this.rankTextEl.setName) this.rankTextEl.setName('HUDBar.rankText');
+    this.container.add(this.rankTextEl);
+
+    // 昇格ゲージ背景（静的）
+    this.gaugeBackground = this.scene.add.graphics();
+    if (this.gaugeBackground.fillStyle) {
+      this.gaugeBackground.fillStyle(0x374151, 1);
+      if (this.gaugeBackground.fillRoundedRect) {
+        this.gaugeBackground.fillRoundedRect(140, 14, GAUGE_WIDTH, GAUGE_HEIGHT, 4);
+      } else if (this.gaugeBackground.fillRect) {
+        this.gaugeBackground.fillRect(140, 14, GAUGE_WIDTH, GAUGE_HEIGHT);
+      }
+    }
+    if (this.gaugeBackground.setName) this.gaugeBackground.setName('HUDBar.gaugeBackground');
+    this.container.add(this.gaugeBackground);
+
+    // 昇格ゲージフィル（update で塗り直し）
+    this.gaugeFill = this.scene.add.graphics();
+    if (this.gaugeFill.setName) this.gaugeFill.setName('HUDBar.gaugeFill');
+    this.container.add(this.gaugeFill);
+
+    // 残り日数ラベル
+    const daysLabel = this.scene.make.text({
+      x: 260,
+      y: 12,
+      text: '残り:',
+      style: { fontSize: '14px', color: '#9CA3AF' },
+      add: false,
+    });
+    if (daysLabel.setName) daysLabel.setName('HUDBar.daysLabel');
+    this.container.add(daysLabel);
+
+    // 残り日数テキスト
+    this.daysTextEl = this.scene.make.text({
+      x: 310,
+      y: 10,
+      text: '',
+      style: { fontSize: '18px', color: '#F9FAFB', fontStyle: 'bold' },
+      add: false,
+    });
+    if (this.daysTextEl.setName) this.daysTextEl.setName('HUDBar.daysText');
+    this.container.add(this.daysTextEl);
+
+    // ゴールドアイコン
+    const goldIcon = this.scene.make.text({
+      x: 420,
+      y: 12,
+      text: 'G',
+      style: { fontSize: '16px', color: '#FCD34D', fontStyle: 'bold' },
+      add: false,
+    });
+    if (goldIcon.setName) goldIcon.setName('HUDBar.goldIcon');
+    this.container.add(goldIcon);
+
+    // ゴールドテキスト
+    this.goldTextEl = this.scene.make.text({
+      x: 440,
+      y: 10,
+      text: '',
+      style: { fontSize: '18px', color: '#FCD34D', fontStyle: 'bold' },
+      add: false,
+    });
+    if (this.goldTextEl.setName) this.goldTextEl.setName('HUDBar.goldText');
+    this.container.add(this.goldTextEl);
+
+    // APラベル
+    const apLabel = this.scene.make.text({
+      x: 540,
+      y: 12,
+      text: 'AP:',
+      style: { fontSize: '14px', color: '#9CA3AF' },
+      add: false,
+    });
+    if (apLabel.setName) apLabel.setName('HUDBar.apLabel');
+    this.container.add(apLabel);
+
+    // APテキスト
+    this.apTextEl = this.scene.make.text({
+      x: 580,
+      y: 10,
+      text: '',
+      style: { fontSize: '18px', color: '#60A5FA', fontStyle: 'bold' },
+      add: false,
+    });
+    if (this.apTextEl.setName) this.apTextEl.setName('HUDBar.apText');
+    this.container.add(this.apTextEl);
+
+    // 貢献度テキスト（Phase 2 互換フィールド、右側寄せ）
+    this.contributionTextEl = this.scene.make.text({
+      x: Math.max(680, this.width - 160),
+      y: 12,
+      text: '',
+      style: { fontSize: '14px', color: '#9CA3AF', fontStyle: 'normal' },
+      add: false,
+    });
+    if (this.contributionTextEl.setName) this.contributionTextEl.setName('HUDBar.contributionText');
+    this.container.add(this.contributionTextEl);
+
+    // 初期表示
+    this.refreshVisuals(false);
   }
 
-  private formatLabel(): string {
-    const d = this.data;
-    return `${d.rank} | Day ${d.day} | ${d.gold}G | AP ${d.actionPoints}/${d.maxActionPoints} | 貢献 ${d.contribution}`;
+  destroy(): void {
+    // 点滅Tween停止
+    if (this.blinkingTween) {
+      this.blinkingTween.stop();
+      this.blinkingTween = null;
+    }
+
+    this.rankTextEl = null;
+    this.gaugeBackground = null;
+    this.gaugeFill = null;
+    this.daysTextEl = null;
+    this.goldTextEl = null;
+    this.apTextEl = null;
+    this.contributionTextEl = null;
+
+    this.container.destroy(true);
   }
 
-  update(data: Partial<HUDBarData>): this {
-    this.data = { ...this.data, ...data };
-    this.text?.setText(this.formatLabel());
+  // ===========================================================================
+  // 公開API
+  // ===========================================================================
+
+  /**
+   * 部分更新（Phase 2 互換 + HeaderUI 互換）
+   * `day` / `remainingDays`、`rank` / `currentRank` は相互に同期される。
+   */
+  update(patch: Partial<HUDBarData>): this {
+    const previouslyBlinking = this.remainingDaysBlinking;
+    this.data = this.mergeData(this.data, patch);
+    this.refreshVisuals(previouslyBlinking);
     return this;
+  }
+
+  /**
+   * HeaderUI 互換の完全更新
+   * 既存 `HeaderUI.update(data)` の置き換えとしてそのまま呼び出せる。
+   */
+  updateFromHeader(data: HUDHeaderData): this {
+    return this.update({
+      currentRank: data.currentRank,
+      rank: data.currentRank,
+      promotionGauge: data.promotionGauge,
+      remainingDays: data.remainingDays,
+      day: data.remainingDays,
+      gold: data.gold,
+      actionPoints: data.actionPoints,
+      maxActionPoints: data.maxActionPoints,
+    });
   }
 
   getData(): HUDBarData {
     return this.data;
   }
 
-  destroy(): void {
-    this.text?.destroy();
-    this.bg?.destroy();
-    this.container.destroy(true);
+  getRemainingDaysBlinking(): boolean {
+    return this.remainingDaysBlinking;
+  }
+
+  // ===========================================================================
+  // 内部: マージ（alias 同期）
+  // ===========================================================================
+
+  private mergeData(base: HUDBarData, patch: Partial<HUDBarData>): HUDBarData {
+    const merged: HUDBarData = { ...base, ...patch };
+
+    // day / remainingDays の同期（patch で指定された方を優先）
+    if (patch.remainingDays !== undefined) {
+      merged.day = patch.remainingDays;
+    } else if (patch.day !== undefined) {
+      merged.remainingDays = patch.day;
+    }
+
+    // rank / currentRank の同期
+    if (patch.currentRank !== undefined) {
+      merged.rank = patch.currentRank;
+    } else if (patch.rank !== undefined) {
+      if (isValidGuildRank(patch.rank)) {
+        merged.currentRank = patch.rank;
+      }
+    }
+
+    return merged;
+  }
+
+  // ===========================================================================
+  // 内部: 視覚更新
+  // ===========================================================================
+
+  private refreshVisuals(previouslyBlinking: boolean): void {
+    const d = this.data;
+
+    // ランク
+    const validRank = isValidGuildRank(d.currentRank) ? d.currentRank : GuildRank.G;
+    this.rankTextEl?.setText(`ランク: ${validRank}`);
+
+    // 昇格ゲージ
+    this.updatePromotionGauge();
+
+    // 残り日数
+    const daysStyle = calcRemainingDaysStyle(d.remainingDays);
+    this.remainingDaysBlinking = daysStyle.blinking;
+    if (this.daysTextEl) {
+      this.daysTextEl.setText(`残り: ${d.remainingDays}日`);
+      if (this.daysTextEl.setColor) {
+        this.daysTextEl.setColor(colorNumberToCss(daysStyle.color));
+      }
+    }
+    this.updateBlinking(previouslyBlinking);
+
+    // ゴールド
+    this.goldTextEl?.setText(`${d.gold}G`);
+
+    // AP
+    this.apTextEl?.setText(`${d.actionPoints}/${d.maxActionPoints} AP`);
+
+    // 貢献度
+    this.contributionTextEl?.setText(d.contribution ? `貢献 ${d.contribution}` : '');
+  }
+
+  private updatePromotionGauge(): void {
+    if (!this.gaugeFill) return;
+    if (this.gaugeFill.clear) this.gaugeFill.clear();
+    if (!this.gaugeFill.fillStyle || !this.gaugeFill.fillRect) return;
+    const color = calcPromotionGaugeColor(this.data.promotionGauge);
+    this.gaugeFill.fillStyle(color, 1);
+    const ratio = Math.max(0, Math.min(100, this.data.promotionGauge)) / 100;
+    const fillWidth = ratio * GAUGE_WIDTH;
+    this.gaugeFill.fillRect(140, 14, fillWidth, GAUGE_HEIGHT);
+  }
+
+  private updateBlinking(previouslyBlinking: boolean): void {
+    if (this.remainingDaysBlinking && !previouslyBlinking) {
+      this.startBlinkingTween();
+    } else if (!this.remainingDaysBlinking && previouslyBlinking) {
+      this.stopBlinkingTween();
+    }
+  }
+
+  private startBlinkingTween(): void {
+    if (!this.daysTextEl || !this.scene.tweens) return;
+    this.blinkingTween = this.scene.tweens.add({
+      targets: this.daysTextEl,
+      alpha: { from: 1, to: 0.3 },
+      duration: 500,
+      yoyo: true,
+      repeat: -1,
+    }) as Phaser.Tweens.Tween;
+  }
+
+  private stopBlinkingTween(): void {
+    if (this.blinkingTween) {
+      this.blinkingTween.stop();
+      this.blinkingTween = null;
+    }
+    if (this.daysTextEl?.setAlpha) {
+      this.daysTextEl.setAlpha(1);
+    }
+    if (this.daysTextEl && this.scene.tweens?.killTweensOf) {
+      this.scene.tweens.killTweensOf(this.daysTextEl);
+    }
   }
 }

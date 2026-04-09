@@ -90,10 +90,24 @@ vi.mock('@presentation/ui/components/FooterUI', () => ({
   },
 }));
 
-vi.mock('@presentation/ui/components/HeaderUI', () => ({
-  HeaderUI: class MockHeaderUI {
+// Issue #458 Phase 4 A: HeaderUI → HUDBar へ置換
+vi.mock('@presentation/ui/components/composite', () => ({
+  HUDBar: class MockHUDBar {
     create() {}
-    update = mockHeaderUpdateFn;
+    updateFromHeader = mockHeaderUpdateFn;
+    update = vi.fn();
+    getData = vi.fn(() => ({}));
+  },
+  PhaseRail: class MockPhaseRail {
+    create() {}
+    setCurrent = vi.fn();
+    setTabsDisabled = vi.fn();
+    destroy() {}
+  },
+  ContextPanel: class MockContextPanel {
+    create() {}
+    setContent = vi.fn();
+    destroy() {}
   },
 }));
 
