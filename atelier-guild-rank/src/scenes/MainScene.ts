@@ -15,7 +15,7 @@
 
 import { GatheringPhaseUI } from '@features/gathering';
 import type { IQuestService } from '@features/quest';
-import { ContextPanel, HUDBar, PhaseRail } from '@presentation/ui/components/composite';
+import { ContextPanel, HUDBar, PhaseRail, Toast } from '@presentation/ui/components/composite';
 import { FooterUI } from '@presentation/ui/components/FooterUI';
 import { SidebarUI } from '@presentation/ui/components/SidebarUI';
 import { MAIN_LAYOUT } from '@shared/constants';
@@ -28,8 +28,18 @@ import {
 } from '@shared/services/delivery-phase-adapters';
 import { Container, ServiceKeys } from '@shared/services/di/container';
 import { getPhaseConditionText } from '@shared/services/game-flow/phase-condition-text';
+import {
+  formatApInsufficientMessage,
+  formatDeliverySuccessMessage,
+  formatGoldChangedMessage,
+} from '@shared/services/toast-message-formatter';
 import { GamePhase } from '@shared/types/common';
-import type { GameEndStats, IPhaseChangedEvent } from '@shared/types/events';
+import type {
+  GameEndStats,
+  IApInsufficientEvent,
+  IGoldChangedEvent,
+  IPhaseChangedEvent,
+} from '@shared/types/events';
 import { GameEventType } from '@shared/types/events';
 import type { IQuest } from '@shared/types/quests';
 import Phaser from 'phaser';
@@ -111,6 +121,9 @@ export class MainScene extends Phaser.Scene {
 
   /** フッターUI */
   private footerUI!: FooterUI;
+
+  /** Toast通知 (Issue #472) */
+  private toast!: Toast;
 
   /** コンテンツコンテナ（各フェーズUIの親コンテナとして使用） */
   private _contentContainer!: Phaser.GameObjects.Container;
@@ -326,6 +339,12 @@ export class MainScene extends Phaser.Scene {
     // （将来的にはFooterUI本体のリファクタリングで除去予定）
     const phaseTabUI = this.footerUI.getPhaseTabUI();
     phaseTabUI?.getContainer().setVisible(false);
+
+    // Issue #472: Toast通知（右上配置）
+    const toastX = screenWidth - 160;
+    const toastY = LAYOUT.HEADER_HEIGHT + PHASE_RAIL_HEIGHT + 16;
+    this.toast = new Toast(this, toastX, toastY);
+    this.toast.create();
   }
 
   /**
@@ -399,6 +418,37 @@ export class MainScene extends Phaser.Scene {
       }),
     );
 
+    // Issue #472: 納品成功 Toast
+    this.unsubscribeHandlers.push(
+      this.eventBus.on<{ quest: IQuest; gold: number; contribution: number }>(
+        GameEventType.QUEST_COMPLETED,
+        (busEvent) => {
+          const msg = formatDeliverySuccessMessage(
+            busEvent.payload.gold,
+            busEvent.payload.contribution,
+          );
+          this.toast.show(msg);
+          this.updateHeader();
+        },
+      ),
+    );
+
+    // Issue #472: ゴールド変動 Toast
+    this.unsubscribeHandlers.push(
+      this.eventBus.on<IGoldChangedEvent>(GameEventType.GOLD_CHANGED, (busEvent) => {
+        const msg = formatGoldChangedMessage(busEvent.payload.delta);
+        if (msg) this.toast.show(msg);
+        this.updateHeader();
+      }),
+    );
+
+    // Issue #472: AP不足 Toast
+    this.unsubscribeHandlers.push(
+      this.eventBus.on<IApInsufficientEvent>(GameEventType.AP_INSUFFICIENT, () => {
+        this.toast.show(formatApInsufficientMessage());
+      }),
+    );
+
     // Issue #361: ゲーム終了イベントの購読
     this.unsubscribeHandlers.push(
       this.eventBus.on<GameEndCondition>(GameEventType.GAME_OVER, (busEvent) => {
@@ -423,6 +473,7 @@ export class MainScene extends Phaser.Scene {
     }
     this.unsubscribeHandlers = [];
 
+    this.toast?.destroy();
     this.phaseManager?.destroy();
   }
 

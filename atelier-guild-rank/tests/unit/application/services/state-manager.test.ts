@@ -338,6 +338,73 @@ describe('StateManager', () => {
   });
 
   // =============================================================================
+  // Issue #472: Toast通知用イベント発行テスト
+  // =============================================================================
+
+  describe('Issue #472: イベント発行', () => {
+    it('addGold でGOLD_CHANGEDイベントが発行される', () => {
+      const handler = vi.fn();
+      eventBus.on(GameEventType.GOLD_CHANGED, handler);
+      const initialGold = stateManager.getState().gold;
+
+      stateManager.addGold(100);
+
+      expect(handler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: { previousAmount: initialGold, newAmount: initialGold + 100, delta: 100 },
+        }),
+      );
+    });
+
+    it('spendGold でGOLD_CHANGEDイベントが発行される', () => {
+      const handler = vi.fn();
+      eventBus.on(GameEventType.GOLD_CHANGED, handler);
+      const initialGold = stateManager.getState().gold;
+
+      stateManager.spendGold(30);
+
+      expect(handler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: { previousAmount: initialGold, newAmount: initialGold - 30, delta: -30 },
+        }),
+      );
+    });
+
+    it('spendGold でゴールド不足時はイベント発行されない', () => {
+      const handler = vi.fn();
+      eventBus.on(GameEventType.GOLD_CHANGED, handler);
+      const initialGold = stateManager.getState().gold;
+
+      stateManager.spendGold(initialGold + 1);
+
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    it('spendActionPoints でAP不足時にAP_INSUFFICIENTイベントが発行される', () => {
+      const handler = vi.fn();
+      eventBus.on(GameEventType.AP_INSUFFICIENT, handler);
+      const currentAp = stateManager.getState().actionPoints;
+
+      stateManager.spendActionPoints(currentAp + 1);
+
+      expect(handler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: { required: currentAp + 1, current: currentAp },
+        }),
+      );
+    });
+
+    it('spendActionPoints でAP十分時はAP_INSUFFICIENTイベント発行されない', () => {
+      const handler = vi.fn();
+      eventBus.on(GameEventType.AP_INSUFFICIENT, handler);
+
+      stateManager.spendActionPoints(1);
+
+      expect(handler).not.toHaveBeenCalled();
+    });
+  });
+
+  // =============================================================================
   // 入力値検証（W-001/W-002修正に伴う追加テスト）
   // =============================================================================
 

@@ -40,6 +40,9 @@ export const GameEventType = {
   // セーブ/ロード関連イベント
   GAME_SAVED: 'GAME_SAVED',
   GAME_LOADED: 'GAME_LOADED',
+  // Toast通知関連イベント (Issue #472)
+  GOLD_CHANGED: 'GOLD_CHANGED',
+  AP_INSUFFICIENT: 'AP_INSUFFICIENT',
 } as const;
 
 export type GameEventType = (typeof GameEventType)[keyof typeof GameEventType];
@@ -194,6 +197,34 @@ export interface IGameSavedEvent extends IGameEvent {
  */
 export interface IGameLoadedEvent extends IGameEvent {
   type: typeof GameEventType.GAME_LOADED;
+}
+
+// =============================================================================
+// ゴールド変動イベント (Issue #472)
+// =============================================================================
+
+/**
+ * ゴールド変動イベント
+ */
+export interface IGoldChangedEvent extends IGameEvent {
+  type: typeof GameEventType.GOLD_CHANGED;
+  /** 変動前のゴールド */
+  previousAmount: number;
+  /** 変動後のゴールド */
+  newAmount: number;
+  /** 変動量（正: 加算、負: 減算） */
+  delta: number;
+}
+
+/**
+ * AP不足イベント
+ */
+export interface IApInsufficientEvent extends IGameEvent {
+  type: typeof GameEventType.AP_INSUFFICIENT;
+  /** 要求されたAP */
+  required: number;
+  /** 現在のAP */
+  current: number;
 }
 
 // =============================================================================
