@@ -41,6 +41,7 @@ const MATERIALS_START_Y = 132;
 const MATERIALS_LINE_HEIGHT = 24;
 const DESCRIPTION_LABEL_OFFSET_Y = 16;
 const DESCRIPTION_TEXT_OFFSET_Y = 28;
+const CLOSE_BUTTON_BOTTOM_MARGIN = 40;
 
 /** フォントサイズ */
 const FONT_SIZE_TITLE = `${THEME.sizes.large}px`;
@@ -288,12 +289,17 @@ export class RecipeDetailUI extends BaseComponent {
   }
 
   private createCloseButton(): void {
-    const closeBtn = this.scene.add.text(PANEL_WIDTH / 2, PANEL_HEIGHT - 40, '閉じる', {
-      fontSize: FONT_SIZE_BODY,
-      color: '#ffffff',
-      backgroundColor: CLOSE_BUTTON_BG_COLOR,
-      padding: { x: 16, y: 8 },
-    });
+    const closeBtn = this.scene.add.text(
+      PANEL_WIDTH / 2,
+      PANEL_HEIGHT - CLOSE_BUTTON_BOTTOM_MARGIN,
+      '閉じる',
+      {
+        fontSize: FONT_SIZE_BODY,
+        color: '#ffffff',
+        backgroundColor: CLOSE_BUTTON_BG_COLOR,
+        padding: { x: 16, y: 8 },
+      },
+    );
     closeBtn.setOrigin(0.5);
     closeBtn.setInteractive({ useHandCursor: true });
     closeBtn.on('pointerdown', () => this.close());
