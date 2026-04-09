@@ -7,7 +7,7 @@
  */
 
 import { BaseComponent } from '@shared/components';
-import { Colors, THEME } from '@shared/theme';
+import { Colors, RANK_COLORS, THEME } from '@shared/theme';
 import type { GuildRank } from '@shared/types';
 import Phaser from 'phaser';
 
@@ -29,17 +29,7 @@ const TEXT_STYLES = {
   GAUGE: { fontSize: `${THEME.sizes.small}px`, color: '#ffffff' },
 } as const;
 
-/** ランクごとのバー色 */
-const RANK_COLORS: Record<GuildRank, number> = {
-  G: 0x808080,
-  F: 0x6b8e23,
-  E: 0x2e8b57,
-  D: 0x4169e1,
-  C: 0x9932cc,
-  B: 0xdc143c,
-  A: 0xffd700,
-  S: 0xff1493,
-};
+// ランクごとのバー色は @shared/theme の RANK_COLORS を使用
 
 /** レイアウトオフセット */
 const OFFSET = {
