@@ -10,7 +10,11 @@ export const Duration = {
   slow: 400,
 } as const;
 
-/** Phaser tween ease 名称 */
+/**
+ * Phaser tween ease 名称
+ * TODO(#455 Phase 2): 設計レポート §8.1 のキー名(`motion.ease`)と
+ * Quad系easeへの統一を検討する。
+ */
 export const Easing = {
   standard: 'Sine.easeInOut',
   decelerate: 'Cubic.easeOut',

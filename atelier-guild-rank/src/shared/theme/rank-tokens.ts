@@ -3,6 +3,11 @@
  * Issue #455: UI刷新 Phase 1
  *
  * RankBadge / RankProgressBar で重複定義されていた RANK_COLORS を一元化。
+ *
+ * TODO(#455 Phase 2): 設計レポート §4.2 の新カラーへ移行する。
+ *   G:#7A8496 / F:#A3B1BF / E:#4FC3A1 / D:#3FAE6A
+ *   C:#3FA3D6 / B:#2D6CDF / A:#9B7BE8 / S:#F3A93C
+ *   Phase 1 は互換維持のため旧値のままとする。
  */
 
 import type { GuildRank } from '@shared/types';
