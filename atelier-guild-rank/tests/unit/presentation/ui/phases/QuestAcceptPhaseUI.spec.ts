@@ -37,21 +37,34 @@ function createMockScene(): Phaser.Scene {
     add: {
       container: vi.fn().mockReturnValue({
         add: vi.fn(),
-        setDepth: vi.fn(),
+        remove: vi.fn().mockReturnThis(),
+        setDepth: vi.fn().mockReturnThis(),
+        setScale: vi.fn().mockReturnThis(),
+        setAlpha: vi.fn().mockReturnThis(),
+        setVisible: vi.fn().mockReturnThis(),
         destroy: vi.fn(),
-        setVisible: vi.fn(),
         x: 0,
         y: 0,
         active: true,
       }),
       text: vi.fn().mockReturnValue({
         setOrigin: vi.fn().mockReturnThis(),
+        setDepth: vi.fn().mockReturnThis(),
+        setScale: vi.fn().mockReturnThis(),
+        setInteractive: vi.fn().mockReturnThis(),
+        on: vi.fn().mockReturnThis(),
         destroy: vi.fn(),
         active: true,
       }),
+      // Issue #470: SlidePanel 合成に対応するため setStrokeStyle / setVisible 等を追加
       rectangle: vi.fn().mockReturnValue({
         setOrigin: vi.fn().mockReturnThis(),
+        setStrokeStyle: vi.fn().mockReturnThis(),
+        setFillStyle: vi.fn().mockReturnThis(),
         setInteractive: vi.fn().mockReturnThis(),
+        setDepth: vi.fn().mockReturnThis(),
+        setAlpha: vi.fn().mockReturnThis(),
+        setVisible: vi.fn().mockReturnThis(),
         on: vi.fn().mockReturnThis(),
         off: vi.fn().mockReturnThis(),
         destroy: vi.fn(),
@@ -61,9 +74,12 @@ function createMockScene(): Phaser.Scene {
       }),
     },
     tweens: {
+      // Issue #470: SlidePanel/QuestDetailModal の tween cleanup に必要なメソッドを追加
       add: vi.fn().mockReturnValue({
         on: vi.fn().mockReturnThis(),
+        stop: vi.fn(),
       }),
+      killTweensOf: vi.fn(),
     },
     data: {
       get: vi.fn().mockReturnValue(null),

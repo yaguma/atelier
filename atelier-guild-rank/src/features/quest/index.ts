@@ -13,7 +13,6 @@
  *   generateQuests,
  *   validateQuest,
  *   calculateReward,
- *   QuestDetailModal,
  * } from '@features/quest';
  *
  * // 依頼生成
@@ -93,6 +92,5 @@ export {
 export type {
   DeliveryQuestPanelConfig,
   QuestCardUIConfig,
-  QuestDetailModalConfig,
 } from './components';
-export { DeliveryQuestPanel, QuestCardUI, QuestDetailModal } from './components';
+export { DeliveryQuestPanel, QuestCardUI } from './components';
