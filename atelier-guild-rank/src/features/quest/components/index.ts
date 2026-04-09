@@ -9,5 +9,5 @@ export type { DeliveryQuestPanelConfig } from './DeliveryQuestPanel';
 export { DeliveryQuestPanel } from './DeliveryQuestPanel';
 export type { QuestCardUIConfig } from './QuestCardUI';
 export { QuestCardUI } from './QuestCardUI';
-export type { QuestDetailModalConfig } from './QuestDetailModal';
-export { QuestDetailModal } from './QuestDetailModal';
+// Issue #470: QuestDetailModal は shared/presentation/ui/components/QuestDetailModal.ts
+// (SlidePanel 合成版) に統一。features 版は削除済み。
