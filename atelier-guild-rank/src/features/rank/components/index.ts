@@ -9,6 +9,11 @@ export type { PromotionDialogConfig } from './PromotionDialog';
 export { PromotionDialog } from './PromotionDialog';
 export type { RankBadgeConfig } from './RankBadge';
 export { RankBadge } from './RankBadge';
+export type {
+  RankDetailSlidePanelConfig,
+  RankDetailUIConfig,
+} from './RankDetailUI';
+export { RankDetailSlidePanel, RankDetailUI } from './RankDetailUI';
 export type { RankProgressBarConfig } from './RankProgressBar';
 export { RankProgressBar } from './RankProgressBar';
 export type { DisplayRule, SpecialRuleDisplayConfig } from './SpecialRuleDisplay';
