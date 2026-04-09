@@ -513,8 +513,13 @@ describe('MainScene共通レイアウト', () => {
         mainScene.create();
 
         // Then: レイアウトコンポーネントが生成される
+        // Issue #458 Phase 4 A: HeaderUI → HUDBar に置換
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        expect(mainScene.headerUI).toBeDefined();
+        expect(mainScene.hudBar).toBeDefined();
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        expect(mainScene.phaseRail).toBeDefined();
+        // @ts-expect-error - テストのためにprivateプロパティにアクセス
+        expect(mainScene.contextPanel).toBeDefined();
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         expect(mainScene.sidebarUI).toBeDefined();
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
@@ -611,9 +616,9 @@ describe('MainScene共通レイアウト', () => {
         // Then: contentContainerが指定座標に配置される
         const contentContainer = mainScene.getContentContainer();
         expect(contentContainer).toBeDefined();
-        // サイドバー幅 200px、ヘッダー高さ 60px の右下に配置
+        // Issue #458 Phase 4 A: PhaseRail(48px)を上部に昇格配置したため contentY = 60 + 48 = 108
         expect(contentContainer.x).toBe(200);
-        expect(contentContainer.y).toBe(60);
+        expect(contentContainer.y).toBe(108);
       });
 
       it('TC-0046-051: フェーズ変更時にUIが切り替わる', async () => {
@@ -736,9 +741,10 @@ describe('MainScene共通レイアウト', () => {
           timestamp: Date.now(),
         });
 
-        // Then: ヘッダーの残り日数表示が更新される
+        // Then: HUDBar の残り日数が更新される
+        // Issue #458 Phase 4 A: HeaderUI → HUDBar
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        expect(mainScene.headerUI.getRemainingDaysText()).toBe('残り: 29日');
+        expect(mainScene.hudBar.getData().remainingDays).toBe(29);
       });
 
       it('TC-0046-062: StateManager状態変更でヘッダー・サイドバーが更新される', async () => {
@@ -773,9 +779,10 @@ describe('MainScene共通レイアウト', () => {
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
         mainScene.updateHeader();
 
-        // Then: ヘッダーの表示が更新される
+        // Then: HUDBar の表示が更新される
+        // Issue #458 Phase 4 A: HeaderUI → HUDBar
         // @ts-expect-error - テストのためにprivateプロパティにアクセス
-        expect(mainScene.headerUI.getGoldText()).toBe('1000G');
+        expect(mainScene.hudBar.getData().gold).toBe(1000);
       });
     });
 

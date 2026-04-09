@@ -15,8 +15,8 @@
 
 import { GatheringPhaseUI } from '@features/gathering';
 import type { IQuestService } from '@features/quest';
+import { ContextPanel, HUDBar, PhaseRail } from '@presentation/ui/components/composite';
 import { FooterUI } from '@presentation/ui/components/FooterUI';
-import { HeaderUI } from '@presentation/ui/components/HeaderUI';
 import { SidebarUI } from '@presentation/ui/components/SidebarUI';
 import { MAIN_LAYOUT } from '@shared/constants';
 import type { GameEndCondition } from '@shared/services';
@@ -49,6 +49,16 @@ import type {
  * レイアウト定数（共通定数から参照）
  */
 const LAYOUT = MAIN_LAYOUT;
+
+/**
+ * Issue #458 Phase 4 A: 3カラムレイアウト拡張定数
+ * - HUDBar: 画面上部 (y=0, height=HEADER_HEIGHT=60)
+ * - PhaseRail: HUDBar直下 (y=HEADER_HEIGHT, height=PHASE_RAIL_HEIGHT)
+ * - ContextPanel: 右カラム（Workspaceの右側に固定幅で配置）
+ */
+const PHASE_RAIL_HEIGHT = 48;
+const CONTEXT_PANEL_WIDTH = 260;
+const CONTEXT_PANEL_PADDING = 8;
 
 // =============================================================================
 // MainSceneクラス
@@ -86,8 +96,14 @@ export class MainScene extends Phaser.Scene {
   // UIコンポーネント
   // ===========================================================================
 
-  /** ヘッダーUI */
-  private headerUI!: HeaderUI;
+  /** HUDバー（Issue #458 Phase 4 A: HeaderUI 置換） */
+  private hudBar!: HUDBar;
+
+  /** フェーズレール（Issue #458 Phase 4 A: PhaseTabUI 置換・上部昇格） */
+  private phaseRail!: PhaseRail;
+
+  /** コンテキストパネル（Issue #458 Phase 4 A: 右カラム新設） */
+  private contextPanel!: ContextPanel;
 
   /** サイドバーUI */
   private sidebarUI!: SidebarUI;
@@ -167,7 +183,11 @@ export class MainScene extends Phaser.Scene {
     this.data.set('deckService', realDeck ? createDeckServiceAdapter(realDeck) : null);
 
     // コンテンツコンテナを先に作成（PhaseManagerのコンストラクタで必要）
-    this._contentContainer = this.add.container(LAYOUT.SIDEBAR_WIDTH, LAYOUT.HEADER_HEIGHT);
+    // Issue #458 Phase 4 A: PhaseRailを上部に昇格配置するため、contentY を HEADER_HEIGHT + PHASE_RAIL_HEIGHT に下げる
+    this._contentContainer = this.add.container(
+      LAYOUT.SIDEBAR_WIDTH,
+      LAYOUT.HEADER_HEIGHT + PHASE_RAIL_HEIGHT,
+    );
     this._contentContainer.name = 'MainScene.contentContainer';
 
     // フェーズUI管理を初期化（リゾルバ生成メソッドをレイアウト作成時に使用するため先に作成）
@@ -230,11 +250,37 @@ export class MainScene extends Phaser.Scene {
 
   /**
    * レイアウトコンポーネントを作成
+   * Issue #458 Phase 4 A: 3カラム構造
+   * - 上段: HUDBar → PhaseRail
+   * - 中段: Sidebar(左) | Workspace(中) | ContextPanel(右)
+   * - 下段: FooterUI（日終了/休憩ボタン。内部のPhaseTabUIは非表示化）
    */
   private createLayoutComponents(): void {
-    // ヘッダーUI（画面上部、サイドバー右側から開始）
-    this.headerUI = new HeaderUI(this, LAYOUT.SIDEBAR_WIDTH, 0);
-    this.headerUI.create();
+    const screenWidth = this.cameras.main.width;
+    const workspaceWidth = screenWidth - LAYOUT.SIDEBAR_WIDTH;
+
+    // HUDBar（画面上部、サイドバー右側から開始、幅 = Workspace + ContextPanel 全体）
+    this.hudBar = new HUDBar(this, LAYOUT.SIDEBAR_WIDTH, 0, {
+      width: workspaceWidth,
+    });
+    this.hudBar.create();
+
+    // PhaseRail（HUDBar直下、サイドバー右側から開始）
+    this.phaseRail = new PhaseRail(this, LAYOUT.SIDEBAR_WIDTH, LAYOUT.HEADER_HEIGHT, {
+      width: workspaceWidth,
+      height: PHASE_RAIL_HEIGHT,
+      current: this.stateManager.getState().currentPhase,
+      onPhaseClick: (phase) => {
+        // IMainSceneGameFlowManager には switchPhase が無いため、
+        // PhaseTabUI と同じく IGameFlowManager 経由で呼び出す
+        const realGFM = this
+          .gameFlowManager as unknown as import('@shared/services/game-flow/game-flow-manager.interface').IGameFlowManager;
+        realGFM.switchPhase({ targetPhase: phase as GamePhase }).catch(() => {
+          // フェーズ切り替え失敗時は何もしない（PHASE_CHANGEDイベントが発行されないため状態は変わらない）
+        });
+      },
+    });
+    this.phaseRail.create();
 
     // サイドバーUI（画面左側、ヘッダー下から開始）
     // Issue #424: PhaseManagerのリゾルバ生成メソッド経由で日本語名を解決
@@ -245,6 +291,23 @@ export class MainScene extends Phaser.Scene {
       itemNameResolver,
     });
     this.sidebarUI.create();
+
+    // ContextPanel（右カラム、Workspace 右端にオーバーレイ配置）
+    // 中心基準で描画されるので、右端から CONTEXT_PANEL_WIDTH/2 + padding を引いた位置に配置
+    const contextPanelCenterX = screenWidth - CONTEXT_PANEL_WIDTH / 2 - CONTEXT_PANEL_PADDING;
+    const contextPanelHeight =
+      this.cameras.main.height -
+      LAYOUT.HEADER_HEIGHT -
+      PHASE_RAIL_HEIGHT -
+      LAYOUT.FOOTER_HEIGHT -
+      CONTEXT_PANEL_PADDING * 2;
+    const contextPanelCenterY =
+      LAYOUT.HEADER_HEIGHT + PHASE_RAIL_HEIGHT + CONTEXT_PANEL_PADDING + contextPanelHeight / 2;
+    this.contextPanel = new ContextPanel(this, contextPanelCenterX, contextPanelCenterY, {
+      width: CONTEXT_PANEL_WIDTH,
+      height: Math.max(120, contextPanelHeight),
+    });
+    this.contextPanel.create();
 
     // フッターUI（画面下部、サイドバー右側から開始）
     const footerY = this.cameras.main.height - LAYOUT.FOOTER_HEIGHT;
@@ -258,6 +321,11 @@ export class MainScene extends Phaser.Scene {
       GamePhase.QUEST_ACCEPT,
     );
     this.footerUI.create();
+
+    // Issue #458 Phase 4 A: FooterUI内部のPhaseTabUIはPhaseRailに置き換えられたため非表示化
+    // （将来的にはFooterUI本体のリファクタリングで除去予定）
+    const phaseTabUI = this.footerUI.getPhaseTabUI();
+    phaseTabUI?.getContainer().setVisible(false);
   }
 
   /**
@@ -268,11 +336,9 @@ export class MainScene extends Phaser.Scene {
     const gatheringUI = this.phaseManager.getPhaseUI(GamePhase.GATHERING);
     if (!(gatheringUI instanceof GatheringPhaseUI)) return;
 
-    const phaseTabUI = this.footerUI.getPhaseTabUI();
-    if (!phaseTabUI) return;
-
+    // Issue #458 Phase 4 A: PhaseTabUIの代わりにPhaseRailでタブ無効化を制御
     gatheringUI.onSessionStateChange((hasActiveSession: boolean) => {
-      phaseTabUI.setTabsDisabled(hasActiveSession);
+      this.phaseRail.setTabsDisabled(hasActiveSession);
     });
   }
 
@@ -292,6 +358,8 @@ export class MainScene extends Phaser.Scene {
         this.phaseManager.updateSidebar(this.sidebarUI);
         // Issue #443: フェーズ切替時にヘッダーを更新（AP/ゴールド等の最新状態を反映）
         this.updateHeader();
+        // Issue #458 Phase 4 A: PhaseRailのアクティブタブを更新
+        this.phaseRail.setCurrent(busEvent.payload.newPhase);
       }),
     );
 
@@ -359,7 +427,7 @@ export class MainScene extends Phaser.Scene {
    */
   private handleDayStarted(event: { remainingDays: number }): void {
     const state = this.stateManager.getState();
-    this.headerUI.update({
+    this.hudBar.updateFromHeader({
       currentRank: state.currentRank,
       promotionGauge: state.promotionGauge,
       remainingDays: event.remainingDays,
@@ -408,7 +476,7 @@ export class MainScene extends Phaser.Scene {
    */
   updateHeader(): void {
     const state = this.stateManager.getState();
-    this.headerUI.update({
+    this.hudBar.updateFromHeader({
       currentRank: state.currentRank,
       promotionGauge: state.promotionGauge,
       remainingDays: state.remainingDays,
