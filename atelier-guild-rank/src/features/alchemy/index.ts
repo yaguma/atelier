@@ -40,4 +40,10 @@ export { calculateQuality, checkRecipeRequirements, craft } from './services';
 // Components
 // =============================================================================
 
-export { AlchemyPhaseUI, RecipeListUI } from './components';
+export type { RecipeDetailSlidePanelConfig, RecipeDetailUIConfig } from './components';
+export {
+  AlchemyPhaseUI,
+  RecipeDetailSlidePanel,
+  RecipeDetailUI,
+  RecipeListUI,
+} from './components';
