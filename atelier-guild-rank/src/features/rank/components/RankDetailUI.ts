@@ -125,12 +125,14 @@ export class RankDetailUI extends BaseComponent {
   destroy(): void {
     this.isDestroyed = true;
 
-    // Tween キャンセル
-    if (this.overlay && this.scene.tweens?.killTweensOf) {
-      this.scene.tweens.killTweensOf(this.overlay);
-    }
-    if (this.panelContent && this.scene.tweens?.killTweensOf) {
-      this.scene.tweens.killTweensOf(this.panelContent);
+    // Tween キャンセル（SlidePanel 内の Tween も含めて確実に停止する）
+    if (this.scene.tweens?.killTweensOf) {
+      if (this.overlay) {
+        this.scene.tweens.killTweensOf(this.overlay);
+      }
+      if (this.panelContent) {
+        this.scene.tweens.killTweensOf(this.panelContent);
+      }
     }
 
     // ESC キーリスナー解除

@@ -3,7 +3,7 @@
  * Issue #475: ランク詳細 SlidePanel を新規実装
  */
 
-import { RankDetailUI, type RankDetailUIConfig } from '@features/rank/components/RankDetailUI';
+import { RankDetailUI, type RankDetailUIConfig } from '@features/rank';
 import type { GuildRank } from '@shared/types';
 import type { IGuildRankMaster, ISpecialRule } from '@shared/types/master-data';
 import type Phaser from 'phaser';
