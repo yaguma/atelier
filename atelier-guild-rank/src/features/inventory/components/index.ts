@@ -7,7 +7,7 @@
 
 export type { ItemInventoryUIConfig } from './ItemInventoryUI';
 export { ItemInventoryUI } from './ItemInventoryUI';
-export type { MaterialDetailUIConfig } from './MaterialDetailUI';
-export { MaterialDetailUI } from './MaterialDetailUI';
+export type { MaterialDetailSlidePanelConfig, MaterialDetailUIConfig } from './MaterialDetailUI';
+export { MaterialDetailSlidePanel, MaterialDetailUI } from './MaterialDetailUI';
 export type { MaterialListUIConfig } from './MaterialListUI';
 export { MaterialListUI } from './MaterialListUI';

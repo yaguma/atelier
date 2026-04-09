@@ -1,42 +1,55 @@
 /**
- * MaterialDetailUI コンポーネント
- * TASK-0086: features/inventory/components作成
+ * MaterialDetailUI コンポーネント（SlidePanel 合成版）
  *
- * 素材の詳細情報（名前、品質、属性）を表示するコンポーネント。
- * BaseComponentを継承し、統一されたライフサイクルに従う。
+ * Issue #473: MaterialDetailUI を SlidePanel ベースに刷新
+ *
+ * 素材の詳細情報（名前、品質、属性）をスライドパネルで表示する。
+ * 既存の public API（`MaterialDetailUI`, `MaterialDetailUIConfig`）は互換性のため維持しており、
+ * 呼び出し側からは従来どおり `new MaterialDetailUI(scene, config)` で利用できる。
+ * 新しいエイリアス `MaterialDetailSlidePanel` も同一クラスを再エクスポートしている。
+ *
+ * 内部実装は `shared/presentation/ui/components/composite/SlidePanel` を合成し、
+ * パネル本体の枠線・背景・開閉アニメーションは SlidePanel に委譲する。
+ * オーバーレイ（画面全体の半透明背景・クリックで閉じる）および ESC キーは
+ * このクラスで管理する。
  */
 
 import type { MaterialInstance } from '@domain/entities/MaterialInstance';
 import { BaseComponent } from '@shared/components';
+import { SlidePanel } from '@shared/presentation/ui/components/composite/SlidePanel';
 import { Colors, THEME } from '@shared/theme';
-import Phaser from 'phaser';
+import type Phaser from 'phaser';
 
 // =============================================================================
 // 定数
 // =============================================================================
 
-/** パネル寸法 */
-const PANEL = {
-  WIDTH: 200,
-  HEIGHT: 160,
-  PADDING: 12,
-} as const;
+/** SlidePanel サイズ */
+const PANEL_WIDTH = 280;
+const PANEL_HEIGHT = 240;
 
-/** テキストスタイル */
-const TEXT_STYLES = {
-  NAME: { fontSize: `${THEME.sizes.large}px`, color: '#ffffff' },
-  QUALITY: { fontSize: `${THEME.sizes.medium}px`, color: '#cccccc' },
-  ATTRIBUTE: { fontSize: `${THEME.sizes.small}px`, color: '#aaaaaa' },
-  LABEL: { fontSize: `${THEME.sizes.small}px`, color: '#888888' },
-} as const;
+/** オーバーレイ */
+const OVERLAY_COLOR = 0x000000;
+const OVERLAY_ALPHA = 0.7;
+const OVERLAY_DEPTH = 900;
+const OPEN_OVERLAY_DURATION = 200;
+const CLOSE_DURATION = 200;
 
-/** レイアウトオフセット */
-const OFFSET = {
-  NAME_Y: -50,
-  QUALITY_Y: -20,
-  ATTR_LABEL_Y: 10,
-  ATTR_VALUE_Y: 30,
-} as const;
+/** テキスト配置（SlidePanel 左上基準） */
+const TEXT_LEFT = 20;
+const NAME_Y = 30;
+const QUALITY_Y = 70;
+const ATTR_LABEL_Y = 110;
+const ATTR_VALUE_Y = 140;
+const CLOSE_BUTTON_Y = 200;
+
+/** フォントサイズ */
+const FONT_SIZE_TITLE = `${THEME.sizes.large}px`;
+const FONT_SIZE_BODY = `${THEME.sizes.medium}px`;
+const FONT_SIZE_SMALL = `${THEME.sizes.small}px`;
+
+/** ボタン色 */
+const CLOSE_BUTTON_BG_COLOR = '#9e9e9e';
 
 // =============================================================================
 // 型定義
@@ -46,6 +59,8 @@ const OFFSET = {
 export interface MaterialDetailUIConfig {
   /** 表示する素材 */
   material: MaterialInstance;
+  /** 閉じる時のコールバック */
+  onClose?: () => void;
 }
 
 // =============================================================================
@@ -53,115 +68,249 @@ export interface MaterialDetailUIConfig {
 // =============================================================================
 
 /**
- * 素材詳細UI
+ * 素材詳細スライドパネル
  *
- * 選択された素材の名前、品質、属性などの詳細情報を表示する。
+ * 選択された素材の名前、品質、属性などの詳細情報をスライドパネルで表示する。
+ * クラス名は後方互換のため `MaterialDetailUI` を維持している。
  */
 export class MaterialDetailUI extends BaseComponent {
   private config: MaterialDetailUIConfig;
-  private created = false;
+
+  /** オーバーレイ（背景の暗いエリア、クリックで閉じる） */
+  private overlay!: Phaser.GameObjects.Rectangle;
+
+  /** スライドパネル本体（SlidePanel composite） */
+  private slidePanel!: SlidePanel;
+
+  /** SlidePanel の内部コンテンツコンテナ */
+  private panelContent!: Phaser.GameObjects.Container;
+
+  /** ESC キー（パネルを閉じるショートカット） */
+  private escKey: Phaser.Input.Keyboard.Key | null = null;
+
+  /** アニメーション中フラグ（二重操作防止用） */
+  private animating = false;
+
+  /** 破棄済みフラグ */
+  private isDestroyed = false;
+
+  /** コンテンツ要素（updateMaterial 時に再作成するため追跡する） */
   private detailElements: Phaser.GameObjects.GameObject[] = [];
 
-  constructor(scene: Phaser.Scene, x: number, y: number, config: MaterialDetailUIConfig) {
-    super(scene, x, y);
+  constructor(scene: Phaser.Scene, config: MaterialDetailUIConfig) {
     if (!config) {
       throw new Error('config is required');
     }
+
+    const centerX = scene.cameras?.main?.width ? scene.cameras.main.width / 2 : 640;
+    const centerY = scene.cameras?.main?.height ? scene.cameras.main.height / 2 : 360;
+
+    super(scene, centerX, centerY);
     this.config = config;
   }
 
+  /** UI を作成して開くアニメーションを再生する */
   create(): void {
-    if (this.created) {
-      return;
-    }
-    this.created = true;
-
-    this.createBackground();
+    this.createOverlay();
+    this.createSlidePanel();
     this.createDetailContent(this.config.material);
+    this.createCloseButton();
+    this.setupEscKey();
+    this.playOpenAnimation();
   }
 
+  /** リソース解放 */
   destroy(): void {
-    this.destroyDetailElements();
-    this.container.destroy(true);
+    this.isDestroyed = true;
+
+    // Tween キャンセル
+    if (this.overlay && this.scene.tweens?.killTweensOf) {
+      this.scene.tweens.killTweensOf(this.overlay);
+    }
+    if (this.panelContent && this.scene.tweens?.killTweensOf) {
+      this.scene.tweens.killTweensOf(this.panelContent);
+    }
+
+    // ESC キーリスナー解除
+    if (this.escKey) {
+      this.escKey.off('down');
+      if (this.scene.input?.keyboard) {
+        this.scene.input.keyboard.removeKey('ESC');
+      }
+      this.escKey = null;
+    }
+
+    // オーバーレイ破棄
+    if (this.overlay) {
+      this.overlay.off('pointerdown');
+      this.overlay.destroy();
+    }
+
+    // SlidePanel の tween/bg 参照のみクリアし、container の破棄は親に任せる
+    if (this.slidePanel) {
+      this.slidePanel.destroy(false);
+    }
+
+    // コンテナ破棄（panelContent を含む全子要素を連鎖破棄）
+    if (this.container) {
+      this.container.destroy();
+    }
   }
 
   /** 表示する素材を更新 */
   updateMaterial(material: MaterialInstance): void {
-    this.config = { material };
+    this.config = { ...this.config, material };
     this.destroyDetailElements();
     this.createDetailContent(material);
+  }
+
+  /** パネルを閉じる */
+  close(): void {
+    if (this.isDestroyed) return;
+    if (this.animating) return;
+
+    this.animating = true;
+
+    // open tween が進行中の場合にも安全なよう、overlay の tween を先にキャンセルする
+    if (this.scene.tweens?.killTweensOf) {
+      this.scene.tweens.killTweensOf(this.overlay);
+    }
+
+    this.scene.tweens.add({
+      targets: this.overlay,
+      alpha: 0,
+      duration: CLOSE_DURATION,
+      ease: 'Linear',
+      onComplete: () => {
+        this.animating = false;
+        this.config.onClose?.();
+      },
+    });
+
+    // SlidePanel 側もフェードアウト
+    this.slidePanel.close({ animate: true });
   }
 
   // ===========================================================================
   // private
   // ===========================================================================
 
-  private createBackground(): void {
-    const bg = new Phaser.GameObjects.Rectangle(
+  private createOverlay(): void {
+    const width = this.scene.cameras?.main?.width || 1280;
+    const height = this.scene.cameras?.main?.height || 720;
+
+    this.overlay = this.scene.add.rectangle(0, 0, width, height, OVERLAY_COLOR, 0);
+    this.overlay.setOrigin(0.5);
+
+    if (this.overlay.setDepth) {
+      this.overlay.setDepth(OVERLAY_DEPTH);
+    }
+
+    this.overlay.setInteractive();
+    this.overlay.on('pointerdown', () => this.close());
+    this.container.add(this.overlay);
+  }
+
+  private createSlidePanel(): void {
+    const cameraWidth = this.scene.cameras?.main?.width || 1280;
+    const cameraHeight = this.scene.cameras?.main?.height || 720;
+    const panelX = cameraWidth - PANEL_WIDTH - 20;
+    const panelY = (cameraHeight - PANEL_HEIGHT) / 2;
+
+    this.slidePanel = new SlidePanel(
       this.scene,
-      0,
-      0,
-      PANEL.WIDTH,
-      PANEL.HEIGHT,
-      Colors.background.card,
+      panelX - this.container.x,
+      panelY - this.container.y,
+      {
+        width: PANEL_WIDTH,
+        height: PANEL_HEIGHT,
+        addToScene: false,
+      },
     );
-    bg.setStrokeStyle(1, Colors.border.primary);
-    this.container.add(bg);
+    this.slidePanel.create();
+    this.panelContent = this.slidePanel.getContentContainer();
+    this.container.add(this.panelContent);
   }
 
   private createDetailContent(material: MaterialInstance): void {
     // 素材名
-    const nameText = this.scene.make.text({
-      x: 0,
-      y: OFFSET.NAME_Y,
-      text: material.name,
-      style: TEXT_STYLES.NAME,
-      add: false,
+    const nameText = this.scene.add.text(TEXT_LEFT, NAME_Y, material.name, {
+      fontSize: FONT_SIZE_TITLE,
+      color: '#ffffff',
+      fontStyle: 'bold',
+      padding: { top: 4 },
     });
-    nameText.setOrigin(0.5);
-    this.container.add(nameText);
+    this.panelContent.add(nameText);
     this.detailElements.push(nameText);
 
     // 品質表示
     const qualityColor = THEME.qualityColors[material.quality] ?? Colors.text.muted;
-    const qualityText = this.scene.make.text({
-      x: 0,
-      y: OFFSET.QUALITY_Y,
-      text: `品質: ${material.quality}`,
-      style: {
-        ...TEXT_STYLES.QUALITY,
-        color: `#${qualityColor.toString(16).padStart(6, '0')}`,
-      },
-      add: false,
+    const qualityText = this.scene.add.text(TEXT_LEFT, QUALITY_Y, `品質: ${material.quality}`, {
+      fontSize: FONT_SIZE_BODY,
+      color: `#${qualityColor.toString(16).padStart(6, '0')}`,
+      padding: { top: 4 },
     });
-    qualityText.setOrigin(0.5);
-    this.container.add(qualityText);
+    this.panelContent.add(qualityText);
     this.detailElements.push(qualityText);
 
     // 属性ラベル
-    const attrLabel = this.scene.make.text({
-      x: 0,
-      y: OFFSET.ATTR_LABEL_Y,
-      text: '属性:',
-      style: TEXT_STYLES.LABEL,
-      add: false,
+    const attrLabel = this.scene.add.text(TEXT_LEFT, ATTR_LABEL_Y, '属性:', {
+      fontSize: FONT_SIZE_SMALL,
+      color: '#888888',
     });
-    attrLabel.setOrigin(0.5);
-    this.container.add(attrLabel);
+    this.panelContent.add(attrLabel);
     this.detailElements.push(attrLabel);
 
     // 属性値
     const attrStr = material.attributes.join(', ');
-    const attrText = this.scene.make.text({
-      x: 0,
-      y: OFFSET.ATTR_VALUE_Y,
-      text: attrStr || 'なし',
-      style: TEXT_STYLES.ATTRIBUTE,
-      add: false,
+    const attrText = this.scene.add.text(TEXT_LEFT, ATTR_VALUE_Y, attrStr || 'なし', {
+      fontSize: FONT_SIZE_SMALL,
+      color: '#aaaaaa',
     });
-    attrText.setOrigin(0.5);
-    this.container.add(attrText);
+    this.panelContent.add(attrText);
     this.detailElements.push(attrText);
+  }
+
+  private createCloseButton(): void {
+    const closeBtn = this.scene.add.text(PANEL_WIDTH / 2, CLOSE_BUTTON_Y, '閉じる', {
+      fontSize: FONT_SIZE_BODY,
+      color: '#ffffff',
+      backgroundColor: CLOSE_BUTTON_BG_COLOR,
+      padding: { x: 16, y: 8 },
+    });
+    closeBtn.setOrigin(0.5);
+
+    if (closeBtn.setInteractive) {
+      closeBtn.setInteractive({ useHandCursor: true });
+    }
+    if (closeBtn.on) {
+      closeBtn.on('pointerdown', () => this.close());
+    }
+
+    this.panelContent.add(closeBtn);
+  }
+
+  private setupEscKey(): void {
+    if (this.scene.input?.keyboard) {
+      this.escKey = this.scene.input.keyboard.addKey('ESC');
+      this.escKey.on('down', () => this.handleEscKey());
+    }
+  }
+
+  private handleEscKey(): void {
+    if (this.animating) return;
+    this.close();
+  }
+
+  private playOpenAnimation(): void {
+    this.scene.tweens.add({
+      targets: this.overlay,
+      alpha: OVERLAY_ALPHA,
+      duration: OPEN_OVERLAY_DURATION,
+      ease: 'Linear',
+    });
+
+    this.slidePanel.open();
   }
 
   private destroyDetailElements(): void {
@@ -171,3 +320,10 @@ export class MaterialDetailUI extends BaseComponent {
     this.detailElements = [];
   }
 }
+
+/**
+ * 新しい命名エイリアス: Issue #473 以降は `MaterialDetailSlidePanel` を推奨する。
+ * 既存コードとの後方互換のため `MaterialDetailUI` も引き続きエクスポートする。
+ */
+export { MaterialDetailUI as MaterialDetailSlidePanel };
+export type { MaterialDetailUIConfig as MaterialDetailSlidePanelConfig };
