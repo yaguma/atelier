@@ -100,6 +100,10 @@ export class PhaseRail extends BaseComponent {
   private notificationText: Phaser.GameObjects.Text | null = null;
   private notificationTimer: Phaser.Time.TimerEvent | null = null;
 
+  // Issue #471: 到達条件テキスト
+  private conditionTextObj: Phaser.GameObjects.Text | null = null;
+  private _conditionText = '';
+
   constructor(scene: Phaser.Scene, x: number, y: number, options: PhaseRailOptions = {}) {
     super(scene, x, y, options);
     this.phases = options.phases ?? VALID_GAME_PHASES;
@@ -189,6 +193,25 @@ export class PhaseRail extends BaseComponent {
       this.tabTexts.push(text);
     }
 
+    // Issue #471: 到達条件テキスト（タブ下部に小さく表示）
+    this.conditionTextObj = this.scene.make.text({
+      x: this.width / 2,
+      y: this.height + 6,
+      text: this._conditionText,
+      style: {
+        fontSize: '11px',
+        color: '#9CA3AF',
+        fontStyle: 'normal',
+      },
+      add: false,
+    });
+    if (this.conditionTextObj.setOrigin) this.conditionTextObj.setOrigin(0.5, 0);
+    if (this.conditionTextObj.setName) this.conditionTextObj.setName('PhaseRail.conditionText');
+    if (this.conditionTextObj.setVisible) {
+      this.conditionTextObj.setVisible(this._conditionText.length > 0);
+    }
+    this.container.add(this.conditionTextObj);
+
     this.container.setDepth(DesignTokens.zIndex.phaseRail);
   }
 
@@ -233,6 +256,24 @@ export class PhaseRail extends BaseComponent {
   /** タブが無効化されているかを取得 */
   isTabsDisabled(): boolean {
     return this.tabsDisabled;
+  }
+
+  /**
+   * 到達条件テキストを設定する（Issue #471）
+   * PhaseRail 下部に次フェーズへの到達条件をテキスト表示する。
+   */
+  setConditionText(text: string): this {
+    this._conditionText = text;
+    if (this.conditionTextObj) {
+      if (this.conditionTextObj.setText) this.conditionTextObj.setText(text);
+      if (this.conditionTextObj.setVisible) this.conditionTextObj.setVisible(text.length > 0);
+    }
+    return this;
+  }
+
+  /** 到達条件テキストを取得 */
+  getConditionText(): string {
+    return this._conditionText;
   }
 
   /** タブ数を取得 */

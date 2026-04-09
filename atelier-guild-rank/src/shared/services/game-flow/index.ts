@@ -7,3 +7,4 @@
 
 export { GameFlowManager } from './game-flow-manager';
 export type { GameEndCondition, IGameFlowManager } from './game-flow-manager.interface';
+export { getPhaseConditionText } from './phase-condition-text';

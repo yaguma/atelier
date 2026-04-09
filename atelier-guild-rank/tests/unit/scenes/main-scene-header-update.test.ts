@@ -102,6 +102,7 @@ vi.mock('@presentation/ui/components/composite', () => ({
     create() {}
     setCurrent = vi.fn();
     setTabsDisabled = vi.fn();
+    setConditionText = vi.fn();
     destroy() {}
   },
   ContextPanel: class MockContextPanel {
