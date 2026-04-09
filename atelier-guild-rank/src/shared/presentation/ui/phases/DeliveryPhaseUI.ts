@@ -40,12 +40,14 @@ const UI_LAYOUT = {
   TITLE_Y: 20,
   /** サブコンポーネントの左余白 */
   CONTENT_PADDING_X: 20,
-  QUEST_LIST_Y: 60,
+  // Issue #453: 依頼パネルは中心Y基準で高さ90のため、タイトル(Y=20,高さ~32)と
+  // 重ならないよう十分下にずらす（120 - 45 = 75 でタイトル下端から余裕）
+  QUEST_LIST_Y: 120,
   ITEM_SELECTOR_Y: 390,
   PREVIEW_Y: 300,
-  /** 納品ボタンX座標 */
-  BUTTON_X: 250,
-  BUTTON_Y: 350,
+  // Issue #453: プレビュー領域（X=20〜480, Y=300〜380 付近）と重ならないよう右側に配置
+  BUTTON_X: 620,
+  BUTTON_Y: 340,
   RESULT_PANEL_X: 400,
   RESULT_PANEL_Y: 250,
 } as const;
@@ -381,7 +383,10 @@ export class DeliveryPhaseUI extends BaseComponent {
     this.refreshData();
   }
 
-  private refreshData(): void {
+  /**
+   * Issue #453: 納品フェーズ遷移時に外部から呼び出し、最新の受注依頼・所持アイテムを再読込する
+   */
+  public refreshData(): void {
     if (this.questService && this.questList)
       this.questList.setQuests(this.questService.getAcceptedQuests());
     if (this.inventoryService && this.itemSelector)

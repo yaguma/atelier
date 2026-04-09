@@ -20,6 +20,12 @@ import { HeaderUI } from '@presentation/ui/components/HeaderUI';
 import { SidebarUI } from '@presentation/ui/components/SidebarUI';
 import { MAIN_LAYOUT } from '@shared/constants';
 import type { GameEndCondition } from '@shared/services';
+import {
+  createContributionCalculatorAdapter,
+  createDeckServiceAdapter,
+  createInventoryServiceAdapter,
+  createQuestServiceAdapter,
+} from '@shared/services/delivery-phase-adapters';
 import { Container, ServiceKeys } from '@shared/services/di/container';
 import { GamePhase } from '@shared/types/common';
 import type { GameEndStats, IPhaseChangedEvent } from '@shared/types/events';
@@ -126,6 +132,39 @@ export class MainScene extends Phaser.Scene {
 
     // Issue #115: EventBusをシーンデータに設定
     this.data.set('eventBus', this.eventBus);
+
+    // Issue #453: DeliveryPhaseUI が scene.data 経由で取得するサービスを登録する。
+    // DeliveryPhaseUI が期待するインターフェースと実サービスのシグネチャが食い違うため、
+    // delivery-phase-adapters でラップした上で登録する。
+    // テスト環境では DI 未登録のため、resolve 失敗時は null を許容する。
+    const diContainer = Container.getInstance();
+    const tryResolve = <T>(key: string): T | null => {
+      try {
+        return diContainer.resolve<T>(key);
+      } catch (e) {
+        console.warn(`[MainScene] Failed to resolve ${key} for scene.data:`, e);
+        return null;
+      }
+    };
+    const realInventory = tryResolve<import('@shared/services/inventory-service').InventoryService>(
+      ServiceKeys.InventoryService,
+    );
+    const realContribution = tryResolve<
+      import('@shared/domain/services/contribution-calculator').ContributionCalculator
+    >(ServiceKeys.ContributionCalculator);
+    const realDeck = tryResolve<import('@shared/services/deck-service').DeckService>(
+      ServiceKeys.DeckService,
+    );
+    this.data.set('questService', createQuestServiceAdapter(this.questService));
+    this.data.set(
+      'inventoryService',
+      realInventory ? createInventoryServiceAdapter(realInventory) : null,
+    );
+    this.data.set(
+      'contributionCalculator',
+      realContribution ? createContributionCalculatorAdapter(realContribution) : null,
+    );
+    this.data.set('deckService', realDeck ? createDeckServiceAdapter(realDeck) : null);
 
     // コンテンツコンテナを先に作成（PhaseManagerのコンストラクタで必要）
     this._contentContainer = this.add.container(LAYOUT.SIDEBAR_WIDTH, LAYOUT.HEADER_HEIGHT);

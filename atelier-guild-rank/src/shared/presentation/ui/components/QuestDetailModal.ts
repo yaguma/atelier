@@ -35,6 +35,8 @@ export interface QuestDetailModalConfig {
   onClose: () => void;
   /** アイテム名解決関数（itemId → 日本語名） */
   itemNameResolver?: (itemId: string) => string;
+  /** 閲覧専用モード（受注ボタンを非表示にする） */
+  viewOnly?: boolean;
 }
 
 /**
@@ -344,19 +346,22 @@ export class QuestDetailModal extends BaseComponent {
    * - 両方のボタンにハンドカーソルを設定
    */
   private createActionButtons(): void {
-    // 【受注ボタン作成】
-    const acceptBtn = this.createButton(
-      QuestDetailModal.ACCEPT_BUTTON_X,
-      QuestDetailModal.BUTTON_Y,
-      '受注する',
-      QuestDetailModal.ACCEPT_BUTTON_BG_COLOR,
-      () => this.handleAccept(),
-    );
-    this.panel.add(acceptBtn);
+    // 【受注ボタン作成】: 閲覧専用モードでは表示しない
+    if (!this.config.viewOnly) {
+      const acceptBtn = this.createButton(
+        QuestDetailModal.ACCEPT_BUTTON_X,
+        QuestDetailModal.BUTTON_Y,
+        '受注する',
+        QuestDetailModal.ACCEPT_BUTTON_BG_COLOR,
+        () => this.handleAccept(),
+      );
+      this.panel.add(acceptBtn);
+    }
 
-    // 【閉じるボタン作成】
+    // 【閉じるボタン作成】: 閲覧専用モードでは中央に配置
+    const closeX = this.config.viewOnly ? 0 : QuestDetailModal.CLOSE_BUTTON_X;
     const closeBtn = this.createButton(
-      QuestDetailModal.CLOSE_BUTTON_X,
+      closeX,
       QuestDetailModal.BUTTON_Y,
       '閉じる',
       QuestDetailModal.CLOSE_BUTTON_BG_COLOR,
