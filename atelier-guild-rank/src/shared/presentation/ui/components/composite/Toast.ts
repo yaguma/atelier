@@ -4,7 +4,7 @@
  */
 
 import { BaseComponent, type BaseComponentOptions } from '@shared/components';
-import { Colors, DesignTokens } from '@shared/theme';
+import { Colors, DesignTokens, toColorStr } from '@shared/theme';
 import type Phaser from 'phaser';
 
 export interface ToastOptions extends BaseComponentOptions {
@@ -31,7 +31,7 @@ export class Toast extends BaseComponent {
     const text = this.scene.add.text(0, 0, this.message, {
       fontFamily: DesignTokens.fonts.primary,
       fontSize: `${DesignTokens.sizes.small}px`,
-      color: '#ffffff',
+      color: toColorStr(Colors.text.light),
       padding: { top: 4 },
     });
     text.setOrigin(0.5);
@@ -58,7 +58,8 @@ export class Toast extends BaseComponent {
     }
     this.container.setVisible(true);
     this.timer?.remove();
-    this.timer = this.scene.time?.delayedCall?.(this.duration, () => this.hide()) ?? undefined;
+    // Phaser の Scene.time は常に存在するため握りつぶしを排除
+    this.timer = this.scene.time.delayedCall(this.duration, () => this.hide());
     return this;
   }
 

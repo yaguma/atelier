@@ -4,7 +4,7 @@
  */
 
 import { BaseComponent, type BaseComponentOptions } from '@shared/components';
-import { Colors, DesignTokens } from '@shared/theme';
+import { Colors, DesignTokens, toColorStr } from '@shared/theme';
 import type Phaser from 'phaser';
 
 export interface ModalOptions extends BaseComponentOptions {
@@ -26,7 +26,9 @@ export class Modal extends BaseComponent {
   private opened = false;
   private onConfirm?: () => void;
   private onCancel?: () => void;
+  private overlay?: Phaser.GameObjects.Rectangle;
   private bg?: Phaser.GameObjects.Rectangle;
+  private keydownHandler?: (event: KeyboardEvent) => void;
   private titleText?: Phaser.GameObjects.Text;
   private messageText?: Phaser.GameObjects.Text;
   private confirmBtn?: Phaser.GameObjects.Rectangle;
@@ -45,6 +47,22 @@ export class Modal extends BaseComponent {
   }
 
   create(): void {
+    // 背面オーバーレイ（クリック貫通防止 + 背景クリックでキャンセル）
+    const screenW = this.scene.scale?.width ?? 1280;
+    const screenH = this.scene.scale?.height ?? 720;
+    const overlay = this.scene.add.rectangle(
+      0,
+      0,
+      screenW * 2,
+      screenH * 2,
+      Colors.background.overlay,
+      DesignTokens.opacity.overlay,
+    );
+    overlay.setInteractive();
+    overlay.on('pointerdown', () => this.cancel());
+    this.overlay = overlay;
+    this.container.add(overlay);
+
     const bg = this.scene.add.rectangle(0, 0, this.width, this.height, Colors.background.card);
     bg.setStrokeStyle(DesignTokens.border.thick, Colors.border.highlight);
     this.bg = bg;
@@ -59,7 +77,7 @@ export class Modal extends BaseComponent {
       {
         fontFamily: DesignTokens.fonts.primary,
         fontSize: `${DesignTokens.sizes.large}px`,
-        color: '#333333',
+        color: toColorStr(Colors.text.primary),
         padding: { top: 4 },
       },
     );
@@ -70,7 +88,7 @@ export class Modal extends BaseComponent {
     const messageText = this.scene.add.text(0, 0, this.message, {
       fontFamily: DesignTokens.fonts.primary,
       fontSize: `${DesignTokens.sizes.medium}px`,
-      color: '#666666',
+      color: toColorStr(Colors.text.secondary),
       padding: { top: 4 },
     });
     messageText.setOrigin(0.5);
@@ -80,35 +98,49 @@ export class Modal extends BaseComponent {
     const btnW = 100;
     const btnH = 44;
     const btnY = this.height / 2 - btnH / 2 - DesignTokens.spacing.sm;
+    // ボタン水平オフセット: 中央から btnW/2 + spacing.sm 離す
+    const btnOffsetX = btnW / 2 + DesignTokens.spacing.sm;
 
-    const cancelBtn = this.scene.add.rectangle(-60, btnY, btnW, btnH, Colors.ui.button.disabled);
+    const cancelBtn = this.scene.add.rectangle(
+      -btnOffsetX,
+      btnY,
+      btnW,
+      btnH,
+      Colors.ui.button.disabled,
+    );
     cancelBtn.setStrokeStyle(DesignTokens.border.thin, Colors.border.dark);
     cancelBtn.setInteractive();
     cancelBtn.on('pointerdown', () => this.cancel());
     this.cancelBtn = cancelBtn;
     this.container.add(cancelBtn);
 
-    const cancelBtnText = this.scene.add.text(-60, btnY, this.cancelLabel, {
+    const cancelBtnText = this.scene.add.text(-btnOffsetX, btnY, this.cancelLabel, {
       fontFamily: DesignTokens.fonts.primary,
       fontSize: `${DesignTokens.sizes.small}px`,
-      color: '#333333',
+      color: toColorStr(Colors.text.primary),
       padding: { top: 2 },
     });
     cancelBtnText.setOrigin(0.5);
     this.cancelBtnText = cancelBtnText;
     this.container.add(cancelBtnText);
 
-    const confirmBtn = this.scene.add.rectangle(60, btnY, btnW, btnH, Colors.ui.button.normal);
+    const confirmBtn = this.scene.add.rectangle(
+      btnOffsetX,
+      btnY,
+      btnW,
+      btnH,
+      Colors.ui.button.normal,
+    );
     confirmBtn.setStrokeStyle(DesignTokens.border.thin, Colors.border.highlight);
     confirmBtn.setInteractive();
     confirmBtn.on('pointerdown', () => this.confirm());
     this.confirmBtn = confirmBtn;
     this.container.add(confirmBtn);
 
-    const confirmBtnText = this.scene.add.text(60, btnY, this.confirmLabel, {
+    const confirmBtnText = this.scene.add.text(btnOffsetX, btnY, this.confirmLabel, {
       fontFamily: DesignTokens.fonts.primary,
       fontSize: `${DesignTokens.sizes.small}px`,
-      color: '#ffffff',
+      color: toColorStr(Colors.text.light),
       padding: { top: 2 },
     });
     confirmBtnText.setOrigin(0.5);
@@ -121,13 +153,39 @@ export class Modal extends BaseComponent {
     this.onCancel = onCancel;
     this.opened = true;
     this.container.setVisible(true);
+    this.attachKeyboard();
     return this;
+  }
+
+  private attachKeyboard(): void {
+    const keyboard = this.scene.input?.keyboard;
+    if (!keyboard) return;
+    this.detachKeyboard();
+    const handler = (event: KeyboardEvent): void => {
+      if (!this.opened) return;
+      if (event.key === 'Escape') {
+        this.cancel();
+      } else if (event.key === 'Enter') {
+        this.confirm();
+      }
+    };
+    this.keydownHandler = handler;
+    keyboard.on('keydown', handler);
+  }
+
+  private detachKeyboard(): void {
+    const keyboard = this.scene.input?.keyboard;
+    if (keyboard && this.keydownHandler) {
+      keyboard.off('keydown', this.keydownHandler);
+    }
+    this.keydownHandler = undefined;
   }
 
   confirm(): this {
     if (!this.opened) return this;
     this.opened = false;
     this.container.setVisible(false);
+    this.detachKeyboard();
     this.onConfirm?.();
     return this;
   }
@@ -136,6 +194,7 @@ export class Modal extends BaseComponent {
     if (!this.opened) return this;
     this.opened = false;
     this.container.setVisible(false);
+    this.detachKeyboard();
     this.onCancel?.();
     return this;
   }
@@ -145,6 +204,8 @@ export class Modal extends BaseComponent {
   }
 
   destroy(): void {
+    this.detachKeyboard();
+    this.overlay?.destroy();
     this.confirmBtnText?.destroy();
     this.cancelBtnText?.destroy();
     this.confirmBtn?.destroy();

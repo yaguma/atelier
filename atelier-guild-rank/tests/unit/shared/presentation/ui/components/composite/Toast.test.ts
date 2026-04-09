@@ -1,6 +1,6 @@
 import { Toast } from '@shared/presentation/ui/components/composite/Toast';
 import type Phaser from 'phaser';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, type vi } from 'vitest';
 import { createComponentMockScene } from '../test-helpers';
 
 describe('Toast', () => {
@@ -33,5 +33,16 @@ describe('Toast', () => {
     const toast = new Toast(scene, 0, 0);
     toast.create();
     expect(() => toast.destroy()).not.toThrow();
+  });
+
+  it('show で scene.time.delayedCall が duration とコールバックで呼ばれる', () => {
+    const toast = new Toast(scene, 0, 0, { duration: 1500 });
+    toast.create();
+    const delayedCall = (scene as unknown as { time: { delayedCall: ReturnType<typeof vi.fn> } })
+      .time.delayedCall;
+    delayedCall.mockClear();
+    toast.show('msg');
+    expect(delayedCall).toHaveBeenCalledTimes(1);
+    expect(delayedCall).toHaveBeenCalledWith(1500, expect.any(Function));
   });
 });

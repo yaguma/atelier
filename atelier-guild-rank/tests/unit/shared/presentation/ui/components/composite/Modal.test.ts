@@ -43,4 +43,53 @@ describe('Modal', () => {
     m.create();
     expect(() => m.destroy()).not.toThrow();
   });
+
+  it('show 時に keyboard.on が呼ばれ、ESC で cancel される', () => {
+    const m = new Modal(scene, 0, 0);
+    m.create();
+    const onConfirm = vi.fn();
+    const onCancel = vi.fn();
+    m.show(onConfirm, onCancel);
+
+    const keyboardOn = (
+      scene as unknown as { input: { keyboard: { on: ReturnType<typeof vi.fn> } } }
+    ).input.keyboard.on;
+    expect(keyboardOn).toHaveBeenCalledWith('keydown', expect.any(Function));
+    const handler = keyboardOn.mock.calls[0]?.[1] as (e: KeyboardEvent) => void;
+
+    handler({ key: 'Escape' } as KeyboardEvent);
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(onConfirm).not.toHaveBeenCalled();
+    expect(m.isOpen()).toBe(false);
+  });
+
+  it('Enter キーで confirm される', () => {
+    const m = new Modal(scene, 0, 0);
+    m.create();
+    const onConfirm = vi.fn();
+    const onCancel = vi.fn();
+    m.show(onConfirm, onCancel);
+
+    const keyboardOn = (
+      scene as unknown as { input: { keyboard: { on: ReturnType<typeof vi.fn> } } }
+    ).input.keyboard.on;
+    const handler = keyboardOn.mock.calls[0]?.[1] as (e: KeyboardEvent) => void;
+    handler({ key: 'Enter' } as KeyboardEvent);
+
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    expect(onCancel).not.toHaveBeenCalled();
+  });
+
+  it('confirm/cancel/destroy で keyboard.off が呼ばれる', () => {
+    const m = new Modal(scene, 0, 0);
+    m.create();
+    m.show();
+    m.confirm();
+    const keyboardOff = (
+      scene as unknown as {
+        input: { keyboard: { off: ReturnType<typeof vi.fn> } };
+      }
+    ).input.keyboard.off;
+    expect(keyboardOff).toHaveBeenCalledWith('keydown', expect.any(Function));
+  });
 });
