@@ -17,7 +17,7 @@
 import type { MaterialInstance } from '@domain/entities/MaterialInstance';
 import { BaseComponent } from '@shared/components';
 import { SlidePanel } from '@shared/presentation/ui/components/composite/SlidePanel';
-import { Colors, THEME } from '@shared/theme';
+import { Colors, DesignTokens, THEME } from '@shared/theme';
 import type Phaser from 'phaser';
 
 // =============================================================================
@@ -33,7 +33,6 @@ const OVERLAY_COLOR = 0x000000;
 const OVERLAY_ALPHA = 0.7;
 const OVERLAY_DEPTH = 900;
 const OPEN_OVERLAY_DURATION = 200;
-const CLOSE_DURATION = 200;
 
 /** テキスト配置（SlidePanel 左上基準） */
 const TEXT_LEFT = 20;
@@ -153,7 +152,7 @@ export class MaterialDetailUI extends BaseComponent {
 
     // コンテナ破棄（panelContent を含む全子要素を連鎖破棄）
     if (this.container) {
-      this.container.destroy();
+      this.container.destroy(true);
     }
   }
 
@@ -176,18 +175,23 @@ export class MaterialDetailUI extends BaseComponent {
       this.scene.tweens.killTweensOf(this.overlay);
     }
 
+    // overlay と SlidePanel のフェードアウトを同じ duration で同期させる
+    const closeDuration = DesignTokens.motion.duration.base;
+
     this.scene.tweens.add({
       targets: this.overlay,
       alpha: 0,
-      duration: CLOSE_DURATION,
+      duration: closeDuration,
       ease: 'Linear',
       onComplete: () => {
+        // destroy() が先に呼ばれた場合、破棄済みオブジェクトへのアクセスを防ぐ
+        if (this.isDestroyed) return;
         this.animating = false;
         this.config.onClose?.();
       },
     });
 
-    // SlidePanel 側もフェードアウト
+    // SlidePanel 側も同じ duration でフェードアウト
     this.slidePanel.close({ animate: true });
   }
 
@@ -202,10 +206,7 @@ export class MaterialDetailUI extends BaseComponent {
     this.overlay = this.scene.add.rectangle(0, 0, width, height, OVERLAY_COLOR, 0);
     this.overlay.setOrigin(0.5);
 
-    if (this.overlay.setDepth) {
-      this.overlay.setDepth(OVERLAY_DEPTH);
-    }
-
+    this.overlay.setDepth(OVERLAY_DEPTH);
     this.overlay.setInteractive();
     this.overlay.on('pointerdown', () => this.close());
     this.container.add(this.overlay);
@@ -279,13 +280,8 @@ export class MaterialDetailUI extends BaseComponent {
       padding: { x: 16, y: 8 },
     });
     closeBtn.setOrigin(0.5);
-
-    if (closeBtn.setInteractive) {
-      closeBtn.setInteractive({ useHandCursor: true });
-    }
-    if (closeBtn.on) {
-      closeBtn.on('pointerdown', () => this.close());
-    }
+    closeBtn.setInteractive({ useHandCursor: true });
+    closeBtn.on('pointerdown', () => this.close());
 
     this.panelContent.add(closeBtn);
   }
@@ -315,6 +311,9 @@ export class MaterialDetailUI extends BaseComponent {
 
   private destroyDetailElements(): void {
     for (const element of this.detailElements) {
+      if (this.panelContent) {
+        this.panelContent.remove(element);
+      }
       element.destroy();
     }
     this.detailElements = [];

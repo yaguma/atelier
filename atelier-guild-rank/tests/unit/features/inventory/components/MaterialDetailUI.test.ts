@@ -44,6 +44,7 @@ function createMockScene(): Phaser.Scene {
     setAlpha: vi.fn().mockReturnThis(),
     setDepth: vi.fn().mockReturnThis(),
     add: vi.fn().mockReturnThis(),
+    remove: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
     x: 640,
     y: 360,
@@ -281,6 +282,56 @@ describe('MaterialDetailUI', () => {
 
       // overlay フェードアウトの tween が追加される
       expect(mockScene.tweens.add).toHaveBeenCalled();
+    });
+
+    it('close()のonCompleteでonCloseコールバックが呼ばれる', () => {
+      const onClose = vi.fn();
+      const config: MaterialDetailUIConfig = {
+        material: createMockMaterial('inst-001'),
+        onClose,
+      };
+
+      const ui = new MaterialDetailUI(mockScene, config);
+      ui.create();
+
+      // tweens.add が onComplete を同期実行するようモック
+      (mockScene.tweens.add as ReturnType<typeof vi.fn>).mockImplementation(
+        (tweenConfig: { onComplete?: () => void }) => {
+          tweenConfig.onComplete?.();
+          return { stop: vi.fn() };
+        },
+      );
+
+      ui.close();
+
+      expect(onClose).toHaveBeenCalledOnce();
+    });
+
+    it('destroy後にclose()のonCompleteが実行されてもonCloseは呼ばれない', () => {
+      const onClose = vi.fn();
+      const config: MaterialDetailUIConfig = {
+        material: createMockMaterial('inst-001'),
+        onClose,
+      };
+
+      const ui = new MaterialDetailUI(mockScene, config);
+      ui.create();
+
+      // tweens.add が onComplete をキャプチャするようモック
+      let capturedOnComplete: (() => void) | undefined;
+      (mockScene.tweens.add as ReturnType<typeof vi.fn>).mockImplementation(
+        (tweenConfig: { onComplete?: () => void }) => {
+          capturedOnComplete = tweenConfig.onComplete;
+          return { stop: vi.fn() };
+        },
+      );
+
+      ui.close();
+      ui.destroy();
+
+      // destroy後にonCompleteが呼ばれてもonCloseは呼ばれない
+      capturedOnComplete?.();
+      expect(onClose).not.toHaveBeenCalled();
     });
   });
 
