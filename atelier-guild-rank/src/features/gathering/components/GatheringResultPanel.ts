@@ -134,5 +134,6 @@ export class GatheringResultPanel {
       text.destroy();
     }
     this.gatheredMaterialTexts = [];
+    this.gatheredDisplay?.destroy(true);
   }
 }
