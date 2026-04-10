@@ -33,11 +33,11 @@ const UI_STYLES = {
     color: '#ffffff',
   },
   ARTIFACT_NAME: {
-    fontSize: '14px',
+    fontSize: '16px',
     color: '#ffffff',
   },
   ARTIFACT_EFFECT: {
-    fontSize: '12px',
+    fontSize: '16px',
     color: '#aaaaaa',
   },
   BUTTON_TEXT: {

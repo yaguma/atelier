@@ -251,6 +251,17 @@ export class QuestDeliveryList {
   }
 
   /**
+   * インデックスで依頼を選択（Issue #460: キーボード数字キー対応）
+   * @param index - 0始まりのインデックス
+   */
+  public selectByIndex(index: number): void {
+    if (index < 0 || index >= this.quests.length) return;
+    const quest = this.quests[index];
+    if (!quest) return;
+    this.onQuestClick(quest);
+  }
+
+  /**
    * 依頼数を取得
    * @returns 依頼数
    */

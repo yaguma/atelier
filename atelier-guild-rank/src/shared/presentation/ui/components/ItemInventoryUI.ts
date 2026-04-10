@@ -36,11 +36,11 @@ const UI_STYLES = {
     color: '#ffffff',
   },
   ITEM_NAME: {
-    fontSize: '12px',
+    fontSize: '16px',
     color: '#ffffff',
   },
   ITEM_QUALITY: {
-    fontSize: '10px',
+    fontSize: '16px',
     color: '#cccccc',
   },
 } as const;

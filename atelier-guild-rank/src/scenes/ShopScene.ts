@@ -55,11 +55,11 @@ const STYLES = {
   /** アイテム名フォントサイズ */
   ITEM_NAME_FONT_SIZE: '16px',
   /** 価格フォントサイズ */
-  PRICE_FONT_SIZE: '14px',
+  PRICE_FONT_SIZE: '16px',
   /** 説明フォントサイズ */
-  DESCRIPTION_FONT_SIZE: '12px',
+  DESCRIPTION_FONT_SIZE: '16px',
   /** ボタンフォントサイズ */
-  BUTTON_FONT_SIZE: '14px',
+  BUTTON_FONT_SIZE: '16px',
   /** フッターフォントサイズ */
   FOOTER_FONT_SIZE: '18px',
   /** 価格の色（ゴールド） */
@@ -426,9 +426,10 @@ export class ShopScene extends Phaser.Scene {
       color: THEME.colors.textOnPrimary,
     });
 
+    // Issue #460: A11y - タッチターゲット最小44px
     const buyButton = this.rexUI.add.label({
-      width: 80,
-      height: 30,
+      width: 100,
+      height: 44,
       background: buyButtonBg,
       text: buyButtonText,
       align: 'center',

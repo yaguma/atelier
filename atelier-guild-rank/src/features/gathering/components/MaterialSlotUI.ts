@@ -16,6 +16,7 @@
 
 import { THEME } from '@presentation/ui/theme';
 import { BaseComponent } from '@shared/components';
+import { prefersReducedMotion } from '@shared/theme';
 import type { MaterialId, Quality } from '@shared/types';
 import Phaser from 'phaser';
 
@@ -239,20 +240,23 @@ export class MaterialSlotUI extends BaseComponent {
    * @param intensity - 光彩の強度(0.0〜1.0)
    */
   private applyGlowEffect(color: number, intensity: number): void {
+    // Issue #460: prefers-reduced-motion 時は光彩のみ・脈動なし
     this.glowGraphics.clear();
     this.glowGraphics.fillStyle(color, intensity * 0.3);
     this.glowGraphics.fillCircle(0, 0, this.slotSize * 0.7);
     this.glowGraphics.setBlendMode(Phaser.BlendModes.ADD);
 
-    // 脈動アニメーション
-    this.glowTween = this.scene.tweens.add({
-      targets: this.glowGraphics,
-      alpha: { from: 0.5, to: 1 },
-      duration: 1000,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
-    });
+    if (!prefersReducedMotion()) {
+      // 脈動アニメーション
+      this.glowTween = this.scene.tweens.add({
+        targets: this.glowGraphics,
+        alpha: { from: 0.5, to: 1 },
+        duration: 1000,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+    }
   }
 
   /**
@@ -261,6 +265,9 @@ export class MaterialSlotUI extends BaseComponent {
    * @param color - パーティクルの色
    */
   private createSQualityParticles(color: number): void {
+    // Issue #460: prefers-reduced-motion 時はパーティクル無効化
+    if (prefersReducedMotion()) return;
+
     // パーティクル用のグラフィックスを作成(小さな円)
     const graphics = this.scene.make.graphics({ x: 0, y: 0 });
     graphics.fillStyle(0xffffff, 1);
@@ -307,7 +314,7 @@ export class MaterialSlotUI extends BaseComponent {
         y: -5,
         text: quality,
         style: {
-          fontSize: '14px',
+          fontSize: '16px',
           color: quality === 'D' || quality === 'S' ? '#FFFFFF' : '#000000',
           fontStyle: 'bold',
         },
@@ -316,7 +323,8 @@ export class MaterialSlotUI extends BaseComponent {
       .setOrigin(0.5);
 
     // S品質の場合は特別なスタイル(虹色グラデーション)
-    if (quality === 'S') {
+    // Issue #460: prefers-reduced-motion 時はアニメーション無効化
+    if (quality === 'S' && !prefersReducedMotion()) {
       this.scene.tweens.add({
         targets: text,
         tint: { from: 0xff00ff, to: 0x00ffff },

@@ -121,7 +121,7 @@ export class QuestDetailModal extends BaseComponent {
 
   /** フォントサイズ */
   private static readonly FONT_SIZE_TITLE = '16px';
-  private static readonly FONT_SIZE_BODY = '14px';
+  private static readonly FONT_SIZE_BODY = '16px';
   private static readonly FONT_SIZE_LARGE = '32px';
 
   /**

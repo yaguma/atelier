@@ -30,6 +30,7 @@ export {
   ZIndex,
 } from './design-tokens';
 export type { DurationKey, EasingKey } from './motion';
+export { motionSafeDuration, prefersReducedMotion } from './motion';
 export { RANK_COLORS } from './rank-tokens';
 export type {
   SemanticBrandKey,
@@ -46,6 +47,7 @@ export type {
   BorderColorKey,
   CardTypeColorKey,
   ColorKey,
+  QualityGrade,
   TextColorKey,
 } from './theme';
 export { Colors, THEME, toColorStr } from './theme';

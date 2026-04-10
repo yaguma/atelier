@@ -41,7 +41,7 @@ const BACKGROUND_COLOR = 0x333333;
 const BACKGROUND_ALPHA = 0.9;
 /** テキストスタイル設定 */
 const TEXT_STYLE = {
-  fontSize: '14px',
+  fontSize: '16px',
   color: '#ffffff',
 } as const;
 

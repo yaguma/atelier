@@ -157,8 +157,9 @@ export const THEME = {
 
   // フォントサイズ定義
   // 階層的な情報設計を実現するための4段階のサイズ設定
+  // Issue #460: A11y - 日本語の可読性確保のため最小サイズを16pxに引き上げ
   sizes: {
-    small: 14, // 小さいテキスト用（キャプション、補足情報）
+    small: 16, // 小さいテキスト用（キャプション、補足情報）※A11y: 14px→16px
     medium: 16, // 標準テキスト用（本文、一般的なUI要素）
     large: 20, // 中見出し用（セクション見出し、ダイアログタイトル）
     xlarge: 24, // 大見出し用（メインタイトル、画面見出し）
@@ -191,4 +192,21 @@ export const THEME = {
     A: { intensity: 0.6 }, // 中程度の光彩
     S: { intensity: 1.0, particles: true }, // 強い光彩+パーティクル
   },
+
+  /**
+   * 品質グレードのテキストラベル（色非依存の情報表現）
+   * Issue #460: A11y - 色だけに頼らず必ずテキストラベルを併記する
+   */
+  qualityLabels: {
+    D: 'D',
+    C: 'C',
+    B: 'B',
+    A: 'A',
+    S: 'S',
+  },
 } as const;
+
+/**
+ * 品質グレード型
+ */
+export type QualityGrade = keyof typeof THEME.qualityLabels;

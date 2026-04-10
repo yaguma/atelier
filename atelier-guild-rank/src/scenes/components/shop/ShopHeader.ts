@@ -98,15 +98,16 @@ export class ShopHeader extends BaseComponent {
     }
 
     // rexUIラベルで戻るボタンを作成
+    // Issue #460: A11y - タッチターゲット最小44px
     this.backButton = this.rexUI.add.label({
       x: 700,
       y: 20,
       width: 80,
-      height: 32,
+      height: 44,
       background: this.scene.add
         .graphics()
         .fillStyle(Colors.ui.button.normal, 1)
-        .fillRoundedRect(0, 0, 80, 32, 4),
+        .fillRoundedRect(0, 0, 80, 44, 4),
       text: this.scene.add.text(0, 0, '戻る', {
         fontSize: `${THEME.sizes.medium}px`,
         color: `#${Colors.text.primary.toString(16).padStart(6, '0')}`,

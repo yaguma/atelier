@@ -158,7 +158,7 @@ export class QuestCardUI extends BaseComponent {
       nameY,
       displayName,
       {
-        fontSize: '14px',
+        fontSize: '16px',
         color: '#000000',
         fontStyle: 'bold',
       },
@@ -190,7 +190,7 @@ export class QuestCardUI extends BaseComponent {
       dialogueY,
       dialogue,
       {
-        fontSize: '12px',
+        fontSize: '16px',
         color: '#333333',
         wordWrap: { width: QuestCardUI.CARD_WIDTH - QuestCardUI.PADDING * 2 },
       },
@@ -218,7 +218,7 @@ export class QuestCardUI extends BaseComponent {
       conditionY,
       conditionLabel,
       {
-        fontSize: '12px',
+        fontSize: '16px',
         color: '#1a5276',
         fontStyle: 'bold',
       },
@@ -251,7 +251,7 @@ export class QuestCardUI extends BaseComponent {
       rewardY,
       rewardText,
       {
-        fontSize: '12px',
+        fontSize: '16px',
         color: '#000000',
       },
     );
@@ -282,7 +282,7 @@ export class QuestCardUI extends BaseComponent {
       deadlineY,
       deadlineText,
       {
-        fontSize: '12px',
+        fontSize: '16px',
         color: '#666666',
       },
     );

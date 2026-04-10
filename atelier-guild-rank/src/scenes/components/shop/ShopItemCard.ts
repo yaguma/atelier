@@ -151,21 +151,22 @@ export class ShopItemCard extends BaseComponent {
       return;
     }
 
-    // 購入可否を判定
+    // 購入可否を判定 - Issue #460: A11y - 無効理由をテキスト表示
     const canPurchase = this.canPurchase();
-    const buttonText = this.item.stock === 0 ? '売切' : '購入';
+    const buttonText = this.item.stock === 0 ? '売切' : !canPurchase ? '購入(金不足)' : '購入';
     const buttonColor = canPurchase ? Colors.ui.button.normal : Colors.ui.button.disabled;
 
     // rexUIラベルで購入ボタンを作成
+    // Issue #460: A11y - タッチターゲット最小44px
     this.purchaseButton = this.rexUI.add.label({
       x: 100,
       y: 145,
-      width: 80,
-      height: 28,
+      width: 100,
+      height: 44,
       background: this.scene.add
         .graphics()
         .fillStyle(buttonColor, 1)
-        .fillRoundedRect(0, 0, 80, 28, 4),
+        .fillRoundedRect(0, 0, 100, 44, 4),
       // rexUI labelのtext引数にはシーンに追加済みのGameObjectが必要なため scene.add.text を使用
       text: this.scene.add.text(0, 0, buttonText, {
         fontSize: `${THEME.sizes.small}px`,
