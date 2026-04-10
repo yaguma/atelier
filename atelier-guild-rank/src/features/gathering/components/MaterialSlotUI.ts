@@ -40,10 +40,10 @@ export interface MaterialDisplay {
  * - クリックイベントの処理
  */
 export class MaterialSlotUI extends BaseComponent {
-  /** 素材名テキストのデフォルトフォントサイズ(px) */
-  private static readonly NAME_DEFAULT_FONT_SIZE = 12;
-  /** 素材名テキストの最小フォントサイズ(px) */
-  private static readonly NAME_MIN_FONT_SIZE = 8;
+  /** 素材名テキストのデフォルトフォントサイズ(px) - Issue #460: A11y 最小16px */
+  private static readonly NAME_DEFAULT_FONT_SIZE = 16;
+  /** 素材名テキストの最小フォントサイズ(px) - Issue #460: A11y 縮小しても12px以上 */
+  private static readonly NAME_MIN_FONT_SIZE = 12;
   /** 素材名テキスト領域の下部マージン(px) */
   private static readonly NAME_TEXT_BOTTOM_MARGIN = 15;
   /** 素材名テキストの左右パディング(px) */

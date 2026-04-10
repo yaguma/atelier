@@ -13,6 +13,7 @@ import type { RexLabel } from '@presentation/types/rexui';
 import { BaseComponent } from '@presentation/ui/components/BaseComponent';
 import { Colors, THEME } from '@presentation/ui/theme';
 import { AnimationPresets, UIBackgroundBuilder } from '@presentation/ui/utils';
+import { prefersReducedMotion } from '@shared/theme';
 import Phaser from 'phaser';
 import type { IShopItem, OnPurchaseCallback, ShopItemCardConfig } from './types';
 
@@ -227,23 +228,26 @@ export class ShopItemCard extends BaseComponent {
     }
 
     // 【ホバー時の拡大】: AnimationPresetsを使用して一貫したアニメーションを適用 🔵
-    this.container.on('pointerover', () => {
-      this.scene.tweens.add({
-        targets: this.container,
-        ...AnimationPresets.scale.hover,
-        scaleX: AnimationPresets.scale.hover.scale,
-        scaleY: AnimationPresets.scale.hover.scale,
-        duration: AnimationPresets.timing.fast,
+    // Issue #460: prefers-reduced-motion 時はホバーアニメーション無効化
+    if (!prefersReducedMotion()) {
+      this.container.on('pointerover', () => {
+        this.scene.tweens.add({
+          targets: this.container,
+          ...AnimationPresets.scale.hover,
+          scaleX: AnimationPresets.scale.hover.scale,
+          scaleY: AnimationPresets.scale.hover.scale,
+          duration: AnimationPresets.timing.fast,
+        });
       });
-    });
 
-    // 【ホバー終了時のリセット】: AnimationPresetsを使用して通常状態に戻す 🔵
-    this.container.on('pointerout', () => {
-      this.scene.tweens.add({
-        targets: this.container,
-        ...AnimationPresets.scale.resetXY,
+      // 【ホバー終了時のリセット】: AnimationPresetsを使用して通常状態に戻す 🔵
+      this.container.on('pointerout', () => {
+        this.scene.tweens.add({
+          targets: this.container,
+          ...AnimationPresets.scale.resetXY,
+        });
       });
-    });
+    }
   }
 
   /**

@@ -85,6 +85,7 @@ const PHASE_LABELS: Record<string, string> = {
  */
 const PHASE_STATUS_ICONS = {
   ACTIVE: '●',
+  // TODO(#460): 完了フェーズ判定ロジック追加後に使用する
   COMPLETED: '✓',
   DISABLED: '⛔',
   INACTIVE: '○',
