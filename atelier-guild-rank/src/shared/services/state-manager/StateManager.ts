@@ -150,6 +150,11 @@ export class StateManager implements IStateManager {
     }
 
     if (this.state.actionPoints < amount) {
+      // Issue #472: AP不足イベントを発行
+      this.eventBus.emit(GameEventType.AP_INSUFFICIENT, {
+        required: amount,
+        current: this.state.actionPoints,
+      });
       return false;
     }
 
@@ -173,10 +178,18 @@ export class StateManager implements IStateManager {
       throw new DomainError(ErrorCodes.INVALID_OPERATION, 'Amount must be positive');
     }
 
+    const previousAmount = this.state.gold;
     this.state = {
       ...this.state,
       gold: this.state.gold + amount,
     };
+
+    // Issue #472: ゴールド変動イベントを発行
+    this.eventBus.emit(GameEventType.GOLD_CHANGED, {
+      previousAmount,
+      newAmount: this.state.gold,
+      delta: amount,
+    });
   }
 
   /**
@@ -196,10 +209,18 @@ export class StateManager implements IStateManager {
       return false;
     }
 
+    const previousAmount = this.state.gold;
     this.state = {
       ...this.state,
       gold: this.state.gold - amount,
     };
+
+    // Issue #472: ゴールド変動イベントを発行
+    this.eventBus.emit(GameEventType.GOLD_CHANGED, {
+      previousAmount,
+      newAmount: this.state.gold,
+      delta: -amount,
+    });
 
     return true;
   }

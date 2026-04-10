@@ -110,6 +110,12 @@ vi.mock('@presentation/ui/components/composite', () => ({
     setContent = vi.fn();
     destroy() {}
   },
+  Toast: class MockToast {
+    create() {}
+    show = vi.fn().mockReturnThis();
+    hide = vi.fn().mockReturnThis();
+    destroy() {}
+  },
 }));
 
 vi.mock('@presentation/ui/components/SidebarUI', () => ({

@@ -55,6 +55,18 @@ export class Toast extends BaseComponent {
     if (message !== undefined) {
       this.message = message;
       this.text?.setText(message);
+      // Issue #472: メッセージ長に応じて背景サイズを再計算
+      if (this.bg && this.text) {
+        const w = Math.max(
+          44,
+          (this.text.width || this.message.length * 12) + DesignTokens.spacing.md * 2,
+        );
+        const h = Math.max(
+          44,
+          (this.text.height || DesignTokens.sizes.medium) + DesignTokens.spacing.sm * 2,
+        );
+        this.bg.setSize(w, h);
+      }
     }
     this.container.setVisible(true);
     this.timer?.remove();
