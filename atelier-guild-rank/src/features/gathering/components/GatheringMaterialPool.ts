@@ -6,13 +6,15 @@
  * 6スロット（2行3列）の素材プール表示・更新・選択を管理する。
  */
 
+import { CONTENT_WORK_CENTER_X } from '@shared/constants/layout';
 import type { MaterialId, Quality } from '@shared/types';
 import type Phaser from 'phaser';
 import { type MaterialDisplay, MaterialSlotUI } from './MaterialSlotUI';
 
 /** 素材プールのレイアウト定数 */
 const POOL_LAYOUT = {
-  START_X: 320,
+  /** 3列グリッドの開始X（中央列がCONTENT_WORK_CENTER_Xに揃う） */
+  START_X: CONTENT_WORK_CENTER_X - 120,
   START_Y: 150,
   SPACING_X: 120,
   SPACING_Y: 120,
