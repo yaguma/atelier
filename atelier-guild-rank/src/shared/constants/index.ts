@@ -36,4 +36,4 @@ export {
   KEYBINDINGS,
   type KeybindingAction,
 } from './keybindings';
-export { MAIN_LAYOUT } from './layout';
+export { CONTENT_WORK_CENTER_X, MAIN_LAYOUT } from './layout';

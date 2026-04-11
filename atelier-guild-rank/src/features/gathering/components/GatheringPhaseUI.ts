@@ -7,6 +7,7 @@ import type {
 } from '@domain/interfaces/gathering-service.interface';
 import { Colors, THEME, toColorStr } from '@presentation/ui/theme';
 import { BaseComponent } from '@shared/components';
+import { CONTENT_WORK_CENTER_X } from '@shared/constants/layout';
 import type Phaser from 'phaser';
 import { calculateExtraGatheringApCost } from '../services/extra-gathering-ap-cost';
 import type { IGatheringLocation, ILocationSelectResult } from '../types/gathering-location';
@@ -17,8 +18,6 @@ import { GatheringResultPanel } from './GatheringResultPanel';
 import { GatheringToolbar } from './GatheringToolbar';
 import { LocationSelectUI } from './LocationSelectUI';
 import type { MaterialDisplay } from './MaterialSlotUI';
-
-const CONTENT_CENTER_X = 440;
 
 export class GatheringPhaseUI extends BaseComponent {
   private materialPool!: GatheringMaterialPool;
@@ -87,7 +86,7 @@ export class GatheringPhaseUI extends BaseComponent {
   private makeText(y: number, text: string, size: number, color: number, bold = false) {
     const t = this.scene.make
       .text({
-        x: CONTENT_CENTER_X,
+        x: CONTENT_WORK_CENTER_X,
         y,
         text,
         style: {

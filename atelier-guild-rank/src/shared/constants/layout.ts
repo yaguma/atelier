@@ -22,4 +22,13 @@ export const MAIN_LAYOUT = {
   CONTEXT_PANEL_PADDING: 8,
   /** フッター高さ */
   FOOTER_HEIGHT: 120,
+  /** ゲーム画面幅 */
+  GAME_WIDTH: 1280,
 } as const;
+
+/**
+ * ContentContainer内の作業領域中央X座標（ContextPanel領域を除く）
+ * 計算: (GAME_WIDTH - SIDEBAR_WIDTH - CONTEXT_PANEL_WIDTH) / 2 = (1280 - 200 - 260) / 2 = 410
+ */
+export const CONTENT_WORK_CENTER_X =
+  (MAIN_LAYOUT.GAME_WIDTH - MAIN_LAYOUT.SIDEBAR_WIDTH - MAIN_LAYOUT.CONTEXT_PANEL_WIDTH) / 2;
