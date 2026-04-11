@@ -20,6 +20,7 @@
  */
 
 import { BaseComponent, type BaseComponentOptions } from '@shared/components';
+import { MAIN_LAYOUT } from '@shared/constants';
 import { DesignTokens } from '@shared/theme';
 import type { GamePhase } from '@shared/types/common';
 import { VALID_GAME_PHASES } from '@shared/types/common';
@@ -64,8 +65,9 @@ const RAIL_COLORS = {
   NOTIFICATION_TEXT: '#F87171',
 } as const;
 
+/** @deprecated Issue #486: MainSceneからwidthオプションで渡される。フォールバック用 */
 const DEFAULT_WIDTH = 640;
-const DEFAULT_HEIGHT = 48;
+const DEFAULT_HEIGHT = MAIN_LAYOUT.PHASE_RAIL_HEIGHT;
 const TAB_HEIGHT = 40;
 const TAB_SPACING = 8;
 const PADDING_X = 16;

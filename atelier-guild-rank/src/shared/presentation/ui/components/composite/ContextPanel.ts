@@ -20,6 +20,7 @@
  */
 
 import { BaseComponent, type BaseComponentOptions } from '@shared/components';
+import { MAIN_LAYOUT } from '@shared/constants';
 import { Colors, DesignTokens } from '@shared/theme';
 import type Phaser from 'phaser';
 
@@ -43,7 +44,8 @@ export type ContextPanelChild = Phaser.GameObjects.GameObject & {
 // 定数
 // =============================================================================
 
-const DEFAULT_WIDTH = 280;
+const DEFAULT_WIDTH = MAIN_LAYOUT.CONTEXT_PANEL_WIDTH;
+/** @deprecated Issue #486: MainSceneからheightオプションで渡される。フォールバック用 */
 const DEFAULT_HEIGHT = 320;
 const PADDING = 16;
 

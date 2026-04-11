@@ -22,6 +22,7 @@
  */
 
 import { BaseComponent, type BaseComponentOptions } from '@shared/components';
+import { MAIN_LAYOUT } from '@shared/constants';
 import { DesignTokens } from '@shared/theme';
 import type { GuildRank as GuildRankType } from '@shared/types/common';
 import { GuildRank } from '@shared/types/common';
@@ -88,8 +89,9 @@ const HUD_COLORS = {
   BORDER: 0x374151,
 } as const;
 
+/** @deprecated Issue #486: MainSceneからwidthオプションで渡される。フォールバック用 */
 const DEFAULT_WIDTH = 824;
-const HUD_HEIGHT = 56;
+const HUD_HEIGHT = MAIN_LAYOUT.HUD_HEIGHT;
 const PADDING = 16;
 const GAUGE_WIDTH = 100;
 const GAUGE_HEIGHT = 16;

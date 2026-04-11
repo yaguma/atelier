@@ -59,18 +59,9 @@ import type {
 
 /**
  * レイアウト定数（共通定数から参照）
+ * Issue #486: layout.ts に一元管理
  */
 const LAYOUT = MAIN_LAYOUT;
-
-/**
- * Issue #458 Phase 4 A: 3カラムレイアウト拡張定数
- * - HUDBar: 画面上部 (y=0, height=HEADER_HEIGHT=60)
- * - PhaseRail: HUDBar直下 (y=HEADER_HEIGHT, height=PHASE_RAIL_HEIGHT)
- * - ContextPanel: 右カラム（Workspaceの右側に固定幅で配置）
- */
-const PHASE_RAIL_HEIGHT = 48;
-const CONTEXT_PANEL_WIDTH = 260;
-const CONTEXT_PANEL_PADDING = 8;
 
 // =============================================================================
 // MainSceneクラス
@@ -198,10 +189,10 @@ export class MainScene extends Phaser.Scene {
     this.data.set('deckService', realDeck ? createDeckServiceAdapter(realDeck) : null);
 
     // コンテンツコンテナを先に作成（PhaseManagerのコンストラクタで必要）
-    // Issue #458 Phase 4 A: PhaseRailを上部に昇格配置するため、contentY を HEADER_HEIGHT + PHASE_RAIL_HEIGHT に下げる
+    // PhaseRailを上部に昇格配置するため、contentY を HEADER_HEIGHT + PHASE_RAIL_HEIGHT に下げる
     this._contentContainer = this.add.container(
       LAYOUT.SIDEBAR_WIDTH,
-      LAYOUT.HEADER_HEIGHT + PHASE_RAIL_HEIGHT,
+      LAYOUT.HEADER_HEIGHT + LAYOUT.PHASE_RAIL_HEIGHT,
     );
     this._contentContainer.name = 'MainScene.contentContainer';
 
@@ -286,7 +277,7 @@ export class MainScene extends Phaser.Scene {
     // PhaseRail（HUDBar直下、サイドバー右側から開始）
     this.phaseRail = new PhaseRail(this, LAYOUT.SIDEBAR_WIDTH, LAYOUT.HEADER_HEIGHT, {
       width: workspaceWidth,
-      height: PHASE_RAIL_HEIGHT,
+      height: LAYOUT.PHASE_RAIL_HEIGHT,
       current: this.stateManager.getState().currentPhase,
       onPhaseClick: (phase) => {
         this.gameFlowManager.switchPhase({ targetPhase: phase as GamePhase }).catch(() => {
@@ -308,17 +299,21 @@ export class MainScene extends Phaser.Scene {
 
     // ContextPanel（右カラム、Workspace 右端にオーバーレイ配置）
     // 中心基準で描画されるので、右端から CONTEXT_PANEL_WIDTH/2 + padding を引いた位置に配置
-    const contextPanelCenterX = screenWidth - CONTEXT_PANEL_WIDTH / 2 - CONTEXT_PANEL_PADDING;
+    const contextPanelCenterX =
+      screenWidth - LAYOUT.CONTEXT_PANEL_WIDTH / 2 - LAYOUT.CONTEXT_PANEL_PADDING;
     const contextPanelHeight =
       this.cameras.main.height -
       LAYOUT.HEADER_HEIGHT -
-      PHASE_RAIL_HEIGHT -
+      LAYOUT.PHASE_RAIL_HEIGHT -
       LAYOUT.FOOTER_HEIGHT -
-      CONTEXT_PANEL_PADDING * 2;
+      LAYOUT.CONTEXT_PANEL_PADDING * 2;
     const contextPanelCenterY =
-      LAYOUT.HEADER_HEIGHT + PHASE_RAIL_HEIGHT + CONTEXT_PANEL_PADDING + contextPanelHeight / 2;
+      LAYOUT.HEADER_HEIGHT +
+      LAYOUT.PHASE_RAIL_HEIGHT +
+      LAYOUT.CONTEXT_PANEL_PADDING +
+      contextPanelHeight / 2;
     this.contextPanel = new ContextPanel(this, contextPanelCenterX, contextPanelCenterY, {
-      width: CONTEXT_PANEL_WIDTH,
+      width: LAYOUT.CONTEXT_PANEL_WIDTH,
       height: Math.max(120, contextPanelHeight),
     });
     this.contextPanel.create();
@@ -343,7 +338,7 @@ export class MainScene extends Phaser.Scene {
 
     // Issue #472: Toast通知（右上配置）
     const toastX = screenWidth - 160;
-    const toastY = LAYOUT.HEADER_HEIGHT + PHASE_RAIL_HEIGHT + 16;
+    const toastY = LAYOUT.HEADER_HEIGHT + LAYOUT.PHASE_RAIL_HEIGHT + 16;
     this.toast = new Toast(this, toastX, toastY);
     this.toast.create();
   }

@@ -11,6 +11,7 @@
  * @信頼性レベル 🔵 REQ-006・architecture.md「FooterUI変更」より
  */
 
+import { MAIN_LAYOUT } from '@shared/constants';
 import type { IEventBus } from '@shared/services/event-bus/types';
 import type { IGameFlowManager } from '@shared/services/game-flow/game-flow-manager.interface';
 import type { GamePhase } from '@shared/types';
@@ -43,12 +44,13 @@ const FOOTER_COLORS = {
 
 /**
  * フッターレイアウト定数
+ * Issue #486: 幅・高さは MAIN_LAYOUT から参照
  */
 const FOOTER_LAYOUT = {
-  /** フッター幅（画面幅 - サイドバー幅） */
-  WIDTH: 1024 - 200,
+  /** フッター幅（画面幅 - サイドバー幅） — 注: 実際の幅は画面サイズ依存。この値はフォールバック */
+  WIDTH: 1024 - MAIN_LAYOUT.SIDEBAR_WIDTH,
   /** フッター高さ */
-  HEIGHT: 120,
+  HEIGHT: MAIN_LAYOUT.FOOTER_HEIGHT,
   /** パディング */
   PADDING: 16,
   /** PhaseTabUIのY座標オフセット */
