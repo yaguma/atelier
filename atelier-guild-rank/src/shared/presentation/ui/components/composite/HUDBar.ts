@@ -225,11 +225,11 @@ export class HUDBar extends BaseComponent {
 
     // セクションX座標を幅から算出
     const w = this.width;
-    const S = HUD_SECTION_RATIOS;
+    const sections = HUD_SECTION_RATIOS;
 
     // ランクラベル
     const rankLabel = this.scene.make.text({
-      x: w * S.RANK,
+      x: w * sections.RANK,
       y: 12,
       text: 'ランク:',
       style: { fontSize: '14px', color: '#9CA3AF' },
@@ -240,7 +240,7 @@ export class HUDBar extends BaseComponent {
 
     // ランクテキスト
     this.rankTextEl = this.scene.make.text({
-      x: w * S.RANK_TEXT,
+      x: w * sections.RANK_TEXT,
       y: 10,
       text: '',
       style: { fontSize: '18px', color: '#F9FAFB', fontStyle: 'bold' },
@@ -252,7 +252,7 @@ export class HUDBar extends BaseComponent {
     // 昇格ゲージ背景（静的）
     this.gaugeBackground = this.scene.add.graphics();
     if (this.gaugeBackground.fillStyle) {
-      const gaugeX = w * S.GAUGE;
+      const gaugeX = w * sections.GAUGE;
       this.gaugeBackground.fillStyle(0x374151, 1);
       if (this.gaugeBackground.fillRoundedRect) {
         this.gaugeBackground.fillRoundedRect(gaugeX, 14, GAUGE_WIDTH, GAUGE_HEIGHT, 4);
@@ -270,7 +270,7 @@ export class HUDBar extends BaseComponent {
 
     // 残り日数ラベル
     const daysLabel = this.scene.make.text({
-      x: w * S.DAYS_LABEL,
+      x: w * sections.DAYS_LABEL,
       y: 12,
       text: '残り:',
       style: { fontSize: '14px', color: '#9CA3AF' },
@@ -281,7 +281,7 @@ export class HUDBar extends BaseComponent {
 
     // 残り日数テキスト
     this.daysTextEl = this.scene.make.text({
-      x: w * S.DAYS_TEXT,
+      x: w * sections.DAYS_TEXT,
       y: 10,
       text: '',
       style: { fontSize: '18px', color: '#F9FAFB', fontStyle: 'bold' },
@@ -292,7 +292,7 @@ export class HUDBar extends BaseComponent {
 
     // ゴールドアイコン
     const goldIcon = this.scene.make.text({
-      x: w * S.GOLD_ICON,
+      x: w * sections.GOLD_ICON,
       y: 12,
       text: 'G',
       style: { fontSize: '16px', color: '#FCD34D', fontStyle: 'bold' },
@@ -303,7 +303,7 @@ export class HUDBar extends BaseComponent {
 
     // ゴールドテキスト
     this.goldTextEl = this.scene.make.text({
-      x: w * S.GOLD_TEXT,
+      x: w * sections.GOLD_TEXT,
       y: 10,
       text: '',
       style: { fontSize: '18px', color: '#FCD34D', fontStyle: 'bold' },
@@ -314,7 +314,7 @@ export class HUDBar extends BaseComponent {
 
     // APラベル
     const apLabel = this.scene.make.text({
-      x: w * S.AP_LABEL,
+      x: w * sections.AP_LABEL,
       y: 12,
       text: 'AP:',
       style: { fontSize: '14px', color: '#9CA3AF' },
@@ -325,7 +325,7 @@ export class HUDBar extends BaseComponent {
 
     // APテキスト
     this.apTextEl = this.scene.make.text({
-      x: w * S.AP_TEXT,
+      x: w * sections.AP_TEXT,
       y: 10,
       text: '',
       style: { fontSize: '18px', color: '#60A5FA', fontStyle: 'bold' },
@@ -336,7 +336,7 @@ export class HUDBar extends BaseComponent {
 
     // 貢献度テキスト（Phase 2 互換フィールド、右側寄せ）
     this.contributionTextEl = this.scene.make.text({
-      x: w * (1 - S.CONTRIBUTION_RIGHT_OFFSET),
+      x: w * (1 - sections.CONTRIBUTION_RIGHT_OFFSET),
       y: 12,
       text: '',
       style: { fontSize: '14px', color: '#9CA3AF', fontStyle: 'normal' },
