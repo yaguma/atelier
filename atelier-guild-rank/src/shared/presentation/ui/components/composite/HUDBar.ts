@@ -90,11 +90,38 @@ const HUD_COLORS = {
 } as const;
 
 /** @deprecated Issue #486: MainSceneからwidthオプションで渡される。フォールバック用 */
-const DEFAULT_WIDTH = 824;
+const DEFAULT_WIDTH = MAIN_LAYOUT.GAME_WIDTH - MAIN_LAYOUT.SIDEBAR_WIDTH;
 const HUD_HEIGHT = MAIN_LAYOUT.HUD_HEIGHT;
-const PADDING = 16;
 const GAUGE_WIDTH = 100;
 const GAUGE_HEIGHT = 16;
+
+/**
+ * HUDBar 内部セクションの相対配置比率
+ * HUDBar幅に対するパーセンテージで各セクション開始位置を定義する。
+ * Issue #489: ハードコードされた絶対px座標をレスポンシブ化
+ */
+const HUD_SECTION_RATIOS = {
+  /** ランクラベル開始位置 */
+  RANK: 0.015,
+  /** ランクテキスト開始位置 */
+  RANK_TEXT: 0.07,
+  /** 昇格ゲージ開始位置 */
+  GAUGE: 0.13,
+  /** 残り日数ラベル開始位置 */
+  DAYS_LABEL: 0.24,
+  /** 残り日数テキスト開始位置 */
+  DAYS_TEXT: 0.29,
+  /** ゴールドアイコン開始位置 */
+  GOLD_ICON: 0.39,
+  /** ゴールドテキスト開始位置 */
+  GOLD_TEXT: 0.41,
+  /** APラベル開始位置 */
+  AP_LABEL: 0.5,
+  /** APテキスト開始位置 */
+  AP_TEXT: 0.54,
+  /** 貢献度テキスト（右寄せ）: 右端からのオフセット比率 */
+  CONTRIBUTION_RIGHT_OFFSET: 0.15,
+} as const;
 
 const DEFAULT_DATA: HUDBarData = {
   gold: 0,
@@ -196,9 +223,13 @@ export class HUDBar extends BaseComponent {
 
     this.container.setDepth(DesignTokens.zIndex.hud);
 
+    // セクションX座標を幅から算出
+    const w = this.width;
+    const S = HUD_SECTION_RATIOS;
+
     // ランクラベル
     const rankLabel = this.scene.make.text({
-      x: PADDING,
+      x: w * S.RANK,
       y: 12,
       text: 'ランク:',
       style: { fontSize: '14px', color: '#9CA3AF' },
@@ -209,7 +240,7 @@ export class HUDBar extends BaseComponent {
 
     // ランクテキスト
     this.rankTextEl = this.scene.make.text({
-      x: PADDING + 60,
+      x: w * S.RANK_TEXT,
       y: 10,
       text: '',
       style: { fontSize: '18px', color: '#F9FAFB', fontStyle: 'bold' },
@@ -221,11 +252,12 @@ export class HUDBar extends BaseComponent {
     // 昇格ゲージ背景（静的）
     this.gaugeBackground = this.scene.add.graphics();
     if (this.gaugeBackground.fillStyle) {
+      const gaugeX = w * S.GAUGE;
       this.gaugeBackground.fillStyle(0x374151, 1);
       if (this.gaugeBackground.fillRoundedRect) {
-        this.gaugeBackground.fillRoundedRect(140, 14, GAUGE_WIDTH, GAUGE_HEIGHT, 4);
+        this.gaugeBackground.fillRoundedRect(gaugeX, 14, GAUGE_WIDTH, GAUGE_HEIGHT, 4);
       } else if (this.gaugeBackground.fillRect) {
-        this.gaugeBackground.fillRect(140, 14, GAUGE_WIDTH, GAUGE_HEIGHT);
+        this.gaugeBackground.fillRect(gaugeX, 14, GAUGE_WIDTH, GAUGE_HEIGHT);
       }
     }
     if (this.gaugeBackground.setName) this.gaugeBackground.setName('HUDBar.gaugeBackground');
@@ -238,7 +270,7 @@ export class HUDBar extends BaseComponent {
 
     // 残り日数ラベル
     const daysLabel = this.scene.make.text({
-      x: 260,
+      x: w * S.DAYS_LABEL,
       y: 12,
       text: '残り:',
       style: { fontSize: '14px', color: '#9CA3AF' },
@@ -249,7 +281,7 @@ export class HUDBar extends BaseComponent {
 
     // 残り日数テキスト
     this.daysTextEl = this.scene.make.text({
-      x: 310,
+      x: w * S.DAYS_TEXT,
       y: 10,
       text: '',
       style: { fontSize: '18px', color: '#F9FAFB', fontStyle: 'bold' },
@@ -260,7 +292,7 @@ export class HUDBar extends BaseComponent {
 
     // ゴールドアイコン
     const goldIcon = this.scene.make.text({
-      x: 420,
+      x: w * S.GOLD_ICON,
       y: 12,
       text: 'G',
       style: { fontSize: '16px', color: '#FCD34D', fontStyle: 'bold' },
@@ -271,7 +303,7 @@ export class HUDBar extends BaseComponent {
 
     // ゴールドテキスト
     this.goldTextEl = this.scene.make.text({
-      x: 440,
+      x: w * S.GOLD_TEXT,
       y: 10,
       text: '',
       style: { fontSize: '18px', color: '#FCD34D', fontStyle: 'bold' },
@@ -282,7 +314,7 @@ export class HUDBar extends BaseComponent {
 
     // APラベル
     const apLabel = this.scene.make.text({
-      x: 540,
+      x: w * S.AP_LABEL,
       y: 12,
       text: 'AP:',
       style: { fontSize: '14px', color: '#9CA3AF' },
@@ -293,7 +325,7 @@ export class HUDBar extends BaseComponent {
 
     // APテキスト
     this.apTextEl = this.scene.make.text({
-      x: 580,
+      x: w * S.AP_TEXT,
       y: 10,
       text: '',
       style: { fontSize: '18px', color: '#60A5FA', fontStyle: 'bold' },
@@ -304,7 +336,7 @@ export class HUDBar extends BaseComponent {
 
     // 貢献度テキスト（Phase 2 互換フィールド、右側寄せ）
     this.contributionTextEl = this.scene.make.text({
-      x: Math.max(680, this.width - 160),
+      x: w * (1 - S.CONTRIBUTION_RIGHT_OFFSET),
       y: 12,
       text: '',
       style: { fontSize: '14px', color: '#9CA3AF', fontStyle: 'normal' },
@@ -444,7 +476,8 @@ export class HUDBar extends BaseComponent {
     this.gaugeFill.fillStyle(color, 1);
     const ratio = Math.max(0, Math.min(100, this.data.promotionGauge)) / 100;
     const fillWidth = ratio * GAUGE_WIDTH;
-    this.gaugeFill.fillRect(140, 14, fillWidth, GAUGE_HEIGHT);
+    const gaugeX = this.width * HUD_SECTION_RATIOS.GAUGE;
+    this.gaugeFill.fillRect(gaugeX, 14, fillWidth, GAUGE_HEIGHT);
   }
 
   private updateBlinking(previouslyBlinking: boolean): void {
