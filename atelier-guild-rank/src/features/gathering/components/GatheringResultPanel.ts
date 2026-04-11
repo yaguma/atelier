@@ -13,8 +13,6 @@ import type Phaser from 'phaser';
 
 /** 獲得素材パネルのレイアウト定数 */
 const RESULT_LAYOUT = {
-  /** コンテンツ中央X */
-  CONTENT_CENTER_X: CONTENT_WORK_CENTER_X,
   /** タイトルY */
   TITLE_Y: 370,
   /** 素材表示Y */
@@ -52,7 +50,7 @@ export class GatheringResultPanel {
   create(): void {
     const gatheredTitle = this.scene.make
       .text({
-        x: RESULT_LAYOUT.CONTENT_CENTER_X,
+        x: CONTENT_WORK_CENTER_X,
         y: RESULT_LAYOUT.TITLE_Y,
         text: '獲得素材:',
         style: {
