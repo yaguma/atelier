@@ -47,8 +47,8 @@ const FOOTER_COLORS = {
  * Issue #486: 幅・高さは MAIN_LAYOUT から参照
  */
 const FOOTER_LAYOUT = {
-  /** フッター幅（画面幅 - サイドバー幅） — 注: 実際の幅は画面サイズ依存。この値はフォールバック */
-  WIDTH: 1024 - MAIN_LAYOUT.SIDEBAR_WIDTH,
+  /** フッター幅（画面幅 - サイドバー幅） */
+  WIDTH: MAIN_LAYOUT.GAME_WIDTH - MAIN_LAYOUT.SIDEBAR_WIDTH,
   /** フッター高さ */
   HEIGHT: MAIN_LAYOUT.FOOTER_HEIGHT,
   /** パディング */
