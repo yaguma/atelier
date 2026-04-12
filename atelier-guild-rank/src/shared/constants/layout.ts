@@ -27,8 +27,14 @@ export const MAIN_LAYOUT = {
 } as const;
 
 /**
- * ContentContainer内の作業領域中央X座標（ContextPanel領域を除く）
- * 計算: (GAME_WIDTH - SIDEBAR_WIDTH - CONTEXT_PANEL_WIDTH) / 2 = (1280 - 200 - 260) / 2 = 410
+ * ContentContainer内の作業領域幅（ContextPanel領域を除く）
+ * 計算: GAME_WIDTH - SIDEBAR_WIDTH - CONTEXT_PANEL_WIDTH = 1280 - 200 - 260 = 820
  */
-export const CONTENT_WORK_CENTER_X =
-  (MAIN_LAYOUT.GAME_WIDTH - MAIN_LAYOUT.SIDEBAR_WIDTH - MAIN_LAYOUT.CONTEXT_PANEL_WIDTH) / 2;
+export const CONTENT_WORK_WIDTH =
+  MAIN_LAYOUT.GAME_WIDTH - MAIN_LAYOUT.SIDEBAR_WIDTH - MAIN_LAYOUT.CONTEXT_PANEL_WIDTH;
+
+/**
+ * ContentContainer内の作業領域中央X座標（ContextPanel領域を除く）
+ * 計算: CONTENT_WORK_WIDTH / 2 = 820 / 2 = 410
+ */
+export const CONTENT_WORK_CENTER_X = CONTENT_WORK_WIDTH / 2;

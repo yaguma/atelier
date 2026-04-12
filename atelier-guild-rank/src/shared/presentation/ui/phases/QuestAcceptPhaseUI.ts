@@ -17,7 +17,7 @@
 
 import { Quest } from '@domain/entities/Quest';
 import { ScrollableContainer } from '@shared/components/ScrollableContainer';
-import { MAIN_LAYOUT } from '@shared/constants';
+import { CONTENT_WORK_CENTER_X, CONTENT_WORK_WIDTH, MAIN_LAYOUT } from '@shared/constants';
 import { getSelectionIndexFromKey, isKeyForAction } from '@shared/constants/keybindings';
 import { GameEventType } from '@shared/types/events';
 import type { IActiveQuest } from '@shared/types/quests';
@@ -248,7 +248,7 @@ export class QuestAcceptPhaseUI extends BaseComponent {
    * - 定数化されたスタイルで統一感を保つ
    */
   private createTitle(): void {
-    this.titleText = this.scene.add.text(440, 20, QuestAcceptPhaseUI.TITLE_TEXT, {
+    this.titleText = this.scene.add.text(CONTENT_WORK_CENTER_X, 20, QuestAcceptPhaseUI.TITLE_TEXT, {
       fontSize: QuestAcceptPhaseUI.TITLE_FONT_SIZE,
       color: QuestAcceptPhaseUI.TITLE_COLOR,
       fontStyle: 'bold',
@@ -844,13 +844,19 @@ export class QuestAcceptPhaseUI extends BaseComponent {
     this.destroyAcceptedSectionHeader();
 
     // 区切り線（タイトルの上に十分な余白を確保）
-    this.acceptedSectionDivider = this.scene.add.rectangle(440, sectionY, 700, 2, 0xcccccc);
+    this.acceptedSectionDivider = this.scene.add.rectangle(
+      CONTENT_WORK_CENTER_X,
+      sectionY,
+      CONTENT_WORK_WIDTH - 120,
+      2,
+      0xcccccc,
+    );
     targetContainer.add(this.acceptedSectionDivider);
 
     // セクションタイトル（区切り線の下に配置）
     // Issue #441: Phaserテキスト描画で日本語文字上部が見切れる問題をpaddingで対策
     this.acceptedSectionTitle = this.scene.add.text(
-      440,
+      CONTENT_WORK_CENTER_X,
       sectionY + 15,
       QuestAcceptPhaseUI.ACCEPTED_SECTION_TITLE,
       {
@@ -920,14 +926,13 @@ export class QuestAcceptPhaseUI extends BaseComponent {
    * 【カードスクロールエリア作成】: ScrollableContainerを使用してスクロール可能エリアを作成
    */
   private createCardScrollArea(): void {
-    const gameWidth = this.scene.cameras?.main?.width ?? 1280;
     const gameHeight = this.scene.cameras?.main?.height ?? 720;
 
     this.scrollableContainer = new ScrollableContainer(this.scene, this.container, {
       maskBounds: {
         x: MAIN_LAYOUT.SIDEBAR_WIDTH,
         y: MAIN_LAYOUT.HEADER_HEIGHT + QuestAcceptPhaseUI.CARD_AREA_OFFSET_Y,
-        width: gameWidth - MAIN_LAYOUT.SIDEBAR_WIDTH,
+        width: CONTENT_WORK_WIDTH,
         height:
           gameHeight -
           MAIN_LAYOUT.HEADER_HEIGHT -
