@@ -417,7 +417,7 @@ export class LocationSelectUI extends BaseComponent {
       text: `AP:${location.movementAPCost}`,
       style: {
         fontSize: `${THEME.sizes.small}px`,
-        color: '#FFD700',
+        color: '#B8860B',
         fontFamily: THEME.fonts.primary,
       },
       add: false,
