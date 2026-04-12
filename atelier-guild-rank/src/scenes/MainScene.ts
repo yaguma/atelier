@@ -32,7 +32,6 @@ import {
   createQuestServiceAdapter,
 } from '@shared/services/delivery-phase-adapters';
 import { Container, ServiceKeys } from '@shared/services/di/container';
-import { getPhaseConditionText } from '@shared/services/game-flow/phase-condition-text';
 import { GamePhase } from '@shared/types/common';
 import type {
   GameEndStats,
@@ -227,9 +226,6 @@ export class MainScene extends Phaser.Scene {
 
     // サイドバーの初期更新
     this.phaseManager.updateSidebar(this.sidebarUI);
-
-    // Issue #471: 到達条件テキストの初期設定
-    this.updatePhaseConditionText(initialPhase);
   }
 
   // ===========================================================================
@@ -375,8 +371,6 @@ export class MainScene extends Phaser.Scene {
         this.updateHeader();
         // Issue #458 Phase 4 A: PhaseRailのアクティブタブを更新
         this.phaseRail.setCurrent(busEvent.payload.newPhase);
-        // Issue #471: 到達条件テキストを更新
-        this.updatePhaseConditionText(busEvent.payload.newPhase);
       }),
     );
 
@@ -529,15 +523,6 @@ export class MainScene extends Phaser.Scene {
     this.gameFlowManager.switchPhase({ targetPhase: GamePhase.GATHERING }).catch(() => {
       // 遷移失敗時は何もしない（採取セッション中など）
     });
-  }
-
-  /**
-   * 到達条件テキストを更新する
-   */
-  private updatePhaseConditionText(phase: GamePhase): void {
-    const hasActiveQuests = this.questService.getActiveQuests().length > 0;
-    const conditionText = getPhaseConditionText(phase, hasActiveQuests);
-    this.phaseRail.setConditionText(conditionText);
   }
 
   // ===========================================================================
