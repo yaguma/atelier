@@ -12,6 +12,7 @@
 import type { IRankService, PromotionResult } from '@features/rank';
 import type { RexLabel, RexUIPlugin } from '@presentation/types/rexui';
 import { THEME } from '@presentation/ui/theme';
+import { MAIN_LAYOUT } from '@shared/constants';
 import { isKeyForAction } from '@shared/constants/keybindings';
 import type { IEventBus } from '@shared/services';
 import { Container, ServiceKeys } from '@shared/services/di/container';
@@ -26,8 +27,8 @@ import Phaser from 'phaser';
  * レイアウト定数
  */
 const LAYOUT = {
-  /** ヘッダー高さ */
-  HEADER_HEIGHT: 60,
+  /** ヘッダー高さ（MAIN_LAYOUT から参照） */
+  HEADER_HEIGHT: MAIN_LAYOUT.HEADER_HEIGHT,
   /** フッター高さ */
   FOOTER_HEIGHT: 80,
   /** サイドパディング */

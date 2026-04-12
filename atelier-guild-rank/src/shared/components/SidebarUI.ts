@@ -9,6 +9,7 @@
  * @信頼性レベル 🔵 requirements.md セクション2.3に基づく
  */
 
+import { MAIN_LAYOUT } from '@shared/constants';
 import type { ICraftedItem, IMaterialInstance } from '@shared/types/materials';
 import type { IActiveQuest } from '@shared/types/quests';
 import type Phaser from 'phaser';
@@ -52,12 +53,13 @@ const COLORS = {
 
 /**
  * サイドバーレイアウト定数
+ * Issue #486: 幅・ヘッダー高さは MAIN_LAYOUT から参照
  */
 const SIDEBAR_LAYOUT = {
   /** サイドバー幅 */
-  WIDTH: 200,
-  /** サイドバー高さ（画面高さ - ヘッダー高さ） */
-  HEIGHT: 768 - 60,
+  WIDTH: MAIN_LAYOUT.SIDEBAR_WIDTH,
+  /** サイドバー高さ（画面高さ - ヘッダー高さ） — 注: 実際の画面高さは実行時依存 */
+  HEIGHT: 768 - MAIN_LAYOUT.HEADER_HEIGHT,
   /** パディング */
   PADDING: 12,
   /** セクション間隔 */

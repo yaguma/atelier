@@ -12,6 +12,7 @@
 import type { IPurchaseResult, IShopItem, IShopService } from '@features/shop';
 import type { RexLabel, RexSizer, RexUIPlugin } from '@presentation/types/rexui';
 import { THEME } from '@presentation/ui/theme';
+import { MAIN_LAYOUT } from '@shared/constants';
 import { Container, ServiceKeys } from '@shared/services/di/container';
 import type { GuildRank } from '@shared/types';
 import Phaser from 'phaser';
@@ -24,8 +25,8 @@ import Phaser from 'phaser';
  * レイアウト定数
  */
 const LAYOUT = {
-  /** ヘッダー高さ */
-  HEADER_HEIGHT: 60,
+  /** ヘッダー高さ（MAIN_LAYOUT から参照） */
+  HEADER_HEIGHT: MAIN_LAYOUT.HEADER_HEIGHT,
   /** フッター高さ */
   FOOTER_HEIGHT: 80,
   /** サイドパディング */

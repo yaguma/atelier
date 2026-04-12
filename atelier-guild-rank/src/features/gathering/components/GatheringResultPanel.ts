@@ -8,12 +8,11 @@
 
 import type { MaterialInstance } from '@domain/entities/MaterialInstance';
 import { THEME, toColorStr } from '@presentation/ui/theme';
+import { CONTENT_WORK_CENTER_X } from '@shared/constants/layout';
 import type Phaser from 'phaser';
 
 /** 獲得素材パネルのレイアウト定数 */
 const RESULT_LAYOUT = {
-  /** コンテンツ中央X */
-  CONTENT_CENTER_X: 440,
   /** タイトルY */
   TITLE_Y: 370,
   /** 素材表示Y */
@@ -22,8 +21,8 @@ const RESULT_LAYOUT = {
   COLUMNS: 4,
   /** 列間隔 */
   COLUMN_WIDTH: 130,
-  /** アイテム開始X（4列を中央揃え） */
-  ITEM_START_X: 180,
+  /** アイテム開始X（4列を中央揃え: CONTENT_WORK_CENTER_X - 1.5 * COLUMN_WIDTH） */
+  ITEM_START_X: CONTENT_WORK_CENTER_X - 1.5 * 130,
   /** 行高さ */
   LINE_HEIGHT: 30,
 } as const;
@@ -51,7 +50,7 @@ export class GatheringResultPanel {
   create(): void {
     const gatheredTitle = this.scene.make
       .text({
-        x: RESULT_LAYOUT.CONTENT_CENTER_X,
+        x: CONTENT_WORK_CENTER_X,
         y: RESULT_LAYOUT.TITLE_Y,
         text: '獲得素材:',
         style: {

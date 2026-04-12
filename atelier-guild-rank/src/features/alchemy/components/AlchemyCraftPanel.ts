@@ -2,7 +2,7 @@
 
 import type { RexRoundRectangle, RexUIPlugin } from '@presentation/types/rexui';
 import { THEME } from '@presentation/ui/theme';
-import { MAIN_LAYOUT } from '@shared/constants';
+import { CONTENT_WORK_WIDTH, MAIN_LAYOUT } from '@shared/constants';
 import type { Quality } from '@shared/types';
 import type Phaser from 'phaser';
 
@@ -23,11 +23,10 @@ export class AlchemyCraftPanel {
   ) {}
 
   create(): void {
-    const gameWidth = this.scene.cameras.main.width;
     const gameHeight = this.scene.cameras.main.height;
     const buttonWidth = 180;
     const buttonHeight = 44;
-    const buttonX = gameWidth - MAIN_LAYOUT.SIDEBAR_WIDTH - buttonWidth / 2 - 20;
+    const buttonX = CONTENT_WORK_WIDTH - buttonWidth / 2 - 20;
     const buttonY = gameHeight - MAIN_LAYOUT.HEADER_HEIGHT - MAIN_LAYOUT.FOOTER_HEIGHT - 30;
 
     this.craftButtonContainer = this.scene.add.container(buttonX, buttonY);

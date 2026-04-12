@@ -8,6 +8,7 @@
  */
 
 import { THEME } from '@presentation/ui/theme';
+import { CONTENT_WORK_CENTER_X, CONTENT_WORK_WIDTH } from '@shared/constants';
 import type Phaser from 'phaser';
 import { BaseComponent } from '../components/BaseComponent';
 import {
@@ -35,7 +36,7 @@ const UI_LAYOUT = {
   COMPONENT_X: 0,
   COMPONENT_Y: 0,
   /** タイトルX座標（コンテンツ領域の視覚的中央） */
-  TITLE_X: 440,
+  TITLE_X: CONTENT_WORK_CENTER_X,
   /** タイトルY座標 */
   TITLE_Y: 20,
   /** サブコンポーネントの左余白 */
@@ -46,9 +47,9 @@ const UI_LAYOUT = {
   ITEM_SELECTOR_Y: 390,
   PREVIEW_Y: 300,
   // Issue #453: プレビュー領域（X=20〜480, Y=300〜380 付近）と重ならないよう右側に配置
-  BUTTON_X: 620,
+  BUTTON_X: CONTENT_WORK_WIDTH - 200,
   BUTTON_Y: 340,
-  RESULT_PANEL_X: 400,
+  RESULT_PANEL_X: CONTENT_WORK_CENTER_X,
   RESULT_PANEL_Y: 250,
 } as const;
 
