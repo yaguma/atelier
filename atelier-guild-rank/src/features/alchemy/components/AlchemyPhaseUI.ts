@@ -5,6 +5,7 @@ import type { MaterialInstance } from '@domain/entities/MaterialInstance';
 import type { IAlchemyService } from '@domain/interfaces/alchemy-service.interface';
 import { BaseComponent } from '@presentation/ui/components/BaseComponent';
 import { THEME } from '@presentation/ui/theme';
+import { CONTENT_WORK_CENTER_X } from '@shared/constants/layout';
 import type { CardId, Quality } from '@shared/types';
 
 import type Phaser from 'phaser';
@@ -70,7 +71,7 @@ export class AlchemyPhaseUI extends BaseComponent {
   private createTitle(): void {
     const titleText = this.scene.make
       .text({
-        x: 440,
+        x: CONTENT_WORK_CENTER_X,
         y: 20,
         text: '⚗️ 調合フェーズ',
         style: {
