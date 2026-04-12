@@ -24,6 +24,8 @@ export const MAIN_LAYOUT = {
   FOOTER_HEIGHT: 120,
   /** ゲーム画面幅 */
   GAME_WIDTH: 1280,
+  /** ゲーム画面高さ */
+  GAME_HEIGHT: 720,
 } as const;
 
 /**

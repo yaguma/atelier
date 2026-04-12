@@ -58,8 +58,8 @@ const COLORS = {
 const SIDEBAR_LAYOUT = {
   /** サイドバー幅 */
   WIDTH: MAIN_LAYOUT.SIDEBAR_WIDTH,
-  /** サイドバー高さ（画面高さ - ヘッダー高さ） — 注: 実際の画面高さは実行時依存 */
-  HEIGHT: 768 - MAIN_LAYOUT.HEADER_HEIGHT,
+  /** サイドバー高さ（画面高さ - ヘッダー高さ） */
+  HEIGHT: MAIN_LAYOUT.GAME_HEIGHT - MAIN_LAYOUT.HEADER_HEIGHT,
   /** パディング */
   PADDING: 12,
   /** セクション間隔 */
