@@ -116,7 +116,7 @@ export class GatheringToolbar {
           this.handleReroll();
         },
         width: 140,
-        height: 40,
+        height: 44,
         addToScene: false,
       },
     );
@@ -134,7 +134,7 @@ export class GatheringToolbar {
           this.callbacks.onEndGathering();
         },
         width: 120,
-        height: 40,
+        height: 44,
         addToScene: false,
       },
     );

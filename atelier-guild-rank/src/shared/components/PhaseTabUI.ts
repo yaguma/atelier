@@ -238,7 +238,7 @@ export class PhaseTabUI extends BaseComponent {
         y: TAB_LAYOUT.TAB_Y - TAB_LAYOUT.TEXT_OFFSET_Y,
         text: label,
         style: {
-          fontSize: '14px',
+          fontSize: '16px',
           color: isActive ? TAB_COLORS.ACTIVE_TEXT : TAB_COLORS.INACTIVE_TEXT,
           fontStyle: isActive ? 'bold' : 'normal',
         },
@@ -278,7 +278,7 @@ export class PhaseTabUI extends BaseComponent {
       x: endDayX - TAB_LAYOUT.END_DAY_TEXT_OFFSET_X,
       y: TAB_LAYOUT.TAB_Y - TAB_LAYOUT.TEXT_OFFSET_Y,
       text: '日終了',
-      style: { fontSize: '14px', color: '#FFFFFF', fontStyle: 'bold' },
+      style: { fontSize: '16px', color: '#FFFFFF', fontStyle: 'bold' },
       add: false,
     });
     this._endDayText.setName('PhaseTabUI.endDayText');
@@ -310,7 +310,7 @@ export class PhaseTabUI extends BaseComponent {
       x: restX - TAB_LAYOUT.REST_TEXT_OFFSET_X,
       y: TAB_LAYOUT.TAB_Y - TAB_LAYOUT.TEXT_OFFSET_Y,
       text: '休憩',
-      style: { fontSize: '14px', color: '#FFFFFF', fontStyle: 'bold' },
+      style: { fontSize: '16px', color: '#FFFFFF', fontStyle: 'bold' },
       add: false,
     });
     this._restText.setName('PhaseTabUI.restText');
@@ -483,7 +483,7 @@ export class PhaseTabUI extends BaseComponent {
         }
         if (text?.setStyle) {
           text.setStyle({
-            fontSize: '14px',
+            fontSize: '16px',
             color: TAB_COLORS.DISABLED_TEXT,
             fontStyle: 'normal',
           });
@@ -499,7 +499,7 @@ export class PhaseTabUI extends BaseComponent {
       // テキストスタイルの更新
       if (text?.setStyle) {
         text.setStyle({
-          fontSize: '14px',
+          fontSize: '16px',
           color: isActive ? TAB_COLORS.ACTIVE_TEXT : TAB_COLORS.INACTIVE_TEXT,
           fontStyle: isActive ? 'bold' : 'normal',
         });
@@ -524,7 +524,7 @@ export class PhaseTabUI extends BaseComponent {
         }
         if (text?.setStyle) {
           text.setStyle({
-            fontSize: '14px',
+            fontSize: '16px',
             color: TAB_COLORS.DISABLED_TEXT,
             fontStyle: 'normal',
           });
@@ -536,7 +536,7 @@ export class PhaseTabUI extends BaseComponent {
         }
         if (text?.setStyle) {
           text.setStyle({
-            fontSize: '14px',
+            fontSize: '16px',
             color: isActive ? TAB_COLORS.ACTIVE_TEXT : TAB_COLORS.INACTIVE_TEXT,
             fontStyle: isActive ? 'bold' : 'normal',
           });
@@ -561,7 +561,7 @@ export class PhaseTabUI extends BaseComponent {
       y: TAB_LAYOUT.TAB_Y + TAB_LAYOUT.TAB_HEIGHT / 2 + 8,
       text: message,
       style: {
-        fontSize: '12px',
+        fontSize: '16px',
         color: '#F87171',
         fontStyle: 'bold',
       },

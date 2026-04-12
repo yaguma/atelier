@@ -60,7 +60,7 @@ const STYLES = {
   /** ラベルフォントサイズ */
   LABEL_FONT_SIZE: '18px',
   /** 説明フォントサイズ */
-  DESCRIPTION_FONT_SIZE: '14px',
+  DESCRIPTION_FONT_SIZE: '16px',
   /** ボタンフォントサイズ */
   BUTTON_FONT_SIZE: '16px',
   /** 矢印フォントサイズ */

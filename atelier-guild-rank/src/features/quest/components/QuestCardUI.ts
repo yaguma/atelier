@@ -124,7 +124,7 @@ export class QuestCardUI extends BaseComponent {
       x: -CARD.WIDTH / 2 + CARD.PADDING,
       y: nameY,
       text: displayName,
-      style: { fontSize: '14px', color: '#000000', fontStyle: 'bold' },
+      style: { fontSize: '16px', color: '#000000', fontStyle: 'bold' },
       add: false,
     });
     this.clientNameText.setOrigin(0, 0);
@@ -140,7 +140,7 @@ export class QuestCardUI extends BaseComponent {
       y: dialogueY,
       text: dialogue,
       style: {
-        fontSize: '12px',
+        fontSize: '16px',
         color: '#333333',
         wordWrap: { width: CARD.WIDTH - CARD.PADDING * 2 },
       },
@@ -160,7 +160,7 @@ export class QuestCardUI extends BaseComponent {
       x: -CARD.WIDTH / 2 + CARD.PADDING,
       y: rewardY,
       text: rewardLabel,
-      style: { fontSize: '12px', color: '#000000' },
+      style: { fontSize: '16px', color: '#000000' },
       add: false,
     });
     this.rewardText.setOrigin(0, 0);
@@ -176,7 +176,7 @@ export class QuestCardUI extends BaseComponent {
       x: -CARD.WIDTH / 2 + CARD.PADDING,
       y: deadlineY,
       text: deadlineLabel,
-      style: { fontSize: '12px', color: '#666666' },
+      style: { fontSize: '16px', color: '#666666' },
       add: false,
     });
     this.deadlineText.setOrigin(0, 0);

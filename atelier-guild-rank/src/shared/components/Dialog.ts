@@ -138,7 +138,7 @@ export class Dialog extends BaseComponent {
         background: this.rexUI.add
           .roundRectangle({
             width: 100,
-            height: 40,
+            height: 44, // Issue #460: A11y - タッチターゲット最小44px
             radius: 8,
           })
           .setFillStyle(THEME.colors.primary),

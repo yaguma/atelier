@@ -232,7 +232,7 @@ export class HUDBar extends BaseComponent {
       x: w * sections.RANK,
       y: 12,
       text: 'ランク:',
-      style: { fontSize: '14px', color: '#9CA3AF' },
+      style: { fontSize: '16px', color: '#9CA3AF' },
       add: false,
     });
     if (rankLabel.setName) rankLabel.setName('HUDBar.rankLabel');
@@ -273,7 +273,7 @@ export class HUDBar extends BaseComponent {
       x: w * sections.DAYS_LABEL,
       y: 12,
       text: '残り:',
-      style: { fontSize: '14px', color: '#9CA3AF' },
+      style: { fontSize: '16px', color: '#9CA3AF' },
       add: false,
     });
     if (daysLabel.setName) daysLabel.setName('HUDBar.daysLabel');
@@ -317,7 +317,7 @@ export class HUDBar extends BaseComponent {
       x: w * sections.AP_LABEL,
       y: 12,
       text: 'AP:',
-      style: { fontSize: '14px', color: '#9CA3AF' },
+      style: { fontSize: '16px', color: '#9CA3AF' },
       add: false,
     });
     if (apLabel.setName) apLabel.setName('HUDBar.apLabel');
@@ -339,7 +339,7 @@ export class HUDBar extends BaseComponent {
       x: w * (1 - sections.CONTRIBUTION_RIGHT_OFFSET),
       y: 12,
       text: '',
-      style: { fontSize: '14px', color: '#9CA3AF', fontStyle: 'normal' },
+      style: { fontSize: '16px', color: '#9CA3AF', fontStyle: 'normal' },
       add: false,
     });
     if (this.contributionTextEl.setName) this.contributionTextEl.setName('HUDBar.contributionText');

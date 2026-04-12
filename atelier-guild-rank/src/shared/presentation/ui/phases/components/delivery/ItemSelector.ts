@@ -238,6 +238,17 @@ export class ItemSelector {
   }
 
   /**
+   * インデックスでアイテムを選択（Issue #460: キーボード数字キー対応）
+   * @param index - 0始まりのインデックス
+   */
+  public selectByIndex(index: number): void {
+    if (index < 0 || index >= this.items.length) return;
+    const item = this.items[index];
+    if (!item) return;
+    this.onItemClick(item);
+  }
+
+  /**
    * アイテム数を取得
    * @returns アイテム数
    */

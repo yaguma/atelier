@@ -90,9 +90,9 @@ describe('THEME定義', () => {
     // 【期待される動作】: すべてのサイズ設定が設計書通りに定義されている
     // 🔵 信頼性レベル: 設計書（ui-design/overview.md）に明記
 
-    test('small サイズが 14px である', () => {
-      // 【確認内容】: キャプションや小さいテキスト用のサイズが14pxであることを確認
-      expect(THEME.sizes.small).toBe(14); // 🔵
+    test('small サイズが 16px である (Issue #460: A11y 最小16px)', () => {
+      // 【確認内容】: キャプションや小さいテキスト用のサイズが16px以上であることを確認
+      expect(THEME.sizes.small).toBe(16); // 🔵
     });
 
     test('medium サイズが 16px である', () => {

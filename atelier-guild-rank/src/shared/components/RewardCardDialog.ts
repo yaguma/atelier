@@ -47,24 +47,24 @@ const UI_STYLES = {
     color: '#ffffff',
   },
   CARD_NAME: {
-    fontSize: '14px',
+    fontSize: '16px',
     color: '#ffffff',
     fontStyle: 'bold',
   },
   CARD_TYPE: {
-    fontSize: '12px',
+    fontSize: '16px',
     color: '#cccccc',
   },
   CARD_DESCRIPTION: {
-    fontSize: '11px',
+    fontSize: '16px',
     color: '#ffffff',
   },
   RARITY: {
-    fontSize: '12px',
+    fontSize: '16px',
     color: '#ffd700',
   },
   BUTTON: {
-    fontSize: '14px',
+    fontSize: '16px',
     color: '#ffffff',
   },
 } as const;

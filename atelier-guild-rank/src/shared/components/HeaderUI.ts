@@ -218,7 +218,7 @@ export class HeaderUI extends BaseComponent {
       x: HEADER_LAYOUT.PADDING,
       y: 12,
       text: 'ランク:',
-      style: { fontSize: '14px', color: '#9CA3AF' },
+      style: { fontSize: '16px', color: '#9CA3AF' },
       add: false,
     });
     this.container.add(rankLabel);
@@ -248,7 +248,7 @@ export class HeaderUI extends BaseComponent {
       x: 260,
       y: 12,
       text: '残り:',
-      style: { fontSize: '14px', color: '#9CA3AF' },
+      style: { fontSize: '16px', color: '#9CA3AF' },
       add: false,
     });
     this.container.add(daysLabel);
@@ -288,7 +288,7 @@ export class HeaderUI extends BaseComponent {
       x: 540,
       y: 12,
       text: 'AP:',
-      style: { fontSize: '14px', color: '#9CA3AF' },
+      style: { fontSize: '16px', color: '#9CA3AF' },
       add: false,
     });
     this.container.add(apLabel);

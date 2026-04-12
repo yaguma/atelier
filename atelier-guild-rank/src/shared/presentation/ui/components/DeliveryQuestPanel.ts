@@ -33,23 +33,23 @@ const UI_STYLES = {
     fontStyle: 'bold',
   },
   DESCRIPTION: {
-    fontSize: '14px',
+    fontSize: '16px',
     color: '#cccccc',
   },
   REWARD: {
-    fontSize: '14px',
+    fontSize: '16px',
     color: '#4caf50',
   },
   DEADLINE_NORMAL: {
-    fontSize: '14px',
+    fontSize: '16px',
     color: '#2196f3',
   },
   DEADLINE_WARNING: {
-    fontSize: '14px',
+    fontSize: '16px',
     color: '#ff9800',
   },
   DEADLINE_DANGER: {
-    fontSize: '14px',
+    fontSize: '16px',
     color: '#f44336',
   },
 } as const;

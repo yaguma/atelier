@@ -68,7 +68,7 @@ const RAIL_COLORS = {
 /** @deprecated Issue #486: MainSceneからwidthオプションで渡される。フォールバック用 */
 const DEFAULT_WIDTH = 640;
 const DEFAULT_HEIGHT = MAIN_LAYOUT.PHASE_RAIL_HEIGHT;
-const TAB_HEIGHT = 40;
+const TAB_HEIGHT = 44; // Issue #460: A11y - タッチターゲット最小44px
 const TAB_SPACING = 8;
 const PADDING_X = 16;
 
@@ -80,6 +80,18 @@ const PHASE_LABELS: Record<string, string> = {
   DELIVERY: '納品',
   DAY_END: '翌日',
 };
+
+/**
+ * フェーズ状態アイコン（色非依存の情報表現）
+ * Issue #460: A11y - 色だけでなくアイコンでもフェーズ状態を表現
+ */
+const PHASE_STATUS_ICONS = {
+  ACTIVE: '●',
+  // TODO(#460): 完了フェーズ判定ロジック追加後に使用する
+  COMPLETED: '✓',
+  DISABLED: '⛔',
+  INACTIVE: '○',
+} as const;
 
 // =============================================================================
 // PhaseRail
@@ -178,12 +190,13 @@ export class PhaseRail extends BaseComponent {
       this.tabBgs.push(tabBg);
 
       const label = PHASE_LABELS[phase as string] ?? String(phase);
+      const icon = isActive ? PHASE_STATUS_ICONS.ACTIVE : PHASE_STATUS_ICONS.INACTIVE;
       const text = this.scene.make.text({
         x: cx,
         y: tabY,
-        text: label,
+        text: `${icon} ${label}`,
         style: {
-          fontSize: '14px',
+          fontSize: '16px',
           color: isActive ? RAIL_COLORS.ACTIVE_TEXT : RAIL_COLORS.INACTIVE_TEXT,
           fontStyle: isActive ? 'bold' : 'normal',
         },
@@ -201,7 +214,7 @@ export class PhaseRail extends BaseComponent {
       y: this.height + 6,
       text: this._conditionText,
       style: {
-        fontSize: '11px',
+        fontSize: '16px',
         color: '#9CA3AF',
         fontStyle: 'normal',
       },
@@ -320,13 +333,15 @@ export class PhaseRail extends BaseComponent {
       const isActive = phase === this.current;
       const bg = this.tabBgs[i];
       const text = this.tabTexts[i];
+      const label = PHASE_LABELS[phase as string] ?? String(phase);
 
       if (this.tabsDisabled && !isActive) {
         // 無効化スタイル（アクティブタブは通常色を維持）
         if (bg?.setFillStyle) bg.setFillStyle(RAIL_COLORS.DISABLED);
+        if (text?.setText) text.setText(`${PHASE_STATUS_ICONS.DISABLED} ${label}`);
         if (text?.setStyle) {
           text.setStyle({
-            fontSize: '14px',
+            fontSize: '16px',
             color: RAIL_COLORS.DISABLED_TEXT,
             fontStyle: 'normal',
           });
@@ -334,12 +349,14 @@ export class PhaseRail extends BaseComponent {
         continue;
       }
 
+      const icon = isActive ? PHASE_STATUS_ICONS.ACTIVE : PHASE_STATUS_ICONS.INACTIVE;
       if (bg?.setFillStyle) {
         bg.setFillStyle(isActive ? RAIL_COLORS.ACTIVE : RAIL_COLORS.INACTIVE);
       }
+      if (text?.setText) text.setText(`${icon} ${label}`);
       if (text?.setStyle) {
         text.setStyle({
-          fontSize: '14px',
+          fontSize: '16px',
           color: isActive ? RAIL_COLORS.ACTIVE_TEXT : RAIL_COLORS.INACTIVE_TEXT,
           fontStyle: isActive ? 'bold' : 'normal',
         });
@@ -355,7 +372,7 @@ export class PhaseRail extends BaseComponent {
       y: this.height + 4,
       text: message,
       style: {
-        fontSize: '12px',
+        fontSize: '16px',
         color: RAIL_COLORS.NOTIFICATION_TEXT,
         fontStyle: 'bold',
       },

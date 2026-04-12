@@ -284,7 +284,7 @@ export class SidebarUI extends BaseComponent {
 
     // 依頼セクションヘッダーを生成
     this._questsIconText = this.scene.add.text(SIDEBAR_LAYOUT.PADDING, currentY + 8, '▼', {
-      fontSize: '14px',
+      fontSize: '16px',
       color: '#9CA3AF',
     });
     this.container.add(this._questsIconText);
@@ -294,7 +294,7 @@ export class SidebarUI extends BaseComponent {
       currentY + 6,
       '受注依頼',
       {
-        fontSize: '14px',
+        fontSize: '16px',
         color: '#F9FAFB',
         fontStyle: 'bold',
       },
@@ -327,7 +327,7 @@ export class SidebarUI extends BaseComponent {
 
     // 素材セクションヘッダーを生成
     this._materialsIconText = this.scene.add.text(SIDEBAR_LAYOUT.PADDING, currentY + 8, '▼', {
-      fontSize: '14px',
+      fontSize: '16px',
       color: '#9CA3AF',
     });
     this.container.add(this._materialsIconText);
@@ -337,7 +337,7 @@ export class SidebarUI extends BaseComponent {
       currentY + 6,
       '素材',
       {
-        fontSize: '14px',
+        fontSize: '16px',
         color: '#F9FAFB',
         fontStyle: 'bold',
       },
@@ -369,7 +369,7 @@ export class SidebarUI extends BaseComponent {
 
     // 完成品セクションヘッダーを生成
     this._craftedItemsIconText = this.scene.add.text(SIDEBAR_LAYOUT.PADDING, currentY + 8, '▼', {
-      fontSize: '14px',
+      fontSize: '16px',
       color: '#9CA3AF',
     });
     this.container.add(this._craftedItemsIconText);
@@ -379,7 +379,7 @@ export class SidebarUI extends BaseComponent {
       currentY + 6,
       '完成品',
       {
-        fontSize: '14px',
+        fontSize: '16px',
         color: '#F9FAFB',
         fontStyle: 'bold',
       },
@@ -393,7 +393,7 @@ export class SidebarUI extends BaseComponent {
 
     // 保管容量テキストを生成
     this._storageTextElement = this.scene.add.text(SIDEBAR_LAYOUT.PADDING, currentY, '保管: 0/20', {
-      fontSize: '14px',
+      fontSize: '16px',
       color: '#D1D5DB',
     });
     this.container.add(this._storageTextElement);
@@ -423,7 +423,7 @@ export class SidebarUI extends BaseComponent {
       currentY + 8,
       'ショップ',
       {
-        fontSize: '14px',
+        fontSize: '16px',
         color: '#FFFFFF',
         fontStyle: 'bold',
       },
@@ -556,7 +556,7 @@ export class SidebarUI extends BaseComponent {
         y,
         `${activeQuest.client.name} (${activeQuest.remainingDays}日)`,
         {
-          fontSize: '12px',
+          fontSize: '16px',
           color: '#D1D5DB',
         },
       );
@@ -573,7 +573,7 @@ export class SidebarUI extends BaseComponent {
         y,
         `他${this._activeQuests.length - 3}件...`,
         {
-          fontSize: '11px',
+          fontSize: '16px',
           color: '#9CA3AF',
         },
       );
@@ -607,7 +607,7 @@ export class SidebarUI extends BaseComponent {
         y,
         `${this.resolveMaterialName(material.materialId)} (${material.quality})`,
         {
-          fontSize: '12px',
+          fontSize: '16px',
           color: '#D1D5DB',
         },
       );
@@ -624,7 +624,7 @@ export class SidebarUI extends BaseComponent {
         y,
         `他${this._materials.length - 3}件...`,
         {
-          fontSize: '11px',
+          fontSize: '16px',
           color: '#9CA3AF',
         },
       );
@@ -658,7 +658,7 @@ export class SidebarUI extends BaseComponent {
         y,
         `${this.resolveItemName(item.itemId)} (${item.quality})`,
         {
-          fontSize: '12px',
+          fontSize: '16px',
           color: '#D1D5DB',
         },
       );
@@ -675,7 +675,7 @@ export class SidebarUI extends BaseComponent {
         y,
         `他${this._craftedItems.length - 3}件...`,
         {
-          fontSize: '11px',
+          fontSize: '16px',
           color: '#9CA3AF',
         },
       );

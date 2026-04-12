@@ -107,4 +107,37 @@ describe('月下の錬金工房パレット WCAG AA 検証', () => {
       expect(meetsWcagAa(fg, bg)).toBe(true);
     });
   });
+
+  // Issue #460: A11y - 追加のコントラスト検証
+  describe('Quality label on base surface', () => {
+    it.each([
+      ['quality.C on base', quality.C, surface.base],
+      ['quality.B on base', quality.B, surface.base],
+      ['quality.S on base', quality.S, surface.base],
+    ])('%s は AA を満たす', (_label, fg, bg) => {
+      expect(meetsWcagAa(fg, bg)).toBe(true);
+    });
+  });
+
+  describe('Quality label on raised surface', () => {
+    it.each([
+      ['quality.C on raised', quality.C, surface.raised],
+      ['quality.B on raised', quality.B, surface.raised],
+      ['quality.S on raised', quality.S, surface.raised],
+    ])('%s は AA を満たす', (_label, fg, bg) => {
+      expect(meetsWcagAa(fg, bg)).toBe(true);
+    });
+  });
+
+  describe('Status colors on all surfaces', () => {
+    it.each([
+      ['status.success on raised', status.success, surface.raised],
+      ['status.warning on raised', status.warning, surface.raised],
+      ['status.info on raised', status.info, surface.raised],
+      ['status.success on inset', status.success, surface.inset],
+      ['status.warning on inset', status.warning, surface.inset],
+    ])('%s は AA を満たす', (_label, fg, bg) => {
+      expect(meetsWcagAa(fg, bg)).toBe(true);
+    });
+  });
 });

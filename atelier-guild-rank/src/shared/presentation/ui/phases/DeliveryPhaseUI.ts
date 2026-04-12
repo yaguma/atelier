@@ -87,12 +87,25 @@ const UI_STYLES = {
   },
 } as const;
 
+// Issue #460: A11y - 共通KEYBINDINGSを使用してキーボード操作を統一
 const KEYBOARD_KEYS = {
   DELIVER_UPPER: 'D',
   DELIVER_LOWER: 'd',
   CANCEL: 'Escape',
   CONFIRM: 'Enter',
 } as const;
+
+/** 数字キーからインデックスを取得（1-9） */
+function getNumberKeyIndex(key: string): number | null {
+  const num = Number.parseInt(key, 10);
+  if (num >= 1 && num <= 9) return num;
+  // Numpadキー
+  if (key.startsWith('Numpad')) {
+    const padNum = Number.parseInt(key.replace('Numpad', ''), 10);
+    if (padNum >= 1 && padNum <= 9) return padNum;
+  }
+  return null;
+}
 
 const GameEventType = {
   QUEST_SELECTED_FOR_DELIVERY: 'QUEST_SELECTED_FOR_DELIVERY',
@@ -409,6 +422,13 @@ export class DeliveryPhaseUI extends BaseComponent {
   }
 
   private handleKeyboardInput(event: { key: string }): void {
+    // Issue #460: A11y - 数字キーで依頼/アイテム選択、Tab切替対応
+    const numIndex = getNumberKeyIndex(event.key);
+    if (numIndex !== null) {
+      this.handleNumberKeySelection(numIndex);
+      return;
+    }
+
     switch (event.key) {
       case KEYBOARD_KEYS.DELIVER_UPPER:
       case KEYBOARD_KEYS.DELIVER_LOWER:
@@ -418,6 +438,35 @@ export class DeliveryPhaseUI extends BaseComponent {
       case KEYBOARD_KEYS.CANCEL:
         this.reset();
         break;
+      case 'Tab':
+        // Tab: 依頼選択 ↔ アイテム選択のフォーカス切替
+        this.toggleFocusArea();
+        break;
+    }
+  }
+
+  /**
+   * 現在のフォーカスエリアに応じて数字キーで選択する
+   * 依頼未選択時は依頼を選択、選択済みならアイテムを選択
+   */
+  private handleNumberKeySelection(index: number): void {
+    const selectedQuest = this.questList?.getSelectedQuest();
+    if (!selectedQuest) {
+      this.questList?.selectByIndex(index - 1);
+    } else {
+      this.itemSelector?.selectByIndex(index - 1);
+    }
+  }
+
+  /**
+   * 依頼選択 ↔ アイテム選択のフォーカスを切り替える
+   */
+  private toggleFocusArea(): void {
+    const selectedQuest = this.questList?.getSelectedQuest();
+    if (selectedQuest) {
+      // 依頼選択済み→依頼選択をリセット
+      this.questList?.clearSelection();
+      this.updatePreview();
     }
   }
 

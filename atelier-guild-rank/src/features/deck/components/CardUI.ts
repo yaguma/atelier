@@ -172,7 +172,7 @@ export class CardUI extends BaseComponent {
       y: nameY,
       text: this.card.name,
       style: {
-        fontSize: '14px',
+        fontSize: '16px',
         color: toColorStr(Colors.text.dark),
         fontStyle: 'bold',
         align: 'center',
@@ -203,7 +203,7 @@ export class CardUI extends BaseComponent {
       y: costY,
       text: `⚡ ${this.card.cost}`,
       style: {
-        fontSize: '12px',
+        fontSize: '16px',
         color: toColorStr(Colors.text.dark),
         align: 'center',
       },
@@ -237,7 +237,7 @@ export class CardUI extends BaseComponent {
       y: effectY,
       text: effectDescription,
       style: {
-        fontSize: '10px',
+        fontSize: '16px',
         color: toColorStr(Colors.text.primary),
         align: 'center',
         wordWrap: { width: CardUI.CARD_WIDTH - CardUI.PADDING * 2 },

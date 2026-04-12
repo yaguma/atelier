@@ -27,7 +27,7 @@ const CARD = {
 const TEXT_STYLES = {
   LABEL: { fontSize: `${THEME.sizes.medium}px`, color: toColorStr(Colors.text.light) },
   ITEM_NAME: { fontSize: `${THEME.sizes.small}px`, color: toColorStr(Colors.text.light) },
-  ITEM_QUALITY: { fontSize: '10px', color: toColorStr(Colors.text.softGray) },
+  ITEM_QUALITY: { fontSize: '16px', color: toColorStr(Colors.text.softGray) },
   EMPTY_MESSAGE: { fontSize: `${THEME.sizes.small}px`, color: toColorStr(Colors.text.dimGray) },
 } as const;
 

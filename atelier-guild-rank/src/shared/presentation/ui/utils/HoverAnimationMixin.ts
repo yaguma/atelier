@@ -3,7 +3,10 @@
  * ホバーアニメーション適用関数群
  *
  * TASK-0053 Phase 7 共通UIユーティリティ基盤
+ * Issue #460: prefers-reduced-motion 対応追加
  */
+
+import { prefersReducedMotion } from '@shared/theme';
 
 /** デフォルト設定 */
 const DEFAULTS = {
@@ -49,6 +52,9 @@ export function applyHoverAnimation(
   if (!gameObject || !scene) {
     return;
   }
+
+  // Issue #460: prefers-reduced-motion が有効な場合はアニメーションをスキップ
+  if (prefersReducedMotion()) return;
 
   const scaleUp = config?.scaleUp ?? DEFAULTS.scaleUp;
   const duration = config?.duration ?? DEFAULTS.duration;
