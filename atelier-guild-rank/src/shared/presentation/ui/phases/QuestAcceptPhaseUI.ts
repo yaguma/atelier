@@ -144,9 +144,11 @@ export class QuestAcceptPhaseUI extends BaseComponent {
    * 【設計方針】: 定数化により、将来的なデザイン変更時の保守性を向上
    */
   private static readonly GRID_COLUMNS = 3;
-  private static readonly GRID_START_X = 200;
+  /** グリッド列間隔: CONTENT_WORK_WIDTH(820) / 3 ≈ 260で3カードが収まる */
+  private static readonly GRID_SPACING_X = 260;
+  /** グリッド開始X: 中央から左に1列分オフセット = CONTENT_WORK_CENTER_X - GRID_SPACING_X */
+  private static readonly GRID_START_X = CONTENT_WORK_CENTER_X - 260;
   private static readonly GRID_START_Y = 150;
-  private static readonly GRID_SPACING_X = 300;
   private static readonly GRID_SPACING_Y = 200;
 
   /**
@@ -178,8 +180,9 @@ export class QuestAcceptPhaseUI extends BaseComponent {
   private static readonly ACCEPTED_SECTION_TITLE = '📌 受注済み依頼';
   private static readonly ACCEPTED_SECTION_FONT_SIZE = '20px';
   private static readonly ACCEPTED_SECTION_COLOR = '#333333';
-  private static readonly ACCEPTED_CARD_START_X = 200;
-  private static readonly ACCEPTED_CARD_SPACING_X = 300;
+  /** 受注済みカード開始X: グリッドと同じ配置 */
+  private static readonly ACCEPTED_CARD_START_X = CONTENT_WORK_CENTER_X - 260;
+  private static readonly ACCEPTED_CARD_SPACING_X = 260;
 
   /**
    * 【コンストラクタ】: 依頼受注フェーズUIを初期化
