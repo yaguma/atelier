@@ -223,10 +223,10 @@ describe('依頼受注フェーズ統合テスト', () => {
       phaseUI.create();
       phaseUI.updateQuests(dailyQuests);
 
-      expect((phaseUI as any).questCards[0].getContainer().x).toBe(200);
+      expect((phaseUI as any).questCards[0].getContainer().x).toBe(150);
       expect((phaseUI as any).questCards[0].getContainer().y).toBe(150);
-      expect((phaseUI as any).questCards[1].getContainer().x).toBe(500);
-      expect((phaseUI as any).questCards[2].getContainer().x).toBe(800);
+      expect((phaseUI as any).questCards[1].getContainer().x).toBe(410);
+      expect((phaseUI as any).questCards[2].getContainer().x).toBe(670);
     });
 
     test('各カードに依頼者名、報酬情報が表示される', () => {

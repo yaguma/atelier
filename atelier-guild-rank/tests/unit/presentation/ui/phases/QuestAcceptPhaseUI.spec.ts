@@ -278,15 +278,15 @@ describe('QuestAcceptPhaseUI', () => {
       phaseUI.updateQuests(mockQuests);
 
       // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
-      expect((phaseUI as any).questCards[0].getContainer().x).toBe(200);
+      expect((phaseUI as any).questCards[0].getContainer().x).toBe(150);
       // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards[0].getContainer().y).toBe(150);
       // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
-      expect((phaseUI as any).questCards[1].getContainer().x).toBe(500);
+      expect((phaseUI as any).questCards[1].getContainer().x).toBe(410);
       // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards[1].getContainer().y).toBe(150);
       // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
-      expect((phaseUI as any).questCards[2].getContainer().x).toBe(800);
+      expect((phaseUI as any).questCards[2].getContainer().x).toBe(670);
       // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards[2].getContainer().y).toBe(150);
     });
@@ -608,17 +608,17 @@ describe('QuestAcceptPhaseUI', () => {
 
       // Quest 1-3: y=150
       // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
-      expect((phaseUI as any).questCards[0].getContainer().x).toBe(200);
+      expect((phaseUI as any).questCards[0].getContainer().x).toBe(150);
       // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards[0].getContainer().y).toBe(150);
       // Quest 4-6: y=350
       // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
-      expect((phaseUI as any).questCards[3].getContainer().x).toBe(200);
+      expect((phaseUI as any).questCards[3].getContainer().x).toBe(150);
       // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards[3].getContainer().y).toBe(350);
       // Quest 7: y=550
       // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
-      expect((phaseUI as any).questCards[6].getContainer().x).toBe(200);
+      expect((phaseUI as any).questCards[6].getContainer().x).toBe(150);
       // biome-ignore lint/suspicious/noExplicitAny: テストでprivateプロパティにアクセスするために必要
       expect((phaseUI as any).questCards[6].getContainer().y).toBe(550);
     });
