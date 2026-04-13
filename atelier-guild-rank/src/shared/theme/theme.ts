@@ -1,102 +1,146 @@
 /**
  * UIテーマ定義
  * TASK-0067: shared/theme移行
+ * Issue #508: 水彩ファンタジースタイルへ更新
  *
  * @description
  * ゲーム全体で使用するUIテーマ（カラー、フォント、サイズ、スペーシング）を定義
- * 錬金術をテーマにしたデザインで、茶色とベージュを基調とする
+ * 水彩ファンタジースタイル: 草色＋ゴールデンベージュ＋クリーム背景を基調とする
  *
  * @remarks
+ * - design-guide.md（docs/design/atelier-guild-rank/ui-design/design-guide.md）に基づく
  * - `as const`により型レベルでreadonlyとして扱われる
- * - 実行時の不変性が必要な場合は、Object.freeze()の使用を検討
- * - UI設計概要（docs/design/atelier-guild-rank/ui-design/overview.md）に基づく
  */
 
 /**
- * 統一カラーパレット（WARM系）
+ * 統一カラーパレット（水彩ファンタジー）
  *
  * @description
- * UI設計書（docs/design/atelier-guild-rank/ui-design/overview.md セクション7.1）に基づく
- * 錬金術テーマのWARM系カラーパレット。茶色・ベージュを基調とする。
+ * デザインガイド（design-guide.md）に基づく水彩ファンタジースタイルのカラーパレット。
+ * クリーム・パステル基調＋草色＋ゴールデンベージュ。
  *
  * 使い分けガイド:
  * - Colors: 構造的・カテゴリ別のカラー定義（背景、ボーダー、テキスト、品質、カードタイプ、UI要素）
  * - THEME.colors: 意味的カラー定義（primary, secondary, success, warning, error等）
  */
 export const Colors = {
-  // 背景色（WARM系: ベージュ・クリーム基調）
+  // 背景色 — design-guide.md §2.1
   background: {
-    primary: 0xf5f0e0, // メイン背景（温かみのあるクリーム）
-    secondary: 0xede3d0, // サブ背景（やや濃いクリーム）
-    overlay: 0x000000, // オーバーレイ（共通: 半透明黒）
-    card: 0xfff8dc, // カード背景（Cornsilk: UI設計書 #FFF8DC）
-    parchment: 0xfffde7, // 依頼カード背景（Parchment風）
-    dark: 0x333333, // ダーク背景（パネル背景用）
+    primary: 0xfff8f0, // メイン背景（温かみのあるオフホワイト: surface.base）
+    secondary: 0xf5efe6, // サブ背景（やや暗めのクリーム: surface.sidebar）
+    overlay: 0x000000, // オーバーレイ（半透明黒: surface.overlay）
+    card: 0xffffff, // カード背景（ピュアホワイト: surface.card）
+    parchment: 0xffffff, // 依頼カード背景（cardと統一）
+    dark: 0x333333, // ダーク背景（後方互換用）
   },
 
-  // ボーダー色（WARM系: タン・ブラウン基調）
+  // 面色（Surface） — design-guide.md §2.1
+  surface: {
+    base: 0xfff8f0, // 画面全体の背景
+    card: 0xffffff, // カード・パネル
+    elevated: 0xffffff, // 浮き上がった要素（モーダル等）
+    sidebar: 0xf5efe6, // サイドバー
+    header: 0xfdfaf5, // ヘッダー / PhaseRail
+    footer: 0xf0ebe3, // フッター
+  },
+
+  // ボーダー色 — design-guide.md §2.5
   border: {
-    primary: 0xc4a882, // メインボーダー（ウォームタン）
-    secondary: 0xd2b48c, // サブボーダー（タン）
-    highlight: 0xb8860b, // ハイライトボーダー（ダークゴールデンロッド）
-    gold: 0xffd700, // ゴールドボーダー
-    quest: 0xffd54f, // 依頼カードボーダー
-    dark: 0x8b7355, // ダークボーダー（ウォームブラウン）
+    primary: 0xd9cfc2, // メインボーダー（default と同値）
+    secondary: 0xe8e0d6, // サブボーダー（subtle と同値）
+    highlight: 0xb8a99a, // ハイライトボーダー（strong と同値）
+    gold: 0xd4a76a, // ゴールドボーダー（brand.secondary）
+    quest: 0xd9cfc2, // 依頼カードボーダー（default と統一）
+    dark: 0x8b7355, // ダークボーダー（後方互換用）
+    default: 0xd9cfc2, // 標準の枠線
+    subtle: 0xe8e0d6, // 薄い区切り線
+    strong: 0xb8a99a, // 強調された枠線
+    focus: 0x7bae7f, // フォーカスリング（brand.primary）
   },
 
-  // テキスト色（WARM背景上での可読性を確保）
+  // テキスト色 — design-guide.md §2.3
   text: {
-    primary: 0x333333, // メインテキスト（UI設計書 #333333）
-    secondary: 0x666666, // サブテキスト（UI設計書 #666666）
-    muted: 0x999999, // 薄いテキスト
-    accent: 0xdaa520, // アクセントテキスト（Goldenrod: UI設計書 #DAA520）
-    error: 0xb22222, // エラーテキスト（Firebrick: UI設計書 #B22222）
-    success: 0x228b22, // 成功テキスト（ForestGreen: UI設計書 #228B22）
-    dark: 0x333333, // ダークテキスト（primaryと同値）
-    darkGray: 0x666666, // ダークグレーテキスト（secondaryと同値）
+    primary: 0x3d3d3d, // メインテキスト（コントラスト10.2:1）
+    secondary: 0x5a5a5a, // サブテキスト（コントラスト6.8:1）
+    muted: 0x8a8a8a, // 薄いテキスト（tertiary と同値）
+    accent: 0xd4a76a, // アクセントテキスト（ゴールデンベージュ）
+    error: 0xd46b6b, // エラーテキスト（status.error）
+    success: 0x6aaf6a, // 成功テキスト（status.success）
+    dark: 0x3d3d3d, // ダークテキスト（primaryと同値）
+    darkGray: 0x5a5a5a, // ダークグレーテキスト（secondaryと同値）
     light: 0xffffff, // ライトテキスト（着色ボタン上のテキスト用）
-    gold: 0xffd700, // ゴールドテキスト（Gold: 昇格・報酬表示用）
-    bonus: 0x44ff44, // ボーナステキスト（昇格ボーナス表示用）
-    dimGray: 0x888888, // 淡いグレーテキスト（空リスト・ヒント表示用）
-    softGray: 0xcccccc, // ソフトグレーテキスト（品質・補助情報用）
+    gold: 0xe0a84b, // ゴールドテキスト（status.warning）
+    bonus: 0x6aaf6a, // ボーナステキスト（status.success）
+    dimGray: 0x8a8a8a, // 淡いグレーテキスト（mutedと同値）
+    softGray: 0xb0b0b0, // ソフトグレーテキスト（disabled）
+    tertiary: 0x8a8a8a, // 補助・ヒント（mutedと同値）
+    disabled: 0xb0b0b0, // 無効状態テキスト
+    onPrimary: 0xffffff, // brand.primary上の白文字
+    onSecondary: 0x3d3d3d, // brand.secondary上の文字
+    link: 0x5b8cb8, // リンク・インタラクティブ
   },
 
-  // 品質色（アイテム・素材レアリティ: UI設計書 セクション7.2）
+  // ブランドカラー — design-guide.md §2.2
+  brand: {
+    primary: 0x7bae7f, // 草色（錬金術のハーブ）
+    primaryHover: 0x6a9d6e, // ホバー時
+    secondary: 0xd4a76a, // ゴールデンベージュ（調合の琥珀）
+    secondaryHover: 0xc49a5c, // ホバー時
+    accent: 0xe8a87c, // コーラルピーチ
+  },
+
+  // ステータスカラー — design-guide.md §2.4
+  status: {
+    success: 0x6aaf6a,
+    warning: 0xe0a84b,
+    error: 0xd46b6b,
+    info: 0x6b9fcc,
+  },
+
+  // フェーズアクセントカラー — design-guide.md §2.7
+  phase: {
+    questAccept: 0xb8a9d4, // ラベンダー
+    gathering: 0x8cc084, // リーフグリーン
+    alchemy: 0xd4a76a, // アンバー
+    delivery: 0xe8a87c, // コーラル
+  },
+
+  // 品質色（アイテム・素材レアリティ）— design-guide.md §2.6
   quality: {
-    common: 0x808080, // コモン（グレー: UI設計書 #808080）
-    uncommon: 0x32cd32, // アンコモン（LimeGreen: UI設計書 #32CD32）
-    rare: 0x4169e1, // レア（RoyalBlue: UI設計書 #4169E1）
-    epic: 0x9932cc, // エピック（DarkOrchid: UI設計書 #9932CC）
-    legendary: 0xffd700, // レジェンダリー（Gold: UI設計書 #FFD700）
+    common: 0xa0a0a0, // コモン（グレー: D品質）
+    uncommon: 0x6aaf6a, // アンコモン（グリーン: B品質）
+    rare: 0x6b9fcc, // レア（ブルー: A品質）
+    epic: 0x9932cc, // エピック（パープル）
+    legendary: 0xe0a84b, // レジェンダリー（ゴールド: S品質）
   },
 
-  // カードタイプ色（UI設計書 セクション7.1）
+  // カードタイプ色（維持）
   cardType: {
-    gathering: 0x90ee90, // 採取カード（LightGreen: UI設計書 #90EE90）
-    recipe: 0x87ceeb, // レシピカード（SkyBlue: UI設計書 #87CEEB）
-    enhancement: 0xdda0dd, // 強化カード（Plum: UI設計書 #DDA0DD）
+    gathering: 0x8cc084, // 採取カード（リーフグリーン）
+    recipe: 0x87ceeb, // レシピカード（スカイブルー）
+    enhancement: 0xdda0dd, // 強化カード（プラム）
     default: 0xffffff, // デフォルト（白）
   },
 
-  // UI要素色（WARM系: ブラウン基調のボタン・プログレス）
+  // UI要素色（水彩ファンタジースタイル）
   ui: {
     button: {
-      normal: 0x8b4513, // 通常状態（SaddleBrown: THEME.colors.primary準拠）
-      hover: 0x9b5523, // ホバー状態（THEME.colors.primaryHover準拠）
-      active: 0xd2691e, // アクティブ状態（Chocolate: THEME.colors.secondary準拠）
-      disabled: 0xcccccc, // 無効状態（THEME.colors.disabled準拠）
-      accept: 0x4caf50, // 受注ボタン（緑）
-      acceptBorder: 0x388e3c, // 受注ボタンボーダー
+      normal: 0x7bae7f, // 通常状態（草色: brand.primary）
+      hover: 0x6a9d6e, // ホバー状態（brand.primaryHover）
+      active: 0xd4a76a, // アクティブ状態（brand.secondary）
+      disabled: 0xd0d0d0, // 無効状態
+      accept: 0x7bae7f, // 受注ボタン（brand.primaryと統一）
+      acceptBorder: 0x6a9d6e, // 受注ボタンボーダー
     },
     progress: {
-      background: 0xe0d5c0, // プログレスバー背景（ウォームベージュ）
-      fill: 0xdaa520, // プログレスバー塗り（Goldenrod: UI設計書 #DAA520）
-      success: 0x4caf50, // 成功・納品完了（Material Green）
-      info: 0x2196f3, // 情報・選択中（Material Blue）
-      warning: 0xffaa00, // 警告状態
-      danger: 0xff4444, // 危険状態
+      background: 0xe8e0d6, // プログレスバー背景（border.subtle）
+      fill: 0xd4a76a, // プログレスバー塗り（brand.secondary）
+      success: 0x6aaf6a, // 成功（status.success）
+      info: 0x6b9fcc, // 情報（status.info）
+      warning: 0xe0a84b, // 警告（status.warning）
+      danger: 0xd46b6b, // 危険（status.error）
     },
-    placeholder: 0xcccccc, // プレースホルダー色
+    placeholder: 0xd0d0d0, // プレースホルダー色
   },
 } as const;
 
@@ -120,68 +164,76 @@ export type ColorKey = keyof typeof Colors;
 /** 背景色キーの型定義 */
 export type BackgroundColorKey = keyof typeof Colors.background;
 
+/** Surface色キーの型定義 */
+export type SurfaceColorKey = keyof typeof Colors.surface;
+
 /** ボーダー色キーの型定義 */
 export type BorderColorKey = keyof typeof Colors.border;
 
 /** テキスト色キーの型定義 */
 export type TextColorKey = keyof typeof Colors.text;
 
+/** ブランドカラーキーの型定義 */
+export type BrandColorKey = keyof typeof Colors.brand;
+
+/** ステータスカラーキーの型定義 */
+export type StatusColorKey = keyof typeof Colors.status;
+
+/** フェーズカラーキーの型定義 */
+export type PhaseColorKey = keyof typeof Colors.phase;
+
 /** カードタイプ色キーの型定義 */
 export type CardTypeColorKey = keyof typeof Colors.cardType;
 
 export const THEME = {
-  // カラーパレット定義
-  // 錬金術をテーマにした茶色とベージュを基調としたデザイン
+  // カラーパレット定義 — design-guide.md §2 準拠
+  // 水彩ファンタジースタイル: 草色＋ゴールデンベージュ＋クリーム背景
   colors: {
-    primary: 0x8b4513, // SaddleBrown - プライマリアクション用（ボタン、重要なUI要素）
-    primaryHover: 0x9b5523, // primary より明るい色 - ホバー時のプライマリボタン
-    secondary: 0xd2691e, // Chocolate - セカンダリアクション用（サブボタン、補助UI要素）
-    secondaryHover: 0xe2792e, // secondary より明るい色 - ホバー時のセカンダリボタン
-    background: 0xf5f5dc, // Beige - 背景色（柔らかく温かみのある印象）
-    text: 0x333333, // ダークグレー - テキスト色（高い可読性）
-    textLight: 0x666666, // ミディアムグレー - ライトテキスト色（補足情報用）
+    primary: 0x7bae7f, // 草色 - プライマリアクション用（ボタン、受注・決定）
+    primaryHover: 0x6a9d6e, // やや暗い草色 - ホバー時
+    secondary: 0xd4a76a, // ゴールデンベージュ - セカンダリ（調合の琥珀）
+    secondaryHover: 0xc49a5c, // やや暗いベージュ - ホバー時
+    background: 0xfff8f0, // 温かみのあるオフホワイト（surface.base）
+    text: 0x3d3d3d, // ダークグレー - テキスト色（コントラスト10.2:1）
+    textLight: 0x5a5a5a, // ミディアムグレー - ライトテキスト色（コントラスト6.8:1）
     textOnPrimary: '#FFFFFF', // 白 - プライマリボタン上のテキスト色
-    textOnSecondary: '#FFFFFF', // 白 - セカンダリボタン上のテキスト色
-    success: 0x228b22, // ForestGreen - 成功状態（錬金成功、クエスト達成など）
-    warning: 0xdaa520, // Goldenrod - 警告状態（注意喚起、確認ダイアログなど）
-    error: 0xb22222, // Firebrick - エラー状態（UI設計書 #B22222）
-    disabled: 0xcccccc, // ライトグレー - 無効状態（非アクティブなUI要素）
+    textOnSecondary: '#3D3D3D', // ダーク - セカンダリボタン上のテキスト色
+    success: 0x6aaf6a, // 成功（status.success）
+    warning: 0xe0a84b, // 警告（status.warning）
+    error: 0xd46b6b, // エラー（status.error）
+    disabled: 0xd0d0d0, // 無効状態
   },
 
-  // フォント設定
-  // 日本語対応のM PLUS Rounded 1cをプライマリフォントとして使用
+  // フォント設定 — design-guide.md §3 準拠
   fonts: {
-    primary: '"M PLUS Rounded 1c", sans-serif', // プライマリフォント（日本語対応、丸ゴシック）
-    secondary: 'sans-serif', // フォールバック用セカンダリフォント（クロスプラットフォーム対応）
+    primary: '"M PLUS Rounded 1c", sans-serif', // 丸ゴシック（水彩・絵本の柔らかい印象）
+    secondary: 'sans-serif', // フォールバック
   },
 
-  // フォントサイズ定義
-  // 階層的な情報設計を実現するための4段階のサイズ設定
-  // Issue #460: A11y - 日本語の可読性確保のため最小サイズを16pxに引き上げ
+  // フォントサイズ定義 — design-guide.md §3.2 準拠
   sizes: {
-    small: 16, // 小さいテキスト用（キャプション、補足情報）※A11y: 14px→16px
-    medium: 16, // 標準テキスト用（本文、一般的なUI要素）
-    large: 20, // 中見出し用（セクション見出し、ダイアログタイトル）
-    xlarge: 24, // 大見出し用（メインタイトル、画面見出し）
+    small: 14, // キャプション、注釈（text.sm）
+    medium: 16, // 本文、カード内テキスト（text.md）
+    large: 20, // セクション見出し（text.lg）
+    xlarge: 24, // フェーズタイトル（text.xl）
   },
 
-  // スペーシング定義
-  // 8pxベースのスペーシングシステムで統一感のあるレイアウトを実現
+  // スペーシング定義 — design-guide.md §7 準拠（8pxベース）
   spacing: {
-    xs: 4, // 最小スペーシング（密接な要素間）
-    sm: 8, // 小スペーシング（関連要素のグループ内）
-    md: 16, // 中スペーシング（セクション間、カード内の余白）
-    lg: 24, // 大スペーシング（大きなセクション間）
-    xl: 32, // 最大スペーシング（画面レベルの余白）
+    xs: 4, // 極小間隔（アイコンとテキストの間）
+    sm: 8, // 小間隔（カード内要素間）
+    md: 16, // 標準間隔（カード間、セクション内パディング）
+    lg: 24, // 大間隔（セクション間）
+    xl: 32, // 極大間隔（画面レベルの余白）
   },
 
-  // 品質グレードごとの色定義（UI設計書 セクション7.3）
+  // 品質グレードごとの色定義 — design-guide.md §2.6 準拠
   qualityColors: {
-    D: 0x808080, // グレー（UI設計書 #808080）
-    C: 0xffffff, // 白（UI設計書 #FFFFFF）
-    B: 0x32cd32, // LimeGreen（UI設計書 #32CD32）
-    A: 0x4169e1, // RoyalBlue（UI設計書 #4169E1）
-    S: 0xffd700, // Gold（UI設計書 #FFD700）
+    D: 0xa0a0a0, // グレー
+    C: 0xffffff, // 白
+    B: 0x6aaf6a, // グリーン（brand.primaryに寄せる）
+    A: 0x6b9fcc, // ブルー（status.infoに寄せる）
+    S: 0xe0a84b, // ゴールド（status.warningに寄せる）
   },
 
   // 品質ごとの光彩効果設定

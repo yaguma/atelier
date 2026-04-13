@@ -1,6 +1,7 @@
 /**
  * Semantic Colors - 用途別カラーエイリアス
  * Issue #457: UI刷新 Phase 3
+ * Issue #508: 水彩ファンタジースタイルへ更新
  *
  * @remarks
  * `color-palette.ts` の生カラーを用途別の意味で再エクスポートする。
@@ -24,25 +25,20 @@ export const SemanticColors = {
     muted: Text.muted,
   },
   brand: {
-    /** アイコン・枠・非テキスト装飾用（WCAG AA コントラスト未保証、本文テキストには使用しない）。 */
     primary: Brand.primary,
-    /** アイコン・枠・非テキスト装飾用（WCAG AA コントラスト未保証、本文テキストには使用しない）。 */
     secondary: Brand.secondary,
     accent: Brand.accent,
   },
   status: {
     success: Status.success,
     warning: Status.warning,
-    /** アイコン・枠・非テキスト装飾用（WCAG AA コントラスト未保証、本文テキストには使用しない）。 */
     danger: Status.danger,
     info: Status.info,
   },
   quality: {
-    /** アイコン・枠・非テキスト装飾用（WCAG AA コントラスト未保証、本文テキストには使用しない）。 */
     D: Quality.D,
     C: Quality.C,
     B: Quality.B,
-    /** アイコン・枠・非テキスト装飾用（WCAG AA コントラスト未保証、本文テキストには使用しない）。 */
     A: Quality.A,
     S: Quality.S,
   },

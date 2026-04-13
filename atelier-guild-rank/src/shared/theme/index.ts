@@ -45,9 +45,13 @@ export type { BorderKey, RadiusKey, ShadowKey } from './shape';
 export type {
   BackgroundColorKey,
   BorderColorKey,
+  BrandColorKey,
   CardTypeColorKey,
   ColorKey,
+  PhaseColorKey,
   QualityGrade,
+  StatusColorKey,
+  SurfaceColorKey,
   TextColorKey,
 } from './theme';
 export { Colors, THEME, toColorStr } from './theme';
