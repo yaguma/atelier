@@ -369,7 +369,7 @@ describe('SidebarUI 視覚実装テスト', () => {
         // Then:
         // - 視覚要素のsetColorが警告色で呼び出される
         // Note: 現在の実装では視覚要素は更新されないため、このテストは失敗する
-        expect(mockText.setColor).toHaveBeenCalledWith('#FFD93D');
+        expect(mockText.setColor).toHaveBeenCalledWith('#e0a84b');
       });
     });
   });

@@ -10,6 +10,7 @@
  */
 
 import { MAIN_LAYOUT } from '@shared/constants';
+import { Colors, toColorStr } from '@shared/theme';
 import type { ICraftedItem, IMaterialInstance } from '@shared/types/materials';
 import type { IActiveQuest } from '@shared/types/quests';
 import type Phaser from 'phaser';
@@ -31,24 +32,31 @@ interface ISidebarSection {
 
 /**
  * サイドバー用カラー定数
+ * DesignTokens/Colors経由で水彩ファンタジースタイルに統一
  */
-const COLORS = {
-  /** 背景色（半透明ダークグレー） */
-  BACKGROUND: 0x1f2937,
-  /** ボーダー色 */
-  BORDER: 0x374151,
-  /** セクションヘッダー背景 */
-  SECTION_HEADER: 0x374151,
-  /** テキスト色（明るいグレー） */
-  TEXT: 0xe5e7eb,
-  /** サブテキスト色 */
-  TEXT_SECONDARY: 0x9ca3af,
-  /** アクセント色（青系） */
-  ACCENT: 0x6366f1,
-  /** アクセントホバー色 */
-  ACCENT_HOVER: 0x818cf8,
-  /** 警告色 */
-  WARNING: 0xfcd34d,
+const SIDEBAR_COLORS = {
+  /** 背景色（温かみのあるクリーム: surface.sidebar） */
+  BACKGROUND: Colors.surface.sidebar,
+  /** ボーダー色（薄い区切り線: border.subtle） */
+  BORDER: Colors.border.subtle,
+  /** セクションヘッダー背景（薄い区切り線: border.subtle） */
+  SECTION_HEADER: Colors.border.subtle,
+  /** セクションヘッダーホバー色（標準ボーダー: border.default） */
+  SECTION_HEADER_HOVER: Colors.border.default,
+  /** テキスト色（メインテキスト: text.primary） */
+  TEXT: Colors.text.primary,
+  /** サブテキスト色（サブテキスト: text.secondary） */
+  TEXT_SECONDARY: Colors.text.secondary,
+  /** ミュートテキスト色（アイコン・補足: text.muted） */
+  TEXT_MUTED: Colors.text.muted,
+  /** プライマリ上テキスト色（着色ボタン上: text.onPrimary） */
+  TEXT_ON_PRIMARY: Colors.text.onPrimary,
+  /** アクセント色（草色: brand.primary） */
+  ACCENT: Colors.brand.primary,
+  /** アクセントホバー色（brand.primaryHover） */
+  ACCENT_HOVER: Colors.brand.primaryHover,
+  /** 警告色（status.warning） */
+  WARNING: Colors.status.warning,
 } as const;
 
 /**
@@ -245,7 +253,7 @@ export class SidebarUI extends BaseComponent {
         SIDEBAR_LAYOUT.HEIGHT / 2,
         SIDEBAR_LAYOUT.WIDTH,
         SIDEBAR_LAYOUT.HEIGHT,
-        COLORS.BACKGROUND,
+        SIDEBAR_COLORS.BACKGROUND,
         0.95,
       )
       .setName('SidebarUI.backgroundPanel');
@@ -258,7 +266,7 @@ export class SidebarUI extends BaseComponent {
         SIDEBAR_LAYOUT.HEIGHT / 2,
         2,
         SIDEBAR_LAYOUT.HEIGHT,
-        COLORS.BORDER,
+        SIDEBAR_COLORS.BORDER,
         1,
       )
       .setName('SidebarUI.borderLine');
@@ -272,20 +280,24 @@ export class SidebarUI extends BaseComponent {
       currentY + SIDEBAR_LAYOUT.SECTION_HEADER_HEIGHT / 2,
       SIDEBAR_LAYOUT.WIDTH - SIDEBAR_LAYOUT.PADDING * 2,
       SIDEBAR_LAYOUT.SECTION_HEADER_HEIGHT,
-      COLORS.SECTION_HEADER,
+      SIDEBAR_COLORS.SECTION_HEADER,
       0.8,
     );
     questsHeaderBg.setName('SidebarUI.questsHeaderBg');
     questsHeaderBg.setInteractive({ useHandCursor: true });
-    questsHeaderBg.on('pointerover', () => questsHeaderBg.setFillStyle(0x4b5563, 0.9));
-    questsHeaderBg.on('pointerout', () => questsHeaderBg.setFillStyle(COLORS.SECTION_HEADER, 0.8));
+    questsHeaderBg.on('pointerover', () =>
+      questsHeaderBg.setFillStyle(SIDEBAR_COLORS.SECTION_HEADER_HOVER, 0.9),
+    );
+    questsHeaderBg.on('pointerout', () =>
+      questsHeaderBg.setFillStyle(SIDEBAR_COLORS.SECTION_HEADER, 0.8),
+    );
     questsHeaderBg.on('pointerdown', () => this.toggleSection('quests'));
     this.container.add(questsHeaderBg);
 
     // 依頼セクションヘッダーを生成
     this._questsIconText = this.scene.add.text(SIDEBAR_LAYOUT.PADDING, currentY + 8, '▼', {
       fontSize: '16px',
-      color: '#9CA3AF',
+      color: toColorStr(SIDEBAR_COLORS.TEXT_MUTED),
     });
     this.container.add(this._questsIconText);
 
@@ -295,7 +307,7 @@ export class SidebarUI extends BaseComponent {
       '受注依頼',
       {
         fontSize: '16px',
-        color: '#F9FAFB',
+        color: toColorStr(SIDEBAR_COLORS.TEXT),
         fontStyle: 'bold',
       },
     );
@@ -313,14 +325,16 @@ export class SidebarUI extends BaseComponent {
       currentY + SIDEBAR_LAYOUT.SECTION_HEADER_HEIGHT / 2,
       SIDEBAR_LAYOUT.WIDTH - SIDEBAR_LAYOUT.PADDING * 2,
       SIDEBAR_LAYOUT.SECTION_HEADER_HEIGHT,
-      COLORS.SECTION_HEADER,
+      SIDEBAR_COLORS.SECTION_HEADER,
       0.8,
     );
     materialsHeaderBg.setName('SidebarUI.materialsHeaderBg');
     materialsHeaderBg.setInteractive({ useHandCursor: true });
-    materialsHeaderBg.on('pointerover', () => materialsHeaderBg.setFillStyle(0x4b5563, 0.9));
+    materialsHeaderBg.on('pointerover', () =>
+      materialsHeaderBg.setFillStyle(SIDEBAR_COLORS.SECTION_HEADER_HOVER, 0.9),
+    );
     materialsHeaderBg.on('pointerout', () =>
-      materialsHeaderBg.setFillStyle(COLORS.SECTION_HEADER, 0.8),
+      materialsHeaderBg.setFillStyle(SIDEBAR_COLORS.SECTION_HEADER, 0.8),
     );
     materialsHeaderBg.on('pointerdown', () => this.toggleSection('materials'));
     this.container.add(materialsHeaderBg);
@@ -328,7 +342,7 @@ export class SidebarUI extends BaseComponent {
     // 素材セクションヘッダーを生成
     this._materialsIconText = this.scene.add.text(SIDEBAR_LAYOUT.PADDING, currentY + 8, '▼', {
       fontSize: '16px',
-      color: '#9CA3AF',
+      color: toColorStr(SIDEBAR_COLORS.TEXT_MUTED),
     });
     this.container.add(this._materialsIconText);
 
@@ -338,7 +352,7 @@ export class SidebarUI extends BaseComponent {
       '素材',
       {
         fontSize: '16px',
-        color: '#F9FAFB',
+        color: toColorStr(SIDEBAR_COLORS.TEXT),
         fontStyle: 'bold',
       },
     );
@@ -355,14 +369,16 @@ export class SidebarUI extends BaseComponent {
       currentY + SIDEBAR_LAYOUT.SECTION_HEADER_HEIGHT / 2,
       SIDEBAR_LAYOUT.WIDTH - SIDEBAR_LAYOUT.PADDING * 2,
       SIDEBAR_LAYOUT.SECTION_HEADER_HEIGHT,
-      COLORS.SECTION_HEADER,
+      SIDEBAR_COLORS.SECTION_HEADER,
       0.8,
     );
     craftedItemsHeaderBg.setName('SidebarUI.craftedItemsHeaderBg');
     craftedItemsHeaderBg.setInteractive({ useHandCursor: true });
-    craftedItemsHeaderBg.on('pointerover', () => craftedItemsHeaderBg.setFillStyle(0x4b5563, 0.9));
+    craftedItemsHeaderBg.on('pointerover', () =>
+      craftedItemsHeaderBg.setFillStyle(SIDEBAR_COLORS.SECTION_HEADER_HOVER, 0.9),
+    );
     craftedItemsHeaderBg.on('pointerout', () =>
-      craftedItemsHeaderBg.setFillStyle(COLORS.SECTION_HEADER, 0.8),
+      craftedItemsHeaderBg.setFillStyle(SIDEBAR_COLORS.SECTION_HEADER, 0.8),
     );
     craftedItemsHeaderBg.on('pointerdown', () => this.toggleSection('craftedItems'));
     this.container.add(craftedItemsHeaderBg);
@@ -370,7 +386,7 @@ export class SidebarUI extends BaseComponent {
     // 完成品セクションヘッダーを生成
     this._craftedItemsIconText = this.scene.add.text(SIDEBAR_LAYOUT.PADDING, currentY + 8, '▼', {
       fontSize: '16px',
-      color: '#9CA3AF',
+      color: toColorStr(SIDEBAR_COLORS.TEXT_MUTED),
     });
     this.container.add(this._craftedItemsIconText);
 
@@ -380,7 +396,7 @@ export class SidebarUI extends BaseComponent {
       '完成品',
       {
         fontSize: '16px',
-        color: '#F9FAFB',
+        color: toColorStr(SIDEBAR_COLORS.TEXT),
         fontStyle: 'bold',
       },
     );
@@ -394,7 +410,7 @@ export class SidebarUI extends BaseComponent {
     // 保管容量テキストを生成
     this._storageTextElement = this.scene.add.text(SIDEBAR_LAYOUT.PADDING, currentY, '保管: 0/20', {
       fontSize: '16px',
-      color: '#D1D5DB',
+      color: toColorStr(SIDEBAR_COLORS.TEXT_SECONDARY),
     });
     this.container.add(this._storageTextElement);
 
@@ -406,15 +422,15 @@ export class SidebarUI extends BaseComponent {
       currentY + 18,
       SIDEBAR_LAYOUT.WIDTH - SIDEBAR_LAYOUT.PADDING * 2,
       36,
-      COLORS.ACCENT,
+      SIDEBAR_COLORS.ACCENT,
     );
     this._shopButtonBackground.setName('SidebarUI.shopButtonBg');
     this._shopButtonBackground.setInteractive({ useHandCursor: true });
     this._shopButtonBackground.on('pointerover', () => {
-      this._shopButtonBackground?.setFillStyle(COLORS.ACCENT_HOVER);
+      this._shopButtonBackground?.setFillStyle(SIDEBAR_COLORS.ACCENT_HOVER);
     });
     this._shopButtonBackground.on('pointerout', () => {
-      this._shopButtonBackground?.setFillStyle(COLORS.ACCENT);
+      this._shopButtonBackground?.setFillStyle(SIDEBAR_COLORS.ACCENT);
     });
     this.container.add(this._shopButtonBackground);
 
@@ -424,7 +440,7 @@ export class SidebarUI extends BaseComponent {
       'ショップ',
       {
         fontSize: '16px',
-        color: '#FFFFFF',
+        color: toColorStr(SIDEBAR_COLORS.TEXT_ON_PRIMARY),
         fontStyle: 'bold',
       },
     );
@@ -557,7 +573,7 @@ export class SidebarUI extends BaseComponent {
         `${activeQuest.client.name} (${activeQuest.remainingDays}日)`,
         {
           fontSize: '16px',
-          color: '#D1D5DB',
+          color: toColorStr(SIDEBAR_COLORS.TEXT_SECONDARY),
         },
       );
       this.container.add(questText);
@@ -574,7 +590,7 @@ export class SidebarUI extends BaseComponent {
         `他${this._activeQuests.length - 3}件...`,
         {
           fontSize: '16px',
-          color: '#9CA3AF',
+          color: toColorStr(SIDEBAR_COLORS.TEXT_MUTED),
         },
       );
       this.container.add(moreText);
@@ -608,7 +624,7 @@ export class SidebarUI extends BaseComponent {
         `${this.resolveMaterialName(material.materialId)} (${material.quality})`,
         {
           fontSize: '16px',
-          color: '#D1D5DB',
+          color: toColorStr(SIDEBAR_COLORS.TEXT_SECONDARY),
         },
       );
       this.container.add(matText);
@@ -625,7 +641,7 @@ export class SidebarUI extends BaseComponent {
         `他${this._materials.length - 3}件...`,
         {
           fontSize: '16px',
-          color: '#9CA3AF',
+          color: toColorStr(SIDEBAR_COLORS.TEXT_MUTED),
         },
       );
       this.container.add(moreText);
@@ -659,7 +675,7 @@ export class SidebarUI extends BaseComponent {
         `${this.resolveItemName(item.itemId)} (${item.quality})`,
         {
           fontSize: '16px',
-          color: '#D1D5DB',
+          color: toColorStr(SIDEBAR_COLORS.TEXT_SECONDARY),
         },
       );
       this.container.add(itemText);
@@ -676,7 +692,7 @@ export class SidebarUI extends BaseComponent {
         `他${this._craftedItems.length - 3}件...`,
         {
           fontSize: '16px',
-          color: '#9CA3AF',
+          color: toColorStr(SIDEBAR_COLORS.TEXT_MUTED),
         },
       );
       this.container.add(moreText);
@@ -699,9 +715,9 @@ export class SidebarUI extends BaseComponent {
       // 80%以上で警告色
       const ratio = this._currentStorage / this._maxStorage;
       if (ratio >= 0.8) {
-        this._storageTextElement.setColor('#FFD93D');
+        this._storageTextElement.setColor(toColorStr(SIDEBAR_COLORS.WARNING));
       } else {
-        this._storageTextElement.setColor('#FFFFFF');
+        this._storageTextElement.setColor(toColorStr(SIDEBAR_COLORS.TEXT_SECONDARY));
       }
     }
   }
