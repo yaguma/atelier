@@ -23,7 +23,7 @@
 
 import { BaseComponent, type BaseComponentOptions } from '@shared/components';
 import { MAIN_LAYOUT } from '@shared/constants';
-import { DesignTokens } from '@shared/theme';
+import { Colors, DesignTokens, toColorStr } from '@shared/theme';
 import type { GuildRank as GuildRankType } from '@shared/types/common';
 import { GuildRank } from '@shared/types/common';
 import type Phaser from 'phaser';
@@ -77,16 +77,16 @@ export interface HUDBarOptions extends BaseComponentOptions {
 // 定数
 // =============================================================================
 
-/** HUDBar 用カラー定数（HeaderUI と同じ値を使用） */
+/** HUDBar 用カラー定数 — design-guide.md §5.5 準拠 */
 const HUD_COLORS = {
-  RED: 0xff6b6b,
-  YELLOW: 0xffd93d,
-  GREEN: 0x6bcb77,
-  CYAN: 0x4ecdc4,
-  WHITE: 0xffffff,
+  RED: Colors.status.error,
+  YELLOW: Colors.status.warning,
+  GREEN: Colors.status.success,
+  CYAN: Colors.status.info,
+  WHITE: Colors.text.primary,
   BRIGHT_RED: 0xff0000,
-  BACKGROUND: 0x1f2937,
-  BORDER: 0x374151,
+  BACKGROUND: Colors.surface.header,
+  BORDER: Colors.border.subtle,
 } as const;
 
 /** @deprecated Issue #486: MainSceneからwidthオプションで渡される。フォールバック用 */
@@ -232,7 +232,7 @@ export class HUDBar extends BaseComponent {
       x: w * sections.RANK,
       y: 12,
       text: 'ランク:',
-      style: { fontSize: '16px', color: '#9CA3AF' },
+      style: { fontSize: '16px', color: toColorStr(Colors.text.secondary) },
       add: false,
     });
     if (rankLabel.setName) rankLabel.setName('HUDBar.rankLabel');
@@ -243,7 +243,7 @@ export class HUDBar extends BaseComponent {
       x: w * sections.RANK_TEXT,
       y: 10,
       text: '',
-      style: { fontSize: '18px', color: '#F9FAFB', fontStyle: 'bold' },
+      style: { fontSize: '18px', color: toColorStr(Colors.text.primary), fontStyle: 'bold' },
       add: false,
     });
     if (this.rankTextEl.setName) this.rankTextEl.setName('HUDBar.rankText');
@@ -253,7 +253,7 @@ export class HUDBar extends BaseComponent {
     this.gaugeBackground = this.scene.add.graphics();
     if (this.gaugeBackground.fillStyle) {
       const gaugeX = w * sections.GAUGE;
-      this.gaugeBackground.fillStyle(0x374151, 1);
+      this.gaugeBackground.fillStyle(Colors.border.subtle, 1);
       if (this.gaugeBackground.fillRoundedRect) {
         this.gaugeBackground.fillRoundedRect(gaugeX, 14, GAUGE_WIDTH, GAUGE_HEIGHT, 4);
       } else if (this.gaugeBackground.fillRect) {
@@ -273,7 +273,7 @@ export class HUDBar extends BaseComponent {
       x: w * sections.DAYS_LABEL,
       y: 12,
       text: '残り:',
-      style: { fontSize: '16px', color: '#9CA3AF' },
+      style: { fontSize: '16px', color: toColorStr(Colors.text.secondary) },
       add: false,
     });
     if (daysLabel.setName) daysLabel.setName('HUDBar.daysLabel');
@@ -284,7 +284,7 @@ export class HUDBar extends BaseComponent {
       x: w * sections.DAYS_TEXT,
       y: 10,
       text: '',
-      style: { fontSize: '18px', color: '#F9FAFB', fontStyle: 'bold' },
+      style: { fontSize: '18px', color: toColorStr(Colors.text.primary), fontStyle: 'bold' },
       add: false,
     });
     if (this.daysTextEl.setName) this.daysTextEl.setName('HUDBar.daysText');
@@ -295,7 +295,7 @@ export class HUDBar extends BaseComponent {
       x: w * sections.GOLD_ICON,
       y: 12,
       text: 'G',
-      style: { fontSize: '16px', color: '#FCD34D', fontStyle: 'bold' },
+      style: { fontSize: '16px', color: toColorStr(Colors.text.accent), fontStyle: 'bold' },
       add: false,
     });
     if (goldIcon.setName) goldIcon.setName('HUDBar.goldIcon');
@@ -306,7 +306,7 @@ export class HUDBar extends BaseComponent {
       x: w * sections.GOLD_TEXT,
       y: 10,
       text: '',
-      style: { fontSize: '18px', color: '#FCD34D', fontStyle: 'bold' },
+      style: { fontSize: '18px', color: toColorStr(Colors.text.accent), fontStyle: 'bold' },
       add: false,
     });
     if (this.goldTextEl.setName) this.goldTextEl.setName('HUDBar.goldText');
@@ -317,7 +317,7 @@ export class HUDBar extends BaseComponent {
       x: w * sections.AP_LABEL,
       y: 12,
       text: 'AP:',
-      style: { fontSize: '16px', color: '#9CA3AF' },
+      style: { fontSize: '16px', color: toColorStr(Colors.text.secondary) },
       add: false,
     });
     if (apLabel.setName) apLabel.setName('HUDBar.apLabel');
@@ -328,7 +328,7 @@ export class HUDBar extends BaseComponent {
       x: w * sections.AP_TEXT,
       y: 10,
       text: '',
-      style: { fontSize: '18px', color: '#60A5FA', fontStyle: 'bold' },
+      style: { fontSize: '18px', color: toColorStr(Colors.status.info), fontStyle: 'bold' },
       add: false,
     });
     if (this.apTextEl.setName) this.apTextEl.setName('HUDBar.apText');
