@@ -14,6 +14,7 @@
 import { MAIN_LAYOUT } from '@shared/constants';
 import type { IEventBus } from '@shared/services/event-bus/types';
 import type { IGameFlowManager } from '@shared/services/game-flow/game-flow-manager.interface';
+import { Colors } from '@shared/theme';
 import type { GamePhase } from '@shared/types';
 import Phaser from 'phaser';
 import { BaseComponent } from './BaseComponent';
@@ -31,15 +32,16 @@ const HAND_DISPLAY_CAPACITY = 5;
 /**
  * フッター用カラー定数
  */
+/** フッター用カラー定数 — design-guide.md §5.8 準拠 */
 const FOOTER_COLORS = {
-  /** 背景色（半透明ダークグレー） */
-  BACKGROUND: 0x1f2937,
-  /** ボーダー色 */
-  BORDER: 0x374151,
-  /** カードプレースホルダー */
-  CARD_PLACEHOLDER: 0x374151,
-  /** カードプレースホルダーボーダー */
-  CARD_PLACEHOLDER_BORDER: 0x4b5563,
+  /** 背景色（クリーム: surface.footer） */
+  BACKGROUND: Colors.surface.footer,
+  /** 上部ボーダー色（薄い区切り線: border.subtle） */
+  BORDER: Colors.border.subtle,
+  /** カードプレースホルダー（白: surface.card） */
+  CARD_PLACEHOLDER: Colors.surface.card,
+  /** カードプレースホルダーボーダー（標準枠線: border.default） */
+  CARD_PLACEHOLDER_BORDER: Colors.border.default,
 } as const;
 
 /**
