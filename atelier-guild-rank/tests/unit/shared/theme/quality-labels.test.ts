@@ -27,8 +27,8 @@ describe('THEME.qualityLabels', () => {
 
 describe('THEME.sizes', () => {
   describe('A11yフォントサイズ', () => {
-    it('最小フォントサイズ(small)が16px以上である', () => {
-      expect(THEME.sizes.small).toBeGreaterThanOrEqual(16);
+    it('最小フォントサイズ(small)が14px以上である', () => {
+      expect(THEME.sizes.small).toBeGreaterThanOrEqual(14);
     });
 
     it('medium以上のフォントサイズが16px以上である', () => {

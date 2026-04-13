@@ -15,54 +15,45 @@ import { describe, expect, test } from 'vitest';
 
 describe('THEME定義', () => {
   describe('T-0018-THEME-01: カラーパレット定義の検証', () => {
-    // 【テスト目的】: テーマカラーが設計書通りに定義されていることを確認
-    // 【テスト内容】: 各カラー値がUI設計概要で指定された値と一致することを検証
-    // 【期待される動作】: すべてのカラー値が設計書通りに定義されている
-    // 🔵 信頼性レベル: 設計書（ui-design/overview.md）に明記
+    // 【テスト目的】: テーマカラーがデザインガイド通りに定義されていることを確認
+    // 【テスト内容】: 各カラー値がdesign-guide.mdで指定された値と一致することを検証
+    // 【期待される動作】: すべてのカラー値がデザインガイド通りに定義されている
+    // 🔵 信頼性レベル: デザインガイド（design-guide.md §2）に明記
 
-    test('primary カラーが SaddleBrown (0x8B4513) である', () => {
-      // 【確認内容】: primaryカラーが錬金術の革製品をイメージした茶色であることを確認
-      expect(THEME.colors.primary).toBe(0x8b4513); // 🔵
+    test('primary カラーが草色 (0x7BAE7F) である', () => {
+      expect(THEME.colors.primary).toBe(0x7bae7f); // 🔵
     });
 
-    test('secondary カラーが Chocolate (0xD2691E) である', () => {
-      // 【確認内容】: secondaryカラーがprimaryよりも明るい茶色であることを確認
-      expect(THEME.colors.secondary).toBe(0xd2691e); // 🔵
+    test('secondary カラーがゴールデンベージュ (0xD4A76A) である', () => {
+      expect(THEME.colors.secondary).toBe(0xd4a76a); // 🔵
     });
 
-    test('background カラーが Beige (0xF5F5DC) である', () => {
-      // 【確認内容】: 背景色が柔らかいベージュであることを確認
-      expect(THEME.colors.background).toBe(0xf5f5dc); // 🔵
+    test('background カラーがオフホワイト (0xFFF8F0) である', () => {
+      expect(THEME.colors.background).toBe(0xfff8f0); // 🔵
     });
 
-    test('text カラーが暗いグレー (0x333333) である', () => {
-      // 【確認内容】: テキスト色が読みやすい暗いグレーであることを確認
-      expect(THEME.colors.text).toBe(0x333333); // 🔵
+    test('text カラーがダークグレー (0x3D3D3D) である', () => {
+      expect(THEME.colors.text).toBe(0x3d3d3d); // 🔵
     });
 
-    test('textLight カラーが中間グレー (0x666666) である', () => {
-      // 【確認内容】: ライトテキスト色が通常テキストよりも明るいグレーであることを確認
-      expect(THEME.colors.textLight).toBe(0x666666); // 🔵
+    test('textLight カラーが中間グレー (0x5A5A5A) である', () => {
+      expect(THEME.colors.textLight).toBe(0x5a5a5a); // 🔵
     });
 
-    test('success カラーが ForestGreen (0x228B22) である', () => {
-      // 【確認内容】: 成功状態を示す緑色が定義されていることを確認
-      expect(THEME.colors.success).toBe(0x228b22); // 🔵
+    test('success カラーが status.success (0x6AAF6A) である', () => {
+      expect(THEME.colors.success).toBe(0x6aaf6a); // 🔵
     });
 
-    test('warning カラーが Goldenrod (0xDAA520) である', () => {
-      // 【確認内容】: 警告状態を示す黄色が定義されていることを確認
-      expect(THEME.colors.warning).toBe(0xdaa520); // 🔵
+    test('warning カラーが status.warning (0xE0A84B) である', () => {
+      expect(THEME.colors.warning).toBe(0xe0a84b); // 🔵
     });
 
-    test('error カラーが Firebrick (0xB22222) である', () => {
-      // 【確認内容】: エラー状態を示す赤色が定義されていることを確認（UI設計書 #B22222）
-      expect(THEME.colors.error).toBe(0xb22222); // 🔵
+    test('error カラーが status.error (0xD46B6B) である', () => {
+      expect(THEME.colors.error).toBe(0xd46b6b); // 🔵
     });
 
-    test('disabled カラーがグレー (0xCCCCCC) である', () => {
-      // 【確認内容】: 無効状態を示すグレー色が定義されていることを確認
-      expect(THEME.colors.disabled).toBe(0xcccccc); // 🔵
+    test('disabled カラーがグレー (0xD0D0D0) である', () => {
+      expect(THEME.colors.disabled).toBe(0xd0d0d0); // 🔵
     });
   });
 
@@ -90,9 +81,9 @@ describe('THEME定義', () => {
     // 【期待される動作】: すべてのサイズ設定が設計書通りに定義されている
     // 🔵 信頼性レベル: 設計書（ui-design/overview.md）に明記
 
-    test('small サイズが 16px である (Issue #460: A11y 最小16px)', () => {
-      // 【確認内容】: キャプションや小さいテキスト用のサイズが16px以上であることを確認
-      expect(THEME.sizes.small).toBe(16); // 🔵
+    test('small サイズが 14px である (design-guide.md §3.2: text.sm)', () => {
+      // 【確認内容】: キャプション・注釈用のサイズが14pxであることを確認
+      expect(THEME.sizes.small).toBe(14); // 🔵
     });
 
     test('medium サイズが 16px である', () => {

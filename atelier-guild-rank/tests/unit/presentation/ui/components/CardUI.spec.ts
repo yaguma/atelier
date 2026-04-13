@@ -183,8 +183,8 @@ describe('CardUI', () => {
         y: 0,
       });
 
-      // 緑色（0x90ee90）で背景が作成されたことを確認（コンストラクタ経由）
-      expect(Phaser.GameObjects.Rectangle).toHaveBeenCalledWith(scene, 0, 0, 120, 160, 0x90ee90);
+      // リーフグリーン（0x8cc084）で背景が作成されたことを確認（コンストラクタ経由）
+      expect(Phaser.GameObjects.Rectangle).toHaveBeenCalledWith(scene, 0, 0, 120, 160, 0x8cc084);
 
       cardUI.destroy();
     });

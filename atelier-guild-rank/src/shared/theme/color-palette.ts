@@ -1,62 +1,64 @@
 /**
- * Color Palette - 月下の錬金工房
+ * Color Palette - 水彩ファンタジースタイル
  * Issue #457: UI刷新 Phase 3
+ * Issue #508: 水彩ファンタジースタイルへ更新
  *
  * @remarks
- * ダーク基調＋深紫＋群青＋ゴールドアクセントの新パレット。
+ * 水彩画のような柔らかさと絵本のような親しみやすさ。
+ * クリーム・パステル基調＋草色＋ゴールデンベージュのパレット。
  * 生の色値（0xRRGGBB）のみを定義する純粋な定数モジュール。
  * 用途別のエイリアスは `semantic-colors.ts` を参照。
  */
 
-/** Surface 階層（背景） */
+/** Surface 階層（背景） — design-guide.md §2.1 */
 export const Surface = {
-  base: 0x0e1118,
-  raised: 0x161b24,
-  panel: 0x1e2532,
-  inset: 0x242c3b,
+  base: 0xfff8f0, // 温かみのあるオフホワイト
+  raised: 0xffffff, // カード・パネル（ピュアホワイト）
+  panel: 0xf5efe6, // サイドバー（やや暗めのクリーム）
+  inset: 0xfdfaf5, // ヘッダー（薄いクリーム）
 } as const;
 
-/** Text 階層 */
+/** Text 階層 — design-guide.md §2.3 */
 export const Text = {
-  primary: 0xf2f4f8,
-  secondary: 0xb8c0cc,
-  muted: 0x7a8496,
+  primary: 0x3d3d3d, // 見出し・重要テキスト（コントラスト10.2:1）
+  secondary: 0x5a5a5a, // 本文・説明（コントラスト6.8:1）
+  muted: 0x8a8a8a, // 補助・ヒント（コントラスト3.5:1、非テキスト装飾用）
 } as const;
 
-/** Brand カラー */
+/** Brand カラー — design-guide.md §2.2 */
 export const Brand = {
-  primary: 0x6b4bd6, // アメジスト
-  secondary: 0x2d6cdf, // 群青
-  accent: 0xf3a93c, // ゴールド
+  primary: 0x7bae7f, // 草色（錬金術のハーブ）
+  secondary: 0xd4a76a, // ゴールデンベージュ（調合の琥珀）
+  accent: 0xe8a87c, // コーラルピーチ
 } as const;
 
-/** Status カラー */
+/** Status カラー — design-guide.md §2.4 */
 export const Status = {
-  success: 0x3fae6a,
-  warning: 0xe5a13b,
-  danger: 0xe5484d,
-  info: 0x3fa3d6,
+  success: 0x6aaf6a,
+  warning: 0xe0a84b,
+  danger: 0xd46b6b,
+  info: 0x6b9fcc,
 } as const;
 
-/** Quality カラー（D..S） */
+/** Quality カラー（D..S）— design-guide.md §2.6 */
 export const Quality = {
-  D: 0x7a8496,
-  C: 0xb8c0cc,
-  B: 0x3fae6a,
-  A: 0x2d6cdf,
-  S: 0xf3a93c,
+  D: 0xa0a0a0, // グレー
+  C: 0xffffff, // 白
+  B: 0x6aaf6a, // グリーン（brand.primaryに寄せる）
+  A: 0x6b9fcc, // ブルー（status.infoに寄せる）
+  S: 0xe0a84b, // ゴールド（status.warningに寄せる）
 } as const;
 
 /** Rank カラー（G..S） */
 export const Rank = {
-  G: 0x7a8496,
-  F: 0xa3b1bf,
-  E: 0x4fc3a1,
-  D: 0x3fae6a,
-  C: 0x3fa3d6,
-  B: 0x2d6cdf,
-  A: 0x9b7be8,
-  S: 0xf3a93c,
+  G: 0xa0a0a0,
+  F: 0xb0b0b0,
+  E: 0x8cc084, // リーフグリーン
+  D: 0x6aaf6a,
+  C: 0x6b9fcc,
+  B: 0x5b8cb8,
+  A: 0xb8a9d4, // ラベンダー
+  S: 0xe0a84b,
 } as const;
 
 export const ColorPalette = {
