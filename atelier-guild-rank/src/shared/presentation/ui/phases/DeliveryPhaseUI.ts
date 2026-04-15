@@ -7,7 +7,7 @@
  * サブコンポーネント: QuestDeliveryList, ItemSelector, ContributionPreview, DeliveryResultPanel
  */
 
-import { THEME } from '@presentation/ui/theme';
+import { Colors, THEME } from '@presentation/ui/theme';
 import { CONTENT_WORK_CENTER_X, CONTENT_WORK_WIDTH } from '@shared/constants';
 import type Phaser from 'phaser';
 import { BaseComponent } from '../components/BaseComponent';
@@ -243,7 +243,7 @@ export class DeliveryPhaseUI extends BaseComponent {
       UI_LAYOUT.BUTTON_Y,
       120,
       40,
-      0x4caf50,
+      Colors.brand.primary,
     );
     deliverRect.setInteractive({ useHandCursor: true });
     deliverRect.on('pointerdown', () => this.onDeliver());

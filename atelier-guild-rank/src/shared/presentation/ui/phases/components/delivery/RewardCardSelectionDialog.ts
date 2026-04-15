@@ -7,7 +7,7 @@
  * 3枚のカード候補から1枚を選択してデッキに追加する。
  */
 
-import { Colors, THEME } from '@presentation/ui/theme';
+import { Colors, THEME, toColorStr } from '@presentation/ui/theme';
 import { AnimationPresets } from '@presentation/ui/utils/AnimationPresets';
 import { BaseComponent } from '@shared/components';
 import type Phaser from 'phaser';
@@ -54,11 +54,11 @@ const CARD_TYPE_LABELS: Record<RewardCard['cardType'], string> = {
   enhancement: '強化',
 };
 
-/** レアリティ別ボーダー色 */
+/** レアリティ別ボーダー色 — DesignTokens/Colors経由 */
 const RARITY_COLORS: Record<RewardCard['rarity'], number> = {
-  common: 0x808080,
-  uncommon: 0x2e7d32,
-  rare: 0xf9a825,
+  common: Colors.quality.common,
+  uncommon: Colors.quality.uncommon,
+  rare: Colors.quality.legendary,
 };
 
 /** テキスト色ヘルパー */
@@ -201,7 +201,7 @@ export class RewardCardSelectionDialog extends BaseComponent {
     skipButton.setOrigin(0.5);
     skipButton.setInteractive({ useHandCursor: true });
     skipButton.on('pointerdown', () => this.onSkip());
-    skipButton.on('pointerover', () => skipButton.setColor('#ffffff'));
+    skipButton.on('pointerover', () => skipButton.setColor(toColorStr(Colors.text.onPrimary)));
     skipButton.on('pointerout', () => skipButton.setColor(TEXT_COLOR.muted));
     this.container.add(skipButton);
     this.elements.push(skipButton);
@@ -232,7 +232,7 @@ export class RewardCardSelectionDialog extends BaseComponent {
    * 個別カードUIを作成
    */
   private createCardUI(card: RewardCard, x: number, baseY: number): void {
-    const rarityColor = RARITY_COLORS[card.rarity] ?? 0x808080;
+    const rarityColor = RARITY_COLORS[card.rarity] ?? Colors.quality.common;
 
     // カード背景
     const cardBg = this.scene.add.rectangle(
