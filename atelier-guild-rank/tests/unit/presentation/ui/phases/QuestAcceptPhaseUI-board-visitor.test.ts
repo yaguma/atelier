@@ -41,18 +41,27 @@ vi.mock('@presentation/ui/theme', () => ({
     BORDER: 0x888888,
     ACCENT: 0xff9900,
     background: {
-      parchment: 0xf5e6c8,
+      parchment: 0xffffff,
       dark: 0x333333,
     },
+    surface: {
+      card: 0xffffff,
+    },
     border: {
-      quest: 0xc4a35a,
+      quest: 0xd9cfc2,
+      default: 0xd9cfc2,
+      subtle: 0xe8e0d6,
     },
     text: {
-      primary: '#000000',
-      secondary: '#666666',
+      primary: 0x3d3d3d,
+      secondary: 0x5a5a5a,
       light: '#ffffff',
     },
+    status: {
+      info: 0x6b9fcc,
+    },
   },
+  toColorStr: (color: number) => `#${color.toString(16).padStart(6, '0')}`,
 }));
 
 vi.mock('@presentation/ui/components/QuestCardUI', () => ({

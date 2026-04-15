@@ -26,6 +26,7 @@ import type { RexScrollablePanel } from '../../types/rexui';
 import { BaseComponent } from '../components/BaseComponent';
 import { QuestCardUI } from '../components/QuestCardUI';
 import { QuestDetailModal } from '../components/QuestDetailModal';
+import { Colors, toColorStr } from '../theme';
 
 /**
  * テスト用モックScrollablePanel型
@@ -171,7 +172,7 @@ export class QuestAcceptPhaseUI extends BaseComponent {
    * 【タイトルスタイル定数】: タイトルテキストのスタイル
    */
   private static readonly TITLE_FONT_SIZE = '24px';
-  private static readonly TITLE_COLOR = '#000000';
+  private static readonly TITLE_COLOR = toColorStr(Colors.text.primary);
   private static readonly TITLE_TEXT = '📋 本日の依頼';
 
   /**
@@ -179,7 +180,7 @@ export class QuestAcceptPhaseUI extends BaseComponent {
    */
   private static readonly ACCEPTED_SECTION_TITLE = '📌 受注済み依頼';
   private static readonly ACCEPTED_SECTION_FONT_SIZE = '20px';
-  private static readonly ACCEPTED_SECTION_COLOR = '#333333';
+  private static readonly ACCEPTED_SECTION_COLOR = toColorStr(Colors.text.primary);
   /** 受注済みカード開始X: グリッドと同じ配置 */
   private static readonly ACCEPTED_CARD_START_X = CONTENT_WORK_CENTER_X - 260;
   private static readonly ACCEPTED_CARD_SPACING_X = 260;
@@ -852,7 +853,7 @@ export class QuestAcceptPhaseUI extends BaseComponent {
       sectionY,
       CONTENT_WORK_WIDTH - 120,
       2,
-      0xcccccc,
+      Colors.border.subtle,
     );
     targetContainer.add(this.acceptedSectionDivider);
 
