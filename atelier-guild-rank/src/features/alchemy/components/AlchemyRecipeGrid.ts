@@ -7,6 +7,7 @@ import { THEME } from '@presentation/ui/theme';
 import { ScrollableContainer } from '@shared/components/ScrollableContainer';
 import { MAIN_LAYOUT } from '@shared/constants';
 import { getSelectionIndexFromKey, isKeyForAction } from '@shared/constants/keybindings';
+import { Colors, toColorStr } from '@shared/theme';
 import type { CardId } from '@shared/types';
 import type { IRecipeCardMaster } from '@shared/types/master-data';
 import type Phaser from 'phaser';
@@ -84,7 +85,7 @@ export class AlchemyRecipeGrid {
 
   clearSelection(): void {
     for (const item of this.recipeLabels) {
-      const color = item.craftable ? THEME.colors.secondary : 0x3a3a3a;
+      const color = item.craftable ? THEME.colors.secondary : Colors.ui.button.disabled;
       item.background.setFillStyle(color);
     }
   }
@@ -155,14 +156,14 @@ export class AlchemyRecipeGrid {
       LAYOUT.ITEM_HEIGHT + matCount * LAYOUT.MATERIAL_LINE_HEIGHT + LAYOUT.PADDING_VERTICAL;
     const cardContainer = this.scene.add.container(x, y);
 
-    const bgColor = craftable ? THEME.colors.secondary : 0x3a3a3a;
+    const bgColor = craftable ? THEME.colors.secondary : Colors.ui.button.disabled;
     const background = this.rexUI.add
       .roundRectangle({ width: LAYOUT.ITEM_WIDTH, height: cardH, radius: LAYOUT.BORDER_RADIUS })
       .setFillStyle(bgColor);
     background.setPosition(LAYOUT.ITEM_WIDTH / 2, cardH / 2);
     cardContainer.add(background);
 
-    const textColor = craftable ? THEME.colors.textOnSecondary : '#cccccc';
+    const textColor = craftable ? THEME.colors.textOnSecondary : toColorStr(Colors.text.disabled);
     const nameText = this.scene.make.text({
       x: LAYOUT.PADDING_HORIZONTAL,
       y: LAYOUT.PADDING_VERTICAL,
@@ -181,7 +182,11 @@ export class AlchemyRecipeGrid {
     let matY = LAYOUT.ITEM_HEIGHT;
     for (const req of recipe.requiredMaterials) {
       const isMissing = missingMap.has(req.materialId);
-      const matColor = isMissing ? '#ff4444' : craftable ? '#e0d0b0' : '#aaaaaa';
+      const matColor = isMissing
+        ? toColorStr(Colors.text.error)
+        : craftable
+          ? toColorStr(Colors.text.accent)
+          : toColorStr(Colors.text.muted);
       const matText = this.scene.make.text({
         x: LAYOUT.MATERIAL_INDENT,
         y: matY,
