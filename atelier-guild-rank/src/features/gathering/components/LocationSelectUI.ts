@@ -11,7 +11,7 @@
  */
 
 import { BaseComponent } from '@shared/components';
-import { Colors, THEME } from '@shared/theme/theme';
+import { Colors, THEME, toColorStr } from '@shared/theme/theme';
 import type { CardId } from '@shared/types';
 import type {
   DropRateLabel,
@@ -360,7 +360,7 @@ export class LocationSelectUI extends BaseComponent {
       text: '採取地マップ',
       style: {
         fontSize: `${THEME.sizes.large}px`,
-        color: `#${Colors.text.primary.toString(16).padStart(6, '0')}`,
+        color: toColorStr(Colors.text.primary),
         fontStyle: 'bold',
         fontFamily: THEME.fonts.primary,
       },
@@ -401,7 +401,7 @@ export class LocationSelectUI extends BaseComponent {
       text: location.name,
       style: {
         fontSize: `${THEME.sizes.medium}px`,
-        color: `#${Colors.text.primary.toString(16).padStart(6, '0')}`,
+        color: toColorStr(Colors.text.primary),
         fontStyle: 'bold',
         fontFamily: THEME.fonts.primary,
       },
@@ -417,7 +417,7 @@ export class LocationSelectUI extends BaseComponent {
       text: `AP:${location.movementAPCost}`,
       style: {
         fontSize: `${THEME.sizes.small}px`,
-        color: '#B8860B',
+        color: toColorStr(Colors.text.accent),
         fontFamily: THEME.fonts.primary,
       },
       add: false,
@@ -433,7 +433,7 @@ export class LocationSelectUI extends BaseComponent {
       text: materialsStr,
       style: {
         fontSize: `${MAP_LAYOUT.MATERIAL_FONT_SIZE}px`,
-        color: `#${Colors.text.secondary.toString(16).padStart(6, '0')}`,
+        color: toColorStr(Colors.text.secondary),
         fontFamily: THEME.fonts.primary,
       },
       add: false,
@@ -520,7 +520,7 @@ export class LocationSelectUI extends BaseComponent {
         text: EMPTY_HAND_MESSAGE,
         style: {
           fontSize: `${THEME.sizes.medium}px`,
-          color: '#888888',
+          color: toColorStr(Colors.text.muted),
           fontFamily: THEME.fonts.primary,
         },
         add: false,

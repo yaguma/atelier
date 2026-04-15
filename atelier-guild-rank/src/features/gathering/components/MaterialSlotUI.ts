@@ -16,7 +16,7 @@
 
 import { THEME } from '@presentation/ui/theme';
 import { BaseComponent } from '@shared/components';
-import { prefersReducedMotion } from '@shared/theme';
+import { Colors, prefersReducedMotion, toColorStr } from '@shared/theme';
 import type { MaterialId, Quality } from '@shared/types';
 import Phaser from 'phaser';
 
@@ -115,7 +115,7 @@ export class MaterialSlotUI extends BaseComponent {
         text: '',
         style: {
           fontSize: `${MaterialSlotUI.NAME_DEFAULT_FONT_SIZE}px`,
-          color: '#333333',
+          color: toColorStr(Colors.text.primary),
           wordWrap: { width: this.slotSize - MaterialSlotUI.NAME_TEXT_HORIZONTAL_PADDING },
           align: 'center',
         },
@@ -315,7 +315,10 @@ export class MaterialSlotUI extends BaseComponent {
         text: quality,
         style: {
           fontSize: '16px',
-          color: quality === 'D' || quality === 'S' ? '#FFFFFF' : '#000000',
+          color:
+            quality === 'D' || quality === 'S'
+              ? toColorStr(Colors.text.onPrimary)
+              : toColorStr(Colors.text.primary),
           fontStyle: 'bold',
         },
         add: false,
