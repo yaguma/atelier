@@ -3,6 +3,7 @@
 import type { RexRoundRectangle, RexUIPlugin } from '@presentation/types/rexui';
 import { THEME } from '@presentation/ui/theme';
 import { CONTENT_WORK_WIDTH, MAIN_LAYOUT } from '@shared/constants';
+import { Colors, toColorStr } from '@shared/theme';
 import type { Quality } from '@shared/types';
 import type Phaser from 'phaser';
 
@@ -44,7 +45,7 @@ export class AlchemyCraftPanel {
       text: '調合実行',
       style: {
         fontSize: `${THEME.sizes.large}px`,
-        color: '#ffffff',
+        color: toColorStr(Colors.text.onPrimary),
         fontFamily: THEME.fonts.primary,
         fontStyle: 'bold',
       },
@@ -60,7 +61,7 @@ export class AlchemyCraftPanel {
       text: '',
       style: {
         fontSize: `${THEME.sizes.medium}px`,
-        color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
+        color: toColorStr(Colors.text.primary),
         fontFamily: THEME.fonts.primary,
       },
       add: false,
