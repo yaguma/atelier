@@ -12,6 +12,7 @@
 
 import type { IEventBus } from '@shared/services/event-bus/types';
 import type { IGameFlowManager } from '@shared/services/game-flow/game-flow-manager.interface';
+import { Colors, toColorStr } from '@shared/theme';
 import type { GamePhase, IPhaseChangedEvent, IPhaseSwitchRequest } from '@shared/types';
 import { VALID_GAME_PHASES } from '@shared/types/common';
 import { GameEventType } from '@shared/types/events';
@@ -28,26 +29,26 @@ import { BaseComponent } from './BaseComponent';
  * 🔵 信頼性レベル: REQ-006-02・既存PHASE_COLORSより
  */
 const TAB_COLORS = {
-  /** アクティブタブ背景 */
-  ACTIVE: 0x6366f1,
-  /** 非アクティブタブ背景 */
-  INACTIVE: 0x374151,
+  /** アクティブタブ背景（草色） */
+  ACTIVE: Colors.brand.primary,
+  /** 非アクティブタブ背景（サイドバー色） */
+  INACTIVE: Colors.surface.sidebar,
   /** 無効化タブ背景（Issue #434） */
-  DISABLED: 0x1f2937,
+  DISABLED: Colors.ui.button.disabled,
   /** アクティブタブテキスト */
-  ACTIVE_TEXT: '#FFFFFF',
+  ACTIVE_TEXT: toColorStr(Colors.text.onPrimary),
   /** 非アクティブタブテキスト */
-  INACTIVE_TEXT: '#9CA3AF',
+  INACTIVE_TEXT: toColorStr(Colors.text.secondary),
   /** 無効化タブテキスト（Issue #434） */
-  DISABLED_TEXT: '#4B5563',
-  /** 日終了ボタン背景 */
-  END_DAY_BUTTON: 0xef4444,
+  DISABLED_TEXT: toColorStr(Colors.text.disabled),
+  /** 日終了ボタン背景（デンジャー） */
+  END_DAY_BUTTON: Colors.status.error,
   /** 日終了ボタンホバー */
-  END_DAY_BUTTON_HOVER: 0xf87171,
-  /** 休憩ボタン背景 */
-  REST_BUTTON: 0x3b82f6,
+  END_DAY_BUTTON_HOVER: Colors.status.warning,
+  /** 休憩ボタン背景（情報） */
+  REST_BUTTON: Colors.status.info,
   /** 休憩ボタンホバー */
-  REST_BUTTON_HOVER: 0x60a5fa,
+  REST_BUTTON_HOVER: Colors.brand.primary,
 } as const;
 
 /**
@@ -278,7 +279,11 @@ export class PhaseTabUI extends BaseComponent {
       x: endDayX - TAB_LAYOUT.END_DAY_TEXT_OFFSET_X,
       y: TAB_LAYOUT.TAB_Y - TAB_LAYOUT.TEXT_OFFSET_Y,
       text: '日終了',
-      style: { fontSize: '16px', color: '#FFFFFF', fontStyle: 'bold' },
+      style: {
+        fontSize: '16px',
+        color: toColorStr(Colors.text.light),
+        fontStyle: 'bold',
+      },
       add: false,
     });
     this._endDayText.setName('PhaseTabUI.endDayText');
@@ -310,7 +315,11 @@ export class PhaseTabUI extends BaseComponent {
       x: restX - TAB_LAYOUT.REST_TEXT_OFFSET_X,
       y: TAB_LAYOUT.TAB_Y - TAB_LAYOUT.TEXT_OFFSET_Y,
       text: '休憩',
-      style: { fontSize: '16px', color: '#FFFFFF', fontStyle: 'bold' },
+      style: {
+        fontSize: '16px',
+        color: toColorStr(Colors.text.light),
+        fontStyle: 'bold',
+      },
       add: false,
     });
     this._restText.setName('PhaseTabUI.restText');
@@ -562,7 +571,7 @@ export class PhaseTabUI extends BaseComponent {
       text: message,
       style: {
         fontSize: '16px',
-        color: '#F87171',
+        color: toColorStr(Colors.status.error),
         fontStyle: 'bold',
       },
       add: false,

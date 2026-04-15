@@ -21,7 +21,7 @@
 
 import { BaseComponent, type BaseComponentOptions } from '@shared/components';
 import { MAIN_LAYOUT } from '@shared/constants';
-import { DesignTokens } from '@shared/theme';
+import { Colors, DesignTokens, toColorStr } from '@shared/theme';
 import type { GamePhase } from '@shared/types/common';
 import { VALID_GAME_PHASES } from '@shared/types/common';
 import type Phaser from 'phaser';
@@ -52,17 +52,17 @@ export interface PhaseRailOptions extends BaseComponentOptions {
 // 定数
 // =============================================================================
 
-/** タブ用カラー定数（PhaseTabUI と同じ値） */
+/** タブ用カラー定数（DesignTokens/Colors経由） */
 const RAIL_COLORS = {
-  ACTIVE: 0x6366f1,
-  INACTIVE: 0x374151,
-  DISABLED: 0x1f2937,
-  BACKGROUND: 0x111827,
-  BORDER: 0x374151,
-  ACTIVE_TEXT: '#FFFFFF',
-  INACTIVE_TEXT: '#9CA3AF',
-  DISABLED_TEXT: '#4B5563',
-  NOTIFICATION_TEXT: '#F87171',
+  ACTIVE: Colors.brand.primary,
+  INACTIVE: Colors.surface.sidebar,
+  DISABLED: Colors.ui.button.disabled,
+  BACKGROUND: Colors.surface.header,
+  BORDER: Colors.border.subtle,
+  ACTIVE_TEXT: toColorStr(Colors.text.onPrimary),
+  INACTIVE_TEXT: toColorStr(Colors.text.secondary),
+  DISABLED_TEXT: toColorStr(Colors.text.disabled),
+  NOTIFICATION_TEXT: toColorStr(Colors.status.error),
 } as const;
 
 /** @deprecated Issue #486: MainSceneからwidthオプションで渡される。フォールバック用 */
@@ -215,7 +215,7 @@ export class PhaseRail extends BaseComponent {
       text: this._conditionText,
       style: {
         fontSize: '16px',
-        color: '#9CA3AF',
+        color: toColorStr(Colors.text.muted),
         fontStyle: 'normal',
       },
       add: false,
