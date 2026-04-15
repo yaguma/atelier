@@ -12,7 +12,7 @@
 import type { Quest } from '@domain/entities/Quest';
 import { formatCondition } from '@shared/utils';
 import type Phaser from 'phaser';
-import { Colors } from '../theme';
+import { Colors, toColorStr } from '../theme';
 import { BaseComponent } from './BaseComponent';
 
 /**
@@ -127,11 +127,11 @@ export class QuestCardUI extends BaseComponent {
       0,
       QuestCardUI.CARD_WIDTH,
       QuestCardUI.CARD_HEIGHT,
-      Colors.background.parchment, // 【背景色】: 淡い黄色（Parchment風）
+      Colors.surface.card, // 【背景色】: カード背景（surface.card）
     );
     // 【型安全性】: setStrokeStyleはテストモックで定義されていないため、存在確認してから呼び出す
     if (this.background.setStrokeStyle) {
-      this.background.setStrokeStyle(2, Colors.border.quest); // 【枠線】: 濃い黄色で強調
+      this.background.setStrokeStyle(2, Colors.border.default); // 【枠線】: 標準ボーダー
     }
     this.container.add(this.background);
   }
@@ -159,7 +159,7 @@ export class QuestCardUI extends BaseComponent {
       displayName,
       {
         fontSize: '16px',
-        color: '#000000',
+        color: toColorStr(Colors.text.primary),
         fontStyle: 'bold',
       },
     );
@@ -191,7 +191,7 @@ export class QuestCardUI extends BaseComponent {
       dialogue,
       {
         fontSize: '16px',
-        color: '#333333',
+        color: toColorStr(Colors.text.primary),
         wordWrap: { width: QuestCardUI.CARD_WIDTH - QuestCardUI.PADDING * 2 },
       },
     );
@@ -219,7 +219,7 @@ export class QuestCardUI extends BaseComponent {
       conditionLabel,
       {
         fontSize: '16px',
-        color: '#1a5276',
+        color: toColorStr(Colors.status.info),
         fontStyle: 'bold',
       },
     );
@@ -252,7 +252,7 @@ export class QuestCardUI extends BaseComponent {
       rewardText,
       {
         fontSize: '16px',
-        color: '#000000',
+        color: toColorStr(Colors.text.primary),
       },
     );
     this.rewardText.setOrigin(0, 0);
@@ -283,7 +283,7 @@ export class QuestCardUI extends BaseComponent {
       deadlineText,
       {
         fontSize: '16px',
-        color: '#666666',
+        color: toColorStr(Colors.text.secondary),
       },
     );
     this.deadlineText.setOrigin(0, 0);
