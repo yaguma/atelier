@@ -21,7 +21,7 @@
 
 import { BaseComponent, type BaseComponentOptions } from '@shared/components';
 import { MAIN_LAYOUT } from '@shared/constants';
-import { Colors, DesignTokens } from '@shared/theme';
+import { Colors, DesignTokens, toColorStr } from '@shared/theme';
 import type Phaser from 'phaser';
 
 // =============================================================================
@@ -91,7 +91,7 @@ export class ContextPanel extends BaseComponent {
     const titleText = this.scene.add.text(0, -this.height / 2 + PADDING, this.title, {
       fontFamily: DesignTokens.fonts.primary,
       fontSize: `${DesignTokens.sizes.medium}px`,
-      color: '#333333',
+      color: toColorStr(Colors.text.primary),
       padding: { top: 4 },
     });
     if (titleText.setOrigin) titleText.setOrigin(0.5, 0);
@@ -103,7 +103,7 @@ export class ContextPanel extends BaseComponent {
     const bodyText = this.scene.add.text(0, 0, this.body, {
       fontFamily: DesignTokens.fonts.primary,
       fontSize: `${DesignTokens.sizes.small}px`,
-      color: '#666666',
+      color: toColorStr(Colors.text.secondary),
       padding: { top: 4 },
       wordWrap: { width: this.width - PADDING * 2 },
     });
