@@ -17,6 +17,7 @@
 
 import type { RexLabel, RexUIPlugin } from '@presentation/types/rexui';
 import { THEME } from '@presentation/ui/theme';
+import { Colors, toColorStr } from '@shared/theme';
 import type { GameEndStats } from '@shared/types';
 import Phaser from 'phaser';
 
@@ -50,16 +51,16 @@ const LAYOUT = {
 const STYLES = {
   /** タイトルのフォントサイズ */
   TITLE_FONT_SIZE: '42px',
-  /** タイトルの色（ゴールド） */
-  TITLE_COLOR: '#DAA520',
+  /** タイトルの色（ブランドセカンダリ） */
+  TITLE_COLOR: toColorStr(Colors.brand.secondary),
   /** メッセージのフォントサイズ */
   MESSAGE_FONT_SIZE: '20px',
   /** メッセージの色 */
-  MESSAGE_COLOR: '#666666',
+  MESSAGE_COLOR: toColorStr(Colors.text.secondary),
   /** 統計情報のフォントサイズ */
   STATS_FONT_SIZE: '18px',
   /** 統計情報の色 */
-  STATS_COLOR: '#333333',
+  STATS_COLOR: toColorStr(Colors.text.primary),
   /** ボタンのフォントサイズ */
   BUTTON_FONT_SIZE: '16px',
 } as const;

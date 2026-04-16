@@ -278,7 +278,7 @@ describe('TitleScene', () => {
         'ATELIER GUILD',
         expect.objectContaining({
           fontSize: '48px',
-          color: '#8B4513',
+          color: '#d4a76a',
         }),
       ); // 🔵
     });
@@ -311,7 +311,7 @@ describe('TitleScene', () => {
         '錬金術師ギルド',
         expect.objectContaining({
           fontSize: '24px',
-          color: '#666666',
+          color: '#5a5a5a',
         }),
       ); // 🔵
     });

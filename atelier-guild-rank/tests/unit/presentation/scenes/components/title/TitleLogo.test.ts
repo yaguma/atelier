@@ -145,7 +145,7 @@ describe('TitleLogo', () => {
       // 【対応要件】: 現在のTitleScene.tsのSTYLES定数
       // 🔵 信頼性レベル: 現在のTitleScene.tsの実装に基づく
 
-      it('TC-TL-005: タイトルが48px、#8B4513で表示される', async () => {
+      it('TC-TL-005: タイトルが48px、ブランドセカンダリ色で表示される', async () => {
         // Given: TitleLogoインスタンス
         const { scene: mockScene } = createMockScene();
 
@@ -163,7 +163,7 @@ describe('TitleLogo', () => {
           (call: unknown[]) =>
             call[2]?.toString().includes('ATELIER GUILD') &&
             JSON.stringify(call[3]).includes('48px') &&
-            JSON.stringify(call[3]).includes('#8B4513'),
+            JSON.stringify(call[3]).includes('#d4a76a'),
         );
         expect(hasTitleStyle).toBe(true);
       });
