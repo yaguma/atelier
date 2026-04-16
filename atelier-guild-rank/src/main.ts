@@ -16,6 +16,7 @@ import {
 } from '@presentation/scenes';
 import { Container, ServiceKeys } from '@shared/services/di/container';
 import type { IStateManager } from '@shared/services/state-manager';
+import { Colors, toColorStr } from '@shared/theme';
 // debug.ts でグローバル型 (window.game, window.gameState, window.debug) が定義されている
 import { DebugTools } from '@shared/utils/debug';
 import Phaser from 'phaser';
@@ -46,8 +47,8 @@ const config: Phaser.Types.Core.GameConfig = {
   /** 親要素ID 🔵 */
   parent: 'game-container',
 
-  /** 背景色（ベージュ / 羊皮紙風） 🔵 */
-  backgroundColor: '#F5F5DC',
+  /** 背景色（プライマリ背景色） 🔵 */
+  backgroundColor: toColorStr(Colors.background.primary),
 
   /** シーン配列（起動順序） 🔵 */
   scene: [

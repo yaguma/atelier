@@ -6,6 +6,8 @@
  * TitleScene関連コンポーネントで使用する型定義、レイアウト定数、スタイル定数を定義
  */
 
+import { Colors, toColorStr } from '@shared/theme';
+
 // =============================================================================
 // コールバック型定義
 // =============================================================================
@@ -116,16 +118,16 @@ export const TITLE_LAYOUT = {
 export const TITLE_STYLES = {
   /** タイトルロゴのフォントサイズ */
   TITLE_FONT_SIZE: '48px',
-  /** タイトルロゴの色（SaddleBrown） */
-  TITLE_COLOR: '#8B4513',
+  /** タイトルロゴの色（ブランドセカンダリ） */
+  TITLE_COLOR: toColorStr(Colors.brand.secondary),
   /** サブタイトルのフォントサイズ */
   SUBTITLE_FONT_SIZE: '24px',
   /** サブタイトルの色 */
-  SUBTITLE_COLOR: '#666666',
+  SUBTITLE_COLOR: toColorStr(Colors.text.secondary),
   /** バージョン情報のフォントサイズ */
   VERSION_FONT_SIZE: '14px',
   /** バージョン情報の色 */
-  VERSION_COLOR: '#999999',
+  VERSION_COLOR: toColorStr(Colors.text.muted),
   /** ボタンのフォントサイズ */
   BUTTON_FONT_SIZE: '16px',
   /** ダイアログタイトルのフォントサイズ */
