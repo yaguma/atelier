@@ -4,7 +4,7 @@
  */
 
 import { BaseComponent, type BaseComponentOptions } from '@shared/components';
-import { Colors, DesignTokens } from '@shared/theme';
+import { Colors, DesignTokens, toColorStr } from '@shared/theme';
 import type Phaser from 'phaser';
 
 export interface TagOptions extends BaseComponentOptions {
@@ -24,7 +24,7 @@ export class Tag extends BaseComponent {
     super(scene, x, y, options);
     this.label = options.label ?? '';
     this.color = options.color ?? Colors.cardType.default;
-    this.textColor = options.textColor ?? '#333333';
+    this.textColor = options.textColor ?? toColorStr(Colors.text.primary);
   }
 
   create(): void {

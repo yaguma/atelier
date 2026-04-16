@@ -4,7 +4,7 @@
  */
 
 import { BaseComponent, type BaseComponentOptions } from '@shared/components';
-import { Colors, DesignTokens } from '@shared/theme';
+import { Colors, DesignTokens, toColorStr } from '@shared/theme';
 import type Phaser from 'phaser';
 
 export type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'info';
@@ -52,7 +52,7 @@ export class Badge extends BaseComponent {
     const text = this.scene.add.text(0, 0, this.label, {
       fontFamily: DesignTokens.fonts.primary,
       fontSize: `${DesignTokens.sizes.small}px`,
-      color: '#ffffff',
+      color: toColorStr(Colors.text.light),
     });
     text.setOrigin(0.5);
     this.text = text;

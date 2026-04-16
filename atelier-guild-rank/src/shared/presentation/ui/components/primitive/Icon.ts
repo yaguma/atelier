@@ -4,7 +4,7 @@
  */
 
 import { BaseComponent, type BaseComponentOptions } from '@shared/components';
-import { DesignTokens } from '@shared/theme';
+import { Colors, DesignTokens, toColorStr } from '@shared/theme';
 import type Phaser from 'phaser';
 
 export interface IconOptions extends BaseComponentOptions {
@@ -23,7 +23,7 @@ export class Icon extends BaseComponent {
     super(scene, x, y, options);
     this.symbol = options.symbol ?? '';
     this.size = options.size ?? DesignTokens.sizes.large;
-    this.color = options.color ?? '#ffffff';
+    this.color = options.color ?? toColorStr(Colors.text.light);
   }
 
   create(): void {
