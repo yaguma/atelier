@@ -87,7 +87,7 @@ describe('GameClearScene', () => {
 
       // 背景が作成される
       expect((scene as any).add.rectangle).toHaveBeenCalled();
-      // テキストが作成される（タイトル、メッセージ、統計情報3行、ボタンテキスト2つ）
+      // テキストが作成される（タイトル、メッセージ、統計情報4行、ボタンテキスト2つ）
       expect((scene as any).add.text).toHaveBeenCalled();
       // ボタンが作成される（タイトルへ、NEW GAME+）
       expect(mockRexUI.add.label).toHaveBeenCalledTimes(2);
@@ -111,6 +111,7 @@ describe('GameClearScene', () => {
       // 統計情報のテキストを確認
       const statsTexts = textCalls.slice(2); // タイトルとメッセージをスキップ
 
+      expect(statsTexts.some((call: any) => call[2].includes('最終ランク: S'))).toBe(true);
       expect(statsTexts.some((call: any) => call[2].includes('クリア日数: 25日'))).toBe(true);
       expect(statsTexts.some((call: any) => call[2].includes('総納品数: 58'))).toBe(true);
       expect(statsTexts.some((call: any) => call[2].includes('獲得ゴールド: 4,120G'))).toBe(true);
