@@ -258,6 +258,7 @@ export class GameClearScene extends Phaser.Scene {
    */
   private createStats(centerX: number): void {
     const statsLines = [
+      `最終ランク: ${this.stats.finalRank}`,
       `クリア日数: ${this.stats.totalDays}日`,
       `総納品数: ${this.stats.totalDeliveries}`,
       `獲得ゴールド: ${this.stats.totalGold.toLocaleString()}G`,
