@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>納品フェーズ — Atelier Guild Rank</title>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #E8E0D6; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: 'M PLUS Rounded 1c', sans-serif; padding: 24px; }
+  .screen { width: 900px; min-height: 640px; background: #FFF8F0; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; font-size: 13px; color: #3D3D3D; border: 1px solid #D9CFC2; box-shadow: 0 4px 24px rgba(0,0,0,0.1); }
+  .header { background: #FDFAF5; border-bottom: 1px solid #E8E0D6; padding: 8px 16px; display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+  .rank-badge { background: #D4A76A; color: #3D3D3D; font-weight: 500; font-size: 12px; padding: 3px 10px; border-radius: 9999px; }
+  .gauge-bar { flex: 1; height: 8px; background: #E8E0D6; border-radius: 9999px; overflow: hidden; max-width: 120px; }
+  .gauge-fill { height: 100%; width: 35%; background: #D4A76A; border-radius: 9999px; }
+  .hud-item { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+  .hud-div { width: 1px; height: 16px; background: #E8E0D6; }
+  .main-area { display: flex; flex: 1; }
+  .sidebar { width: 150px; flex-shrink: 0; background: #F5EFE6; border-right: 1px solid #E8E0D6; padding: 12px 10px; display: flex; flex-direction: column; gap: 12px; }
+  .sb-title { font-size: 11px; font-weight: 500; color: #5A5A5A; padding-bottom: 4px; border-bottom: 1px solid #E8E0D6; margin-bottom: 4px; }
+  .sb-quest { background: #fff; border: 1px solid #D9CFC2; border-radius: 6px; padding: 5px 7px; margin-bottom: 4px; }
+  .sb-item { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #5A5A5A; padding: 3px 0; border-bottom: 1px solid #E8E0D6; }
+  .shop-btn { margin-top: auto; background: transparent; border: 1.5px solid #D9CFC2; border-radius: 9999px; padding: 5px 10px; font-size: 11px; color: #3D3D3D; text-align: center; cursor: pointer; }
+  .workspace { flex: 1; padding: 14px 16px; display: flex; flex-direction: column; gap: 14px; }
+  .phase-title { display: flex; align-items: center; gap: 8px; }
+  .phase-bar { width: 4px; height: 20px; background: #E8A87C; border-radius: 2px; }
+  .phase-text { font-size: 18px; font-weight: 500; color: #E8A87C; }
+  .delivery-body { display: grid; grid-template-columns: 1fr 280px; gap: 14px; flex: 1; }
+  .left-panel { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+  .section-label { font-size: 11px; font-weight: 500; color: #5A5A5A; padding-left: 8px; border-left: 3px solid #E8A87C; }
+  .quest-delivery-card { background: #FFFFFF; border: 2px solid #D9CFC2; border-radius: 12px; overflow: hidden; }
+  .quest-delivery-card.selected { border-color: #E8A87C; border-width: 3px; }
+  .qdc-header { background: #FFF8F0; border-bottom: 1px solid #E8E0D6; padding: 8px 12px; display: flex; align-items: center; gap: 8px; }
+  .qdc-client-icon { width: 28px; height: 28px; border-radius: 9999px; background: #EDE5FA; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .qdc-name { font-size: 13px; font-weight: 500; flex: 1; }
+  .qdc-deadline { font-size: 11px; color: #D46B6B; }
+  .qdc-body { padding: 10px 12px; display: flex; gap: 10px; align-items: center; }
+  .qdc-require { flex: 1; }
+  .qdc-req-label { font-size: 10px; color: #8A8A8A; margin-bottom: 4px; }
+  .qdc-req-item { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .qdc-req-icon { width: 24px; height: 24px; border-radius: 6px; background: #F5EFE6; display: flex; align-items: center; justify-content: center; }
+  .item-selector { flex: 1; }
+  .item-selector-label { font-size: 10px; color: #8A8A8A; margin-bottom: 4px; }
+  .item-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+  .item-chip { border: 1.5px solid #D9CFC2; border-radius: 8px; padding: 3px 8px; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 4px; background: #fff; }
+  .item-chip.selected { border-color: #E8A87C; background: #FFF3EB; color: #7A4A2A; font-weight: 500; }
+  .item-chip.empty { border-style: dashed; color: #B0B0B0; cursor: default; }
+  .qdc-reward { text-align: right; }
+  .reward-gold { font-size: 13px; font-weight: 500; color: #D4A76A; }
+  .reward-contrib { font-size: 11px; color: #7BAE7F; margin-top: 2px; }
+  .right-panel { display: flex; flex-direction: column; gap: 10px; }
+  .preview-card { background: #FFFFFF; border: 1.5px solid #D9CFC2; border-radius: 12px; padding: 14px; }
+  .preview-title { font-size: 12px; font-weight: 500; color: #8A8A8A; margin-bottom: 12px; padding-left: 8px; border-left: 3px solid #E8A87C; }
+  .preview-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #F0EBE3; font-size: 12px; }
+  .preview-row:last-child { border-bottom: none; }
+  .contrib-gauge-wrap { margin: 12px 0; }
+  .contrib-label { display: flex; justify-content: space-between; font-size: 11px; color: #5A5A5A; margin-bottom: 4px; }
+  .contrib-bar { height: 12px; background: #E8E0D6; border-radius: 9999px; overflow: visible; position: relative; }
+  .contrib-fill { height: 100%; width: 58%; background: #D4A76A; border-radius: 9999px; }
+  .contrib-fill-add { height: 100%; width: 16%; background: #7BAE7F; border-radius: 9999px; margin-left: 0; position: absolute; left: 58%; top: 0; }
+  .contrib-marker { position: absolute; right: 0; top: -2px; height: 16px; width: 2px; background: #E0A84B; }
+  .submit-btn { background: #7BAE7F; color: #fff; border: none; border-radius: 9999px; padding: 12px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .skip-btn { background: transparent; border: 1.5px solid #D9CFC2; border-radius: 9999px; padding: 8px; font-size: 12px; color: #8A8A8A; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; }
+  .footer { background: #F0EBE3; border-top: 1px solid #E8E0D6; padding: 8px 12px; flex-shrink: 0; }
+  .phase-tabs { display: flex; gap: 4px; margin-bottom: 8px; }
+  .ptab { border-radius: 9999px; padding: 3px 12px; font-size: 11px; font-weight: 500; cursor: pointer; }
+  .ptab.active { background: #7BAE7F; color: #fff; }
+  .ptab.inactive { background: transparent; color: #8A8A8A; }
+  .footer-bottom { display: flex; align-items: center; gap: 8px; }
+  .hand-cards { display: flex; gap: 4px; flex: 1; }
+  .hand-card { background: #FFFFFF; border: 1.5px solid #D9CFC2; border-radius: 8px; width: 52px; height: 68px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 9px; color: #5A5A5A; gap: 3px; flex-shrink: 0; }
+  .footer-btns { display: flex; gap: 6px; margin-left: auto; }
+  .btn-rest { background: transparent; border: 1.5px solid #D9CFC2; border-radius: 9999px; padding: 5px 14px; font-size: 11px; color: #3D3D3D; cursor: pointer; }
+  .btn-dayend { background: #D46B6B; border: none; border-radius: 9999px; padding: 5px 14px; font-size: 11px; font-weight: 500; color: #fff; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="header">
+    <span class="rank-badge">ランク G</span>
+    <div style="display:flex;align-items:center;gap:6px;flex:1">
+      <span style="font-size:11px;color:#5A5A5A">昇格</span>
+      <div class="gauge-bar"><div class="gauge-fill"></div></div>
+      <span style="font-size:11px;color:#5A5A5A">35 / 100</span>
+    </div>
+    <div class="hud-div"></div>
+    <div class="hud-item"><i class="ti ti-calendar" style="color:#8A8A8A"></i> 残り 22日</div>
+    <div class="hud-div"></div>
+    <div class="hud-item"><i class="ti ti-coin" style="color:#D4A76A"></i> 178 G</div>
+    <div class="hud-div"></div>
+    <div class="hud-item"><i class="ti ti-bolt" style="color:#7BAE7F"></i> 0 / 3 AP</div>
+  </div>
+  <div class="main-area">
+    <div class="sidebar">
+      <div>
+        <div class="sb-title">受注依頼</div>
+        <div class="sb-quest"><div style="font-size:11px;font-weight:500">冒険者の依頼</div><div style="font-size:10px;color:#8A8A8A">期限 2日</div></div>
+        <div class="sb-quest"><div style="font-size:11px;font-weight:500">村人の依頼</div><div style="font-size:10px;color:#D46B6B">期限 1日</div></div>
+      </div>
+      <div>
+        <div class="sb-title">素材</div>
+        <div class="sb-item" style="color:#B0B0B0"><span>（なし）</span></div>
+      </div>
+      <div>
+        <div class="sb-title">完成品</div>
+        <div class="sb-item"><span>回復薬(A)</span><span>×1</span></div>
+        <div class="sb-item"><span>回復薬(C)</span><span>×1</span></div>
+      </div>
+      <div class="shop-btn"><i class="ti ti-shopping-cart"></i> ショップ</div>
+    </div>
+    <div class="workspace">
+      <div class="phase-title">
+        <div class="phase-bar"></div>
+        <span class="phase-text">納品</span>
+      </div>
+      <div class="delivery-body">
+        <div class="left-panel">
+          <div class="section-label">依頼と納品品を選択してください</div>
+          <!-- Quest 1: selected -->
+          <div class="quest-delivery-card selected">
+            <div class="qdc-header">
+              <div class="qdc-client-icon"><i class="ti ti-sword" style="color:#795548;font-size:14px"></i></div>
+              <div class="qdc-name">冒険者の依頼</div>
+              <span style="font-size:11px;background:#FFFDE7;color:#795548;padding:2px 8px;border-radius:9999px">E難易度</span>
+              <div class="qdc-deadline">期限 2日</div>
+            </div>
+            <div class="qdc-body">
+              <div class="qdc-require">
+                <div class="qdc-req-label">納品要求</div>
+                <div class="qdc-req-item">
+                  <div class="qdc-req-icon"><i class="ti ti-flask" style="color:#D4A76A;font-size:14px"></i></div>
+                  <span>回復薬 × 1</span>
+                  <span style="font-size:10px;background:#E8F5E8;color:#4A8A4A;padding:1px 6px;border-radius:9999px">B品質以上</span>
+                </div>
+              </div>
+              <div class="item-selector">
+                <div class="item-selector-label">納品品を選択</div>
+                <div class="item-chips">
+                  <div class="item-chip selected"><i class="ti ti-flask" style="color:#D4A76A"></i> 回復薬(A)</div>
+                  <div class="item-chip"><i class="ti ti-flask" style="color:#8A8A8A"></i> 回復薬(C)</div>
+                </div>
+              </div>
+              <div class="qdc-reward">
+                <div class="reward-gold"><i class="ti ti-coin"></i> 120 G</div>
+                <div class="reward-contrib"><i class="ti ti-star"></i> +16 pt</div>
+              </div>
+            </div>
+          </div>
+          <!-- Quest 2: not selected -->
+          <div class="quest-delivery-card">
+            <div class="qdc-header">
+              <div class="qdc-client-icon" style="background:#F5EFE6"><i class="ti ti-user" style="color:#795548;font-size:14px"></i></div>
+              <div class="qdc-name">村人の依頼</div>
+              <span style="font-size:11px;background:#FFFDE7;color:#795548;padding:2px 8px;border-radius:9999px">E難易度</span>
+              <div class="qdc-deadline">期限 1日</div>
+            </div>
+            <div class="qdc-body">
+              <div class="qdc-require">
+                <div class="qdc-req-label">納品要求</div>
+                <div class="qdc-req-item">
+                  <div class="qdc-req-icon"><i class="ti ti-flask" style="color:#D4A76A;font-size:14px"></i></div>
+                  <span>回復薬 × 1</span>
+                  <span style="font-size:10px;background:#F5F5F5;color:#888;padding:1px 6px;border-radius:9999px">品質不問</span>
+                </div>
+              </div>
+              <div class="item-selector">
+                <div class="item-selector-label">納品品を選択</div>
+                <div class="item-chips">
+                  <div class="item-chip empty">（未選択）</div>
+                </div>
+              </div>
+              <div class="qdc-reward">
+                <div class="reward-gold"><i class="ti ti-coin"></i> 80 G</div>
+                <div class="reward-contrib"><i class="ti ti-star"></i> +8 pt</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="right-panel">
+          <div class="preview-card">
+            <div class="preview-title">納品プレビュー</div>
+            <div class="preview-row">
+              <span style="color:#5A5A5A">対象依頼</span>
+              <span style="font-weight:500">冒険者の依頼</span>
+            </div>
+            <div class="preview-row">
+              <span style="color:#5A5A5A">納品品</span>
+              <span style="font-weight:500">回復薬(A品質)</span>
+            </div>
+            <div class="preview-row">
+              <span style="color:#5A5A5A">品質ボーナス</span>
+              <span style="font-weight:500;color:#7BAE7F">+4 pt</span>
+            </div>
+            <div class="preview-row">
+              <span style="color:#5A5A5A">獲得G</span>
+              <span style="font-weight:500;color:#D4A76A">120 G</span>
+            </div>
+            <div class="preview-row" style="border-bottom:none">
+              <span style="color:#5A5A5A">貢献度</span>
+              <span style="font-weight:500;color:#E0A84B">+16 pt</span>
+            </div>
+            <div class="contrib-gauge-wrap">
+              <div class="contrib-label">
+                <span>ランク昇格ゲージ</span>
+                <span style="font-weight:500">35 → <span style="color:#7BAE7F">58</span> / 100</span>
+              </div>
+              <div class="contrib-bar">
+                <div class="contrib-fill"></div>
+                <div class="contrib-fill-add"></div>
+              </div>
+              <div style="font-size:10px;color:#7BAE7F;text-align:right;margin-top:4px">+23 pt 予定</div>
+            </div>
+          </div>
+          <button class="submit-btn">
+            <i class="ti ti-package"></i> 納品する
+          </button>
+          <button class="skip-btn">
+            <i class="ti ti-skip-forward"></i> スキップ（納品しない）
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="phase-tabs">
+      <div class="ptab inactive"><i class="ti ti-clipboard-list"></i> 依頼</div>
+      <div class="ptab inactive"><i class="ti ti-plant"></i> 採取</div>
+      <div class="ptab inactive"><i class="ti ti-flask"></i> 調合</div>
+      <div class="ptab active"><i class="ti ti-package"></i> 納品</div>
+    </div>
+    <div class="footer-bottom">
+      <span style="font-size:10px;color:#8A8A8A">手札</span>
+      <div class="hand-cards">
+        <div class="hand-card" style="border-color:#E8A87C;border-width:2px"><i class="ti ti-package" style="color:#E8A87C;font-size:20px"></i><span>納品</span></div>
+        <div class="hand-card" style="border-color:#D4A76A"><i class="ti ti-flask" style="color:#D4A76A;font-size:20px"></i><span>レシピ</span></div>
+        <div class="hand-card" style="border-color:#B8A9D4"><i class="ti ti-sparkles" style="color:#B8A9D4;font-size:20px"></i><span>強化</span></div>
+        <div class="hand-card"><i class="ti ti-leaf" style="color:#8CC084;font-size:20px"></i><span>採取</span></div>
+        <div class="hand-card" style="border-color:#6B9FCC"><i class="ti ti-star" style="color:#6B9FCC;font-size:20px"></i><span>スキル</span></div>
+      </div>
+      <div class="footer-btns">
+        <button class="btn-rest"><i class="ti ti-coffee"></i> 休憩</button>
+        <button class="btn-dayend"><i class="ti ti-moon"></i> 日終了</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

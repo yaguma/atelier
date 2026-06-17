@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ランク昇格試験 — Atelier Guild Rank</title>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #E8E0D6; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: 'M PLUS Rounded 1c', sans-serif; padding: 24px; }
+  .screen { width: 600px; background: #FFF8F0; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; font-size: 13px; color: #3D3D3D; border: 1px solid #D9CFC2; box-shadow: 0 4px 24px rgba(0,0,0,0.1); position: relative; }
+  .deco { position: absolute; border-radius: 50%; opacity: 0.06; pointer-events: none; }
+  .deco1 { width: 260px; height: 260px; background: #D4A76A; top: -60px; right: -60px; }
+  .deco2 { width: 180px; height: 180px; background: #7BAE7F; bottom: 40px; left: -40px; }
+  .exam-header { background: linear-gradient(135deg, #FFF8E7, #FFF8F0); border-bottom: 1px solid #E8E0D6; padding: 16px 20px; display: flex; align-items: center; gap: 12px; z-index: 1; }
+  .exam-badge { background: #FFFDE7; border: 2px solid #E0A84B; border-radius: 9999px; padding: 4px 14px; font-size: 12px; font-weight: 500; color: #795548; letter-spacing: 1px; }
+  .exam-title { font-size: 15px; font-weight: 500; flex: 1; }
+  .rank-transition { display: flex; align-items: center; gap: 8px; }
+  .rank-chip { background: #FFFDE7; border: 2px solid #E0A84B; border-radius: 8px; padding: 4px 12px; font-size: 18px; font-weight: 500; color: #E0A84B; }
+  .rank-arrow { font-size: 16px; color: #8A8A8A; }
+  .rank-chip.next { background: #F0FAF0; border-color: #7BAE7F; color: #4A8A4A; }
+  .exam-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; z-index: 1; }
+  .staff-bubble { display: flex; gap: 12px; align-items: flex-start; }
+  .staff-avatar { width: 44px; height: 44px; border-radius: 9999px; background: #F5EFE6; border: 2px solid #D4A76A; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .bubble { background: #FFFFFF; border: 1.5px solid #D9CFC2; border-radius: 12px; border-top-left-radius: 4px; padding: 10px 14px; flex: 1; font-size: 12px; line-height: 1.7; color: #5A5A5A; }
+  .bubble b { color: #3D3D3D; }
+  .progress-section { background: #FFFFFF; border: 1.5px solid #D9CFC2; border-radius: 12px; padding: 14px 16px; }
+  .progress-title { font-size: 12px; font-weight: 500; color: #8A8A8A; margin-bottom: 10px; padding-left: 8px; border-left: 3px solid #D4A76A; }
+  .contrib-bar-wrap { margin-bottom: 6px; }
+  .contrib-bar-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; }
+  .contrib-bar-label strong { color: #E0A84B; }
+  .contrib-bar { height: 14px; background: #E8E0D6; border-radius: 9999px; overflow: hidden; }
+  .contrib-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #D4A76A, #E0A84B); border-radius: 9999px; }
+  .contrib-note { font-size: 11px; color: #7BAE7F; text-align: right; margin-top: 4px; }
+  .checklist { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+  .check-item { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 6px 8px; border-radius: 8px; }
+  .check-item.done { background: #F0FAF0; color: #4A8A4A; }
+  .check-item.fail { background: #FFF5F5; color: #D46B6B; }
+  .check-item.pending { background: #F5F5F5; color: #8A8A8A; }
+  .check-icon { width: 20px; height: 20px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+  .check-icon.done { background: #7BAE7F; color: #fff; }
+  .check-icon.fail { background: #D46B6B; color: #fff; }
+  .check-icon.pending { background: #C0C0C0; color: #fff; }
+  .check-label { flex: 1; }
+  .check-val { font-size: 11px; font-weight: 500; }
+  .result-notice { background: #FFFDE7; border: 1.5px solid #E0A84B; border-radius: 10px; padding: 10px 14px; display: flex; gap: 10px; align-items: flex-start; }
+  .btn-row { display: flex; gap: 10px; }
+  .btn-primary { flex: 1; background: #7BAE7F; color: #fff; border: none; border-radius: 9999px; padding: 11px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .btn-secondary { flex: 1; background: transparent; border: 2px solid #D9CFC2; border-radius: 9999px; padding: 10px; font-size: 13px; color: #3D3D3D; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; }
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="deco deco1"></div>
+  <div class="deco deco2"></div>
+  <div class="exam-header">
+    <div class="exam-badge"><i class="ti ti-certificate" style="color:#E0A84B"></i> 昇格試験</div>
+    <div class="exam-title">ランク昇格のお知らせ</div>
+    <div class="rank-transition">
+      <div class="rank-chip">G</div>
+      <div class="rank-arrow"><i class="ti ti-arrow-right"></i></div>
+      <div class="rank-chip next">F</div>
+    </div>
+  </div>
+  <div class="exam-body">
+    <div class="staff-bubble">
+      <div class="staff-avatar"><i class="ti ti-user" style="color:#D4A76A;font-size:22px"></i></div>
+      <div class="bubble">
+        おめでとうございます、錬金術師さん！<br>
+        <b>ランク G から F への昇格条件</b>を達成しました。<br>
+        これまでのギルドへの貢献に感謝します。<br>
+        新たなランクでも、引き続きよろしくお願いします！
+      </div>
+    </div>
+
+    <div class="progress-section">
+      <div class="progress-title">昇格条件の達成状況</div>
+      <div class="contrib-bar-wrap">
+        <div class="contrib-bar-label">
+          <span>総貢献度</span>
+          <span><strong>100 pt</strong> / 100 pt</span>
+        </div>
+        <div class="contrib-bar"><div class="contrib-fill"></div></div>
+        <div class="contrib-note"><i class="ti ti-check"></i> 貢献度条件クリア！</div>
+      </div>
+      <div class="checklist">
+        <div class="check-item done">
+          <div class="check-icon done"><i class="ti ti-check"></i></div>
+          <div class="check-label">依頼を達成する</div>
+          <div class="check-val">12 件 ✓</div>
+        </div>
+        <div class="check-item done">
+          <div class="check-icon done"><i class="ti ti-check"></i></div>
+          <div class="check-label">調合品を納品する</div>
+          <div class="check-val">8 個 ✓</div>
+        </div>
+        <div class="check-item done">
+          <div class="check-icon done"><i class="ti ti-check"></i></div>
+          <div class="check-label">期限内に完了した依頼</div>
+          <div class="check-val">12 / 12 件 ✓</div>
+        </div>
+        <div class="check-item done">
+          <div class="check-icon done"><i class="ti ti-check"></i></div>
+          <div class="check-label">貢献度を達成する</div>
+          <div class="check-val">100 pt ✓</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-notice">
+      <i class="ti ti-star-filled" style="color:#E0A84B;font-size:20px;flex-shrink:0;margin-top:2px"></i>
+      <div>
+        <div style="font-size:12px;font-weight:500;margin-bottom:4px">ランクF解放コンテンツ</div>
+        <div style="font-size:11px;color:#5A5A5A;line-height:1.6">
+          ・新しい採取エリア「古代遺跡の丘」が解放されるのだ<br>
+          ・レシピ「中級回復薬」が購入可能になるのだ<br>
+          ・ランクF専用依頼が追加されるのだ
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-secondary"><i class="ti ti-arrow-left"></i> 後で確認</button>
+      <button class="btn-primary"><i class="ti ti-trophy"></i> 昇格を受け入れる</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

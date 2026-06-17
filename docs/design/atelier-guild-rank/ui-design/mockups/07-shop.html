@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ショップ — Atelier Guild Rank</title>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #E8E0D6; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: 'M PLUS Rounded 1c', sans-serif; padding: 24px; }
+  .screen { width: 900px; min-height: 640px; background: #FFF8F0; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; font-size: 13px; color: #3D3D3D; border: 1px solid #D9CFC2; box-shadow: 0 4px 24px rgba(0,0,0,0.1); }
+  .shop-header { background: #FDFAF5; border-bottom: 1px solid #E8E0D6; padding: 10px 16px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .shop-title { font-size: 16px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+  .gold-display { display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 500; color: #D4A76A; margin-left: auto; }
+  .close-btn { background: transparent; border: 1.5px solid #D9CFC2; border-radius: 9999px; padding: 5px 14px; font-size: 12px; color: #3D3D3D; cursor: pointer; }
+  .shop-body { display: flex; flex: 1; }
+  .cat-sidebar { width: 140px; flex-shrink: 0; background: #F5EFE6; border-right: 1px solid #E8E0D6; padding: 12px 8px; display: flex; flex-direction: column; gap: 4px; }
+  .cat-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; font-size: 12px; cursor: pointer; color: #5A5A5A; }
+  .cat-item.active { background: #FFFFFF; color: #3D3D3D; font-weight: 500; border: 1px solid #D9CFC2; }
+  .cat-item:hover { background: rgba(255,255,255,0.5); }
+  .cat-icon { width: 24px; text-align: center; }
+  .product-area { flex: 1; padding: 14px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+  .cat-title { font-size: 12px; font-weight: 500; color: #5A5A5A; padding-left: 8px; border-left: 3px solid #D4A76A; }
+  .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .product-card { background: #FFFFFF; border: 1.5px solid #D9CFC2; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; text-align: center; }
+  .product-card:hover { border-color: #D4A76A; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .product-card.selected { border: 2px solid #D4A76A; background: #FFF8E7; }
+  .product-icon { width: 44px; height: 44px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; }
+  .product-name { font-size: 12px; font-weight: 500; }
+  .product-desc { font-size: 10px; color: #8A8A8A; line-height: 1.4; }
+  .product-price { font-size: 13px; font-weight: 500; color: #D4A76A; display: flex; align-items: center; gap: 3px; }
+  .product-tag { font-size: 10px; padding: 2px 6px; border-radius: 9999px; }
+  .tag-new { background: #E8F5E8; color: #4A8A4A; }
+  .tag-popular { background: #FFF3EB; color: #C05020; }
+  .detail-bar { background: #FDFAF5; border-top: 1px solid #E8E0D6; padding: 12px 16px; display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+  .detail-item-icon { width: 40px; height: 40px; border-radius: 9999px; background: #FFF8E7; border: 2px solid #D4A76A; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .detail-info { flex: 1; }
+  .detail-name { font-size: 14px; font-weight: 500; }
+  .detail-desc { font-size: 11px; color: #5A5A5A; margin-top: 2px; }
+  .detail-price { font-size: 16px; font-weight: 500; color: #D4A76A; display: flex; align-items: center; gap: 4px; }
+  .buy-btn { background: #7BAE7F; color: #fff; border: none; border-radius: 9999px; padding: 10px 28px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .buy-btn:disabled { background: #C5D9C6; cursor: not-allowed; }
+  .cant-afford { font-size: 11px; color: #D46B6B; margin-top: 2px; }
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="shop-header">
+    <div class="shop-title"><i class="ti ti-shopping-bag" style="color:#D4A76A;font-size:20px"></i> ギルドショップ</div>
+    <span style="font-size:11px;color:#8A8A8A">素材・レシピ・強化カードを購入できるのだ</span>
+    <div class="gold-display"><i class="ti ti-coin"></i> 178 G</div>
+    <button class="close-btn"><i class="ti ti-x"></i> 閉じる</button>
+  </div>
+  <div class="shop-body">
+    <div class="cat-sidebar">
+      <div style="font-size:10px;color:#8A8A8A;padding:4px 6px;margin-bottom:4px">カテゴリ</div>
+      <div class="cat-item active"><span class="cat-icon"><i class="ti ti-leaf" style="color:#8CC084"></i></span> 素材</div>
+      <div class="cat-item"><span class="cat-icon"><i class="ti ti-flask" style="color:#D4A76A"></i></span> レシピ</div>
+      <div class="cat-item"><span class="cat-icon"><i class="ti ti-sparkles" style="color:#B8A9D4"></i></span> 強化カード</div>
+      <div class="cat-item"><span class="cat-icon"><i class="ti ti-bolt" style="color:#7BAE7F"></i></span> 行動力</div>
+      <div class="cat-item"><span class="cat-icon"><i class="ti ti-star" style="color:#E0A84B"></i></span> 特殊</div>
+    </div>
+    <div class="product-area">
+      <div class="cat-title">素材</div>
+      <div class="product-grid">
+        <div class="product-card">
+          <div class="product-icon" style="background:#F0FAF0;border:2px solid #8CC084"><i class="ti ti-leaf" style="color:#8CC084;font-size:22px"></i></div>
+          <div class="product-name">薬草</div>
+          <div class="product-desc">基本的な回復素材。どの依頼にも使える。</div>
+          <div class="product-price"><i class="ti ti-coin"></i> 20 G</div>
+        </div>
+        <div class="product-card">
+          <div class="product-icon" style="background:#EBF4FF;border:2px solid #6B9FCC"><i class="ti ti-droplet" style="color:#6B9FCC;font-size:22px"></i></div>
+          <div class="product-name">清水</div>
+          <div class="product-desc">薬効成分を引き出す清らかな水。</div>
+          <div class="product-price"><i class="ti ti-coin"></i> 15 G</div>
+        </div>
+        <div class="product-card selected">
+          <div class="product-icon" style="background:#FFF8E7;border:2px solid #E0A84B;position:relative">
+            <i class="ti ti-sparkles" style="color:#E0A84B;font-size:22px"></i>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px"><div class="product-name">光苔</div><span class="product-tag tag-popular">人気</span></div>
+          <div class="product-desc">希少な発光性素材。高品質調合に必須。</div>
+          <div class="product-price"><i class="ti ti-coin"></i> 80 G</div>
+        </div>
+        <div class="product-card">
+          <div class="product-icon" style="background:#F5EFE6;border:2px solid #A08060"><i class="ti ti-mushroom" style="color:#A08060;font-size:22px"></i></div>
+          <div class="product-name">キノコ</div>
+          <div class="product-desc">独特の香りを持つ森の恵み。</div>
+          <div class="product-price"><i class="ti ti-coin"></i> 25 G</div>
+        </div>
+        <div class="product-card">
+          <div class="product-icon" style="background:#FFF0F5;border:2px solid #D49090"><i class="ti ti-flower" style="color:#D49090;font-size:22px"></i></div>
+          <div style="display:flex;align-items:center;gap:4px"><div class="product-name">薬花</div><span class="product-tag tag-new">新入荷</span></div>
+          <div class="product-desc">甘い香りの花びら。調合補助効果あり。</div>
+          <div class="product-price"><i class="ti ti-coin"></i> 45 G</div>
+        </div>
+        <div class="product-card" style="opacity:0.5;cursor:not-allowed">
+          <div class="product-icon" style="background:#F5F5F5;border:2px solid #C0C0C0"><i class="ti ti-gem" style="color:#C0C0C0;font-size:22px"></i></div>
+          <div class="product-name" style="color:#8A8A8A">宝石の欠片</div>
+          <div class="product-desc" style="color:#B0B0B0">ランクF以上で解放</div>
+          <div class="product-price" style="color:#B0B0B0"><i class="ti ti-lock" style="font-size:12px"></i> 未解放</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="detail-bar">
+    <div class="detail-item-icon"><i class="ti ti-sparkles" style="color:#E0A84B;font-size:20px"></i></div>
+    <div class="detail-info">
+      <div class="detail-name">光苔</div>
+      <div class="detail-desc">希少な発光性素材。品質値 +10 ボーナスを持ち、S品質調合に欠かせない素材なのだ。</div>
+      <div class="cant-afford"><i class="ti ti-alert-circle"></i> 所持G不足（80G必要 / 178G所持）</div>
+    </div>
+    <div style="text-align:right">
+      <div class="detail-price"><i class="ti ti-coin"></i> 80 G</div>
+      <div style="font-size:10px;color:#8A8A8A;margin-top:2px;margin-bottom:8px">在庫 3個</div>
+      <button class="buy-btn"><i class="ti ti-shopping-cart"></i> 購入する</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
