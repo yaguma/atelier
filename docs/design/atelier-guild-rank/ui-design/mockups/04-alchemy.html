@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>調合フェーズ — Atelier Guild Rank</title>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #E8E0D6; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: 'M PLUS Rounded 1c', sans-serif; padding: 24px; }
+  .screen { width: 900px; min-height: 640px; background: #FFF8F0; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; font-size: 13px; color: #3D3D3D; border: 1px solid #D9CFC2; box-shadow: 0 4px 24px rgba(0,0,0,0.1); }
+  .header { background: #FDFAF5; border-bottom: 1px solid #E8E0D6; padding: 8px 16px; display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+  .rank-badge { background: #D4A76A; color: #3D3D3D; font-weight: 500; font-size: 12px; padding: 3px 10px; border-radius: 9999px; }
+  .gauge-bar { flex: 1; height: 8px; background: #E8E0D6; border-radius: 9999px; overflow: hidden; max-width: 120px; }
+  .gauge-fill { height: 100%; width: 35%; background: #D4A76A; border-radius: 9999px; }
+  .hud-item { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+  .hud-div { width: 1px; height: 16px; background: #E8E0D6; }
+  .main-area { display: flex; flex: 1; }
+  .sidebar { width: 150px; flex-shrink: 0; background: #F5EFE6; border-right: 1px solid #E8E0D6; padding: 12px 10px; display: flex; flex-direction: column; gap: 12px; }
+  .sb-title { font-size: 11px; font-weight: 500; color: #5A5A5A; padding-bottom: 4px; border-bottom: 1px solid #E8E0D6; margin-bottom: 4px; }
+  .sb-quest { background: #fff; border: 1px solid #D9CFC2; border-radius: 6px; padding: 5px 7px; margin-bottom: 4px; }
+  .sb-item { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #5A5A5A; padding: 3px 0; border-bottom: 1px solid #E8E0D6; }
+  .shop-btn { margin-top: auto; background: transparent; border: 1.5px solid #D9CFC2; border-radius: 9999px; padding: 5px 10px; font-size: 11px; color: #3D3D3D; text-align: center; cursor: pointer; }
+  .workspace { flex: 1; padding: 14px 16px; display: flex; flex-direction: column; gap: 14px; }
+  .phase-title { display: flex; align-items: center; gap: 8px; }
+  .phase-bar { width: 4px; height: 20px; background: #D4A76A; border-radius: 2px; }
+  .phase-text { font-size: 18px; font-weight: 500; color: #D4A76A; }
+  .alchemy-body { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; flex: 1; }
+  .left-panel { display: flex; flex-direction: column; gap: 12px; }
+  .recipe-card { background: #FFFFFF; border: 2px solid #D4A76A; border-radius: 12px; padding: 14px; }
+  .recipe-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .recipe-icon { width: 40px; height: 40px; border-radius: 9999px; background: #FFF8E7; border: 2px solid #D4A76A; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .recipe-info { flex: 1; }
+  .recipe-name { font-size: 14px; font-weight: 500; }
+  .recipe-difficulty { font-size: 11px; color: #8A8A8A; margin-top: 2px; }
+  .recipe-req { font-size: 11px; color: #5A5A5A; background: #FFF8F0; border: 1px solid #E8E0D6; border-radius: 6px; padding: 4px 8px; }
+  .mat-slots { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .mat-slot { width: 72px; background: #FFF8F0; border: 1.5px dashed #D9CFC2; border-radius: 8px; padding: 8px 4px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .mat-slot.filled { border: 2px solid #7BAE7F; background: #F0FAF0; }
+  .mat-slot-icon { font-size: 22px; }
+  .mat-slot-name { font-size: 10px; color: #5A5A5A; }
+  .mat-slot-q { font-size: 10px; font-weight: 500; padding: 1px 6px; border-radius: 9999px; }
+  .q-c { background: #F5F5F5; color: #888; }
+  .q-b { background: #E8F5E8; color: #4A8A4A; }
+  .q-a { background: #FFF8E7; color: #A06000; }
+  .enhance-card { background: #F5EFE6; border: 1.5px solid #D9CFC2; border-radius: 10px; padding: 10px; display: flex; align-items: center; gap: 10px; }
+  .enhance-icon { width: 36px; height: 36px; border-radius: 8px; background: #EDE5FA; border: 1.5px solid #B8A9D4; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .enhance-info { flex: 1; }
+  .enhance-title { font-size: 12px; font-weight: 500; }
+  .enhance-desc { font-size: 10px; color: #8A8A8A; margin-top: 2px; }
+  .enhance-use { font-size: 11px; padding: 3px 10px; border: 1.5px solid #B8A9D4; border-radius: 9999px; color: #795548; cursor: pointer; background: #fff; }
+  .right-panel { display: flex; flex-direction: column; gap: 12px; }
+  .quality-preview { background: #FFFFFF; border: 1.5px solid #D9CFC2; border-radius: 12px; padding: 14px; }
+  .qp-header { font-size: 12px; font-weight: 500; color: #8A8A8A; margin-bottom: 10px; padding-left: 8px; border-left: 3px solid #D4A76A; }
+  .grade-display { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 14px; }
+  .grade-box { text-align: center; }
+  .grade-label { font-size: 10px; color: #8A8A8A; margin-bottom: 2px; }
+  .grade-val { font-size: 36px; font-weight: 500; line-height: 1; }
+  .grade-arrow { font-size: 18px; color: #8A8A8A; margin-top: 10px; }
+  .quality-bar-wrap { margin-bottom: 10px; }
+  .quality-bar-label { display: flex; justify-content: space-between; font-size: 11px; color: #5A5A5A; margin-bottom: 4px; }
+  .quality-bar { height: 10px; background: #E8E0D6; border-radius: 9999px; overflow: hidden; }
+  .quality-fill { height: 100%; border-radius: 9999px; }
+  .qp-effects { background: #FFF8F0; border-radius: 8px; padding: 10px; }
+  .qp-effect-row { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; border-bottom: 1px solid #F0EBE3; }
+  .qp-effect-row:last-child { border-bottom: none; }
+  .craft-btn { background: #7BAE7F; color: #fff; border: none; border-radius: 9999px; padding: 11px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .craft-btn:disabled { background: #C5D9C6; cursor: not-allowed; }
+  .info-note { font-size: 11px; color: #8A8A8A; text-align: center; }
+  .footer { background: #F0EBE3; border-top: 1px solid #E8E0D6; padding: 8px 12px; flex-shrink: 0; }
+  .phase-tabs { display: flex; gap: 4px; margin-bottom: 8px; }
+  .ptab { border-radius: 9999px; padding: 3px 12px; font-size: 11px; font-weight: 500; cursor: pointer; }
+  .ptab.active { background: #7BAE7F; color: #fff; }
+  .ptab.inactive { background: transparent; color: #8A8A8A; }
+  .footer-bottom { display: flex; align-items: center; gap: 8px; }
+  .hand-cards { display: flex; gap: 4px; flex: 1; }
+  .hand-card { background: #FFFFFF; border: 1.5px solid #D9CFC2; border-radius: 8px; width: 52px; height: 68px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 9px; color: #5A5A5A; gap: 3px; flex-shrink: 0; }
+  .footer-btns { display: flex; gap: 6px; margin-left: auto; }
+  .btn-rest { background: transparent; border: 1.5px solid #D9CFC2; border-radius: 9999px; padding: 5px 14px; font-size: 11px; color: #3D3D3D; cursor: pointer; }
+  .btn-dayend { background: #D46B6B; border: none; border-radius: 9999px; padding: 5px 14px; font-size: 11px; font-weight: 500; color: #fff; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="header">
+    <span class="rank-badge">ランク G</span>
+    <div style="display:flex;align-items:center;gap:6px;flex:1">
+      <span style="font-size:11px;color:#5A5A5A">昇格</span>
+      <div class="gauge-bar"><div class="gauge-fill"></div></div>
+      <span style="font-size:11px;color:#5A5A5A">35 / 100</span>
+    </div>
+    <div class="hud-div"></div>
+    <div class="hud-item"><i class="ti ti-calendar" style="color:#8A8A8A"></i> 残り 23日</div>
+    <div class="hud-div"></div>
+    <div class="hud-item"><i class="ti ti-coin" style="color:#D4A76A"></i> 178 G</div>
+    <div class="hud-div"></div>
+    <div class="hud-item"><i class="ti ti-bolt" style="color:#7BAE7F"></i> 1 / 3 AP</div>
+  </div>
+  <div class="main-area">
+    <div class="sidebar">
+      <div>
+        <div class="sb-title">受注依頼</div>
+        <div class="sb-quest"><div style="font-size:11px;font-weight:500">冒険者の依頼</div><div style="font-size:10px;color:#8A8A8A">期限 3日</div></div>
+        <div class="sb-quest"><div style="font-size:11px;font-weight:500">村人の依頼</div><div style="font-size:10px;color:#8A8A8A">期限 2日</div></div>
+      </div>
+      <div>
+        <div class="sb-title">素材</div>
+        <div class="sb-item"><span>薬草</span><span>×3</span></div>
+        <div class="sb-item"><span>清水</span><span>×2</span></div>
+        <div class="sb-item"><span>光苔</span><span>×1</span></div>
+      </div>
+      <div>
+        <div class="sb-title">完成品</div>
+        <div class="sb-item" style="color:#B0B0B0"><span>（なし）</span></div>
+      </div>
+      <div class="shop-btn"><i class="ti ti-shopping-cart"></i> ショップ</div>
+    </div>
+    <div class="workspace">
+      <div class="phase-title">
+        <div class="phase-bar"></div>
+        <span class="phase-text">調合</span>
+      </div>
+      <div class="alchemy-body">
+        <div class="left-panel">
+          <div class="recipe-card">
+            <div class="recipe-header">
+              <div class="recipe-icon"><i class="ti ti-flask" style="color:#D4A76A;font-size:22px"></i></div>
+              <div class="recipe-info">
+                <div class="recipe-name">回復薬</div>
+                <div class="recipe-difficulty">難易度 ★★☆☆☆</div>
+              </div>
+              <div class="recipe-req"><i class="ti ti-flask" style="color:#D4A76A"></i> 1 AP</div>
+            </div>
+            <div style="font-size:11px;color:#8A8A8A;margin-bottom:6px">素材スロット（2/2 セット済み）</div>
+            <div class="mat-slots">
+              <div class="mat-slot filled">
+                <div class="mat-slot-icon"><i class="ti ti-leaf" style="color:#8CC084"></i></div>
+                <div class="mat-slot-name">薬草</div>
+                <span class="mat-slot-q q-b">B</span>
+              </div>
+              <div class="mat-slot filled">
+                <div class="mat-slot-icon"><i class="ti ti-droplet" style="color:#6B9FCC"></i></div>
+                <div class="mat-slot-name">清水</div>
+                <span class="mat-slot-q q-c">C</span>
+              </div>
+              <div class="mat-slot" style="opacity:0.4">
+                <div style="font-size:18px;color:#C0C0C0"><i class="ti ti-plus"></i></div>
+                <div class="mat-slot-name" style="color:#B0B0B0">追加可</div>
+              </div>
+            </div>
+          </div>
+          <div class="enhance-card">
+            <div class="enhance-icon"><i class="ti ti-sparkles" style="color:#B8A9D4;font-size:18px"></i></div>
+            <div class="enhance-info">
+              <div class="enhance-title">品質強化カード</div>
+              <div class="enhance-desc">品質値 +15 / 手札に1枚</div>
+            </div>
+            <button class="enhance-use">使用する</button>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button style="flex:1;background:transparent;border:1.5px solid #D9CFC2;border-radius:9999px;padding:7px;font-size:12px;color:#3D3D3D;cursor:pointer;font-family:inherit">レシピ変更</button>
+            <button class="craft-btn" style="flex:1">
+              <i class="ti ti-flask"></i> 調合する
+            </button>
+          </div>
+        </div>
+        <div class="right-panel">
+          <div class="quality-preview">
+            <div class="qp-header">品質プレビュー</div>
+            <div class="grade-display">
+              <div class="grade-box">
+                <div class="grade-label">現在</div>
+                <div class="grade-val" style="color:#4A8A4A">B</div>
+              </div>
+              <div class="grade-arrow"><i class="ti ti-arrow-right"></i></div>
+              <div class="grade-box">
+                <div class="grade-label">強化後</div>
+                <div class="grade-val" style="color:#A06000">A</div>
+              </div>
+            </div>
+            <div class="quality-bar-wrap">
+              <div class="quality-bar-label">
+                <span>品質値</span>
+                <span style="font-weight:500">65 → <span style="color:#A06000">80</span> / 100</span>
+              </div>
+              <div class="quality-bar">
+                <div class="quality-fill" style="width:65%;background:linear-gradient(90deg,#7BAE7F,#D4A76A)"></div>
+              </div>
+            </div>
+            <div style="font-size:10px;color:#8A8A8A;text-align:center;margin-bottom:10px">
+              強化カード使用で A品質 に到達！
+            </div>
+            <div class="qp-effects">
+              <div style="font-size:11px;font-weight:500;color:#5A5A5A;margin-bottom:6px">完成品の効果</div>
+              <div class="qp-effect-row">
+                <span><i class="ti ti-heart" style="color:#E07070"></i> 回復量</span>
+                <span style="font-weight:500">+30 HP（A品質ボーナス）</span>
+              </div>
+              <div class="qp-effect-row">
+                <span><i class="ti ti-star" style="color:#E0A84B"></i> 貢献度</span>
+                <span style="font-weight:500;color:#E0A84B">+12 pt</span>
+              </div>
+              <div class="qp-effect-row">
+                <span><i class="ti ti-coin" style="color:#D4A76A"></i> 売却価格</span>
+                <span style="font-weight:500">120 G</span>
+              </div>
+            </div>
+          </div>
+          <div style="background:#FFFFFF;border:1.5px solid #D9CFC2;border-radius:12px;padding:14px;">
+            <div class="qp-header">調合メモ</div>
+            <div style="font-size:11px;color:#5A5A5A;line-height:1.7">
+              <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #F0EBE3"><span>今日の調合回数</span><span style="font-weight:500">2 / 3回</span></div>
+              <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #F0EBE3"><span>連続調合ボーナス</span><span style="font-weight:500;color:#7BAE7F">+5%</span></div>
+              <div style="display:flex;justify-content:space-between;padding:3px 0"><span>今日の完成品</span><span style="font-weight:500">回復薬(C) ×1</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="phase-tabs">
+      <div class="ptab inactive"><i class="ti ti-clipboard-list"></i> 依頼</div>
+      <div class="ptab inactive"><i class="ti ti-plant"></i> 採取</div>
+      <div class="ptab active"><i class="ti ti-flask"></i> 調合</div>
+      <div class="ptab inactive"><i class="ti ti-package"></i> 納品</div>
+    </div>
+    <div class="footer-bottom">
+      <span style="font-size:10px;color:#8A8A8A">手札</span>
+      <div class="hand-cards">
+        <div class="hand-card" style="border-color:#D4A76A;border-width:2px"><i class="ti ti-flask" style="color:#D4A76A;font-size:20px"></i><span>レシピ</span></div>
+        <div class="hand-card" style="border-color:#8CC084"><i class="ti ti-leaf" style="color:#8CC084;font-size:20px"></i><span>採取</span></div>
+        <div class="hand-card" style="border-color:#B8A9D4;border-width:2px"><i class="ti ti-sparkles" style="color:#B8A9D4;font-size:20px"></i><span>強化</span></div>
+        <div class="hand-card" style="border-color:#D4A76A"><i class="ti ti-flask" style="color:#D4A76A;font-size:20px"></i><span>レシピ</span></div>
+        <div class="hand-card" style="border-color:#6B9FCC"><i class="ti ti-star" style="color:#6B9FCC;font-size:20px"></i><span>スキル</span></div>
+      </div>
+      <div class="footer-btns">
+        <button class="btn-rest"><i class="ti ti-coffee"></i> 休憩</button>
+        <button class="btn-dayend"><i class="ti ti-moon"></i> 日終了</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

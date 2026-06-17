@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>依頼受注フェーズ — Atelier Guild Rank</title>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #E8E0D6; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: 'M PLUS Rounded 1c', sans-serif; padding: 24px; }
+  .screen { width: 900px; min-height: 640px; background: #FFF8F0; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; font-size: 13px; color: #3D3D3D; border: 1px solid #D9CFC2; box-shadow: 0 4px 24px rgba(0,0,0,0.1); }
+  .header { background: #FDFAF5; border-bottom: 1px solid #E8E0D6; padding: 8px 16px; display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+  .rank-badge { background: #D4A76A; color: #3D3D3D; font-weight: 500; font-size: 12px; padding: 3px 10px; border-radius: 9999px; }
+  .gauge-wrap { display: flex; align-items: center; gap: 6px; flex: 1; }
+  .gauge-bar { flex: 1; height: 8px; background: #E8E0D6; border-radius: 9999px; overflow: hidden; max-width: 120px; }
+  .gauge-fill { height: 100%; width: 35%; background: #D4A76A; border-radius: 9999px; }
+  .hud-item { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; color: #3D3D3D; white-space: nowrap; }
+  .hud-div { width: 1px; height: 16px; background: #E8E0D6; }
+  .main-area { display: flex; flex: 1; }
+  .sidebar { width: 150px; flex-shrink: 0; background: #F5EFE6; border-right: 1px solid #E8E0D6; padding: 12px 10px; display: flex; flex-direction: column; gap: 12px; }
+  .sb-title { font-size: 11px; font-weight: 500; color: #5A5A5A; padding-bottom: 4px; border-bottom: 1px solid #E8E0D6; margin-bottom: 4px; }
+  .sb-quest { background: #fff; border: 1px solid #D9CFC2; border-radius: 6px; padding: 5px 7px; margin-bottom: 4px; }
+  .sb-badge { display: inline-block; background: #7BAE7F; color: #fff; font-size: 10px; border-radius: 9999px; padding: 1px 7px; margin-bottom: 4px; }
+  .sb-item { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #5A5A5A; padding: 3px 0; border-bottom: 1px solid #E8E0D6; }
+  .shop-btn { margin-top: auto; background: transparent; border: 1.5px solid #D9CFC2; border-radius: 9999px; padding: 5px 10px; font-size: 11px; color: #3D3D3D; text-align: center; cursor: pointer; }
+  .workspace { flex: 1; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .phase-title { display: flex; align-items: center; gap: 8px; }
+  .phase-bar { width: 4px; height: 20px; background: #B8A9D4; border-radius: 2px; }
+  .phase-text { font-size: 18px; font-weight: 500; color: #B8A9D4; }
+  .source-tabs { display: flex; gap: 6px; }
+  .tab { padding: 4px 14px; border-radius: 9999px; font-size: 12px; font-weight: 500; cursor: pointer; }
+  .tab.active { background: #7BAE7F; color: #fff; }
+  .tab.inactive { background: #E8E0D6; color: #5A5A5A; }
+  .quest-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .quest-card { background: #FFFFFF; border: 2px solid #D9CFC2; border-radius: 12px; padding: 12px; cursor: pointer; position: relative; }
+  .quest-card.selected { border-color: #7BAE7F; border-width: 3px; }
+  .qc-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px; }
+  .qc-name { font-size: 13px; font-weight: 500; }
+  .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; }
+  .badge-b { background: #EFEBE0; color: #795548; }
+  .qc-dialogue { font-size: 11px; color: #8A8A8A; margin-bottom: 8px; font-style: italic; line-height: 1.4; }
+  .qc-divider { border: none; border-top: 1px solid #E8E0D6; margin: 6px 0; }
+  .qc-cond { font-size: 11px; color: #D4A76A; font-weight: 500; margin-bottom: 3px; }
+  .qc-reward { font-size: 11px; color: #5A5A5A; margin-bottom: 2px; }
+  .qc-dl { font-size: 10px; color: #8A8A8A; }
+  .check-mark { position: absolute; top: 8px; right: 8px; background: #7BAE7F; color: #fff; border-radius: 9999px; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+  .detail-panel { background: #FFFDE7; border: 2px solid #D4A76A; border-radius: 12px; padding: 14px 16px; }
+  .dp-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .dp-dialogue { font-size: 12px; color: #5A5A5A; font-style: italic; margin-bottom: 10px; }
+  .dp-row { display: flex; gap: 6px; margin-bottom: 4px; font-size: 12px; }
+  .dp-label { color: #8A8A8A; min-width: 60px; }
+  .dp-val { font-weight: 500; }
+  .dp-actions { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; }
+  .btn-primary { background: #7BAE7F; color: #fff; border: none; border-radius: 9999px; padding: 6px 20px; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  .btn-secondary { background: transparent; border: 1.5px solid #D9CFC2; border-radius: 9999px; padding: 6px 20px; font-size: 12px; color: #3D3D3D; cursor: pointer; }
+  .acc-count { font-size: 12px; color: #5A5A5A; text-align: right; }
+  .footer { background: #F0EBE3; border-top: 1px solid #E8E0D6; padding: 8px 12px; flex-shrink: 0; }
+  .phase-tabs { display: flex; gap: 4px; margin-bottom: 8px; }
+  .ptab { border-radius: 9999px; padding: 3px 12px; font-size: 11px; font-weight: 500; cursor: pointer; }
+  .ptab.active { background: #7BAE7F; color: #fff; }
+  .ptab.inactive { background: transparent; color: #8A8A8A; }
+  .footer-bottom { display: flex; align-items: center; gap: 8px; }
+  .hand-cards { display: flex; gap: 4px; flex: 1; }
+  .hand-card { background: #FFFFFF; border: 1.5px solid #D9CFC2; border-radius: 8px; width: 52px; height: 68px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 9px; color: #5A5A5A; gap: 3px; flex-shrink: 0; }
+  .footer-btns { display: flex; gap: 6px; margin-left: auto; }
+  .btn-rest { background: transparent; border: 1.5px solid #D9CFC2; border-radius: 9999px; padding: 5px 14px; font-size: 11px; color: #3D3D3D; cursor: pointer; }
+  .btn-dayend { background: #D46B6B; border: none; border-radius: 9999px; padding: 5px 14px; font-size: 11px; font-weight: 500; color: #fff; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="header">
+    <span class="rank-badge">ランク G</span>
+    <div class="gauge-wrap">
+      <span style="font-size:11px;color:#5A5A5A">昇格</span>
+      <div class="gauge-bar"><div class="gauge-fill"></div></div>
+      <span style="font-size:11px;color:#5A5A5A">35 / 100</span>
+    </div>
+    <div class="hud-div"></div>
+    <div class="hud-item"><i class="ti ti-calendar" style="color:#8A8A8A"></i> 残り 25日</div>
+    <div class="hud-div"></div>
+    <div class="hud-item"><i class="ti ti-coin" style="color:#D4A76A"></i> 130 G</div>
+    <div class="hud-div"></div>
+    <div class="hud-item"><i class="ti ti-bolt" style="color:#7BAE7F"></i> 3 / 3 AP</div>
+  </div>
+  <div class="main-area">
+    <div class="sidebar">
+      <div>
+        <div class="sb-title">受注依頼</div>
+        <span class="sb-badge">1 / 3</span>
+        <div class="sb-quest"><div style="font-size:11px;font-weight:500">冒険者の依頼</div><div style="font-size:10px;color:#8A8A8A">期限 5日</div></div>
+      </div>
+      <div>
+        <div class="sb-title">素材</div>
+        <div class="sb-item"><span>薬草</span><span>×3</span></div>
+        <div class="sb-item"><span>鉱石</span><span>×1</span></div>
+        <div class="sb-item"><span>魔石</span><span>×0</span></div>
+      </div>
+      <div>
+        <div class="sb-title">完成品</div>
+        <div class="sb-item"><span>回復薬</span><span>×2</span></div>
+      </div>
+      <div class="shop-btn"><i class="ti ti-shopping-cart"></i> ショップ</div>
+    </div>
+    <div class="workspace">
+      <div class="phase-title">
+        <div class="phase-bar"></div>
+        <span class="phase-text">依頼受注</span>
+      </div>
+      <div class="source-tabs">
+        <div class="tab active"><i class="ti ti-clipboard-list"></i> 掲示板</div>
+        <div class="tab inactive"><i class="ti ti-user"></i> 訪問者</div>
+      </div>
+      <div class="quest-grid">
+        <div class="quest-card selected">
+          <div class="check-mark"><i class="ti ti-check" style="font-size:10px"></i></div>
+          <div class="qc-header">
+            <div class="qc-name">冒険者</div>
+            <span class="badge badge-b">掲示板</span>
+          </div>
+          <div class="qc-dialogue">「何か薬が欲しいんだ」</div>
+          <hr class="qc-divider">
+          <div class="qc-cond">薬カテゴリ × 1個</div>
+          <div class="qc-reward"><i class="ti ti-star" style="color:#D4A76A;font-size:11px"></i> 84貢 / 48 G</div>
+          <div class="qc-dl"><i class="ti ti-clock" style="font-size:11px"></i> 期限 6日</div>
+        </div>
+        <div class="quest-card">
+          <div class="qc-header">
+            <div class="qc-name">村人</div>
+            <span class="badge badge-b">掲示板</span>
+          </div>
+          <div class="qc-dialogue">「体が弱くて…何か元気になるものを」</div>
+          <hr class="qc-divider">
+          <div class="qc-cond">回復薬 × 1個</div>
+          <div class="qc-reward"><i class="ti ti-star" style="color:#D4A76A;font-size:11px"></i> 95貢 / 57 G</div>
+          <div class="qc-dl"><i class="ti ti-clock" style="font-size:11px"></i> 期限 5日</div>
+        </div>
+        <div class="quest-card">
+          <div class="qc-header">
+            <div class="qc-name">商人</div>
+            <span class="badge badge-b">掲示板</span>
+          </div>
+          <div class="qc-dialogue">「仕入れで使う素材が足りなくてね」</div>
+          <hr class="qc-divider">
+          <div class="qc-cond">水属性アイテム × 2個</div>
+          <div class="qc-reward"><i class="ti ti-star" style="color:#D4A76A;font-size:11px"></i> 50貢 / 32 G</div>
+          <div class="qc-dl"><i class="ti ti-clock" style="font-size:11px"></i> 期限 3日</div>
+        </div>
+      </div>
+      <div class="detail-panel">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <div class="dp-title">冒険者の依頼</div>
+          <span class="badge badge-b">掲示板</span>
+        </div>
+        <div class="dp-dialogue">「何か薬が欲しいんだ、種類は何でもいい。」</div>
+        <div class="dp-row"><span class="dp-label">依頼タイプ</span><span class="dp-val">カテゴリ指定（薬）</span></div>
+        <div class="dp-row"><span class="dp-label">必要数</span><span class="dp-val">1個</span></div>
+        <div class="dp-row"><span class="dp-label">報酬</span><span class="dp-val" style="color:#D4A76A">貢献度 84 / 48 G</span></div>
+        <div class="dp-row"><span class="dp-label">期限</span><span class="dp-val">6日</span></div>
+        <div class="dp-actions">
+          <button class="btn-secondary">閉じる</button>
+          <button class="btn-primary"><i class="ti ti-check"></i> 受注する</button>
+        </div>
+      </div>
+      <div class="acc-count">受注済み: 1 / 3</div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="phase-tabs">
+      <div class="ptab active"><i class="ti ti-clipboard-list"></i> 依頼</div>
+      <div class="ptab inactive"><i class="ti ti-plant"></i> 採取</div>
+      <div class="ptab inactive"><i class="ti ti-flask"></i> 調合</div>
+      <div class="ptab inactive"><i class="ti ti-package"></i> 納品</div>
+    </div>
+    <div class="footer-bottom">
+      <span style="font-size:10px;color:#8A8A8A">手札</span>
+      <div class="hand-cards">
+        <div class="hand-card" style="border-color:#8CC084"><i class="ti ti-leaf" style="color:#8CC084;font-size:20px"></i><span>採取</span></div>
+        <div class="hand-card" style="border-color:#8CC084"><i class="ti ti-leaf" style="color:#8CC084;font-size:20px"></i><span>採取</span></div>
+        <div class="hand-card" style="border-color:#6B9FCC"><i class="ti ti-flask" style="color:#6B9FCC;font-size:20px"></i><span>レシピ</span></div>
+        <div class="hand-card" style="border-color:#B8A9D4"><i class="ti ti-sparkles" style="color:#B8A9D4;font-size:20px"></i><span>強化</span></div>
+        <div class="hand-card" style="border-color:#6B9FCC"><i class="ti ti-flask" style="color:#6B9FCC;font-size:20px"></i><span>レシピ</span></div>
+      </div>
+      <div class="footer-btns">
+        <button class="btn-rest"><i class="ti ti-coffee"></i> 休憩</button>
+        <button class="btn-dayend"><i class="ti ti-moon"></i> 日終了</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

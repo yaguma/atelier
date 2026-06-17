@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ゲームクリア — Atelier Guild Rank</title>
+<link href="https://fonts.googleapis.com/css2?family=M PLUS Rounded 1c:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #E8E0D6; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: 'M PLUS Rounded 1c', sans-serif; padding: 24px; }
+  .screen { width: 560px; min-height: 560px; background: #FFF8F0; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; align-items: center; padding: 28px 24px; gap: 20px; font-size: 13px; color: #3D3D3D; border: 1px solid #D9CFC2; position: relative; box-shadow: 0 4px 24px rgba(0,0,0,0.1); }
+  .deco { position: absolute; border-radius: 50%; opacity: 0.06; }
+  .deco1 { width: 280px; height: 280px; background: #D4A76A; top: -60px; left: -60px; }
+  .deco2 { width: 200px; height: 200px; background: #7BAE7F; bottom: -40px; right: -40px; }
+  .clear-badge { background: #FFFDE7; border: 2px solid #E0A84B; border-radius: 9999px; padding: 5px 20px; font-size: 12px; font-weight: 500; color: #795548; letter-spacing: 2px; z-index: 1; }
+  .rank-display { background: #FFFFFF; border: 3px solid #E0A84B; border-radius: 20px; padding: 20px 40px; text-align: center; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%; }
+  .rank-s { font-size: 64px; font-weight: 500; color: #E0A84B; line-height: 1; }
+  .rank-title { font-size: 20px; font-weight: 500; }
+  .rank-divider { width: 40px; height: 2px; background: #E0A84B; border-radius: 9999px; }
+  .stats-panel { width: 100%; background: #FFFFFF; border: 1.5px solid #D9CFC2; border-radius: 14px; padding: 16px 20px; z-index: 1; }
+  .stats-title { font-size: 12px; font-weight: 500; color: #8A8A8A; margin-bottom: 12px; padding-left: 8px; border-left: 3px solid #D4A76A; }
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+  .stat-card { background: #FFF8F0; border-radius: 10px; padding: 10px; text-align: center; }
+  .stat-num { font-size: 22px; font-weight: 500; }
+  .stat-label { font-size: 10px; color: #8A8A8A; }
+  .stats-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #F0EBE3; font-size: 12px; }
+  .stats-row:last-child { border-bottom: none; }
+  .btn-row { display: flex; gap: 10px; z-index: 1; width: 100%; }
+  .btn-title { flex: 1; background: transparent; border: 2px solid #D9CFC2; border-radius: 9999px; padding: 10px 20px; font-size: 13px; color: #3D3D3D; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .btn-retry { flex: 1; background: #7BAE7F; color: #fff; border: none; border-radius: 9999px; padding: 10px 20px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; }
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="deco deco1"></div>
+  <div class="deco deco2"></div>
+  <div class="clear-badge"><i class="ti ti-trophy" style="color:#E0A84B"></i> &nbsp;GAME CLEAR&nbsp; <i class="ti ti-trophy" style="color:#E0A84B"></i></div>
+  <div class="rank-display">
+    <div class="rank-s">S</div>
+    <div class="rank-divider"></div>
+    <div style="font-size:13px;color:#5A5A5A">最高ランク到達</div>
+    <div class="rank-title">伝説の錬金術師</div>
+  </div>
+  <div class="stats-panel">
+    <div class="stats-title">プレイ統計</div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-num">87</div><div class="stat-label">総プレイ日数</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:#7BAE7F">156</div><div class="stat-label">達成依頼数</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:#D4A76A">4,820</div><div class="stat-label">総獲得G</div></div>
+    </div>
+    <div class="stats-row"><span style="color:#5A5A5A"><i class="ti ti-flask" style="color:#D4A76A"></i> 調合回数</span><span style="font-weight:500">312 回</span></div>
+    <div class="stats-row"><span style="color:#5A5A5A"><i class="ti ti-leaf" style="color:#8CC084"></i> 採取素材数</span><span style="font-weight:500">847 個</span></div>
+    <div class="stats-row"><span style="color:#5A5A5A"><i class="ti ti-sparkles" style="color:#B8A9D4"></i> S品質作成数</span><span style="font-weight:500">28 個</span></div>
+    <div class="stats-row"><span style="color:#5A5A5A"><i class="ti ti-star" style="color:#E0A84B"></i> 最終貢献度</span><span style="font-weight:500;color:#E0A84B">9,450 pt</span></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn-title"><i class="ti ti-home"></i> タイトルへ</button>
+    <button class="btn-retry"><i class="ti ti-refresh"></i> もう一度挑戦</button>
+  </div>
+</div>
+</body>
+</html>

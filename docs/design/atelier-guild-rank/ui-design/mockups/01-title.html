@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>タイトル画面 — Atelier Guild Rank</title>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+  body { margin: 0; background: #E8E0D6; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: 'M PLUS Rounded 1c', sans-serif; }
+  .screen {
+    width: 640px; height: 520px; background: #FFF8F0; border-radius: 12px; overflow: hidden;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: #3D3D3D; border: 1px solid #D9CFC2; position: relative; box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+  }
+  .deco { position: absolute; border-radius: 50%; opacity: 0.06; }
+  .deco1 { width: 320px; height: 320px; background: #7BAE7F; top: -60px; left: -80px; }
+  .deco2 { width: 240px; height: 240px; background: #D4A76A; bottom: -60px; right: -40px; }
+  .deco3 { width: 160px; height: 160px; background: #B8A9D4; top: 40px; right: 30px; }
+  .herb { position: absolute; opacity: 0.18; font-size: 32px; }
+  .herb1 { top: 28px; left: 28px; transform: rotate(-15deg); }
+  .herb2 { bottom: 36px; left: 48px; transform: rotate(20deg); }
+  .herb3 { top: 48px; right: 60px; transform: rotate(10deg); }
+  .content { display: flex; flex-direction: column; align-items: center; gap: 0; z-index: 1; }
+  .emblem { width: 80px; height: 80px; border-radius: 50%; background: #FFF8F0; border: 3px solid #D4A76A; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+  .emblem-inner { width: 64px; height: 64px; border-radius: 50%; background: #F5EFE6; border: 2px solid #E8E0D6; display: flex; align-items: center; justify-content: center; }
+  .title-card { background: #FFFFFF; border: 2px solid #D4A76A; border-radius: 16px; padding: 24px 48px; text-align: center; margin-bottom: 36px; }
+  .title-sub { font-size: 12px; color: #8A8A8A; letter-spacing: 3px; margin-bottom: 6px; }
+  .title-main { font-size: 28px; font-weight: 500; color: #3D3D3D; line-height: 1.2; }
+  .title-main-jp { font-size: 14px; color: #5A5A5A; margin-top: 4px; letter-spacing: 2px; }
+  .title-accent { color: #D4A76A; }
+  .title-divider { width: 48px; height: 2px; background: #D4A76A; border-radius: 9999px; margin: 10px auto; }
+  .btn-list { display: flex; flex-direction: column; gap: 10px; align-items: center; width: 220px; }
+  .btn-new { width: 100%; background: #7BAE7F; color: #fff; border: none; border-radius: 9999px; padding: 12px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-continue { width: 100%; background: transparent; border: 2px solid #D9CFC2; border-radius: 9999px; padding: 11px; font-size: 14px; color: #3D3D3D; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-setting { width: 100%; background: transparent; border: 1.5px solid #E8E0D6; border-radius: 9999px; padding: 9px; font-size: 13px; color: #8A8A8A; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .version { position: absolute; bottom: 12px; right: 16px; font-size: 11px; color: #B0B0B0; }
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="deco deco1"></div>
+  <div class="deco deco2"></div>
+  <div class="deco deco3"></div>
+  <div class="herb herb1"><i class="ti ti-leaf" style="color:#7BAE7F"></i></div>
+  <div class="herb herb2"><i class="ti ti-plant-2" style="color:#8CC084"></i></div>
+  <div class="herb herb3"><i class="ti ti-flask" style="color:#D4A76A"></i></div>
+  <div class="content">
+    <div class="emblem">
+      <div class="emblem-inner">
+        <i class="ti ti-flask" style="color:#D4A76A;font-size:28px"></i>
+      </div>
+    </div>
+    <div class="title-card">
+      <div class="title-sub">A L C H E M Y &nbsp; R P G</div>
+      <div class="title-main">ATELIER <span class="title-accent">GUILD</span></div>
+      <div class="title-divider"></div>
+      <div class="title-main-jp">錬金術師ギルドランク</div>
+    </div>
+    <div class="btn-list">
+      <button class="btn-new"><i class="ti ti-player-play"></i> 新規ゲーム</button>
+      <button class="btn-continue"><i class="ti ti-history"></i> コンティニュー</button>
+      <button class="btn-setting"><i class="ti ti-settings"></i> 設定</button>
+    </div>
+  </div>
+  <div class="version">Version 1.0.0</div>
+</div>
+</body>
+</html>
