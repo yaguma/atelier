@@ -6,6 +6,7 @@ import type { IAlchemyService } from '@domain/interfaces/alchemy-service.interfa
 import { BaseComponent } from '@presentation/ui/components/BaseComponent';
 import { THEME } from '@presentation/ui/theme';
 import { CONTENT_WORK_CENTER_X } from '@shared/constants/layout';
+import { Colors, toColorStr } from '@shared/theme';
 import type { CardId, Quality } from '@shared/types';
 
 import type Phaser from 'phaser';
@@ -69,6 +70,7 @@ export class AlchemyPhaseUI extends BaseComponent {
   }
 
   private createTitle(): void {
+    // TASK-0008: タイトルをアンバーアクセント (#D4A76A) 化
     const titleText = this.scene.make
       .text({
         x: CONTENT_WORK_CENTER_X,
@@ -76,7 +78,7 @@ export class AlchemyPhaseUI extends BaseComponent {
         text: '⚗️ 調合フェーズ',
         style: {
           fontSize: `${THEME.sizes.xlarge}px`,
-          color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
+          color: toColorStr(Colors.phase.alchemy),
           fontFamily: THEME.fonts.primary,
           fontStyle: 'bold',
         },
@@ -84,6 +86,15 @@ export class AlchemyPhaseUI extends BaseComponent {
       })
       .setOrigin(0.5);
     this.container.add(titleText);
+
+    // タイトル左に 4px のアンバーアクセントバーを配置
+    const titleWidth = titleText.width || 0;
+    const barHeight = 28;
+    const barX = CONTENT_WORK_CENTER_X - titleWidth / 2 - 12;
+    const bar = this.scene.add.rectangle(barX, 20, 4, barHeight, Colors.phase.alchemy);
+    if (bar.setOrigin) bar.setOrigin(0.5, 0.5);
+    if (bar.setName) bar.setName('AlchemyPhaseUI.titleAccentBar');
+    this.container.add(bar);
   }
 
   // ======== Recipe selection ========
