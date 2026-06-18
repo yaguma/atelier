@@ -11,7 +11,7 @@
 
 import type { RexLabel } from '@presentation/types/rexui';
 import { BaseComponent } from '@presentation/ui/components/BaseComponent';
-import { THEME } from '@presentation/ui/theme';
+import { Colors, THEME, toColorStr } from '@presentation/ui/theme';
 import type Phaser from 'phaser';
 import {
   type ITitleMenuConfig,
@@ -66,24 +66,24 @@ export class TitleMenu extends BaseComponent {
   create(): void {
     const centerX = this.container.x;
 
-    // 新規ゲームボタン
+    // 新規ゲームボタン（プライマリ）
     const newGameButton = this.createButton(
       centerX,
       TITLE_LAYOUT.BUTTON_START_Y,
       TITLE_TEXT.NEW_GAME,
-      THEME.colors.primary,
+      'primary',
       () => this.handleNewGameClick(),
     );
     if (newGameButton) {
       this.buttons.push(newGameButton);
     }
 
-    // コンティニューボタン
+    // コンティニューボタン（セカンダリ: 透明＋枠線2px）
     this.continueButton = this.createButton(
       centerX,
       TITLE_LAYOUT.BUTTON_START_Y + TITLE_LAYOUT.BUTTON_SPACING,
       TITLE_TEXT.CONTINUE,
-      THEME.colors.primary,
+      'secondary',
       () => this.handleContinueClick(),
     );
     if (this.continueButton) {
@@ -93,12 +93,12 @@ export class TitleMenu extends BaseComponent {
       this.buttons.push(this.continueButton);
     }
 
-    // 設定ボタン
+    // 設定ボタン（TASK-0001 第3スタイル: ターシャリ）
     const settingsButton = this.createButton(
       centerX,
       TITLE_LAYOUT.BUTTON_START_Y + TITLE_LAYOUT.BUTTON_SPACING * 2,
       TITLE_TEXT.SETTINGS,
-      THEME.colors.secondary,
+      'tertiary',
       () => this.handleSettingsClick(),
     );
     if (settingsButton) {
@@ -120,7 +120,7 @@ export class TitleMenu extends BaseComponent {
     x: number,
     y: number,
     text: string,
-    backgroundColor: number,
+    variant: 'primary' | 'secondary' | 'tertiary',
     onClick: () => void,
   ): RexLabel | null {
     if (!this.rexUI) {
@@ -128,19 +128,39 @@ export class TitleMenu extends BaseComponent {
       return null;
     }
 
+    // バリアント別スタイル（モック01・design-guide §ボタン準拠）
+    // primary: 草色塗り＋白文字 / secondary: 透明＋枠線2px / tertiary: 透明＋枠線1.5px＋ミューテッド文字
+    const fillColor = variant === 'primary' ? THEME.colors.primary : Colors.surface.card;
+    const stroke =
+      variant === 'secondary'
+        ? { width: 2, color: Colors.border.default }
+        : variant === 'tertiary'
+          ? { width: 1.5, color: Colors.border.subtle }
+          : null;
+    const textColor =
+      variant === 'primary'
+        ? THEME.colors.textOnPrimary
+        : variant === 'tertiary'
+          ? toColorStr(Colors.text.muted)
+          : toColorStr(Colors.text.primary);
+    const fontSize = variant === 'tertiary' ? '13px' : TITLE_STYLES.BUTTON_FONT_SIZE;
+
     const buttonBackground = this.rexUI.add.roundRectangle(
       0,
       0,
       TITLE_SIZES.BUTTON_WIDTH,
       TITLE_SIZES.BUTTON_HEIGHT,
       TITLE_SIZES.BUTTON_RADIUS,
-      backgroundColor,
+      fillColor,
     );
+    if (stroke && buttonBackground.setStrokeStyle) {
+      buttonBackground.setStrokeStyle(stroke.width, stroke.color);
+    }
 
     const buttonText = this.scene.add.text(0, 0, text, {
       fontFamily: THEME.fonts.primary,
-      fontSize: TITLE_STYLES.BUTTON_FONT_SIZE,
-      color: THEME.colors.textOnPrimary,
+      fontSize,
+      color: textColor,
     });
 
     const button = this.rexUI.add.label({
