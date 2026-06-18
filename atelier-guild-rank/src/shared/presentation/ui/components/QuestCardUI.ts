@@ -191,7 +191,9 @@ export class QuestCardUI extends BaseComponent {
       dialogue,
       {
         fontSize: '16px',
-        color: toColorStr(Colors.text.primary),
+        // TASK-0006: セリフは italic + ミューテッド (#8A8A8A)
+        color: toColorStr(Colors.text.muted),
+        fontStyle: 'italic',
         wordWrap: { width: QuestCardUI.CARD_WIDTH - QuestCardUI.PADDING * 2 },
       },
     );
@@ -219,7 +221,8 @@ export class QuestCardUI extends BaseComponent {
       conditionLabel,
       {
         fontSize: '16px',
-        color: toColorStr(Colors.status.info),
+        // TASK-0006: 条件はアンバー (#D4A76A: text.accent)
+        color: toColorStr(Colors.text.accent),
         fontStyle: 'bold',
       },
     );
@@ -252,7 +255,8 @@ export class QuestCardUI extends BaseComponent {
       rewardText,
       {
         fontSize: '16px',
-        color: toColorStr(Colors.text.primary),
+        // TASK-0006: 報酬は本文グレー (#5A5A5A: text.secondary)
+        color: toColorStr(Colors.text.secondary),
       },
     );
     this.rewardText.setOrigin(0, 0);
@@ -283,7 +287,8 @@ export class QuestCardUI extends BaseComponent {
       deadlineText,
       {
         fontSize: '16px',
-        color: toColorStr(Colors.text.secondary),
+        // TASK-0006: 期限はミューテッド (#8A8A8A: text.muted)
+        color: toColorStr(Colors.text.muted),
       },
     );
     this.deadlineText.setOrigin(0, 0);

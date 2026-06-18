@@ -172,8 +172,11 @@ export class QuestAcceptPhaseUI extends BaseComponent {
    * 【タイトルスタイル定数】: タイトルテキストのスタイル
    */
   private static readonly TITLE_FONT_SIZE = '24px';
-  private static readonly TITLE_COLOR = toColorStr(Colors.text.primary);
+  // TASK-0006: フェーズタイトルはラベンダーアクセント (#B8A9D4)
+  private static readonly TITLE_COLOR = toColorStr(Colors.phase.questAccept);
   private static readonly TITLE_TEXT = '📋 本日の依頼';
+  /** タイトル左アクセントバー幅（モック: 4px） */
+  private static readonly TITLE_BAR_WIDTH = 4;
 
   /**
    * 【受注済みセクション定数】: 受注済み依頼の表示レイアウト（Issue #431）
@@ -259,6 +262,21 @@ export class QuestAcceptPhaseUI extends BaseComponent {
     });
     this.titleText.setOrigin(0.5, 0);
     this.container.add(this.titleText);
+
+    // TASK-0006: タイトル左に 4px のラベンダーアクセントバーを配置
+    const titleWidth = this.titleText.width || 0;
+    const barHeight = 28;
+    const barX = CONTENT_WORK_CENTER_X - titleWidth / 2 - 12;
+    const accentBar = this.scene.add.rectangle(
+      barX,
+      20 + barHeight / 2,
+      QuestAcceptPhaseUI.TITLE_BAR_WIDTH,
+      barHeight,
+      Colors.phase.questAccept,
+    );
+    accentBar.setOrigin(0.5, 0.5);
+    if (accentBar.setName) accentBar.setName('QuestAcceptPhaseUI.titleAccentBar');
+    this.container.add(accentBar);
   }
 
   /**
