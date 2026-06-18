@@ -7,7 +7,7 @@
  * 課題の完了状態と期限を表示する。
  */
 
-import { Colors } from '@presentation/ui/theme';
+import { Colors, toColorStr } from '@presentation/ui/theme';
 import { UIBackgroundBuilder } from '@presentation/ui/utils';
 import type { RankTestTask } from './types';
 
@@ -23,19 +23,23 @@ const UI_TEXT = {
   TASK_PENDING: '○',
 } as const;
 
-/** スタイル定数 */
+/**
+ * スタイル定数
+ * TASK-0013: ハードコード色をデザイントークンに統一（モック08チェックリスト配色）
+ * - 完了: status.success（緑）/ 未達: text.secondary（灰）/ 見出し: text.primary
+ */
 const UI_STYLES = {
   TASK_TITLE: {
     fontSize: '18px',
-    color: '#ffffff',
+    color: toColorStr(Colors.text.primary),
   },
   TASK_ITEM: {
     fontSize: '16px',
-    color: '#cccccc',
+    color: toColorStr(Colors.text.secondary),
   },
   TASK_COMPLETED: {
     fontSize: '16px',
-    color: '#00ff00',
+    color: toColorStr(Colors.status.success),
   },
 } as const;
 
