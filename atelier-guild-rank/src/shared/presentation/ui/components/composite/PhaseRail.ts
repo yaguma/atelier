@@ -52,23 +52,30 @@ export interface PhaseRailOptions extends BaseComponentOptions {
 // 定数
 // =============================================================================
 
-/** タブ用カラー定数（DesignTokens/Colors経由） */
+/** タブ用カラー定数（DesignTokens/Colors経由） — TASK-0005: モック `.phase-tabs .ptab` 準拠 */
 const RAIL_COLORS = {
+  /** アクティブタブ背景（草色 #7BAE7F） */
   ACTIVE: Colors.brand.primary,
-  INACTIVE: Colors.surface.sidebar,
+  /** 非アクティブは透明（fill alpha 0 で表現） */
   DISABLED: Colors.ui.button.disabled,
   BACKGROUND: Colors.surface.header,
   BORDER: Colors.border.subtle,
+  /** アクティブタブ文字（白） */
   ACTIVE_TEXT: toColorStr(Colors.text.onPrimary),
-  INACTIVE_TEXT: toColorStr(Colors.text.secondary),
+  /** 非アクティブタブ文字（#8A8A8A: text.muted） */
+  INACTIVE_TEXT: toColorStr(Colors.text.muted),
   DISABLED_TEXT: toColorStr(Colors.text.disabled),
   NOTIFICATION_TEXT: toColorStr(Colors.status.error),
 } as const;
 
+/** タブ文字サイズ（モック: 11px） */
+const TAB_FONT_SIZE = '11px';
+
 /** @deprecated Issue #486: MainSceneからwidthオプションで渡される。フォールバック用 */
 const DEFAULT_WIDTH = 640;
 const DEFAULT_HEIGHT = MAIN_LAYOUT.PHASE_RAIL_HEIGHT;
-const TAB_HEIGHT = 44; // Issue #460: A11y - タッチターゲット最小44px
+/** タブ高さ（モックの pill 形状。クリック領域を確保しつつコンパクト化） */
+const TAB_HEIGHT = 28;
 const TAB_SPACING = 8;
 const PADDING_X = 16;
 
@@ -172,12 +179,14 @@ export class PhaseRail extends BaseComponent {
       const cx = startX + tabWidth / 2 + i * (tabWidth + TAB_SPACING);
       const isActive = phase === this.current;
 
+      // 非アクティブは透明（fill alpha 0）、アクティブは草色 pill
       const tabBg = this.scene.add.rectangle(
         cx,
         tabY,
         tabWidth,
         TAB_HEIGHT,
-        isActive ? RAIL_COLORS.ACTIVE : RAIL_COLORS.INACTIVE,
+        RAIL_COLORS.ACTIVE,
+        isActive ? 1 : 0,
       );
       if (tabBg.setName) tabBg.setName(`PhaseRail.tabBg${i}`);
       if (tabBg.setInteractive) {
@@ -190,13 +199,12 @@ export class PhaseRail extends BaseComponent {
       this.tabBgs.push(tabBg);
 
       const label = PHASE_LABELS[phase as string] ?? String(phase);
-      const icon = isActive ? PHASE_STATUS_ICONS.ACTIVE : PHASE_STATUS_ICONS.INACTIVE;
       const text = this.scene.make.text({
         x: cx,
         y: tabY,
-        text: `${icon} ${label}`,
+        text: label,
         style: {
-          fontSize: '16px',
+          fontSize: TAB_FONT_SIZE,
           color: isActive ? RAIL_COLORS.ACTIVE_TEXT : RAIL_COLORS.INACTIVE_TEXT,
           fontStyle: isActive ? 'bold' : 'normal',
         },
@@ -336,12 +344,12 @@ export class PhaseRail extends BaseComponent {
       const label = PHASE_LABELS[phase as string] ?? String(phase);
 
       if (this.tabsDisabled && !isActive) {
-        // 無効化スタイル（アクティブタブは通常色を維持）
-        if (bg?.setFillStyle) bg.setFillStyle(RAIL_COLORS.DISABLED);
+        // 無効化スタイル（⛔アイコンで色非依存に表現。アクティブタブは通常色を維持）
+        if (bg?.setFillStyle) bg.setFillStyle(RAIL_COLORS.DISABLED, 1);
         if (text?.setText) text.setText(`${PHASE_STATUS_ICONS.DISABLED} ${label}`);
         if (text?.setStyle) {
           text.setStyle({
-            fontSize: '16px',
+            fontSize: TAB_FONT_SIZE,
             color: RAIL_COLORS.DISABLED_TEXT,
             fontStyle: 'normal',
           });
@@ -349,14 +357,14 @@ export class PhaseRail extends BaseComponent {
         continue;
       }
 
-      const icon = isActive ? PHASE_STATUS_ICONS.ACTIVE : PHASE_STATUS_ICONS.INACTIVE;
+      // アクティブ: 草色pill+白太字、非アクティブ: 透明+ミューテッド文字
       if (bg?.setFillStyle) {
-        bg.setFillStyle(isActive ? RAIL_COLORS.ACTIVE : RAIL_COLORS.INACTIVE);
+        bg.setFillStyle(RAIL_COLORS.ACTIVE, isActive ? 1 : 0);
       }
-      if (text?.setText) text.setText(`${icon} ${label}`);
+      if (text?.setText) text.setText(label);
       if (text?.setStyle) {
         text.setStyle({
-          fontSize: '16px',
+          fontSize: TAB_FONT_SIZE,
           color: isActive ? RAIL_COLORS.ACTIVE_TEXT : RAIL_COLORS.INACTIVE_TEXT,
           fontStyle: isActive ? 'bold' : 'normal',
         });
