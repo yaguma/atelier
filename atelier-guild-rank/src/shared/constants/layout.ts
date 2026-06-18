@@ -8,8 +8,8 @@
  */
 
 export const MAIN_LAYOUT = {
-  /** サイドバー幅 */
-  SIDEBAR_WIDTH: 200,
+  /** サイドバー幅（TASK-0003: モックアップ仕様 150px） */
+  SIDEBAR_WIDTH: 150,
   /** ヘッダー領域の高さ（HUDBar配置スロットの高さ。位置計算に使用） */
   HEADER_HEIGHT: 60,
   /** HUDBar 内部の描画高さ（背景パネル・ボーダー等の実描画サイズ） */
@@ -30,13 +30,13 @@ export const MAIN_LAYOUT = {
 
 /**
  * ContentContainer内の作業領域幅（ContextPanel領域を除く）
- * 計算: GAME_WIDTH - SIDEBAR_WIDTH - CONTEXT_PANEL_WIDTH = 1280 - 200 - 260 = 820
+ * 計算: GAME_WIDTH - SIDEBAR_WIDTH - CONTEXT_PANEL_WIDTH = 1280 - 150 - 260 = 870
  */
 export const CONTENT_WORK_WIDTH =
   MAIN_LAYOUT.GAME_WIDTH - MAIN_LAYOUT.SIDEBAR_WIDTH - MAIN_LAYOUT.CONTEXT_PANEL_WIDTH;
 
 /**
  * ContentContainer内の作業領域中央X座標（ContextPanel領域を除く）
- * 計算: CONTENT_WORK_WIDTH / 2 = 820 / 2 = 410
+ * 計算: CONTENT_WORK_WIDTH / 2 = 870 / 2 = 435
  */
 export const CONTENT_WORK_CENTER_X = CONTENT_WORK_WIDTH / 2;

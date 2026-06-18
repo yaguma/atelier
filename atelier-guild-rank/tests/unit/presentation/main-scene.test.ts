@@ -616,8 +616,9 @@ describe('MainScene共通レイアウト', () => {
         // Then: contentContainerが指定座標に配置される
         const contentContainer = mainScene.getContentContainer();
         expect(contentContainer).toBeDefined();
+        // TASK-0003: SidebarWidth をモック仕様 150px に変更（旧 200px）
         // Issue #458 Phase 4 A: PhaseRail(48px)を上部に昇格配置したため contentY = 60 + 48 = 108
-        expect(contentContainer.x).toBe(200);
+        expect(contentContainer.x).toBe(150);
         expect(contentContainer.y).toBe(108);
       });
 
