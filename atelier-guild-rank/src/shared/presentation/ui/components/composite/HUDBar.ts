@@ -2,17 +2,25 @@
  * HUDBar - ゴールド/AP/日数/ランク/昇格ゲージ 共通HUD composite
  * Issue #456: UI刷新 Phase 2
  * Issue #458: UI刷新 Phase 4 A準備 - HeaderUI 機能等価化
+ * TASK-0002: UIモックアップ実装 - モック02〜05 `.header` 仕様へ作り直し
  *
  * @description
  * 画面上部に常駐するゲーム状態HUD。既存 `HeaderUI` の視覚・データ契約と等価なAPIを提供する。
  *
  * 主な機能:
- * - ランク表示
- * - 昇格ゲージ（値に応じた色: 赤/黄/緑/水色）
+ * - ランク表示（pill型バッジ）
+ * - 昇格ゲージ（値に応じた色: 赤/黄/緑/水色、height 8px）
  * - 残り日数表示（色分け: 白/黄/赤/明るい赤+点滅）
- * - 所持ゴールド（Gアイコン付き）
+ * - 所持ゴールド（値 + G 表記、accent色）
  * - 行動ポイント（AP）
  * - 貢献度（Phase 2 HUDBarData 互換フィールド）
+ *
+ * モック仕様（02〜05 `.header`）:
+ * - 背景 surface.header / 下線 border.subtle 1px
+ * - HUD項目フォント 12px にコンパクト化
+ * - ランクは pill型バッジ（bg brand.secondary）
+ * - 昇格ゲージ height 8px / max-width 120px
+ * - セクション間に 1px×16px のセパレーター
  *
  * データ契約:
  * - 新方式: `updateFromHeader(IHeaderUIData)` — HeaderUI とキー互換
@@ -92,35 +100,41 @@ const HUD_COLORS = {
 /** @deprecated Issue #486: MainSceneからwidthオプションで渡される。フォールバック用 */
 const DEFAULT_WIDTH = MAIN_LAYOUT.GAME_WIDTH - MAIN_LAYOUT.SIDEBAR_WIDTH;
 const HUD_HEIGHT = MAIN_LAYOUT.HUD_HEIGHT;
-const GAUGE_WIDTH = 100;
-const GAUGE_HEIGHT = 16;
+
+// --- モック 02〜05 `.header` 準拠のコンパクト寸法 ---
+/** HUD 全項目の基準フォントサイズ（モック: 12px） */
+const HUD_FONT_SIZE = '12px';
+/** ラベル用フォントサイズ */
+const HUD_LABEL_SIZE = '12px';
+/** 昇格ゲージ寸法（モック: max-width 120px / height 8px） */
+const GAUGE_WIDTH = 120;
+const GAUGE_HEIGHT = 8;
+const GAUGE_RADIUS = GAUGE_HEIGHT / 2;
+/** セクション区切り線（モック: width 1px / height 16px） */
+const SEPARATOR_WIDTH = 1;
+const SEPARATOR_HEIGHT = 16;
+/** ランクバッジ寸法（pill型） */
+const RANK_BADGE_HEIGHT = 22;
+const RANK_BADGE_MIN_WIDTH = 40;
+const RANK_BADGE_RADIUS = RANK_BADGE_HEIGHT / 2;
+/** バッジ内テキストの左右余白 */
+const RANK_BADGE_PADDING_X = 16;
 
 /**
- * HUDBar 内部セクションの相対配置比率
- * HUDBar幅に対するパーセンテージで各セクション開始位置を定義する。
- * Issue #489: ハードコードされた絶対px座標をレスポンシブ化
+ * HUD 各セクションの固定X座標（左パディング16pxからの左詰めフロー）。
+ * 上部バーは左寄せ項目＋右寄せ貢献度で構成し、合計幅に依存しない。
  */
-const HUD_SECTION_RATIOS = {
-  /** ランクラベル開始位置 */
-  RANK: 0.015,
-  /** ランクテキスト開始位置 */
-  RANK_TEXT: 0.07,
-  /** 昇格ゲージ開始位置 */
-  GAUGE: 0.13,
-  /** 残り日数ラベル開始位置 */
-  DAYS_LABEL: 0.24,
-  /** 残り日数テキスト開始位置 */
-  DAYS_TEXT: 0.29,
-  /** ゴールドアイコン開始位置 */
-  GOLD_ICON: 0.39,
-  /** ゴールドテキスト開始位置 */
-  GOLD_TEXT: 0.41,
-  /** APラベル開始位置 */
-  AP_LABEL: 0.5,
-  /** APテキスト開始位置 */
-  AP_TEXT: 0.54,
-  /** 貢献度テキスト（右寄せ）: 右端からのオフセット比率 */
-  CONTRIBUTION_RIGHT_OFFSET: 0.15,
+const HUD_LAYOUT = {
+  PADDING_X: 16,
+  RANK_BADGE_X: 16,
+  GAUGE_X: 80,
+  SEP_1_X: 220,
+  DAYS_X: 240,
+  SEP_2_X: 360,
+  GOLD_X: 380,
+  SEP_3_X: 500,
+  AP_X: 520,
+  CONTRIBUTION_RIGHT_PADDING: 16,
 } as const;
 
 const DEFAULT_DATA: HUDBarData = {
@@ -174,6 +188,7 @@ export class HUDBar extends BaseComponent {
   private remainingDaysBlinking = false;
 
   // 視覚要素
+  private rankBadge: Phaser.GameObjects.Graphics | null = null;
   private rankTextEl: Phaser.GameObjects.Text | null = null;
   private gaugeBackground: Phaser.GameObjects.Graphics | null = null;
   private gaugeFill: Phaser.GameObjects.Graphics | null = null;
@@ -194,14 +209,16 @@ export class HUDBar extends BaseComponent {
   // ===========================================================================
 
   create(): void {
-    const centerX = this.width / 2;
+    const w = this.width;
+    const centerX = w / 2;
     const centerY = HUD_HEIGHT / 2;
+    const L = HUD_LAYOUT;
 
-    // 背景パネル
+    // 背景パネル（surface.header）
     const bg = this.scene.add.rectangle(
       centerX,
       centerY,
-      this.width,
+      w,
       HUD_HEIGHT,
       HUD_COLORS.BACKGROUND,
       0.95,
@@ -209,12 +226,12 @@ export class HUDBar extends BaseComponent {
     if (bg.setName) bg.setName('HUDBar.backgroundPanel');
     this.container.add(bg);
 
-    // 下部ボーダー
+    // 下線 1px（border.subtle）
     const borderLine = this.scene.add.rectangle(
       centerX,
       HUD_HEIGHT - 1,
-      this.width,
-      2,
+      w,
+      1,
       HUD_COLORS.BORDER,
       1,
     );
@@ -223,41 +240,43 @@ export class HUDBar extends BaseComponent {
 
     this.container.setDepth(DesignTokens.zIndex.hud);
 
-    // セクションX座標を幅から算出
-    const w = this.width;
-    const sections = HUD_SECTION_RATIOS;
+    // ランクバッジ（pill型背景。サイズは updateRankBadge で確定）
+    this.rankBadge = this.scene.add.graphics();
+    if (this.rankBadge.setName) this.rankBadge.setName('HUDBar.rankBadge');
+    this.container.add(this.rankBadge);
 
-    // ランクラベル
-    const rankLabel = this.scene.make.text({
-      x: w * sections.RANK,
-      y: 12,
-      text: 'ランク:',
-      style: { fontSize: '16px', color: toColorStr(Colors.text.secondary) },
-      add: false,
-    });
-    if (rankLabel.setName) rankLabel.setName('HUDBar.rankLabel');
-    this.container.add(rankLabel);
-
-    // ランクテキスト
+    // ランクテキスト（バッジ中央・白）
     this.rankTextEl = this.scene.make.text({
-      x: w * sections.RANK_TEXT,
-      y: 10,
+      x: L.RANK_BADGE_X + RANK_BADGE_MIN_WIDTH / 2,
+      y: centerY,
       text: '',
-      style: { fontSize: '18px', color: toColorStr(Colors.text.primary), fontStyle: 'bold' },
+      style: {
+        fontSize: HUD_FONT_SIZE,
+        color: toColorStr(Colors.text.light),
+        fontStyle: 'bold',
+        padding: { top: 2 },
+      },
       add: false,
     });
+    if (this.rankTextEl.setOrigin) this.rankTextEl.setOrigin(0.5, 0.5);
     if (this.rankTextEl.setName) this.rankTextEl.setName('HUDBar.rankText');
     this.container.add(this.rankTextEl);
 
-    // 昇格ゲージ背景（静的）
+    // 昇格ゲージ背景（静的・border.subtle）
     this.gaugeBackground = this.scene.add.graphics();
     if (this.gaugeBackground.fillStyle) {
-      const gaugeX = w * sections.GAUGE;
       this.gaugeBackground.fillStyle(Colors.border.subtle, 1);
+      const gaugeY = centerY - GAUGE_HEIGHT / 2;
       if (this.gaugeBackground.fillRoundedRect) {
-        this.gaugeBackground.fillRoundedRect(gaugeX, 14, GAUGE_WIDTH, GAUGE_HEIGHT, 4);
+        this.gaugeBackground.fillRoundedRect(
+          L.GAUGE_X,
+          gaugeY,
+          GAUGE_WIDTH,
+          GAUGE_HEIGHT,
+          GAUGE_RADIUS,
+        );
       } else if (this.gaugeBackground.fillRect) {
-        this.gaugeBackground.fillRect(gaugeX, 14, GAUGE_WIDTH, GAUGE_HEIGHT);
+        this.gaugeBackground.fillRect(L.GAUGE_X, gaugeY, GAUGE_WIDTH, GAUGE_HEIGHT);
       }
     }
     if (this.gaugeBackground.setName) this.gaugeBackground.setName('HUDBar.gaugeBackground');
@@ -268,80 +287,48 @@ export class HUDBar extends BaseComponent {
     if (this.gaugeFill.setName) this.gaugeFill.setName('HUDBar.gaugeFill');
     this.container.add(this.gaugeFill);
 
-    // 残り日数ラベル
-    const daysLabel = this.scene.make.text({
-      x: w * sections.DAYS_LABEL,
-      y: 12,
-      text: '残り:',
-      style: { fontSize: '16px', color: toColorStr(Colors.text.secondary) },
-      add: false,
-    });
-    if (daysLabel.setName) daysLabel.setName('HUDBar.daysLabel');
-    this.container.add(daysLabel);
+    // セパレーター（1px×16px）
+    this.addSeparator(L.SEP_1_X, centerY, 'HUDBar.separator1');
+    this.addSeparator(L.SEP_2_X, centerY, 'HUDBar.separator2');
+    this.addSeparator(L.SEP_3_X, centerY, 'HUDBar.separator3');
 
-    // 残り日数テキスト
-    this.daysTextEl = this.scene.make.text({
-      x: w * sections.DAYS_TEXT,
-      y: 10,
-      text: '',
-      style: { fontSize: '18px', color: toColorStr(Colors.text.primary), fontStyle: 'bold' },
-      add: false,
+    // 残り日数（ラベル + 値を1テキストにまとめてコンパクト化）
+    this.daysTextEl = this.makeHudText(L.DAYS_X, centerY, '', {
+      color: toColorStr(Colors.text.primary),
+      bold: true,
     });
     if (this.daysTextEl.setName) this.daysTextEl.setName('HUDBar.daysText');
     this.container.add(this.daysTextEl);
 
-    // ゴールドアイコン
-    const goldIcon = this.scene.make.text({
-      x: w * sections.GOLD_ICON,
-      y: 12,
-      text: 'G',
-      style: { fontSize: '16px', color: toColorStr(Colors.text.accent), fontStyle: 'bold' },
-      add: false,
-    });
-    if (goldIcon.setName) goldIcon.setName('HUDBar.goldIcon');
-    this.container.add(goldIcon);
-
-    // ゴールドテキスト
-    this.goldTextEl = this.scene.make.text({
-      x: w * sections.GOLD_TEXT,
-      y: 10,
-      text: '',
-      style: { fontSize: '18px', color: toColorStr(Colors.text.accent), fontStyle: 'bold' },
-      add: false,
+    // ゴールド（値 + G、accent色）
+    this.goldTextEl = this.makeHudText(L.GOLD_X, centerY, '', {
+      color: toColorStr(Colors.text.accent),
+      bold: true,
     });
     if (this.goldTextEl.setName) this.goldTextEl.setName('HUDBar.goldText');
     this.container.add(this.goldTextEl);
 
-    // APラベル
-    const apLabel = this.scene.make.text({
-      x: w * sections.AP_LABEL,
-      y: 12,
-      text: 'AP:',
-      style: { fontSize: '16px', color: toColorStr(Colors.text.secondary) },
-      add: false,
-    });
-    if (apLabel.setName) apLabel.setName('HUDBar.apLabel');
-    this.container.add(apLabel);
-
-    // APテキスト
-    this.apTextEl = this.scene.make.text({
-      x: w * sections.AP_TEXT,
-      y: 10,
-      text: '',
-      style: { fontSize: '18px', color: toColorStr(Colors.status.info), fontStyle: 'bold' },
-      add: false,
+    // AP（info色）
+    this.apTextEl = this.makeHudText(L.AP_X, centerY, '', {
+      color: toColorStr(Colors.status.info),
+      bold: true,
     });
     if (this.apTextEl.setName) this.apTextEl.setName('HUDBar.apText');
     this.container.add(this.apTextEl);
 
-    // 貢献度テキスト（Phase 2 互換フィールド、右側寄せ）
+    // 貢献度テキスト（Phase 2 互換フィールド、右寄せ）
     this.contributionTextEl = this.scene.make.text({
-      x: w * (1 - sections.CONTRIBUTION_RIGHT_OFFSET),
-      y: 12,
+      x: w - L.CONTRIBUTION_RIGHT_PADDING,
+      y: centerY,
       text: '',
-      style: { fontSize: '16px', color: '#9CA3AF', fontStyle: 'normal' },
+      style: {
+        fontSize: HUD_LABEL_SIZE,
+        color: toColorStr(Colors.text.muted),
+        fontStyle: 'normal',
+      },
       add: false,
     });
+    if (this.contributionTextEl.setOrigin) this.contributionTextEl.setOrigin(1, 0.5);
     if (this.contributionTextEl.setName) this.contributionTextEl.setName('HUDBar.contributionText');
     this.container.add(this.contributionTextEl);
 
@@ -356,6 +343,7 @@ export class HUDBar extends BaseComponent {
       this.blinkingTween = null;
     }
 
+    this.rankBadge = null;
     this.rankTextEl = null;
     this.gaugeBackground = null;
     this.gaugeFill = null;
@@ -408,6 +396,47 @@ export class HUDBar extends BaseComponent {
   }
 
   // ===========================================================================
+  // 内部: 生成ヘルパ
+  // ===========================================================================
+
+  /** 左寄せ・縦中央のHUDテキストを生成 */
+  private makeHudText(
+    x: number,
+    centerY: number,
+    text: string,
+    opts: { color: string; bold?: boolean },
+  ): Phaser.GameObjects.Text {
+    const el = this.scene.make.text({
+      x,
+      y: centerY,
+      text,
+      style: {
+        fontSize: HUD_FONT_SIZE,
+        color: opts.color,
+        fontStyle: opts.bold ? 'bold' : 'normal',
+        padding: { top: 2 },
+      },
+      add: false,
+    });
+    if (el.setOrigin) el.setOrigin(0, 0.5);
+    return el;
+  }
+
+  /** セクション区切り線（1px×16px）を生成して container に追加 */
+  private addSeparator(x: number, centerY: number, name: string): void {
+    const sep = this.scene.add.rectangle(
+      x,
+      centerY,
+      SEPARATOR_WIDTH,
+      SEPARATOR_HEIGHT,
+      Colors.border.subtle,
+      1,
+    );
+    if (sep.setName) sep.setName(name);
+    this.container.add(sep);
+  }
+
+  // ===========================================================================
   // 内部: マージ（alias 同期）
   // ===========================================================================
 
@@ -440,9 +469,9 @@ export class HUDBar extends BaseComponent {
   private refreshVisuals(previouslyBlinking: boolean): void {
     const d = this.data;
 
-    // ランク
+    // ランク（pill型バッジ）
     const validRank = isValidGuildRank(d.currentRank) ? d.currentRank : GuildRank.G;
-    this.rankTextEl?.setText(`ランク: ${validRank}`);
+    this.updateRankBadge(validRank);
 
     // 昇格ゲージ
     this.updatePromotionGauge();
@@ -451,7 +480,7 @@ export class HUDBar extends BaseComponent {
     const daysStyle = calcRemainingDaysStyle(d.remainingDays);
     this.remainingDaysBlinking = daysStyle.blinking;
     if (this.daysTextEl) {
-      this.daysTextEl.setText(`残り: ${d.remainingDays}日`);
+      this.daysTextEl.setText(`残り ${d.remainingDays}日`);
       if (this.daysTextEl.setColor) {
         this.daysTextEl.setColor(colorNumberToCss(daysStyle.color));
       }
@@ -468,16 +497,59 @@ export class HUDBar extends BaseComponent {
     this.contributionTextEl?.setText(d.contribution ? `貢献 ${d.contribution}` : '');
   }
 
+  /** ランクバッジを描画し、テキストをバッジ中央へ配置 */
+  private updateRankBadge(rank: string): void {
+    this.rankTextEl?.setText(rank);
+
+    if (!this.rankBadge) return;
+    const centerY = HUD_HEIGHT / 2;
+    const textWidth = this.rankTextEl?.width ?? 0;
+    const badgeWidth = Math.max(RANK_BADGE_MIN_WIDTH, textWidth + RANK_BADGE_PADDING_X);
+
+    if (this.rankBadge.clear) this.rankBadge.clear();
+    if (this.rankBadge.fillStyle) {
+      this.rankBadge.fillStyle(Colors.brand.secondary, 1);
+      const badgeY = centerY - RANK_BADGE_HEIGHT / 2;
+      if (this.rankBadge.fillRoundedRect) {
+        this.rankBadge.fillRoundedRect(
+          HUD_LAYOUT.RANK_BADGE_X,
+          badgeY,
+          badgeWidth,
+          RANK_BADGE_HEIGHT,
+          RANK_BADGE_RADIUS,
+        );
+      } else if (this.rankBadge.fillRect) {
+        this.rankBadge.fillRect(HUD_LAYOUT.RANK_BADGE_X, badgeY, badgeWidth, RANK_BADGE_HEIGHT);
+      }
+    }
+
+    // テキストをバッジ中央へ
+    if (this.rankTextEl?.setPosition) {
+      this.rankTextEl.setPosition(HUD_LAYOUT.RANK_BADGE_X + badgeWidth / 2, centerY);
+    }
+  }
+
   private updatePromotionGauge(): void {
     if (!this.gaugeFill) return;
     if (this.gaugeFill.clear) this.gaugeFill.clear();
-    if (!this.gaugeFill.fillStyle || !this.gaugeFill.fillRect) return;
+    if (!this.gaugeFill.fillStyle) return;
     const color = calcPromotionGaugeColor(this.data.promotionGauge);
     this.gaugeFill.fillStyle(color, 1);
     const ratio = Math.max(0, Math.min(100, this.data.promotionGauge)) / 100;
     const fillWidth = ratio * GAUGE_WIDTH;
-    const gaugeX = this.width * HUD_SECTION_RATIOS.GAUGE;
-    this.gaugeFill.fillRect(gaugeX, 14, fillWidth, GAUGE_HEIGHT);
+    if (fillWidth <= 0) return;
+    const gaugeY = HUD_HEIGHT / 2 - GAUGE_HEIGHT / 2;
+    if (this.gaugeFill.fillRoundedRect) {
+      this.gaugeFill.fillRoundedRect(
+        HUD_LAYOUT.GAUGE_X,
+        gaugeY,
+        fillWidth,
+        GAUGE_HEIGHT,
+        GAUGE_RADIUS,
+      );
+    } else if (this.gaugeFill.fillRect) {
+      this.gaugeFill.fillRect(HUD_LAYOUT.GAUGE_X, gaugeY, fillWidth, GAUGE_HEIGHT);
+    }
   }
 
   private updateBlinking(previouslyBlinking: boolean): void {
