@@ -60,6 +60,12 @@ vi.mock('@presentation/ui/theme', () => ({
     status: {
       info: 0x6b9fcc,
     },
+    phase: {
+      questAccept: 0xb8a9d4,
+      gathering: 0x8cc084,
+      alchemy: 0xd4a76a,
+      delivery: 0xe8a87c,
+    },
   },
   toColorStr: (color: number) => `#${color.toString(16).padStart(6, '0')}`,
 }));
