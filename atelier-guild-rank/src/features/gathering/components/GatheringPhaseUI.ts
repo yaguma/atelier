@@ -102,14 +102,27 @@ export class GatheringPhaseUI extends BaseComponent {
     return t;
   }
 
+  /** TASK-0007: フェーズタイトル左に 4px のリーフグリーンアクセントバーを配置 */
+  private addTitleAccentBar(titleY: number): void {
+    const titleWidth = this.titleText.width || 0;
+    const barHeight = 28;
+    const barX = CONTENT_WORK_CENTER_X - titleWidth / 2 - 12;
+    const bar = this.scene.add.rectangle(barX, titleY, 4, barHeight, Colors.phase.gathering);
+    if (bar.setOrigin) bar.setOrigin(0.5, 0.5);
+    if (bar.setName) bar.setName('GatheringPhaseUI.titleAccentBar');
+    this.container.add(bar);
+  }
+
   private createHeaderUI(): void {
+    // TASK-0007: タイトルをリーフグリーンアクセント (#8CC084) 化
     this.titleText = this.makeText(
       20,
       '🌿 採取フェーズ',
       THEME.sizes.xlarge,
-      THEME.colors.text,
+      Colors.phase.gathering,
       true,
     );
+    this.addTitleAccentBar(20);
     this.remainingText = this.makeText(
       60,
       '残り選択回数: 0/0',
