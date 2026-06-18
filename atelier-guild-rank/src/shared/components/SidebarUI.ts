@@ -68,13 +68,16 @@ const SIDEBAR_LAYOUT = {
   WIDTH: MAIN_LAYOUT.SIDEBAR_WIDTH,
   /** サイドバー高さ（画面高さ - ヘッダー高さ） */
   HEIGHT: MAIN_LAYOUT.GAME_HEIGHT - MAIN_LAYOUT.HEADER_HEIGHT,
-  /** パディング */
-  PADDING: 12,
+  /** パディング（TASK-0003: モック 12px 10px） */
+  PADDING: 10,
   /** セクション間隔 */
   SECTION_GAP: 8,
   /** セクションヘッダー高さ */
-  SECTION_HEADER_HEIGHT: 32,
+  SECTION_HEADER_HEIGHT: 28,
 } as const;
+
+/** TASK-0003: モックアップ準拠フォントサイズ（11px） */
+const SIDEBAR_FONT_SIZE = '11px';
 
 // =============================================================================
 // 型定義
@@ -176,6 +179,9 @@ export class SidebarUI extends BaseComponent {
 
   /** 依頼リスト表示用テキスト要素 */
   private _questListTexts: Phaser.GameObjects.Text[] = [];
+
+  /** 依頼カードの背景・バッジ用 Graphics 要素 */
+  private _questListGraphics: Phaser.GameObjects.Graphics[] = [];
 
   /** 依頼リストのY座標開始位置 */
   private _questListStartY = 0;
@@ -296,7 +302,7 @@ export class SidebarUI extends BaseComponent {
 
     // 依頼セクションヘッダーを生成
     this._questsIconText = this.scene.add.text(SIDEBAR_LAYOUT.PADDING, currentY + 8, '▼', {
-      fontSize: '16px',
+      fontSize: SIDEBAR_FONT_SIZE,
       color: toColorStr(SIDEBAR_COLORS.TEXT_MUTED),
     });
     this.container.add(this._questsIconText);
@@ -306,7 +312,7 @@ export class SidebarUI extends BaseComponent {
       currentY + 6,
       '受注依頼',
       {
-        fontSize: '16px',
+        fontSize: SIDEBAR_FONT_SIZE,
         color: toColorStr(SIDEBAR_COLORS.TEXT),
         fontStyle: 'bold',
       },
@@ -341,7 +347,7 @@ export class SidebarUI extends BaseComponent {
 
     // 素材セクションヘッダーを生成
     this._materialsIconText = this.scene.add.text(SIDEBAR_LAYOUT.PADDING, currentY + 8, '▼', {
-      fontSize: '16px',
+      fontSize: SIDEBAR_FONT_SIZE,
       color: toColorStr(SIDEBAR_COLORS.TEXT_MUTED),
     });
     this.container.add(this._materialsIconText);
@@ -351,7 +357,7 @@ export class SidebarUI extends BaseComponent {
       currentY + 6,
       '素材',
       {
-        fontSize: '16px',
+        fontSize: SIDEBAR_FONT_SIZE,
         color: toColorStr(SIDEBAR_COLORS.TEXT),
         fontStyle: 'bold',
       },
@@ -385,7 +391,7 @@ export class SidebarUI extends BaseComponent {
 
     // 完成品セクションヘッダーを生成
     this._craftedItemsIconText = this.scene.add.text(SIDEBAR_LAYOUT.PADDING, currentY + 8, '▼', {
-      fontSize: '16px',
+      fontSize: SIDEBAR_FONT_SIZE,
       color: toColorStr(SIDEBAR_COLORS.TEXT_MUTED),
     });
     this.container.add(this._craftedItemsIconText);
@@ -395,7 +401,7 @@ export class SidebarUI extends BaseComponent {
       currentY + 6,
       '完成品',
       {
-        fontSize: '16px',
+        fontSize: SIDEBAR_FONT_SIZE,
         color: toColorStr(SIDEBAR_COLORS.TEXT),
         fontStyle: 'bold',
       },
@@ -409,38 +415,39 @@ export class SidebarUI extends BaseComponent {
 
     // 保管容量テキストを生成
     this._storageTextElement = this.scene.add.text(SIDEBAR_LAYOUT.PADDING, currentY, '保管: 0/20', {
-      fontSize: '16px',
+      fontSize: SIDEBAR_FONT_SIZE,
       color: toColorStr(SIDEBAR_COLORS.TEXT_SECONDARY),
     });
     this.container.add(this._storageTextElement);
 
     currentY += 40;
 
-    // ショップボタンを生成
+    // ショップボタンを生成（TASK-0003: セカンダリ pill 型 = 透明背景 + 枠線）
     this._shopButtonBackground = this.scene.add.rectangle(
       SIDEBAR_LAYOUT.WIDTH / 2,
-      currentY + 18,
+      currentY + 16,
       SIDEBAR_LAYOUT.WIDTH - SIDEBAR_LAYOUT.PADDING * 2,
-      36,
-      SIDEBAR_COLORS.ACCENT,
+      32,
+      SIDEBAR_COLORS.BACKGROUND,
     );
     this._shopButtonBackground.setName('SidebarUI.shopButtonBg');
+    this._shopButtonBackground.setStrokeStyle(1, Colors.border.default);
     this._shopButtonBackground.setInteractive({ useHandCursor: true });
     this._shopButtonBackground.on('pointerover', () => {
-      this._shopButtonBackground?.setFillStyle(SIDEBAR_COLORS.ACCENT_HOVER);
+      this._shopButtonBackground?.setFillStyle(Colors.surface.card);
     });
     this._shopButtonBackground.on('pointerout', () => {
-      this._shopButtonBackground?.setFillStyle(SIDEBAR_COLORS.ACCENT);
+      this._shopButtonBackground?.setFillStyle(SIDEBAR_COLORS.BACKGROUND);
     });
     this.container.add(this._shopButtonBackground);
 
     this._shopButtonText = this.scene.add.text(
-      SIDEBAR_LAYOUT.WIDTH / 2 - 30,
+      SIDEBAR_LAYOUT.WIDTH / 2 - 28,
       currentY + 8,
       'ショップ',
       {
-        fontSize: '16px',
-        color: toColorStr(SIDEBAR_COLORS.TEXT_ON_PRIMARY),
+        fontSize: SIDEBAR_FONT_SIZE,
+        color: toColorStr(SIDEBAR_COLORS.TEXT),
         fontStyle: 'bold',
       },
     );
@@ -465,6 +472,12 @@ export class SidebarUI extends BaseComponent {
       text.destroy();
     }
     this._questListTexts = [];
+
+    // 依頼カードの Graphics 要素を破棄
+    for (const g of this._questListGraphics) {
+      g.destroy();
+    }
+    this._questListGraphics = [];
 
     // 素材リストのテキスト要素を破棄
     for (const text of this._materialsListTexts) {
@@ -550,36 +563,31 @@ export class SidebarUI extends BaseComponent {
    * Issue #137: 受注した依頼をサイドバーに表示する
    */
   private updateQuestListUI(): void {
-    // 既存のリスト要素を削除
+    // 既存のリスト要素を削除（テキスト + カードグラフィック）
     for (const text of this._questListTexts) {
       text.destroy();
     }
     this._questListTexts = [];
+    for (const g of this._questListGraphics) {
+      g.destroy();
+    }
+    this._questListGraphics = [];
 
     // セクションが折りたたまれている場合は表示しない
     if (this._sectionCollapsed.quests) {
       return;
     }
 
-    // 依頼リストを表示（最大3件）
+    // 依頼リストをカード形式で表示（最大3件） — TASK-0003 モック `.sidebar` 準拠
     const displayQuests = this._activeQuests.slice(0, 3);
+    const cardWidth = SIDEBAR_LAYOUT.WIDTH - SIDEBAR_LAYOUT.PADDING * 2;
+    const cardHeight = 36;
+    const cardGap = 5;
     let y = this._questListStartY + 4;
 
     for (const activeQuest of displayQuests) {
-      // 依頼者名と残り日数を表示
-      const questText = this.scene.add.text(
-        SIDEBAR_LAYOUT.PADDING + 4,
-        y,
-        `${activeQuest.client.name} (${activeQuest.remainingDays}日)`,
-        {
-          fontSize: '16px',
-          color: toColorStr(SIDEBAR_COLORS.TEXT_SECONDARY),
-        },
-      );
-      this.container.add(questText);
-      this._questListTexts.push(questText);
-
-      y += 20;
+      this.renderQuestCard(activeQuest, y, cardWidth, cardHeight);
+      y += cardHeight + cardGap;
     }
 
     // 3件を超える場合は「...」を表示
@@ -589,13 +597,66 @@ export class SidebarUI extends BaseComponent {
         y,
         `他${this._activeQuests.length - 3}件...`,
         {
-          fontSize: '16px',
+          fontSize: SIDEBAR_FONT_SIZE,
           color: toColorStr(SIDEBAR_COLORS.TEXT_MUTED),
         },
       );
       this.container.add(moreText);
       this._questListTexts.push(moreText);
     }
+  }
+
+  /**
+   * 受注依頼カードを1件描画する（カード枠 + 依頼人pillバッジ + 残り日数）
+   * モック仕様: radius 6 / border 1px border.default / 依頼人バッジ brand.primary pill
+   */
+  private renderQuestCard(
+    activeQuest: IActiveQuest,
+    y: number,
+    cardWidth: number,
+    cardHeight: number,
+  ): void {
+    const x = SIDEBAR_LAYOUT.PADDING;
+    // 期限3日以下は urgent として枠線を警告色にする
+    const isUrgent = activeQuest.remainingDays <= 3;
+
+    // カード枠（Graphics メソッドはモック互換のため存在チェックしてから呼ぶ）
+    const card = this.scene.add.graphics();
+    card.fillStyle?.(Colors.surface.card, 1);
+    card.fillRoundedRect?.(x, y, cardWidth, cardHeight, 6);
+    card.lineStyle?.(1, isUrgent ? Colors.status.warning : Colors.border.default, 1);
+    card.strokeRoundedRect?.(x, y, cardWidth, cardHeight, 6);
+    this.container.add(card);
+    this._questListGraphics.push(card);
+
+    // 依頼人 pill バッジ
+    const badgeText = this.scene.add.text(x + 7 + 6, y + 5, activeQuest.client.name, {
+      fontSize: SIDEBAR_FONT_SIZE,
+      color: toColorStr(SIDEBAR_COLORS.TEXT_ON_PRIMARY),
+      fontStyle: 'bold',
+    });
+    const badgeWidth = (badgeText.width || 40) + 12;
+    const badge = this.scene.add.graphics();
+    badge.fillStyle?.(SIDEBAR_COLORS.ACCENT, 1);
+    badge.fillRoundedRect?.(x + 7, y + 4, badgeWidth, 16, 8);
+    this.container.add(badge);
+    this._questListGraphics.push(badge);
+    // バッジ背景の後にテキストを追加して前面に配置する
+    this.container.add(badgeText);
+    this._questListTexts.push(badgeText);
+
+    // 残り日数
+    const daysText = this.scene.add.text(
+      x + 7,
+      y + cardHeight - 14,
+      `残り ${activeQuest.remainingDays}日`,
+      {
+        fontSize: SIDEBAR_FONT_SIZE,
+        color: toColorStr(isUrgent ? SIDEBAR_COLORS.WARNING : SIDEBAR_COLORS.TEXT_SECONDARY),
+      },
+    );
+    this.container.add(daysText);
+    this._questListTexts.push(daysText);
   }
 
   /**
@@ -623,7 +684,7 @@ export class SidebarUI extends BaseComponent {
         y,
         `${this.resolveMaterialName(material.materialId)} (${material.quality})`,
         {
-          fontSize: '16px',
+          fontSize: SIDEBAR_FONT_SIZE,
           color: toColorStr(SIDEBAR_COLORS.TEXT_SECONDARY),
         },
       );
@@ -640,7 +701,7 @@ export class SidebarUI extends BaseComponent {
         y,
         `他${this._materials.length - 3}件...`,
         {
-          fontSize: '16px',
+          fontSize: SIDEBAR_FONT_SIZE,
           color: toColorStr(SIDEBAR_COLORS.TEXT_MUTED),
         },
       );
@@ -674,7 +735,7 @@ export class SidebarUI extends BaseComponent {
         y,
         `${this.resolveItemName(item.itemId)} (${item.quality})`,
         {
-          fontSize: '16px',
+          fontSize: SIDEBAR_FONT_SIZE,
           color: toColorStr(SIDEBAR_COLORS.TEXT_SECONDARY),
         },
       );
@@ -691,7 +752,7 @@ export class SidebarUI extends BaseComponent {
         y,
         `他${this._craftedItems.length - 3}件...`,
         {
-          fontSize: '16px',
+          fontSize: SIDEBAR_FONT_SIZE,
           color: toColorStr(SIDEBAR_COLORS.TEXT_MUTED),
         },
       );
