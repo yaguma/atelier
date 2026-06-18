@@ -74,8 +74,9 @@ export class ShopItemCard extends BaseComponent {
       .setPosition(0, 0)
       .setSize(200, 180)
       .setFill(Colors.background.card, 0.95)
-      .setBorder(Colors.border.primary, 2)
-      .setRadius(8)
+      // TASK-0012: モック07 商品カード（枠線1.5px #D9CFC2 / radius 10px）
+      .setBorder(Colors.border.default, 1.5)
+      .setRadius(10)
       .build();
     this.container.add(this.background);
 

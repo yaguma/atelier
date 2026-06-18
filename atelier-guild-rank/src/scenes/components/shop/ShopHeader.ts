@@ -104,10 +104,13 @@ export class ShopHeader extends BaseComponent {
       y: 20,
       width: 80,
       height: 44,
+      // TASK-0012: 閉じる/戻るはセカンダリ pill（透明背景＋枠線2px）
       background: this.scene.add
         .graphics()
-        .fillStyle(Colors.ui.button.normal, 1)
-        .fillRoundedRect(0, 0, 80, 44, 4),
+        .fillStyle(Colors.surface.card, 1)
+        .fillRoundedRect(0, 0, 80, 44, 18)
+        .lineStyle(2, Colors.border.default, 1)
+        .strokeRoundedRect(0, 0, 80, 44, 18),
       text: this.scene.add.text(0, 0, '戻る', {
         fontSize: `${THEME.sizes.medium}px`,
         color: `#${Colors.text.primary.toString(16).padStart(6, '0')}`,
