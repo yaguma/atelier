@@ -7,7 +7,7 @@
  * サブコンポーネント: QuestDeliveryList, ItemSelector, ContributionPreview, DeliveryResultPanel
  */
 
-import { Colors, THEME } from '@presentation/ui/theme';
+import { Colors, THEME, toColorStr } from '@presentation/ui/theme';
 import { CONTENT_WORK_CENTER_X, CONTENT_WORK_WIDTH } from '@shared/constants';
 import type Phaser from 'phaser';
 import { BaseComponent } from '../components/BaseComponent';
@@ -70,7 +70,8 @@ const UI_TEXT = {
 const UI_STYLES = {
   TITLE: {
     fontSize: `${THEME.sizes.xlarge}px`,
-    color: `#${THEME.colors.text.toString(16).padStart(6, '0')}`,
+    // TASK-0009: タイトルをコーラルアクセント (#E8A87C) 化
+    color: toColorStr(Colors.phase.delivery),
     fontFamily: THEME.fonts.primary,
     fontStyle: 'bold',
   },
@@ -184,6 +185,21 @@ export class DeliveryPhaseUI extends BaseComponent {
     );
     title.setOrigin(0.5, 0);
     this.container.add(title);
+
+    // TASK-0009: タイトル左に 4px のコーラルアクセントバーを配置
+    const titleWidth = title.width || 0;
+    const barHeight = 28;
+    const barX = UI_LAYOUT.TITLE_X - titleWidth / 2 - 12;
+    const bar = this.scene.add.rectangle(
+      barX,
+      UI_LAYOUT.TITLE_Y + barHeight / 2,
+      4,
+      barHeight,
+      Colors.phase.delivery,
+    );
+    bar.setOrigin(0.5, 0.5);
+    if (bar.setName) bar.setName('DeliveryPhaseUI.titleAccentBar');
+    this.container.add(bar);
   }
 
   private createSubComponents(): void {
