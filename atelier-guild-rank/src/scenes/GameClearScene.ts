@@ -51,8 +51,8 @@ const LAYOUT = {
 const STYLES = {
   /** タイトルのフォントサイズ */
   TITLE_FONT_SIZE: '42px',
-  /** タイトルの色（ブランドセカンダリ） */
-  TITLE_COLOR: toColorStr(Colors.brand.secondary),
+  /** タイトルの色（TASK-0011: クリアのアンバー #E0A84B: status.warning） */
+  TITLE_COLOR: toColorStr(Colors.status.warning),
   /** メッセージのフォントサイズ */
   MESSAGE_FONT_SIZE: '20px',
   /** メッセージの色 */
@@ -87,7 +87,10 @@ const TEXT = {
   MESSAGE_LINE1: 'Sランク錬金術師に',
   MESSAGE_LINE2: '昇格しました!',
   TO_TITLE: 'タイトルへ',
-  NEW_GAME_PLUS: 'NEW GAME+',
+  /** TASK-0011: モック06「もう一度挑戦」 */
+  NEW_GAME_PLUS: 'もう一度挑戦',
+  /** TASK-0011: CLEAR バッジ文言 */
+  CLEAR_BADGE: '🏆 CLEAR',
 } as const;
 
 // =============================================================================
@@ -225,6 +228,19 @@ export class GameClearScene extends Phaser.Scene {
    * @param centerX 画面中央X座標
    */
   private createTitle(centerX: number): void {
+    // TASK-0011: CLEAR バッジ（pill風: カード面色＋アンバー枠）
+    const badge = this.add.rectangle(centerX, LAYOUT.TITLE_Y - 56, 140, 32, Colors.surface.card);
+    badge.setStrokeStyle?.(2, Colors.status.warning);
+    this.add
+      .text(centerX, LAYOUT.TITLE_Y - 56, TEXT.CLEAR_BADGE, {
+        fontFamily: THEME.fonts.primary,
+        fontSize: '16px',
+        color: toColorStr(Colors.status.warning),
+        fontStyle: 'bold',
+        padding: { top: 4 },
+      })
+      .setOrigin(0.5);
+
     this.add
       .text(centerX, LAYOUT.TITLE_Y, TEXT.TITLE, {
         fontFamily: THEME.fonts.primary,
