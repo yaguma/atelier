@@ -58,13 +58,15 @@ const FOOTER_LAYOUT = {
   /** PhaseTabUIのY座標オフセット */
   PHASE_TAB_Y: 0,
   /** 手札表示Y座標（タブ行と重ならないよう下部に配置） */
-  HAND_Y: 85,
+  HAND_Y: 80,
   /** 手札表示開始X座標 */
   HAND_START_X: 320,
-  /** カード幅 */
-  CARD_WIDTH: 50,
-  /** カード高さ */
-  CARD_HEIGHT: 60,
+  /** カード幅（TASK-0004: モック 52px） */
+  CARD_WIDTH: 52,
+  /** カード高さ（TASK-0004: モック 68px） */
+  CARD_HEIGHT: 68,
+  /** カード枠線幅（TASK-0004: モック 1.5px） */
+  CARD_BORDER_WIDTH: 1.5,
   /** カード間のスペース */
   CARD_SPACING: 60,
 } as const;
@@ -158,13 +160,13 @@ export class FooterUI extends BaseComponent {
     ).setName('FooterUI.backgroundPanel');
     this.container.add(this._backgroundPanel);
 
-    // 上部ボーダーライン
+    // 上部ボーダーライン（TASK-0004: モック 1px）
     const borderLine = new Phaser.GameObjects.Rectangle(
       this.scene,
       FOOTER_LAYOUT.WIDTH / 2,
       1,
       FOOTER_LAYOUT.WIDTH,
-      2,
+      1,
       FOOTER_COLORS.BORDER,
       1,
     ).setName('FooterUI.borderLine');
@@ -197,7 +199,10 @@ export class FooterUI extends BaseComponent {
         FOOTER_COLORS.CARD_PLACEHOLDER,
         0.5,
       ).setName(`FooterUI.cardPlaceholder${i}`);
-      placeholder.setStrokeStyle(2, FOOTER_COLORS.CARD_PLACEHOLDER_BORDER);
+      placeholder.setStrokeStyle(
+        FOOTER_LAYOUT.CARD_BORDER_WIDTH,
+        FOOTER_COLORS.CARD_PLACEHOLDER_BORDER,
+      );
       this.container.add(placeholder);
       this._handDisplayArea.push(placeholder);
     }

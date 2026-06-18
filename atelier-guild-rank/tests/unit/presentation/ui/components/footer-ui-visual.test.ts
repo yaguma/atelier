@@ -153,7 +153,6 @@ const createMockEventBus = (): MockEventBus => ({
 describe('FooterUI（TASK-0112）', () => {
   let scene: MockScene;
   let mockContainer: MockContainer;
-  let mockRectangles: MockRectangle[];
   let mockGameFlowManager: MockGameFlowManager;
   let mockEventBus: MockEventBus;
   let footerUI: FooterUI;
@@ -162,7 +161,6 @@ describe('FooterUI（TASK-0112）', () => {
     const mocks = createMockScene();
     scene = mocks.scene;
     mockContainer = mocks.mockContainer;
-    mockRectangles = mocks.mockRectangles;
     mockGameFlowManager = createMockGameFlowManager();
     mockEventBus = createMockEventBus();
 
@@ -293,6 +291,15 @@ describe('FooterUI（TASK-0112）', () => {
 
       expect(footerUI.getHandDisplayAreaCapacity()).toBe(5);
       expect(footerUI.getHandDisplayArea()).toHaveLength(5);
+    });
+
+    it('TASK-0004: 手札カードがモック仕様 52x68px で生成される', () => {
+      footerUI.create();
+
+      // Phaser.GameObjects.Rectangle の呼び出しに width=52, height=68 が含まれる
+      const rectCalls = vi.mocked(Phaser.GameObjects.Rectangle).mock.calls;
+      const handCardCalls = rectCalls.filter((call) => call[3] === 52 && call[4] === 68);
+      expect(handCardCalls).toHaveLength(5);
     });
   });
 
