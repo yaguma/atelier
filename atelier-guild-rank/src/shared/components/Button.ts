@@ -12,8 +12,16 @@
  */
 
 import { THEME } from '@presentation/ui/theme';
+import { Colors, toColorStr } from '@shared/theme';
 import type Phaser from 'phaser';
 import { BaseComponent } from './BaseComponent';
+
+/** Tertiary ボタンの枠線幅（design-guide.md §ボタン 第3スタイル） */
+const TERTIARY_BORDER_WIDTH = 1.5;
+/** Tertiary ボタンのフォントサイズ（px、design-guide.md §ボタン 第3スタイル） */
+const TERTIARY_FONT_SIZE = 13;
+/** 通常ボタンのフォントサイズ（px） */
+const DEFAULT_FONT_SIZE = 16;
 
 /**
  * ボタンの種類
@@ -21,6 +29,8 @@ import { BaseComponent } from './BaseComponent';
 export enum ButtonType {
   PRIMARY = 'primary',
   SECONDARY = 'secondary',
+  /** 第3スタイル: 薄い枠線＋ミューテッド文字（設定ボタン等の控えめなアクション用） */
+  TERTIARY = 'tertiary',
   TEXT = 'text',
   ICON = 'icon',
 }
@@ -83,6 +93,9 @@ export class Button extends BaseComponent {
     let backgroundColor: number;
     let hoverColor: number;
     let textColor: string;
+    // Tertiary のみ枠線を持つ（design-guide.md §ボタン 第3スタイル）
+    let borderColor: number | null = null;
+    const fontSize = type === ButtonType.TERTIARY ? TERTIARY_FONT_SIZE : DEFAULT_FONT_SIZE;
 
     switch (type) {
       case ButtonType.PRIMARY:
@@ -94,6 +107,13 @@ export class Button extends BaseComponent {
         backgroundColor = THEME.colors.secondary;
         hoverColor = THEME.colors.secondaryHover;
         textColor = THEME.colors.textOnSecondary;
+        break;
+      case ButtonType.TERTIARY:
+        // 薄い枠線＋ミューテッド文字。背景はカード面色（白）で控えめに見せる。
+        backgroundColor = Colors.surface.card;
+        hoverColor = Colors.background.secondary;
+        textColor = toColorStr(Colors.text.muted);
+        borderColor = Colors.border.secondary;
         break;
       case ButtonType.TEXT:
         backgroundColor = 0x000000;
@@ -118,12 +138,15 @@ export class Button extends BaseComponent {
     // scene.addはdisplayListに追加するため、container.add後にdisplayListから除去する
     this.bg = this.scene.add.rectangle(0, 0, width, height, backgroundColor);
     this.bg.setOrigin(0.5);
+    if (borderColor !== null) {
+      this.bg.setStrokeStyle(TERTIARY_BORDER_WIDTH, borderColor);
+    }
     this.scene.children.remove(this.bg);
     this.container.add(this.bg);
 
     // テキストをcontainerローカル座標(0,0)に中央配置
     this.textObj = this.scene.add.text(0, 0, text, {
-      fontSize: '16px',
+      fontSize: `${fontSize}px`,
       color: textColor,
     });
     this.textObj.setOrigin(0.5);

@@ -52,6 +52,7 @@ describe('Button', () => {
     mockRect = {
       setOrigin: vi.fn().mockReturnThis(),
       setFillStyle: vi.fn().mockReturnThis(),
+      setStrokeStyle: vi.fn().mockReturnThis(),
       setInteractive: vi.fn().mockReturnThis(),
       on: vi.fn().mockReturnThis(),
       off: vi.fn().mockReturnThis(),
@@ -130,6 +131,45 @@ describe('Button', () => {
       });
 
       expect(button).toBeDefined();
+    });
+  });
+
+  describe('TASK-0001-BTN: ターシャリボタンの生成と表示', () => {
+    test('ターシャリボタンが正しく生成される', () => {
+      const button = new Button(scene, 100, 200, {
+        text: '設定',
+        type: ButtonType.TERTIARY,
+        onClick: mockCallback,
+      });
+
+      expect(button).toBeDefined();
+      expect(mockContainer.add).toHaveBeenCalled();
+    });
+
+    test('薄い枠線（setStrokeStyle）が適用される', () => {
+      new Button(scene, 100, 200, {
+        text: '設定',
+        type: ButtonType.TERTIARY,
+        onClick: mockCallback,
+      });
+
+      // 第3スタイルは枠線を持つ（border.secondary, 1.5px）
+      expect(mockRect.setStrokeStyle).toHaveBeenCalledWith(1.5, 0xe8e0d6);
+    });
+
+    test('フォントサイズ13pxが適用される', () => {
+      new Button(scene, 100, 200, {
+        text: '設定',
+        type: ButtonType.TERTIARY,
+        onClick: mockCallback,
+      });
+
+      expect(scene.add.text).toHaveBeenCalledWith(
+        0,
+        0,
+        '設定',
+        expect.objectContaining({ fontSize: '13px' }),
+      );
     });
   });
 
