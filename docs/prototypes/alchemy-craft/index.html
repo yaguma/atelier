@@ -1,0 +1,471 @@
+<!--
+  調合コア・プロトタイプ (single-screen)
+  検証仮説: 「4枠に何を入れるか一瞬迷うか」= 品質 vs 特性 / 貢献度 vs 報酬
+  庭・時間・演出はダミー。調合の投入枠だけに集中する。
+  計算ロジックは atelier-guild-rank の calculateQuality と同一の閾値を流用。
+-->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>調合コア・プロトタイプ</title>
+<style>
+  :root {
+    --cream: #FBF6EC;
+    --card: #FFFFFF;
+    --ink: #4A4038;
+    --muted: #8A7E70;
+    --border: #E4D9C6;
+    --border-strong: #C9B79A;
+    --leaf: #8CC084;     /* 貢献度系アクセント */
+    --amber: #D4A76A;    /* 報酬系アクセント */
+    --lav: #B8A9D4;
+    --coral: #E8A87C;
+    --gold: #E0B44A;
+    --hp: #E07A6A;
+    --radius: 14px;
+    --shadow: 0 2px 8px rgba(120,100,70,.12);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px;
+    background: var(--cream); color: var(--ink);
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+    font-size: 14px; line-height: 1.5;
+  }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 12px; margin: 0 0 12px; }
+  .wrap { max-width: 960px; margin: 0 auto; }
+
+  /* ステータスバー */
+  .status { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .stat {
+    background: var(--card); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 8px 14px; box-shadow: var(--shadow);
+    min-width: 92px;
+  }
+  .stat .label { font-size: 11px; color: var(--muted); }
+  .stat .value { font-size: 20px; font-weight: 700; }
+  .hpbar-outer { height: 10px; background: #F0E6D6; border-radius: 6px; overflow: hidden; margin-top: 4px; }
+  .hpbar-inner { height: 100%; background: var(--hp); transition: width .25s; }
+
+  /* 指定 */
+  .order {
+    background: linear-gradient(90deg,#FFF9EF,#FCF4E6);
+    border: 1.5px solid var(--border-strong); border-left: 5px solid var(--lav);
+    border-radius: var(--radius); padding: 10px 14px; margin-bottom: 14px; box-shadow: var(--shadow);
+  }
+  .order b { color: var(--ink); }
+
+  .grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 14px; }
+  @media (max-width: 760px){ .grid { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--card); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow);
+  }
+  .panel h2 { font-size: 13px; margin: 0 0 10px; color: var(--muted); letter-spacing: .04em; }
+
+  /* 素材カード */
+  .mats { display: grid; grid-template-columns: repeat(auto-fill,minmax(110px,1fr)); gap: 8px; }
+  .mat {
+    border: 1.5px solid var(--border); border-radius: 10px; padding: 8px; cursor: pointer;
+    background: #FFFDF9; transition: transform .08s, box-shadow .12s, border-color .12s; position: relative;
+    user-select: none;
+  }
+  .mat:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: var(--border-strong); }
+  .mat.disabled { opacity: .35; cursor: default; transform: none; box-shadow: none; }
+  .mat .name { font-weight: 700; font-size: 13px; }
+  .mat .q { font-size: 11px; color: var(--muted); }
+  .mat .tags { margin-top: 4px; display: flex; gap: 4px; flex-wrap: wrap; }
+  .mat .count {
+    position: absolute; top: 6px; right: 6px; background: var(--border-strong); color: #fff;
+    border-radius: 999px; font-size: 11px; padding: 1px 7px; font-weight: 700;
+  }
+  .tag {
+    font-size: 10px; padding: 1px 6px; border-radius: 6px; font-weight: 700; color: #fff;
+  }
+  .tag.contrib { background: var(--leaf); }
+  .tag.reward  { background: var(--amber); }
+  .tag.support { background: var(--lav); }
+  .qbadge { font-weight: 700; }
+  .qS{color:#B08900}.qA{color:#C88A2E}.qB{color:#5EA36A}.qC{color:#8A7E70}.qD{color:#B08A8A}
+
+  /* 投入枠 */
+  .slots { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 12px; }
+  .slot.new { border-color: var(--amber); }
+  .slot {
+    aspect-ratio: 3/4; border: 2px dashed var(--border-strong); border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    background: #FCF8F0; cursor: pointer; padding: 6px; font-size: 12px; color: var(--muted);
+    transition: border-color .12s, background .12s;
+  }
+  .slot.filled { border-style: solid; border-color: var(--border-strong); background: #FFFDF9; color: var(--ink); cursor: pointer; }
+  .slot.filled:hover { border-color: var(--hp); }
+  .slot .sname { font-weight: 700; }
+
+  /* プレビュー */
+  .preview { border: 1.5px solid var(--border); border-radius: 10px; padding: 10px; background: #FCFAF4; }
+  .prow { display: flex; justify-content: space-between; padding: 3px 0; }
+  .prow .k { color: var(--muted); }
+  .prow .v { font-weight: 700; }
+  .fire { color: var(--leaf); }
+  .cash { color: var(--amber); }
+  .chip { display:inline-block; font-size:11px; padding:1px 7px; border-radius:6px; background:#EFE7D6; color:var(--ink); margin:2px 2px 0 0; }
+  .chip.on-contrib { background: var(--leaf); color:#fff; }
+  .chip.on-reward  { background: var(--amber); color:#fff; }
+  .chip.on-support { background: var(--lav); color:#fff; }
+  .chip.dim { opacity:.4; }
+
+  .actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  button {
+    font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+    border: none; border-radius: 18px; padding: 10px 18px; transition: filter .12s, opacity .12s;
+  }
+  button:hover { filter: brightness(1.05); }
+  button:disabled { opacity: .4; cursor: default; filter: none; }
+  .btn-primary { background: var(--leaf); color: #fff; }
+  .btn-amber   { background: var(--amber); color: #fff; }
+  .btn-amber.active { outline: 3px solid var(--gold); outline-offset: 1px; }
+  .btn-ghost   { background: transparent; color: var(--muted); border: 1.5px solid var(--border-strong); }
+
+  .log {
+    margin-top: 14px; background: var(--card); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 10px 14px; box-shadow: var(--shadow);
+    max-height: 150px; overflow-y: auto; font-size: 12px;
+  }
+  .log div { padding: 2px 0; border-bottom: 1px dashed var(--border); }
+  .log div:last-child { border: none; }
+
+  .banner {
+    margin: 12px 0; padding: 12px 16px; border-radius: var(--radius); font-weight: 700; text-align: center;
+    display: none;
+  }
+  .banner.win  { display:block; background:#E7F4E4; color:#3E7A46; border:1.5px solid var(--leaf); }
+  .banner.lose { display:block; background:#F7E7E4; color:#A8564A; border:1.5px solid var(--coral); }
+  .hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
+</style>
+
+<div class="wrap">
+  <h1>調合コア・プロトタイプ</h1>
+  <p class="sub">仮説検証: 4枠に何を入れるか一瞬迷うか（品質 vs 特性 / 貢献度 vs 報酬）。庭・時間・演出はダミー。</p>
+
+  <div class="status">
+    <div class="stat">
+      <div class="label">ランクHP（削り切れば昇格）</div>
+      <div class="value" id="hp">100</div>
+      <div class="hpbar-outer"><div class="hpbar-inner" id="hpbar" style="width:100%"></div></div>
+    </div>
+    <div class="stat"><div class="label">ゴールド</div><div class="value" id="gold" style="color:var(--gold)">0</div></div>
+    <div class="stat"><div class="label">残りターン</div><div class="value" id="turn">10</div></div>
+  </div>
+
+  <div class="order" id="order"></div>
+
+  <div class="banner" id="banner"></div>
+
+  <div class="grid">
+    <div class="panel">
+      <h2>在庫（クリックで投入枠へ）</h2>
+      <div class="mats" id="mats"></div>
+    </div>
+
+    <div class="panel">
+      <h2>調合台 — 投入枠 <span id="slotcount">4</span>（クリックで戻す）</h2>
+      <div class="slots" id="slots"></div>
+
+      <div class="preview" id="preview"></div>
+
+      <div class="actions">
+        <button class="btn-primary" id="craft">調合して納品</button>
+        <button class="btn-ghost" id="reset">リセット</button>
+      </div>
+      <div class="hint">特性は<b>同じタグを2個以上</b>入れると発現（1個は不発）。触媒×2で品質+1段。今日の指定に合致で該当価値が1.5倍。</div>
+
+      <h2 style="margin-top:14px">工房強化（金＝効率を買う。時間は買えない）</h2>
+      <div class="actions">
+        <button class="btn-amber" id="upgrade">投入枠+1（恒久）<span id="upcost"></span></button>
+        <button class="btn-amber" id="buyseed">種の指名買い（12G）</button>
+      </div>
+      <div class="hint" id="shophint">枠+1は<b>ランクをまたいで残る恒久投資</b>。種の指名買いは狙った特性の弾をピンポイント購入（消耗）。<b>投資に回した金は稼ぐターンが必要＝締切への賭け</b>なのだ。</div>
+    </div>
+  </div>
+
+  <div class="log" id="log"></div>
+</div>
+
+<script>
+// ===== 定数（atelier-guild-rank と同一の閾値）=====
+const QUALITY_SCORE = { D:1, C:2, B:3, A:4, S:5 };
+const SCORE_ORDER = ['D','C','B','A','S'];
+const QUALITY_THRESHOLDS = { D:0, C:20, B:40, A:60, S:80 }; // game-config.ts と一致
+
+const CONTRIB_TAGS = ['聖','浄','癒'];
+const REWARD_TAGS  = ['金','華','稀'];
+const SUPPORT_TAGS = ['触媒'];
+function tagClass(t){ return CONTRIB_TAGS.includes(t)?'contrib':REWARD_TAGS.includes(t)?'reward':'support'; }
+function tagKind(t){ return CONTRIB_TAGS.includes(t)?'contrib':REWARD_TAGS.includes(t)?'reward':'support'; }
+
+// 素材マスタ（迷いを最大化する配置: 高品質無特性 と 低品質特性持ち の対立）
+const MATS = [
+  { id:'crystal', name:'高純度水晶', q:'S', tags:[] },
+  { id:'water',   name:'純水',       q:'A', tags:[] },
+  { id:'holyflower', name:'聖なる花', q:'C', tags:['聖'] },
+  { id:'moongrass',  name:'月光草',   q:'C', tags:['浄'] },
+  { id:'healleaf',   name:'癒しの葉', q:'B', tags:['癒'] },
+  { id:'goldore',    name:'金鉱石',   q:'C', tags:['金'] },
+  { id:'glitter',    name:'華晶石',   q:'B', tags:['華'] },
+  { id:'rarespore',  name:'稀少胞子', q:'C', tags:['稀'] },
+  { id:'sagechip',   name:'賢者の欠片', q:'B', tags:['聖','金'] }, // 両刀
+  { id:'catalyst',   name:'触媒草',   q:'D', tags:['触媒'] },
+];
+const MAT_BY_ID = Object.fromEntries(MATS.map(m=>[m.id,m]));
+
+// ===== 工房強化（金の使い道）=====
+const BASE_SLOTS = 4;
+const MAX_SLOTS = 7;                 // 4 + 最大3回の恒久投資
+const UPGRADE_COSTS = [40, 70, 110]; // 投入枠+1 の逐次価格（恒久・高額）
+const SEED_COST = 12;                // 種の指名買い（消耗・安価）
+
+// ===== 状態 =====
+let state;
+function initState(){
+  state = { hp:100, maxHp:100, gold:0, turn:10, maxSlots:BASE_SLOTS, upgrades:0,
+            inventory:{}, slots:new Array(BASE_SLOTS).fill(null), order:null, ended:false, buyMode:false };
+  // 初期在庫: 各素材ランダム1〜2個
+  MATS.forEach(m=>{ state.inventory[m.id] = 1 + (Math.random()<0.5?1:0); });
+  newOrder();
+}
+function nextUpgradeCost(){ return state.upgrades < UPGRADE_COSTS.length ? UPGRADE_COSTS[state.upgrades] : null; }
+
+// ===== 計算（calculateQuality 流用）=====
+function scoreToQuality(score){
+  const pct = ((score-1)/4)*100;
+  if(pct>=QUALITY_THRESHOLDS.S) return 'S';
+  if(pct>=QUALITY_THRESHOLDS.A) return 'A';
+  if(pct>=QUALITY_THRESHOLDS.B) return 'B';
+  if(pct>=QUALITY_THRESHOLDS.C) return 'C';
+  return 'D';
+}
+function qualityPercent(q){ return ((QUALITY_SCORE[q]-1)/4)*100; }
+// 品質倍率（calculateAverageQualityMultiplier 相当。線形 D=0.6〜S=2.0）
+function qualityMultiplier(pct){ return 0.6 + (pct/100)*1.4; }
+
+function evaluate(slotIds){
+  const mats = slotIds.filter(Boolean).map(id=>MAT_BY_ID[id]);
+  if(mats.length === 0) return null;
+
+  // 触媒発現判定（先に平均スコアへ+1段補正）
+  const tagCount = {};
+  mats.forEach(m=>m.tags.forEach(t=>{ tagCount[t]=(tagCount[t]||0)+1; }));
+  const catalystOn = (tagCount['触媒']||0) >= 2;
+
+  let avgScore = mats.reduce((s,m)=>s+QUALITY_SCORE[m.q],0)/mats.length;
+  if(catalystOn) avgScore = Math.min(5, avgScore + 1);
+  const quality = scoreToQuality(avgScore);
+  const pct = ((avgScore-1)/4)*100;
+  const qMult = qualityMultiplier(pct);
+
+  // 発現特性（2個以上）
+  const activated = Object.keys(tagCount).filter(t=>tagCount[t]>=2);
+  const contribKinds = activated.filter(t=>CONTRIB_TAGS.includes(t)).length;
+  const rewardKinds  = activated.filter(t=>REWARD_TAGS.includes(t)).length;
+
+  const contribBonus = 1 + 0.7*contribKinds;
+  const rewardBonus  = 1 + 0.7*rewardKinds;
+
+  // 指定合致
+  const orderTag = state.order;
+  const matched = activated.includes(orderTag);
+  const orderIsContrib = CONTRIB_TAGS.includes(orderTag);
+  const contribMatch = (matched && orderIsContrib) ? 1.5 : 1;
+  const rewardMatch  = (matched && !orderIsContrib) ? 1.5 : 1;
+
+  const BASE = 8;
+  const contribution = Math.round(BASE * qMult * contribBonus * contribMatch);
+  const reward       = Math.round(BASE * qMult * rewardBonus  * rewardMatch);
+
+  return { quality, pct, qMult, activated, contribution, reward, catalystOn, matched, orderTag, orderIsContrib };
+}
+
+// ===== 指定（日替わり）=====
+function newOrder(){
+  const pool = [...CONTRIB_TAGS, ...REWARD_TAGS];
+  state.order = pool[Math.floor(Math.random()*pool.length)];
+}
+
+// ===== 描画 =====
+const $ = id=>document.getElementById(id);
+function render(){
+  $('hp').textContent = state.hp;
+  $('hpbar').style.width = Math.max(0,(state.hp/state.maxHp)*100)+'%';
+  $('gold').textContent = state.gold;
+  $('turn').textContent = state.turn;
+
+  const oTag = state.order;
+  const kindLabel = CONTRIB_TAGS.includes(oTag) ? '貢献度系' : '報酬系';
+  $('order').innerHTML = `📜 <b>本日の指定調合物</b>：特性「<span class="tag ${tagClass(oTag)}">${oTag}</span>」を宿した品を求む（合致で${kindLabel}価値 <b>×1.5</b>）`;
+
+  // 在庫（買いモード中は在庫0でも購入可能なので disabled にしない）
+  $('mats').innerHTML = MATS.map(m=>{
+    const c = state.inventory[m.id]||0;
+    const dis = state.ended || (!state.buyMode && c<=0);
+    const tags = m.tags.map(t=>`<span class="tag ${tagClass(t)}">${t}</span>`).join('') || '<span class="q">特性なし</span>';
+    return `<div class="mat ${dis?'disabled':''}" data-id="${m.id}">
+      ${c>0?`<span class="count">${c}</span>`:''}
+      <div class="name">${m.name}</div>
+      <div class="q">品質 <span class="qbadge q${m.q}">${m.q}</span></div>
+      <div class="tags">${tags}</div>
+    </div>`;
+  }).join('');
+
+  // 投入枠（動的枠数）
+  $('slotcount').textContent = state.maxSlots;
+  $('slots').style.gridTemplateColumns = `repeat(${state.maxSlots},1fr)`;
+  $('slots').innerHTML = state.slots.map((id,i)=>{
+    const isNew = i>=BASE_SLOTS ? ' new' : '';
+    if(!id) return `<div class="slot${isNew}" data-slot="${i}">空き<br>枠${i+1}</div>`;
+    const m = MAT_BY_ID[id];
+    const tags = m.tags.map(t=>`<span class="tag ${tagClass(t)}">${t}</span>`).join('') || '';
+    return `<div class="slot filled${isNew}" data-slot="${i}">
+      <div><div class="sname">${m.name}</div>
+      <div class="q">品質 <span class="qbadge q${m.q}">${m.q}</span></div>
+      <div class="tags" style="justify-content:center">${tags}</div></div>
+    </div>`;
+  }).join('');
+
+  renderPreview();
+  bindCards();
+  $('craft').disabled = state.ended || state.slots.every(s=>!s);
+
+  // 工房強化ボタン
+  const upCost = nextUpgradeCost();
+  const upBtn = $('upgrade');
+  if(upCost===null){ upBtn.disabled=true; $('upcost').textContent=' 上限'; }
+  else { upBtn.disabled = state.ended || state.gold < upCost; $('upcost').textContent = ` ${upCost}G`; }
+  const seedBtn = $('buyseed');
+  seedBtn.disabled = state.ended || (state.gold < SEED_COST && !state.buyMode);
+  seedBtn.classList.toggle('active', state.buyMode);
+  $('shophint').innerHTML = state.buyMode
+    ? `🛒 <b>買いモード：欲しい素材をクリックで1個購入（${SEED_COST}G）。</b>もう一度ボタンでキャンセル。`
+    : `枠+1は<b>ランクをまたいで残る恒久投資</b>。種の指名買いは狙った特性の弾をピンポイント購入（消耗）。<b>投資に回した金は稼ぐターンが必要＝締切への賭け</b>なのだ。`;
+}
+
+function renderPreview(){
+  const ev = evaluate(state.slots);
+  if(!ev){
+    $('preview').innerHTML = `<div class="prow"><span class="k">投入枠が空です</span><span class="v">—</span></div>
+      <div class="hint">在庫から素材をクリックして枠に入れると、成果物のプレビューが出るのだ。</div>`;
+    return;
+  }
+  // 全タグの発現状況チップ
+  const allTags = [...CONTRIB_TAGS, ...REWARD_TAGS, ...SUPPORT_TAGS];
+  const tagCount = {};
+  state.slots.filter(Boolean).forEach(id=>MAT_BY_ID[id].tags.forEach(t=>tagCount[t]=(tagCount[t]||0)+1));
+  const chips = allTags.map(t=>{
+    const cnt = tagCount[t]||0;
+    const on = cnt>=2;
+    const kind = tagKind(t);
+    return `<span class="chip ${on?'on-'+kind:'dim'}">${t}${cnt>0?` ×${cnt}`:''}${on?' ✓':''}</span>`;
+  }).join('');
+
+  $('preview').innerHTML = `
+    <div class="prow"><span class="k">完成品の品質</span><span class="v">
+      <span class="qbadge q${ev.quality}">${ev.quality}</span>（${Math.round(ev.pct)}% / 倍率${ev.qMult.toFixed(2)}）${ev.catalystOn?' <span class="chip on-support">触媒+1段</span>':''}
+    </span></div>
+    <div class="prow"><span class="k">発現特性</span><span class="v">${ev.activated.length?ev.activated.map(t=>`<span class="tag ${tagClass(t)}">${t}</span>`).join(' '):'<span class="k">なし（凡庸品）</span>'}</span></div>
+    <div class="prow"><span class="k">貢献度（HP-）</span><span class="v fire">${ev.contribution}${ev.matched&&ev.orderIsContrib?' ★指定':''}</span></div>
+    <div class="prow"><span class="k">報酬（ゴールド+）</span><span class="v cash">${ev.reward}${ev.matched&&!ev.orderIsContrib?' ★指定':''}</span></div>
+    <div style="margin-top:6px">${chips}</div>
+  `;
+}
+
+function bindCards(){
+  document.querySelectorAll('.mat').forEach(el=>{
+    el.onclick = ()=>{
+      if(state.ended) return;
+      const id = el.dataset.id;
+      // 買いモード: 指名買い（在庫0でも可）
+      if(state.buyMode){
+        if(state.gold < SEED_COST){ log('ゴールドが足りないのだ'); return; }
+        state.gold -= SEED_COST;
+        state.inventory[id] = (state.inventory[id]||0) + 1;
+        log(`🌱 <b>${MAT_BY_ID[id].name}</b> を指名買い（-${SEED_COST}G）`);
+        if(state.gold < SEED_COST) state.buyMode = false; // 続けて買えないなら自動解除
+        render();
+        return;
+      }
+      if((state.inventory[id]||0)<=0) return;
+      const free = state.slots.indexOf(null);
+      if(free<0){ log(`投入枠が満杯なのだ（${state.maxSlots}枠まで）`); return; }
+      state.slots[free]=id; state.inventory[id]--;
+      render();
+    };
+  });
+  document.querySelectorAll('.slot').forEach(el=>{
+    el.onclick = ()=>{
+      if(state.ended) return;
+      const i=+el.dataset.slot; const id=state.slots[i];
+      if(!id) return;
+      state.slots[i]=null; state.inventory[id]=(state.inventory[id]||0)+1;
+      render();
+    };
+  });
+}
+
+// ===== アクション =====
+function log(msg){
+  const d=document.createElement('div'); d.innerHTML=msg;
+  const l=$('log'); l.insertBefore(d,l.firstChild);
+}
+function craft(){
+  const ev = evaluate(state.slots);
+  if(!ev) return;
+  const used = state.slots.filter(Boolean).length;
+  state.hp = Math.max(0, state.hp - ev.contribution);
+  state.gold += ev.reward;
+  state.turn -= 1;
+  const traitStr = ev.activated.length? `特性[${ev.activated.join('・')}]` : '特性なし';
+  log(`🧪 品質<b>${ev.quality}</b> / ${traitStr} を納品 → <span class="fire">HP-${ev.contribution}</span>, <span class="cash">+${ev.reward}G</span>`);
+  // 枠クリア＆補充（使った枠数ぶんランダム補充。無料の自然供給）
+  state.slots = new Array(state.maxSlots).fill(null);
+  restockRandom(used);
+  newOrder();
+  checkEnd();
+  render();
+}
+function restockRandom(n){
+  for(let i=0;i<n;i++){ const m=MATS[Math.floor(Math.random()*MATS.length)]; state.inventory[m.id]=(state.inventory[m.id]||0)+1; }
+}
+// 恒久投資: 投入枠+1
+function buyUpgrade(){
+  if(state.ended) return;
+  const cost = nextUpgradeCost();
+  if(cost===null || state.gold < cost) return;
+  state.gold -= cost;
+  state.upgrades++;
+  state.maxSlots++;
+  state.slots.push(null); // 現在の調合中の枠も1つ増やす
+  log(`🏗️ 投入枠を <b>${state.maxSlots}枠</b> に拡張（恒久・-${cost}G）。以降ずっと品質と特性を両立しやすくなるのだ`);
+  render();
+}
+// 消耗投資: 種の指名買いモード切替
+function toggleBuyMode(){
+  if(state.ended) return;
+  if(!state.buyMode && state.gold < SEED_COST){ log('ゴールドが足りないのだ'); return; }
+  state.buyMode = !state.buyMode;
+  render();
+}
+function checkEnd(){
+  if(state.hp<=0){ state.ended=true; showBanner('win', `🎉 昇格達成！ 残りゴールド ${state.gold}G / 残りターン ${state.turn}`); }
+  else if(state.turn<=0){ state.ended=true; showBanner('lose', `💥 ターン切れで降格… HP ${state.hp} 残し。稼ぎと貢献のバランスを見直すのだ`); }
+}
+function showBanner(cls,msg){ const b=$('banner'); b.className='banner '+cls; b.textContent=msg; }
+function resetGame(){ $('banner').className='banner'; $('log').innerHTML=''; initState(); render(); log('🔄 リセットしたのだ。HP100を10ターンで削り切れ。'); }
+
+$('craft').onclick=craft;
+$('upgrade').onclick=buyUpgrade;
+$('buyseed').onclick=toggleBuyMode;
+$('reset').onclick=resetGame;
+
+initState(); render();
+log('▶ 在庫から素材を選んで枠に入れ、「調合して納品」でHPを削るのだ。品質を取るか特性を取るか、毎ターン迷え。稼いだ金は枠+1や種の指名買いに回せるが、投資に使うターンは戻らないのだ。');
+</script>

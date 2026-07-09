@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "alchemy-proto",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "http-server", "docs/prototypes/alchemy-craft", "-p", "4185", "-c-1"],
+      "port": 4185
+    }
+  ]
+}
