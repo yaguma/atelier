@@ -38,7 +38,7 @@
 
 ## 全体進捗
 
-- [ ] Phase 1: 基盤構築（環境構築）
+- [x] Phase 1: 基盤構築（環境構築）
 - [ ] Phase 2: プロトタイプ検証
 - [ ] Phase 3: 調合コアロジック（★核心）
 - [ ] Phase 4: 庭（仕込み層）
@@ -73,13 +73,13 @@ Phase 1（基盤構築）
 
 ### タスク一覧
 
-- [ ] [TASK-0001: Godotプロジェクト新規作成](TASK-0001.md) - 4h (DIRECT) 🔵
-- [ ] [TASK-0002: Feature-Basedディレクトリ構造構築](TASK-0002.md) - 4h (DIRECT) 🟡
-- [ ] [TASK-0003: GUT（Godot Unit Test）導入・設定](TASK-0003.md) - 6h (DIRECT) 🟡
-- [ ] [TASK-0004: RngService Autoload実装](TASK-0004.md) - 8h (TDD) 🔵
-- [ ] [TASK-0005: game_balance.gd（GAME_CONFIG相当）定数クラス作成](TASK-0005.md) - 4h (DIRECT) 🔵
-- [ ] [TASK-0006: theme.gd（THEME相当）基本テーマ定数作成](TASK-0006.md) - 4h (DIRECT) 🟡
-- [ ] [TASK-0007: CLAUDE.md技術スタック記載の更新](TASK-0007.md) - 2h (DIRECT) 🔵
+- [x] [TASK-0001: Godotプロジェクト新規作成](TASK-0001.md) - 4h (DIRECT) 🔵 ✅ 完了 (2026-07-14)
+- [x] [TASK-0002: Feature-Basedディレクトリ構造構築](TASK-0002.md) - 4h (DIRECT) 🟡 ✅ 完了 (2026-07-20)
+- [x] [TASK-0003: GUT（Godot Unit Test）導入・設定](TASK-0003.md) - 6h (DIRECT) 🟡 ✅ 完了 (2026-07-20)
+- [x] [TASK-0004: RngService Autoload実装](TASK-0004.md) - 8h (TDD) 🔵 ✅ 完了 (2026-07-21)
+- [x] [TASK-0005: game_balance.gd（GAME_CONFIG相当）定数クラス作成](TASK-0005.md) - 4h (DIRECT) 🔵 ✅ 完了 (2026-07-21)
+- [x] [TASK-0006: theme.gd（THEME相当）基本テーマ定数作成](TASK-0006.md) - 4h (DIRECT) 🟡 ✅ 完了 (2026-07-21)
+- [x] [TASK-0007: CLAUDE.md技術スタック記載の更新](TASK-0007.md) - 2h (DIRECT) 🔵 ✅ 完了 (2026-07-21)
 
 ### 依存関係
 

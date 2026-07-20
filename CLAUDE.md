@@ -8,17 +8,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 > ⚠️ **技術スタック移行が決定済み（2026-07-09）**: v7.0コンセプト（調合主軸モデル）の再設計「atelier-alchemy-core」において、技術スタックを **Godot 4.x + GDScript** へ全面移行することが正式に確定しました。詳細・決定経緯は [`docs/design/atelier-alchemy-core/architecture.md`](docs/design/atelier-alchemy-core/architecture.md)（設計）・[`docs/spec/atelier-alchemy-core/requirements.md`](docs/spec/atelier-alchemy-core/requirements.md) NFR-301（要件）・[`docs/design/atelier-alchemy-core/design-interview.md`](docs/design/atelier-alchemy-core/design-interview.md)（ヒアリング記録）を参照してください。
 >
-> - **現時点ではGodotプロジェクトはまだスキャフォールディングされていません**（設計文書のみ存在）。実装着手はタスク分割フェーズ（`/tsumiki:kairo-tasks atelier-alchemy-core`）以降です。
-> - 下記の「atelier-guild-rank/: Phaser 3 + TypeScript版」は**新規機能開発を継続しない凍結状態**です。バグ修正等が必要な場合を除き、新規実装はGodot版に対して行ってください。
-> - このセクション・下記のTech Stack表は、Godotプロジェクトのスキャフォールディングが完了し次第、更新が必要です。
+> - **Godotプロジェクト（`atelier-godot/`）のスキャフォールディングが完了しました**（Phase 1基盤構築, TASK-0001〜0007）。GUT（Godot Unit Test）導入・Feature-Basedディレクトリ構造・RngService/GameBalance/GameTheme等の共通基盤も整備済みです。Phase 2以降の実装は `docs/tasks/atelier-alchemy-core/` のタスク一覧に従って進めます。
+> - 下記の「atelier-guild-rank/: Phaser 3 + TypeScript版」は**新規機能開発を継続しない凍結状態**です。バグ修正等が必要な場合を除き、新規実装はGodot版（`atelier-godot/`）に対して行ってください。
 
+- **atelier-godot/**: Godot 4.x + GDScript版（メイン開発。2026-07-09決定、Phase 1基盤構築より実装着手）
 - **atelier-guild-rank/**: Phaser 3 + TypeScript版（旧メイン実装。現在は凍結・新規機能開発なし）
 - **Assets/**: Unity 6版（初期プロトタイプ、現在非アクティブ）
-- **（未作成）atelier-godot/ 等**: Godot 4.x + GDScript版（新メイン開発。2026-07-09決定、実装未着手）
 
 ---
 
 ## Quick Reference
+
+> 以下のコマンド群は凍結版 `atelier-guild-rank/`（Phaser 3 + TypeScript）向けです。`atelier-godot/` への新規実装ではこれらのpnpmコマンドは対象外です。Godot版の開発コマンド（GUTのCLI実行等）は `.claude/rules/` 配下のGodot向けルール整備と合わせて別途整理します。
 
 ### Development Commands (ルートから実行)
 
@@ -97,6 +98,16 @@ QUEST_ACCEPT → GATHERING → ALCHEMY → DELIVERY → QUEST_ACCEPT
 ---
 
 ## Tech Stack
+
+### atelier-godot/（メイン開発）
+
+| Category | Technology | Version |
+|----------|------------|---------|
+| Engine | Godot | 4.7 |
+| Language | GDScript | - |
+| Unit Test | GUT (Godot Unit Test) | 9.6.1 |
+
+### atelier-guild-rank/（凍結。以下はPhaser/TS版のみに適用）
 
 | Category | Technology | Version |
 |----------|------------|---------|
