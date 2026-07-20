@@ -42,6 +42,18 @@
 - 複数特性同時発現の可否（TC-101-04）
 - Gランクで上位ランク解禁の特性素材を使った場合の挙動（TC-121-E01）
 
+## テストコマンド（自動検出、TASK-0003で確定）
+
+`atelier-alchemy-core` の実装対象は `atelier-godot/`（Godot 4.7 + GDScript + GUT）であり、
+プロジェクトルートの `package.json`（`npm test`）は凍結版 `atelier-guild-rank/` 向けのため対象外。
+
+```bash
+GODOT="/c/Users/syagu/AppData/Local/Microsoft/WinGet/Packages/GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe/Godot_v4.7-stable_win64_console.exe"
+"$GODOT" --headless --path atelier-godot -s addons/gut/gut_cmdln.gd -gexit
+```
+
+（初回またはスクリプト追加後は `"$GODOT" --headless --path atelier-godot --import` でクラスキャッシュを再構築してから実行すること）
+
 ## 次のステップ（コンセプト文書8章より）
 
 1. 1画面プロトタイプで「調合で一瞬迷うか」を検証（本要件定義のREQ-501〜503でスコープ内に含めた）
