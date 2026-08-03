@@ -321,4 +321,36 @@ func after_each() -> void:
 ```
 
 **総評**: 元タスクの6テストケースを正常系/異常系/境界値に再分類し、枠数拡張境界（TC-3b）・重複個数境界（TC-4b）・活性状態の可逆境界（TC-1b/2b）を追加して9件に拡張した。最重要の設計判断は **GameStateをAutoloadグローバル参照ではなくDI（`set_game_state()`セッター注入）で受け取る方針**であり、これにより `preload().new()` + `add_child_autofree()` の既存テストパターンと整合し、requirements.md で🔴だった「Autoload参照方法の未確定」をテスト可能な形で確定させた。また `CraftResult.activated_traits` が実装上 `Array[TraitDefinition]`（要件ノートの `Array[String]` ではない）である点をTC-6の型注意として明記した。
+
+---
+
+## 9. 追記: 解除操作テストケース（verify-completeフェーズで検出、2026-08-03追加）
+
+初回実装のverify-completeフェーズで、完了条件3「プレイヤーが在庫の素材を投入枠に配置・解除できる」のうち「解除」操作に対応するテストケースが本ドキュメントに欠落していたことが判明した。`place_material()`の対になる`remove_material()`のテストケースを追加する。
+
+| ID | 分類 | 内容 | 信頼性 | 対象メソッド |
+|---|---|---|---|---|
+| TC-7 | 正常系 | 配置済みの枠から`remove_material()`で素材を解除できる | 🟡 | `remove_material()` |
+| TC-7b | 異常系 | 空枠への解除操作は`false`を返し状態が変化しない | 🟡 | `remove_material()` |
+| TC-7c | 境界値 | 範囲外インデックス（負の値・上限超過）での解除操作は`false`を返す | 🟡 | `remove_material()` |
+
+### TC-7: 配置済みの枠から素材を解除できる 🟡
+
+**Given**: 投入枠4個を構築し、枠0へ素材Aを配置済み
+**When**: `remove_material(0)`を呼び出す
+**Then**: 戻り値が`true`、`slots[0]`が`null`に戻り、`_placed_materials`から素材Aが消える
+
+### TC-7b: 空枠への解除操作 🟡
+
+**Given**: 投入枠4個を構築した直後（全枠空）
+**When**: `remove_material(0)`を呼び出す
+**Then**: 戻り値が`false`、`_placed_materials`は空のまま変化しない（`place_material()`の重複防止ガードと対称の防御的実装）
+
+### TC-7c: 範囲外インデックスでの解除操作 🟡
+
+**Given**: 投入枠4個を構築済み
+**When**: `remove_material(-1)`および`remove_material(slots.size())`を呼び出す
+**Then**: いずれも戻り値が`false`（`place_material()`の範囲外ガードと対称）
+
+**合計テストケース数（更新後）**: 12件（9件 + 追記3件）
 ```

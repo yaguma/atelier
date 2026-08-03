@@ -77,6 +77,29 @@ func test_投入枠に素材1個以上配置でcraft_buttonが活性化される
 	assert_false(disabled, "投入枠に1個以上配置でdisabledがfalseになる") # 【確認内容】: ボタン活性化ロジックの正常動作 🟡
 
 
+func test_配置済みの枠から素材を解除できる() -> void:
+	# 【テスト目的】: 投入枠に配置済みの素材をremove_material()で解除できることを確認する
+	# 【テスト内容】: 枠0へ素材を配置後、remove_material(0)を呼び出す
+	# 【期待される動作】: 戻り値がtrue、slots[0]がnullに戻り、_placed_materialsから当該素材が消える
+	# 🟡 信頼性レベル: 要件定義書「投入操作: 配置/解除するトグル操作」、完了条件「素材を配置・解除できる」より
+
+	# 【テストデータ準備】: 配置済み状態を作るため、まず枠0へ素材を配置する
+	# 【初期条件設定】: 投入枠4個を用意し、素材Aを枠0へ配置する
+	bench._build_slots(game_state.recipe_slot_count)
+	var material_a := _make_material("mat_a", MaterialInstanceScript.Quality.B)
+	bench.place_material(0, material_a)
+
+	# 【実際の処理実行】: 枠0の解除操作を呼び出す
+	# 【処理内容】: remove_material()が枠状態と投入済み一覧の両方を更新することを検証する
+	var removed = bench.remove_material(0)
+
+	# 【結果検証】: 解除操作の成功と、枠・投入済み一覧の両方が空に戻ることを確認する
+	# 【期待値確認】: 完了条件「プレイヤーが在庫の素材を投入枠に配置・解除できる」より
+	assert_true(removed, "解除操作がtrueを返す") # 【確認内容】: 解除成功の戻り値 🟡
+	assert_null(bench.slots[0], "解除後にslots[0]がnullへ戻る") # 【確認内容】: 枠状態のリセット 🟡
+	assert_false(bench._placed_materials.has(material_a), "解除後に_placed_materialsから素材が消える") # 【確認内容】: 投入済み一覧からの除去 🟡
+
+
 func test_recipe_slot_countが4のとき投入枠が4個生成される() -> void:
 	# 【テスト目的】: GameState.recipe_slot_count（初期値4）を唯一の情報源として投入枠が構築されることを確認する
 	# 【テスト内容】: game_state.recipe_slot_count == 4の状態でbench._build_slots(game_state.recipe_slot_count)を呼ぶ
@@ -185,6 +208,47 @@ func test_投入枠が空のときcraft_buttonが非活性化される() -> void
 	# 【結果検証】: 空投入時に非活性（disabled=true）であることを確認する
 	# 【期待値確認】: EDGE-001のUI側防御（ボタン非活性化）が機能し、craft([])が呼ばれない安全な状態を保つ
 	assert_true(disabled, "投入枠が空のときdisabledがtrueになる") # 【確認内容】: EDGE-001のUI側防御（空投入時の非活性化） 🟡
+
+
+func test_空枠を解除操作してもfalseを返し状態が変化しない() -> void:
+	# 【テスト目的】: 何も配置されていない枠を解除操作しても副作用が起きないことを確認する
+	# 【テスト内容】: 枠を構築した直後（全枠空）の状態でremove_material(0)を呼び出す
+	# 【期待される動作】: 戻り値がfalse、_placed_materialsは空のまま変化しない
+	# 🟡 信頼性レベル: place_material()の範囲外・重複防止ガードと対称の妥当な推測
+
+	# 【テストデータ準備】: 素材が1つも配置されていない初期状態を代表する構成
+	# 【初期条件設定】: 投入枠4個を構築するのみ（配置操作は行わない）
+	bench._build_slots(game_state.recipe_slot_count)
+
+	# 【実際の処理実行】: 空枠に対して解除操作を呼び出す
+	# 【処理内容】: 空枠の解除が誤って例外や不整合を起こさないことを検証する
+	var removed = bench.remove_material(0)
+
+	# 【結果検証】: 解除操作が失敗を返し、状態に変化がないことを確認する
+	# 【期待値確認】: 空枠への解除操作は無効操作として安全に扱われるべきこと
+	assert_false(removed, "空枠への解除操作はfalseを返す") # 【確認内容】: 空枠解除の防御 🟡
+	assert_true(bench._placed_materials.is_empty(), "空枠解除後も_placed_materialsは空のまま") # 【確認内容】: 副作用がないことの確認 🟡
+
+
+func test_範囲外インデックスでの解除操作はfalseを返す() -> void:
+	# 【テスト目的】: 不正な枠インデックスでの解除操作が安全に失敗することを確認する
+	# 【テスト内容】: 枠数を超えるインデックス（負の値・上限超過）でremove_material()を呼び出す
+	# 【期待される動作】: いずれもfalseを返し、クラッシュしない
+	# 🟡 信頼性レベル: place_material()の範囲外ガード（TC-4関連）と対称の妥当な推測
+
+	# 【テストデータ準備】: 範囲外アクセスという異常操作を代表する構成
+	# 【初期条件設定】: 投入枠4個を構築する
+	bench._build_slots(game_state.recipe_slot_count)
+
+	# 【実際の処理実行】: 負のインデックスと上限超過インデックスで解除操作を呼び出す
+	# 【処理内容】: 範囲外ガードがplace_material()と同様に機能することを検証する
+	var removed_negative = bench.remove_material(-1)
+	var removed_over = bench.remove_material(bench.slots.size())
+
+	# 【結果検証】: いずれの範囲外操作もfalseを返すことを確認する
+	# 【期待値確認】: 範囲外インデックスでのクラッシュ防止（防御的実装）
+	assert_false(removed_negative, "負のインデックスでの解除操作はfalseを返す") # 【確認内容】: 下限側の範囲外ガード 🟡
+	assert_false(removed_over, "上限超過インデックスでの解除操作はfalseを返す") # 【確認内容】: 上限側の範囲外ガード 🟡
 
 
 func test_同一素材を別枠へ重複配置してもplaced_materialsに重複が生じない() -> void:

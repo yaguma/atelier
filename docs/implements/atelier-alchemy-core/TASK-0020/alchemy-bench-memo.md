@@ -85,3 +85,50 @@
 ### テスト結果
 
 - Scripts 13、Tests 106、Passing 106、Failing 0（全パス、デグレなし）
+
+## 🎯 Verify-Completeフェーズ 最終結果（2026-08-03、1回目）
+
+- **スコープ内テスト（testcases.md 9件）**: 9/9 PASS
+- **全体テスト**: 106/106 PASS（スコープ外失敗なし）
+- **品質判定**: ⚠️ 要改善（タスク未完了） — 完了条件3が部分未充足のため元タスクファイルのチェックボックスは更新していない
+
+### ⚠️ 未充足だった完了条件（追加TDDサイクルで解消済み、下記参照）
+
+- **完了条件3「プレイヤーが在庫の素材を投入枠に配置・解除できる」の"解除"側が未実装**
+  - `alchemy_bench.gd` には `place_material()`（配置・別枠への入れ替え）のみが実装されており、素材を枠から取り除いて空に戻す明示的なAPI（例: `remove_material(slot_index)` / `clear_slot(slot_index)`）が存在しない
+  - `material_slot.gd` の `clear()` は実装されているが、`AlchemyBench` はスロットを `MaterialSlot` インスタンスではなく生の配列（`null` または `MaterialInstance`）で管理しており、`clear()` は呼び出されず未結線（デッドコード状態）
+  - `place_material(index, null)` を代用として呼ぶと `_placed_materials` に `null` が追加される副作用があり、暫定代用にもならない（`craft()` へ `null` を含む配列が渡るリスクを新たに生む）
+  - `alchemy-bench-testcases.md` にも「解除」単体を検証するテストケースが存在しない（TC-1b/2bは`_placed_materials`を直接代入して境界を検証しており、実際の解除APIを経由していない）
+
+## 追加TDDサイクル: remove_material()実装（2026-08-03、2回目）
+
+verify-completeフェーズで検出された未充足の完了条件3に対応するため、追加でRed→Green→Verifyサイクルを実施した。
+
+### Red
+
+- `alchemy_bench_test.gd`にテストケース3件を追加: 正常系1件（配置済み枠からの解除）、異常系1件（空枠への解除操作）、境界値1件（範囲外インデックス）
+- 実装は`remove_material(slot_index: int) -> bool`スタブ（`return false`固定）で失敗を確認
+- **学び**: GUTの静的型チェッカーは`:=`（型推論代入）でメソッド呼び出し結果を受けると、スタブ実装の戻り値型が確定していても`Cannot infer the type`エラーでスクリプト全体をロード不能にすることがある（TASK-0015のRedフェーズと同種の問題）。既存コードの慣例に合わせ`=`（型推論なし代入）を使うことで回避した
+
+### Green
+
+- `remove_material(slot_index)`を実装: 範囲外インデックス・空枠はfalseを返す防御的ガード、有効な枠は`slots[index]`をnullに戻し`_placed_materials`から対応素材を除去してtrueを返す
+
+### 検証結果
+
+- `tests/unit`全体: Scripts 13、Tests 109、Passing 109（新規3件含む）
+- `tests/unit` + `tests/integration`全体: Scripts 15、Tests 112、Passing 112
+- 完了条件3が完全充足。`docs/tasks/atelier-alchemy-core/TASK-0020.md`の該当チェックボックスは元々`[x]`だったが、これで実態と一致した
+
+## 💡 重要な技術学習（統合）
+
+### 実装パターン
+- GameStateはAutoload未登録（`class_name`衝突回避のため）。UI層は`set_game_state()`セッターDIで受け取る設計が、GUTの`preload().new()`パターンと整合する
+- ボタンの活性/非活性はUIノード（`craft_button.disabled`）へ直接書き込まず、`_update_craft_button_state() -> bool`の戻り値として返すことで、UIノード非依存のテスト容易性を確保できる
+
+### テスト設計
+- Warning#2境界（UIは計算ロジックを持たない）の回帰防止には、`partial_double`ではなくDIを活かした`craft()`オーバーライド用サブクラス（`SpyGameState`）が有効
+- 「配置」の境界（0↔1件）と「重複防止」の境界（連続操作でも高々1件）を別テストケースとして分離すると、境界値の意図が明確になる
+
+### 品質保証
+- 完了条件チェックリストは「配置」だけでなく「解除」など対になる操作の有無を個別に確認すること。テストケース定義書がテスト対象メソッドの単位で作られていると、対になる操作の欠落に気づきにくい

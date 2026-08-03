@@ -125,6 +125,31 @@ func place_material(slot_index: int, material: MaterialInstance) -> bool:
 	return true
 
 
+## 【機能概要】: 投入枠の指定インデックスから素材を解除する
+## 【実装方針（Greenフェーズ）】: 指定枠が空（null）または範囲外の場合は解除失敗として扱う。
+## 　　枠が埋まっていれば、枠をnullへ戻し、_placed_materialsから当該素材を取り除く
+## 🟡 信頼性レベル: alchemy-bench-testcases.md 解除操作テストケースに基づく（要件定義書
+## 　　「投入操作: 配置/解除するトグル操作」・完了条件「素材を配置・解除できる」より）
+## @param slot_index - 解除対象の枠インデックス
+## @return 解除に成功したか
+func remove_material(slot_index: int) -> bool:
+	# 【範囲外ガード】: 不正な枠インデックスは解除失敗として扱う（place_material()と対称） 🟡
+	if slot_index < 0 or slot_index >= slots.size():
+		return false
+
+	# 【空枠ガード】: 何も配置されていない枠への解除操作は失敗として扱う 🟡
+	var material: MaterialInstance = slots[slot_index]
+	if material == null:
+		return false
+
+	# 【解除確定】: 枠状態と投入済み一覧の両方から素材を取り除く 🟡
+	slots[slot_index] = null
+	var index := _placed_materials.find(material)
+	if index != -1:
+		_placed_materials.remove_at(index)
+	return true
+
+
 ## 【機能概要】: 調合実行ボタンの活性/非活性状態を算出する
 ## 【実装方針（Greenフェーズ）】: _placed_materialsが空か否かのみでdisabled状態を算出する。
 ## 　　UIノード（craft_button）への直接依存を避けるため、戻り値として返す設計とする
