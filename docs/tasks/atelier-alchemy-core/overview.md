@@ -40,7 +40,7 @@
 
 - [x] Phase 1: 基盤構築（環境構築）
 - [x] Phase 2: プロトタイプ検証
-- [ ] Phase 3: 調合コアロジック（★核心）
+- [x] Phase 3: 調合コアロジック（★核心）
 - [ ] Phase 4: 庭（仕込み層）
 - [ ] Phase 5: ギルド納品・ランク進行
 - [ ] Phase 6: 工房強化・段階的開示・統合検証
@@ -121,16 +121,16 @@ TASK-0005 → TASK-0008 → TASK-0009 → TASK-0010
 
 ### タスク一覧
 
-- [ ] [TASK-0011: データモデル実装: TraitDefinition, MaterialInstance](TASK-0011.md) - 6h (TDD) 🔵
-- [ ] [TASK-0012: データモデル実装: RecipeDefinition, CraftResult](TASK-0012.md) - 6h (TDD) 🔵
-- [ ] [TASK-0013: QualityCalculator.calculate_base_quality実装](TASK-0013.md) - 6h (TDD) 🔵
-- [ ] [TASK-0014: TraitActivation.resolve_activated_traits実装](TASK-0014.md) - 8h (TDD) 🔵
-- [ ] [TASK-0015: TraitActivation.resolve_category_conflict実装](TASK-0015.md) - 8h (TDD) 🔵
-- [ ] [TASK-0016: QualityCalculator.apply_trait_penalty実装](TASK-0016.md) - 6h (TDD) 🔵
-- [ ] [TASK-0017: ValueCalculator（貢献度/報酬算出）実装](TASK-0017.md) - 8h (TDD) 🟡
-- [ ] [TASK-0018: AlchemyResolver.craft オーケストレーター実装](TASK-0018.md) - 8h (TDD) 🔵
-- [ ] [TASK-0019: GameState.craft()連携実装](TASK-0019.md) - 8h (TDD) 🔵
-- [ ] [TASK-0020: AlchemyBench UI実装（調合台画面）](TASK-0020.md) - 8h (TDD) 🔵
+- [x] [TASK-0011: データモデル実装: TraitDefinition, MaterialInstance](TASK-0011.md) - 6h (TDD) 🔵
+- [x] [TASK-0012: データモデル実装: RecipeDefinition, CraftResult](TASK-0012.md) - 6h (TDD) 🔵
+- [x] [TASK-0013: QualityCalculator.calculate_base_quality実装](TASK-0013.md) - 6h (TDD) 🔵
+- [x] [TASK-0014: TraitActivation.resolve_activated_traits実装](TASK-0014.md) - 8h (TDD) 🔵
+- [x] [TASK-0015: TraitActivation.resolve_category_conflict実装](TASK-0015.md) - 8h (TDD) 🔵
+- [x] [TASK-0016: QualityCalculator.apply_trait_penalty実装](TASK-0016.md) - 6h (TDD) 🔵
+- [x] [TASK-0017: ValueCalculator（貢献度/報酬算出）実装](TASK-0017.md) - 8h (TDD) 🟡
+- [x] [TASK-0018: AlchemyResolver.craft オーケストレーター実装](TASK-0018.md) - 8h (TDD) 🔵
+- [x] [TASK-0019: GameState.craft()連携実装](TASK-0019.md) - 8h (TDD) 🔵
+- [x] [TASK-0020: AlchemyBench UI実装（調合台画面）](TASK-0020.md) - 8h (TDD) 🔵
 
 ### 依存関係
 
